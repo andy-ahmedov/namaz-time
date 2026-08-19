@@ -41,6 +41,12 @@ wrapper, JDK 17 and Android SDK 35. A PR description lists exact commands
 actually executed; do not claim instrumented/device coverage from local unit
 tests.
 
+`make test-android-unit` includes the Robolectric Compose focus test. Commit
+Room schema exports under `apps/tv-android/schemas/` whenever the schema changes;
+future versions must add and test an explicit migration rather than use a
+destructive fallback. The command also fails when Room compilation rewrites a
+tracked schema export.
+
 ## Provider contribution requirements
 
 A new prayer-time provider must include:

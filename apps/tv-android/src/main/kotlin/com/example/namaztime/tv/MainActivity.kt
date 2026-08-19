@@ -1,16 +1,25 @@
 package com.example.namaztime.tv
 
-import android.app.Activity
+import android.content.Context
 import android.os.Bundle
-import android.widget.TextView
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.datastore.preferences.preferencesDataStore
+import com.example.namaztime.tv.presentation.NamazTvApp
+import com.example.namaztime.tv.repository.DataStoreOperatorPreferencesRepository
 
-/**
- * Temporary T001 entry point. Compose, navigation, focus behavior, and local
- * persistence are introduced by T003.
- */
-class MainActivity : Activity() {
+private val Context.operatorPreferencesDataStore by preferencesDataStore(
+    name = "operator_preferences",
+)
+
+class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(TextView(this).apply { setText(R.string.scaffold_message) })
+        val preferencesRepository = DataStoreOperatorPreferencesRepository(
+            operatorPreferencesDataStore,
+        )
+        setContent {
+            NamazTvApp(preferencesRepository)
+        }
     }
 }

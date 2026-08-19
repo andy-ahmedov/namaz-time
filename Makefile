@@ -30,3 +30,4 @@ test-contracts:
 
 test-android-unit:
 	./gradlew $(GRADLE_FLAGS) :apps:tv-android:testDebugUnitTest
+	git diff --exit-code -- apps/tv-android/schemas

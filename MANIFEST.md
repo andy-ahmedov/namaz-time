@@ -49,7 +49,8 @@
 - `internal/domain/` — source-independent snapshot types, validation and contract fixtures.
 - `internal/providers/` — provider adapter package boundary.
 - `settings.gradle.kts`, `build.gradle.kts`, `gradle/` — Android Gradle build and wrapper.
-- `apps/tv-android/` — minimal Kotlin Android TV launcher and local unit test.
+- `apps/tv-android/` — Compose for TV shell, D-pad/UI tests, DataStore
+  preferences, Room v1 entities/DAO and committed migration schema baseline.
 - `.github/workflows/ci.yml` — documentation, Go and Android CI gates.
 
 ## Quality, security and operations

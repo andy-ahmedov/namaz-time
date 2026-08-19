@@ -83,6 +83,22 @@ platform/        boot, keep-screen-on, clock/network diagnostics
 
 Composables only observe local state. A network response never directly mutates what is visible; it first passes signature/schema/domain validation and an atomic activation transaction.
 
+### Android local baseline (T003)
+
+Room schema version 1 stores immutable snapshot provenance/integrity metadata,
+daily adhan rows, separate iqamah rules/overrides, Jumu'ah sessions, campaigns,
+theme selection and the display's active/previous snapshot pointers. Foreign
+keys cascade snapshot-owned rows, while active/previous references prevent a
+selected snapshot from being deleted. The exported schema JSON is committed as
+the migration baseline; T004 adds the transactional importer and activation
+implementation. Prayer-day reads always sort by mosque-local date; SQLite's
+unspecified row order is never treated as schedule order.
+
+Small operator UI preferences, including the last focused settings section and
+reduced-motion default, use a single Preferences DataStore instance. Schedule
+data never moves into DataStore, and the Compose shell contains no network
+client.
+
 ## Source ingestion pipeline
 
 1. **Retrieve or import.** Store raw bytes unchanged when terms permit, otherwise store immutable metadata plus an approved fixture.

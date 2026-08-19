@@ -25,7 +25,7 @@ Goal: one TV shows a synthetic, then approved, offline schedule for one mosque.
 |---|---|---|
 | T001 repository and CI scaffold | IN_PROGRESS | local commit `cddc757`; Go/Android scaffold and CI workflow added; local gates pass, remote CI run remains `UNKNOWN` until the initial branch is pushed |
 | T002 Go domain types + JSON Schema validation | DONE | `feat(domain): validate prayer snapshots`; valid synthetic snapshot passes Schema + domain checks, five invalid fixtures fail deterministically; local contract/race/vet/docs gates pass |
-| T003 Android TV shell + Room | TODO | launchable with D-pad settings shell |
+| T003 Android TV shell + Room | DONE | `feat(tv): add offline settings shell`; Compose for TV launches at API 28+, Robolectric D-pad test reaches all settings/actions, DataStore persists focus destination, Room schema v1 is exported and tested |
 | T004 import bundled synthetic snapshot | TODO | transactionally active after cold install |
 | T005 main prayer screen | TODO | six times, source state, date and countdown visible |
 | T006 time/next-event engine | TODO | timezone/date rollover tests pass |
@@ -94,6 +94,9 @@ Do not begin until the first pilot is stable.
 ## Current blockers
 
 - T001 remote CI evidence cannot be recorded until the initial branch is pushed and GitHub Actions runs;
+- T003 retains the non-production product name/application ID while D-005 is open;
+- T003 implements only the reversible local-first shell while D-008 is open;
+- Room currently uses kapt because Room 2.8.4 KSP processing is incompatible with the scaffold's Kotlin 2.0.21 processor classpath; revisit with a coordinated Kotlin/AGP upgrade;
 - no selected pilot mosque and canonical authority;
 - no confirmed permission/format for production schedule redistribution;
 - no physical Android TV/box available in the analysis environment;
