@@ -14,8 +14,9 @@ Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 | Compare prayer-time acquisition patterns | DONE | `PRAYER_TIME_SOURCE_PATTERNS.md` |
 | Create docs-first Codex package | DONE | `make docs-check` passes |
 | Runtime black-box validation on physical TV/box | BLOCKED | requires device/ADB test environment; see `BLACK_BOX_VALIDATION_PLAN.md` |
-| Choose first pilot mosque/source/hardware | TODO | decisions D-001 through D-004 resolved |
-| Confirm license/permission for first schedule | TODO | completed partnership checklist stored outside repo secrets |
+| Choose first pilot mosque/source | DONE | D-001 accepted for the Second Cathedral Mosque of Ulyanovsk; August 2026 photo selected as the first manual-import source fixture |
+| Choose pilot hardware | DEFERRED | D-004 remains open; physical TV/ADB validation will be performed separately and does not block local Phase 1 work |
+| Confirm license/permission for first schedule | DONE | product owner confirmed project use/redistribution permission on 2026-08-20; source SHA-256 recorded for T008 |
 
 ## Phase 1 — bounded technical vertical slice
 
@@ -26,7 +27,7 @@ Goal: one TV shows a synthetic, then approved, offline schedule for one mosque.
 | T001 repository and CI scaffold | IN_PROGRESS | local commit `cddc757`; Go/Android scaffold and CI workflow added; local gates pass, remote CI run remains `UNKNOWN` until the initial branch is pushed |
 | T002 Go domain types + JSON Schema validation | DONE | `feat(domain): validate prayer snapshots`; valid synthetic snapshot passes Schema + domain checks, five invalid fixtures fail deterministically; local contract/race/vet/docs gates pass |
 | T003 Android TV shell + Room | DONE | `feat(tv): add offline settings shell`; Compose for TV launches at API 28+, Robolectric D-pad test reaches all settings/actions, DataStore persists focus destination, Room schema v1 is exported and tested |
-| T004 import bundled synthetic snapshot | TODO | transactionally active after cold install |
+| T004 import bundled synthetic snapshot | DONE | strict Android contract validation; offline asset bootstrap; full Room transaction and atomic active/previous pointer; corrupt input/local-state diagnostics and previous restore; file-backed failure/reopen preserves active data; explicit Room v1→v2→v3 migrations |
 | T005 main prayer screen | TODO | six times, source state, date and countdown visible |
 | T006 time/next-event engine | TODO | timezone/date rollover tests pass |
 | T007 QR campaign | TODO | local QR, preview and safe invalid-URL behavior |
@@ -97,7 +98,10 @@ Do not begin until the first pilot is stable.
 - T003 retains the non-production product name/application ID while D-005 is open;
 - T003 implements only the reversible local-first shell while D-008 is open;
 - Room currently uses kapt because Room 2.8.4 KSP processing is incompatible with the scaffold's Kotlin 2.0.21 processor classpath; revisit with a coordinated Kotlin/AGP upgrade;
-- no selected pilot mosque and canonical authority;
-- no confirmed permission/format for production schedule redistribution;
+- pilot source image is selected and permission is confirmed, but the named mosque/authority prayer-time approver remains open under D-002;
+- the real August 2026 photo is monthly rather than the annual golden fixture required for broad production coverage; T008 uses it as a real candidate fixture without inventing missing months;
 - no physical Android TV/box available in the analysis environment;
+- abrupt OS process-kill/journal-recovery remains a future instrumentation/ADB
+  acceptance case; T004 locally proves transactional rollback followed by a
+  file-backed database close/reopen, not a physical-device process death;
 - product name, package ID and license remain undecided.

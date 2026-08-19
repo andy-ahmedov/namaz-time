@@ -83,16 +83,36 @@ platform/        boot, keep-screen-on, clock/network diagnostics
 
 Composables only observe local state. A network response never directly mutates what is visible; it first passes signature/schema/domain validation and an atomic activation transaction.
 
-### Android local baseline (T003)
+### Android local baseline (T003–T004)
 
 Room schema version 1 stores immutable snapshot provenance/integrity metadata,
 daily adhan rows, separate iqamah rules/overrides, Jumu'ah sessions, campaigns,
 theme selection and the display's active/previous snapshot pointers. Foreign
 keys cascade snapshot-owned rows, while active/previous references prevent a
 selected snapshot from being deleted. The exported schema JSON is committed as
-the migration baseline; T004 adds the transactional importer and activation
-implementation. Prayer-day reads always sort by mosque-local date; SQLite's
-unspecified row order is never treated as schedule order.
+the migration baseline. T004 adds strict Android snapshot decoding/domain
+validation, full transactional import and atomic activation. Room schema v2
+adds prayer-day source flags (existing v1 rows initialize them to `[]`), and
+schema v3 retains optional provenance and theme-asset integrity references.
+Explicit v1→v2→v3 migrations preserve snapshots, prayer rows and the active
+pointer while retaining v1 as the rollback baseline. Prayer-day reads always sort by
+mosque-local date; SQLite's unspecified row order is never treated as schedule
+order.
+
+On first launch, the app reads the explicitly synthetic example from its APK
+assets, validates it before persistence, imports all supported child records in
+one transaction and only then changes the display pointer. A corrupt asset
+leaves Room without an active schedule and exposes a bounded support code.
+When an active selection already exists, startup verifies its local coverage;
+an incomplete active snapshot restores a complete previous selection, while a
+database read failure or no usable snapshot produces a bounded diagnostic.
+Local schedule-flow corruption is also mapped to a bounded UI support code
+instead of escaping the Compose collector. Startup recovery revalidates the
+persisted timezone, provenance/integrity envelope and complete ordered prayer
+coverage before trusting either active or previous selection.
+Cryptographic signature verification is intentionally added at T008; T004 does
+not treat the synthetic placeholder integrity envelope as authentic production
+data.
 
 Small operator UI preferences, including the last focused settings section and
 reduced-motion default, use a single Preferences DataStore instance. Schedule

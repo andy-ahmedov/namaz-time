@@ -44,8 +44,9 @@ tests.
 `make test-android-unit` includes the Robolectric Compose focus test. Commit
 Room schema exports under `apps/tv-android/schemas/` whenever the schema changes;
 future versions must add and test an explicit migration rather than use a
-destructive fallback. The command also fails when Room compilation rewrites a
-tracked schema export.
+destructive fallback. The v1→v2→v3 path is exercised by opening a v1 database
+and validating it through the real migrations. The command also fails when
+Room compilation rewrites a tracked schema export.
 
 ## Provider contribution requirements
 

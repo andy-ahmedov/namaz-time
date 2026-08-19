@@ -6,9 +6,9 @@ Record product decisions here before converting stable architecture choices into
 
 | ID | Decision | Status | Owner | Needed by | Notes |
 |---|---|---|---|---|---|
-| D-001 | First pilot mosque and locality | OPEN | Product owner | before T008/T010 |  |
-| D-002 | Canonical prayer-time authority/source | OPEN | Mosque approver | before real data |  |
-| D-003 | Written permission and attribution | OPEN | Product owner/source | before real data commit/publication |  |
+| D-001 | First pilot mosque and locality | ACCEPTED | Product owner | before T008/T010 | Second Cathedral Mosque of Ulyanovsk, 18A Dzerzhinsky Street, Ulyanovsk; confirmed 2026-08-20 |
+| D-002 | Canonical prayer-time authority/source | OPEN | Mosque approver | before real publication | August 2026 `rdumul.ru`-attributed photo is selected as the pilot manual-import fixture; a named religious approver/authority confirmation is still required before labeling publication official |
+| D-003 | Written permission and attribution | ACCEPTED | Product owner/source | before real data commit/publication | product owner confirmed project use on 2026-08-20; preserve the exact raw SHA-256 and printed attribution |
 | D-004 | Pilot TV/box model and Android version | OPEN | Installer | before performance/autostart promises | T001 compiles with minSdk 28 / targetSdk 35; this is a scaffold baseline, not a hardware support promise |
 | D-005 | Product name and Android application ID | OPEN | Product owner | before distributable build | T003 deliberately retains the T001 placeholder: `Namaz Time` / `com.example.namaztime.tv` |
 | D-006 | Repository software license | OPEN | Product owner | before public release | do not assume competitor/data licenses |
@@ -53,6 +53,21 @@ These are proposals until accepted by the product owner:
   active/previous selection pointer.
 - `PROPOSAL` — the temporary T001 product name/application ID remains in use;
   T003 is not a distributable product-identity decision.
+
+## T004 bundled snapshot record
+
+- `PROPOSAL` — the explicitly synthetic repository fixture is bundled for
+  first-launch offline bootstrap and is never presented as real or official.
+- `PROPOSAL` — Android validates the snapshot contract before opening a Room
+  transaction, imports all child rows, and changes active/previous selection
+  only at the end of that transaction.
+- `PROPOSAL` — Room schema v2 adds deterministic prayer-day source flags
+  (migrated v1 rows initialize to `[]`); v3 retains optional provenance and
+  theme-asset integrity references. Explicit v1→v2→v3 migrations keep the
+  committed v1 export as the rollback baseline.
+- `CONFIRMED_PUBLIC` — the user-supplied August 2026 pilot schedule image is
+  authorized for this project. Its religious approval status remains distinct
+  from permission to use the file.
 
 ## Decision template
 

@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.kapt")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.serialization")
     id("androidx.room")
 }
 
@@ -35,6 +36,10 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
+    }
+
+    sourceSets {
+        getByName("main").assets.srcDir(rootProject.file("examples"))
     }
 
     testOptions {
@@ -70,6 +75,7 @@ dependencies {
     implementation("androidx.room:room-ktx:2.8.4")
     implementation("androidx.room:room-runtime:2.8.4")
     implementation("androidx.tv:tv-material:1.0.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     kapt("androidx.room:room-compiler:2.8.4")
 
     debugImplementation("androidx.compose.ui:ui-test-manifest")
@@ -81,6 +87,5 @@ dependencies {
     testImplementation("androidx.datastore:datastore-preferences-core:1.2.1")
     testImplementation("androidx.test:core:1.6.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.9.0")
-    testImplementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
     testImplementation("org.robolectric:robolectric:4.14.1")
 }

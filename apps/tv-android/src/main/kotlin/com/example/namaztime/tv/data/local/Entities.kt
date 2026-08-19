@@ -1,5 +1,6 @@
 package com.example.namaztime.tv.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -23,16 +24,24 @@ data class SnapshotEntity(
     val sourceId: String,
     val sourceKind: String,
     val authorityName: String,
+    val authorityBranch: String? = null,
     val geographicScope: String,
+    val canonicalUrl: String? = null,
     val retrievedAt: String,
     val sourceEffectiveFrom: String,
     val sourceEffectiveTo: String,
     val rawSha256: String,
     val parserVersion: String,
+    val calculationProfile: String? = null,
+    val licenseReference: String? = null,
+    val attribution: String? = null,
     val approvalId: String,
+    @ColumnInfo(defaultValue = "'approved'")
+    val approvalStatus: String = "approved",
     val approvedBy: String,
     val approvedAt: String,
     val approvalScope: String,
+    val approvalNote: String? = null,
     val coverageFrom: String,
     val coverageTo: String,
     val canonicalSha256: String,
@@ -65,6 +74,8 @@ data class PrayerDayEntity(
     val duha: String?,
     val middleOfNight: String?,
     val lastThirdOfNight: String?,
+    @ColumnInfo(defaultValue = "'[]'")
+    val flagsJson: String = "[]",
 )
 
 @Entity(
@@ -181,6 +192,8 @@ data class ThemeEntity(
     val snapshotId: String,
     val themeId: String,
     val overlayOpacity: Double,
+    val landscapeAssetJson: String? = null,
+    val portraitAssetJson: String? = null,
 )
 
 @Entity(

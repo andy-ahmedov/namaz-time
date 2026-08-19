@@ -43,7 +43,7 @@
    make lint
    ```
 
-5. Продолжить с задачей `T004` из [CODEX_TASKS.md](CODEX_TASKS.md).
+5. Продолжить с задачей `T005` из [CODEX_TASKS.md](CODEX_TASKS.md).
 
 Gradle запускается через репозиторный wrapper. Android application ID
 `com.example.namaztime.tv` является временным значением T001 и должен быть
@@ -82,7 +82,9 @@ Gradle запускается через репозиторный wrapper. Andro
 T001 добавил компилируемые Go entry points, Android/Gradle scaffold и CI. T002
 добавил source-independent Go-модель snapshot и JSON Schema parity tests. T003
 добавил запускаемый Compose for TV shell, проверяемый D-pad путь, DataStore
-настроек и экспортированную Room schema v1 с раздельными сущностями азана,
-икамата и локального active/previous snapshot. Реальное расписание ещё не
-импортируется: это задача T004. Runtime-проверка на физическом Android TV/box
-ещё не выполнена и не подменяется Robolectric-тестом.
+настроек и Room schema v1. T004 добавил строгую Android-валидацию snapshot,
+offline bootstrap встроенного синтетического примера, атомарный import/activate,
+безопасную диагностику/previous restore и миграции Room v1→v2→v3 для source
+flags и полной provenance/theme metadata. Следующий этап —
+главный экран T005. Runtime-проверка на физическом Android TV/box ещё не
+выполнена и не подменяется Robolectric-тестом.

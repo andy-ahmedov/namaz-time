@@ -50,7 +50,8 @@
 - `internal/providers/` — provider adapter package boundary.
 - `settings.gradle.kts`, `build.gradle.kts`, `gradle/` — Android Gradle build and wrapper.
 - `apps/tv-android/` — Compose for TV shell, D-pad/UI tests, DataStore
-  preferences, Room v1 entities/DAO and committed migration schema baseline.
+  preferences, strict bundled-snapshot bootstrap, Room v1 baseline and tested
+  v1→v2→v3 source-flags/provenance migrations.
 - `.github/workflows/ci.yml` — documentation, Go and Android CI gates.
 
 ## Quality, security and operations

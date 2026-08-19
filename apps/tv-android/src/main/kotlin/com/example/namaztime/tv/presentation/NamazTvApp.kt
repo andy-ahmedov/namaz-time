@@ -26,21 +26,42 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Button
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import com.example.namaztime.tv.data.snapshot.SnapshotBootstrapState
+import com.example.namaztime.tv.repository.CorruptLocalSnapshotException
+import com.example.namaztime.tv.repository.EmptyPrayerScheduleRepository
+import com.example.namaztime.tv.repository.LocalPrayerSchedule
 import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorPreferencesRepository
+import com.example.namaztime.tv.repository.PrayerScheduleRepository
 import java.io.IOException
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 
 private const val DISPLAY_ROUTE = "display"
 private const val SETTINGS_ROUTE = "settings"
 
 @Composable
-fun NamazTvApp(operatorPreferencesRepository: OperatorPreferencesRepository) {
+fun NamazTvApp(
+    operatorPreferencesRepository: OperatorPreferencesRepository,
+    prayerScheduleRepository: PrayerScheduleRepository = EmptyPrayerScheduleRepository,
+    bootstrapState: Flow<SnapshotBootstrapState> = flowOf(
+        SnapshotBootstrapState.Diagnostic("NO_LOCAL_SNAPSHOT"),
+    ),
+) {
     val preferences by operatorPreferencesRepository.preferences.collectAsStateWithLifecycle(
         initialValue = OperatorPreferences(),
     )
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
+    val observedSchedule by prayerScheduleRepository.observeForDisplay()
+        .collectAsStateWithLifecycle(initialValue = DisplayScheduleState.Unavailable)
+    val bootstrap by bootstrapState.collectAsStateWithLifecycle(
+        initialValue = SnapshotBootstrapState.Pending,
+    )
 
     MaterialTheme {
         NavHost(
@@ -52,6 +73,10 @@ fun NamazTvApp(operatorPreferencesRepository: OperatorPreferencesRepository) {
         ) {
             composable(DISPLAY_ROUTE) {
                 DisplayPlaceholderScreen(
+                    schedule = (observedSchedule as? DisplayScheduleState.Available)?.schedule,
+                    localDiagnostic =
+                        (observedSchedule as? DisplayScheduleState.Diagnostic)?.supportCode,
+                    bootstrapState = bootstrap,
                     onOpenSettings = { navController.navigate(SETTINGS_ROUTE) },
                 )
             }
@@ -79,7 +104,12 @@ fun NamazTvApp(operatorPreferencesRepository: OperatorPreferencesRepository) {
 }
 
 @Composable
-private fun DisplayPlaceholderScreen(onOpenSettings: () -> Unit) {
+private fun DisplayPlaceholderScreen(
+    schedule: LocalPrayerSchedule?,
+    localDiagnostic: String?,
+    bootstrapState: SnapshotBootstrapState,
+    onOpenSettings: () -> Unit,
+) {
     val settingsFocusRequester = remember { FocusRequester() }
 
     LaunchedEffect(Unit) {
@@ -94,16 +124,39 @@ private fun DisplayPlaceholderScreen(onOpenSettings: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "Prayer schedule unavailable",
+            text = schedule?.mosqueName ?: when {
+                localDiagnostic != null -> "Prayer schedule unavailable"
+                else -> when (bootstrapState) {
+                    SnapshotBootstrapState.Pending -> "Loading local schedule"
+                    is SnapshotBootstrapState.Ready -> "Prayer schedule unavailable"
+                    is SnapshotBootstrapState.Diagnostic -> "Prayer schedule unavailable"
+                }
+            },
             modifier = Modifier.semantics { heading() },
             fontSize = 44.sp,
         )
         Text(
-            text = "No local snapshot has been activated.",
+            text = schedule?.authorityName ?: when {
+                localDiagnostic != null -> "Support code: $localDiagnostic"
+                else -> when (bootstrapState) {
+                    SnapshotBootstrapState.Pending -> "Validating bundled snapshot…"
+                    is SnapshotBootstrapState.Ready -> "No current local schedule is available."
+                    is SnapshotBootstrapState.Diagnostic ->
+                        "Support code: ${bootstrapState.supportCode}"
+                }
+            },
             modifier = Modifier.padding(top = 16.dp, bottom = 32.dp),
             fontSize = 24.sp,
             color = Color(0xFFD7E0E2),
         )
+        if (bootstrapState is SnapshotBootstrapState.Ready && bootstrapState.recoveryCode != null) {
+            Text(
+                text = "Support code: ${bootstrapState.recoveryCode}",
+                modifier = Modifier.padding(bottom = 24.dp),
+                fontSize = 20.sp,
+                color = Color(0xFFFFD166),
+            )
+        }
         Button(
             onClick = onOpenSettings,
             modifier = Modifier.focusRequester(settingsFocusRequester),
@@ -112,3 +165,24 @@ private fun DisplayPlaceholderScreen(onOpenSettings: () -> Unit) {
         }
     }
 }
+
+private sealed interface DisplayScheduleState {
+    data object Unavailable : DisplayScheduleState
+    data class Available(val schedule: LocalPrayerSchedule) : DisplayScheduleState
+    data class Diagnostic(val supportCode: String) : DisplayScheduleState
+}
+
+private fun PrayerScheduleRepository.observeForDisplay(): Flow<DisplayScheduleState> =
+    observeActiveSchedule()
+        .map { schedule ->
+            schedule?.let(DisplayScheduleState::Available) ?: DisplayScheduleState.Unavailable
+        }
+        .catch { error ->
+            if (error is CancellationException) throw error
+            val supportCode = if (error is CorruptLocalSnapshotException) {
+                "SNAPSHOT_LOCAL_${error.code.uppercase()}"
+            } else {
+                "SNAPSHOT_DATABASE_READ_FAILED"
+            }
+            emit(DisplayScheduleState.Diagnostic(supportCode))
+        }

@@ -53,9 +53,9 @@ class SnapshotDaoTest {
     }
 
     @Test
-    fun versionOneDatabaseOpensWithExpectedTablesAndProtectsActiveSnapshot() = runTest {
+    fun currentDatabaseOpensAtVersionThreeAndProtectsActiveSnapshot() = runTest {
         val sqlite = database.openHelper.writableDatabase
-        assertEquals(1, sqlite.version)
+        assertEquals(3, sqlite.version)
         val tableNames = buildSet {
             sqlite.query(
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
