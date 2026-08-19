@@ -64,6 +64,7 @@ Nationwide-парсеры, сложный портал и несколько п�
 cd /home/andy/github.com/andy-ahmedov/namaz-time
 make docs-check
 make test-go
+make test-contracts
 make test-android-unit
 code .
 ```
@@ -74,7 +75,7 @@ code .
 codex
 ```
 
-Следующий ограниченный этап: задача `T002` из [CODEX_TASKS.md](CODEX_TASKS.md).
+Следующий ограниченный этап: задача `T003` из [CODEX_TASKS.md](CODEX_TASKS.md).
 
 ## 5. Запрет на гигантскую первую задачу
 

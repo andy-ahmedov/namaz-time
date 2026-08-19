@@ -38,11 +38,12 @@
    ```bash
    make docs-check
    make test-go
+   make test-contracts
    make test-android-unit
    make lint
    ```
 
-5. Продолжить с задачей `T002` из [CODEX_TASKS.md](CODEX_TASKS.md).
+5. Продолжить с задачей `T003` из [CODEX_TASKS.md](CODEX_TASKS.md).
 
 Gradle запускается через репозиторный wrapper. Android application ID
 `com.example.namaztime.tv` является временным значением T001 и должен быть
@@ -79,7 +80,8 @@ Gradle запускается через репозиторный wrapper. Andro
 ## Статус
 
 T001 добавил компилируемые Go entry points, минимальный Android TV launcher,
-unit-тесты, Gradle wrapper и CI. Это всё ещё **технический scaffold, а не готовое
-приложение**: молитвенная доменная модель начинается в T002, а Compose/Room UI —
-в T003. Статический APK-анализ завершён. Runtime-проверка на физическом Android
-TV/box ещё не выполнена и не подменяется предположениями.
+Gradle wrapper и CI. T002 добавил source-independent Go-модель snapshot,
+детерминированную доменную валидацию, согласованные provider kinds и JSON Schema
+parity tests на синтетических fixtures. Это всё ещё **технический scaffold, а не
+готовое приложение**: Compose/Room UI начинается в T003. Runtime-проверка на
+физическом Android TV/box ещё не выполнена и не подменяется предположениями.

@@ -18,7 +18,7 @@
   "properties": {
     "source_id": { "type": "string", "minLength": 1, "maxLength": 128 },
     "kind": {
-      "enum": ["official_api", "official_file", "official_html", "mosque_manual", "approved_calculation"]
+      "enum": ["official_api", "official_file", "official_html", "mosque_calendar", "calculation_profile", "manual_import"]
     },
     "authority_name": { "type": "string", "minLength": 1, "maxLength": 240 },
     "authority_branch": { "type": "string", "maxLength": 240 },

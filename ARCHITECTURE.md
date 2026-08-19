@@ -113,11 +113,12 @@ type Provider interface {
 
 Supported kinds:
 
-- `manual_file` — mosque-supplied CSV/JSON;
 - `official_api` — documented authorized API;
 - `official_file` — official CSV/XLSX/JSON/PDF;
 - `official_html` — controlled server-side parser of an official table;
-- `calculation` — deterministic local/backend calculation with explicit parameters.
+- `mosque_calendar` — calendar maintained or explicitly adopted by a mosque;
+- `calculation_profile` — deterministic calculation with explicit approved parameters;
+- `manual_import` — operator-imported CSV/JSON with full provenance.
 
 ## Published snapshot
 

@@ -119,11 +119,13 @@
     "approval": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["status", "approved_by", "approved_at"],
+      "required": ["status", "approval_id", "approved_by", "approved_at", "approval_scope"],
       "properties": {
         "status": { "const": "approved" },
+        "approval_id": { "type": "string", "minLength": 1, "maxLength": 128 },
         "approved_by": { "type": "string", "minLength": 1, "maxLength": 240 },
         "approved_at": { "type": "string", "format": "date-time" },
+        "approval_scope": { "type": "string", "minLength": 1, "maxLength": 1000 },
         "note": { "type": "string", "maxLength": 2000 }
       }
     },
@@ -134,8 +136,12 @@
         "source_id",
         "kind",
         "authority_name",
+        "geographic_scope",
         "retrieved_at",
+        "effective_from",
+        "effective_to",
         "raw_sha256",
+        "parser_version",
         "approval"
       ],
       "properties": {
@@ -145,23 +151,34 @@
             "official_api",
             "official_file",
             "official_html",
-            "mosque_manual",
-            "approved_calculation"
+            "mosque_calendar",
+            "calculation_profile",
+            "manual_import"
           ]
         },
         "authority_name": { "type": "string", "minLength": 1, "maxLength": 240 },
         "authority_branch": { "type": "string", "maxLength": 240 },
+        "geographic_scope": { "type": "string", "minLength": 1, "maxLength": 1000 },
         "canonical_url": { "type": "string", "format": "uri" },
         "retrieved_at": { "type": "string", "format": "date-time" },
         "effective_from": { "$ref": "#/$defs/localDate" },
         "effective_to": { "$ref": "#/$defs/localDate" },
         "raw_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
-        "parser_version": { "type": "string", "maxLength": 128 },
-        "calculation_profile": { "type": "string", "maxLength": 240 },
+        "parser_version": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "calculation_profile": { "type": "string", "minLength": 1, "maxLength": 240 },
         "license_reference": { "type": "string", "maxLength": 1000 },
         "attribution": { "type": "string", "maxLength": 1000 },
         "approval": { "$ref": "#/$defs/approval" }
-      }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "kind": { "const": "calculation_profile" } },
+            "required": ["kind"]
+          },
+          "then": { "required": ["calculation_profile"] }
+        }
+      ]
     },
     "prayerDay": {
       "type": "object",

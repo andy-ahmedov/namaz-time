@@ -19,9 +19,9 @@ Never infer that DUM RF, DUM RT or Central DUM is automatically authoritative fo
 
 ## Source kinds
 
-### `manual_file`
+### `manual_import`
 
-CSV/JSON supplied by a mosque or authority. This is the first provider to implement because it is reviewable, deterministic and easy to cache.
+Operator-imported CSV/JSON with recorded source authority, scope, raw hash and parser version. This is the first provider to implement because it is reviewable, deterministic and easy to cache.
 
 ### `official_api`
 
@@ -35,7 +35,11 @@ CSV/XLSX/JSON/PDF published by an authority. Prefer structured formats. PDF requ
 
 Last-resort server-side parser for an approved official table. It needs rate limiting, terms review, parser fixtures, schema-drift detection and a kill switch.
 
-### `calculation`
+### `mosque_calendar`
+
+A calendar maintained or explicitly adopted by the mosque. It still requires effective dates, import metadata and named approval; mosque-local ownership must not be inferred from a city label.
+
+### `calculation_profile`
 
 Deterministic astronomical calculation from coordinates, date and explicit parameters. Store method, Fajr/Isha parameters, madhab, high-latitude rule and adjustments. It remains “calculated” unless an authority/mosque approves it as its schedule.
 
@@ -177,11 +181,15 @@ approved_at
 approval_scope
 ```
 
+For `calculation_profile`, the snapshot field is a required immutable
+profile/version reference. The referenced frozen source record carries the
+full method, coordinates, adjustments and approval details listed below.
+
 The main screen may show a concise label; diagnostics must expose the full record.
 
 ## Calculation profile
 
-Required fields when source kind is `calculation`:
+Required fields when source kind is `calculation_profile`:
 
 ```text
 library_name

@@ -13,8 +13,9 @@
   },
   "source": {
     "source_id": "synthetic-fixture-v1",
-    "kind": "mosque_manual",
+    "kind": "manual_import",
     "authority_name": "Synthetic test fixture — not an official authority",
+    "geographic_scope": "Synthetic fixture scoped only to mosque-demo-ulsk",
     "retrieved_at": "2026-08-19T09:55:00Z",
     "effective_from": "2026-08-19",
     "effective_to": "2026-08-21",
@@ -24,8 +25,10 @@
     "attribution": "Not real prayer times; do not display in a mosque",
     "approval": {
       "status": "approved",
+      "approval_id": "approval-synthetic-v1",
       "approved_by": "test-suite",
       "approved_at": "2026-08-19T09:59:00Z",
+      "approval_scope": "Synthetic fixture dates and raw hash only",
       "note": "Schema and UI fixture only"
     }
   },

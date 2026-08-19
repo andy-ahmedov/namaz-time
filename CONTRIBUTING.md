@@ -31,6 +31,7 @@ Run the stable repository checks:
 ```bash
 make docs-check
 make test-go
+make test-contracts
 make test-android-unit
 make lint
 ```

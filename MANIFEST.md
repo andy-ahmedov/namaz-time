@@ -46,7 +46,7 @@
 - `go.mod` — Go module identity and language baseline.
 - `cmd/api/` — compilable control-plane API entry-point placeholder.
 - `cmd/ingestor/` — compilable ingestion entry-point placeholder.
-- `internal/domain/` — source-independent domain package boundary.
+- `internal/domain/` — source-independent snapshot types, validation and contract fixtures.
 - `internal/providers/` — provider adapter package boundary.
 - `settings.gradle.kts`, `build.gradle.kts`, `gradle/` — Android Gradle build and wrapper.
 - `apps/tv-android/` — minimal Kotlin Android TV launcher and local unit test.

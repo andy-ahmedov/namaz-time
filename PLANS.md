@@ -23,8 +23,8 @@ Goal: one TV shows a synthetic, then approved, offline schedule for one mosque.
 
 | Task | Status | Acceptance |
 |---|---|---|
-| T001 repository and CI scaffold | IN_PROGRESS | Go/Android scaffold and CI workflow added; local gates pass, remote CI run remains `UNKNOWN` until the initial branch is pushed |
-| T002 Go domain types + JSON Schema validation | TODO | synthetic snapshot validates; invalid fixtures fail |
+| T001 repository and CI scaffold | IN_PROGRESS | local commit `cddc757`; Go/Android scaffold and CI workflow added; local gates pass, remote CI run remains `UNKNOWN` until the initial branch is pushed |
+| T002 Go domain types + JSON Schema validation | DONE | `feat(domain): validate prayer snapshots`; valid synthetic snapshot passes Schema + domain checks, five invalid fixtures fail deterministically; local contract/race/vet/docs gates pass |
 | T003 Android TV shell + Room | TODO | launchable with D-pad settings shell |
 | T004 import bundled synthetic snapshot | TODO | transactionally active after cold install |
 | T005 main prayer screen | TODO | six times, source state, date and countdown visible |

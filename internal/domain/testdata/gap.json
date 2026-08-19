@@ -1,0 +1,29 @@
+{
+  "schema_version": "1.0",
+  "snapshot_id": "invalid-gap",
+  "data_classification": "synthetic",
+  "generated_at": "2026-08-19T10:00:00Z",
+  "mosque": {"id": "test", "name": "Synthetic test", "timezone": "Europe/Ulyanovsk"},
+  "source": {
+    "source_id": "test-source",
+    "kind": "manual_import",
+    "authority_name": "Synthetic test authority",
+    "geographic_scope": "Synthetic test only",
+    "retrieved_at": "2026-08-19T09:55:00Z",
+    "effective_from": "2026-08-19",
+    "effective_to": "2026-08-21",
+    "raw_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "parser_version": "synthetic/1",
+    "approval": {"status": "approved", "approval_id": "approval-test", "approved_by": "test-suite", "approved_at": "2026-08-19T09:59:00Z", "approval_scope": "Synthetic fixture only"}
+  },
+  "coverage": {"from": "2026-08-19", "to": "2026-08-21"},
+  "prayer_days": [
+    {"date": "2026-08-19", "fajr": "03:12", "sunrise": "05:21", "dhuhr": "12:08", "asr": "16:47", "maghrib": "18:53", "isha": "21:01"},
+    {"date": "2026-08-21", "fajr": "03:16", "sunrise": "05:25", "dhuhr": "12:08", "asr": "16:43", "maghrib": "18:48", "isha": "20:55"}
+  ],
+  "integrity": {
+    "canonical_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "signing_key_id": "test-placeholder-key",
+    "signature_ed25519_base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}
