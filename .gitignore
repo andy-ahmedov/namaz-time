@@ -1,0 +1,45 @@
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Go
+/bin/
+/coverage.out
+
+# Gradle / Android
+.gradle/
+**/build/
+local.properties
+*.jks
+*.keystore
+
+# Go workspace files are local developer configuration
+go.work
+go.work.sum
+
+# Node/admin if added
+node_modules/
+dist/
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+secrets/
+
+# Research: never commit third-party binaries/raw extraction
+*.apk
+*.aab
+*.apks
+*.xapk
+research/raw/
+research/private/
+**/Params.decrypted*
+**/*decompile*
+**/*disasm*
+
+# Generated packages
+*.zip
+SHA256SUMS.local.txt

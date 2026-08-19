@@ -1,0 +1,309 @@
+openapi: 3.1.0
+info:
+  title: Mosque Prayer TV Synchronization API
+  version: 0.1.0
+  description: >-
+    Draft contract for pairing a television, retrieving a small manifest,
+    downloading an immutable signed prayer-time snapshot, and reporting
+    privacy-safe device health. The TV display remains functional from local
+    storage when this API is unavailable.
+servers:
+  - url: https://api.example.invalid
+security:
+  - deviceBearer: []
+paths:
+  /v1/devices/pair:
+    post:
+      operationId: pairDevice
+      security: []
+      summary: Exchange a short-lived pairing code for scoped device credentials
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PairRequest'
+      responses:
+        '200':
+          description: Device paired
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PairResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '429':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/devices/{deviceId}/manifest:
+    get:
+      operationId: getDeviceManifest
+      summary: Get the currently assigned snapshot and asset metadata
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+        - name: If-None-Match
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current manifest
+          headers:
+            ETag:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceManifest'
+        '304':
+          description: Manifest unchanged
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/snapshots/{snapshotId}:
+    get:
+      operationId: downloadSnapshot
+      summary: Download an immutable signed snapshot
+      parameters:
+        - name: snapshotId
+          in: path
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+        - name: If-None-Match
+          in: header
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Snapshot body conforming to prayer-snapshot.schema.json
+          headers:
+            ETag:
+              schema:
+                type: string
+            Digest:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                description: See prayer-snapshot.schema.json for the normative schema.
+                additionalProperties: true
+        '304':
+          description: Cached representation is current
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/devices/{deviceId}/heartbeat:
+    post:
+      operationId: postDeviceHeartbeat
+      summary: Report privacy-safe operational health
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Heartbeat'
+      responses:
+        '204':
+          description: Accepted
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+components:
+  securitySchemes:
+    deviceBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque-device-token
+  parameters:
+    DeviceId:
+      name: deviceId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+  responses:
+    ErrorResponse:
+      description: Stable machine-readable error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorEnvelope'
+  schemas:
+    PairRequest:
+      type: object
+      additionalProperties: false
+      required: [pairing_code, device]
+      properties:
+        pairing_code:
+          type: string
+          minLength: 6
+          maxLength: 32
+        installation_public_key:
+          type: string
+          maxLength: 4096
+        device:
+          $ref: '#/components/schemas/DeviceInfo'
+    PairResponse:
+      type: object
+      additionalProperties: false
+      required: [device_id, device_token, mosque, manifest_url]
+      properties:
+        device_id:
+          type: string
+        device_token:
+          type: string
+          writeOnly: true
+        manifest_url:
+          type: string
+          format: uri
+        mosque:
+          type: object
+          additionalProperties: false
+          required: [id, name, timezone]
+          properties:
+            id:
+              type: string
+            name:
+              type: string
+            timezone:
+              type: string
+    DeviceInfo:
+      type: object
+      additionalProperties: false
+      required: [app_version, os_version, model]
+      properties:
+        app_version:
+          type: string
+          maxLength: 64
+        os_version:
+          type: string
+          maxLength: 128
+        model:
+          type: string
+          maxLength: 240
+        capabilities:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            maxLength: 128
+    DeviceManifest:
+      type: object
+      additionalProperties: false
+      required:
+        - manifest_version
+        - snapshot_id
+        - snapshot_url
+        - snapshot_sha256
+        - snapshot_byte_length
+        - signing_key_id
+      properties:
+        manifest_version:
+          type: integer
+          minimum: 1
+        snapshot_id:
+          type: string
+        snapshot_url:
+          type: string
+          format: uri
+        snapshot_sha256:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+        snapshot_byte_length:
+          type: integer
+          minimum: 1
+          maximum: 52428800
+        signing_key_id:
+          type: string
+        minimum_app_version:
+          type: string
+        server_time:
+          type: string
+          format: date-time
+        assets:
+          type: array
+          items:
+            $ref: '#/components/schemas/AssetManifestItem'
+    AssetManifestItem:
+      type: object
+      additionalProperties: false
+      required: [asset_id, url, sha256, byte_length, media_type]
+      properties:
+        asset_id:
+          type: string
+        url:
+          type: string
+          format: uri
+        sha256:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+        byte_length:
+          type: integer
+          minimum: 1
+          maximum: 20971520
+        media_type:
+          type: string
+          enum: [image/jpeg, image/png, image/webp]
+    Heartbeat:
+      type: object
+      additionalProperties: false
+      required: [sent_at, app_version, active_snapshot_id, sync_status, coverage_days_remaining]
+      properties:
+        sent_at:
+          type: string
+          format: date-time
+        app_version:
+          type: string
+        os_version:
+          type: string
+        model:
+          type: string
+        active_snapshot_id:
+          type: string
+        sync_status:
+          type: string
+          enum: [ok, offline, transient_failure, rejected_snapshot, auth_failure, unknown]
+        coverage_days_remaining:
+          type: integer
+          minimum: 0
+          maximum: 732
+        clock_mismatch:
+          type: boolean
+        timezone_mismatch:
+          type: boolean
+        storage_health:
+          type: string
+          enum: [ok, low, critical, unknown]
+        kiosk_mode:
+          type: string
+          enum: [none, best_effort, managed]
+    ErrorEnvelope:
+      type: object
+      additionalProperties: false
+      required: [error]
+      properties:
+        error:
+          type: object
+          additionalProperties: false
+          required: [code, message, retryable]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            request_id:
+              type: string
+            retryable:
+              type: boolean

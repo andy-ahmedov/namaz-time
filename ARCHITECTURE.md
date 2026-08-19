@@ -1,0 +1,244 @@
+# ARCHITECTURE.md
+
+## Architecture goal
+
+The system must keep showing an approved schedule when the network, backend, parser or device process fails. Accuracy, provenance and recovery have priority over real-time freshness and feature count.
+
+## System context
+
+```text
+Official authority / mosque / approved calculation profile
+                      |
+                      v
+              Go ingest adapters
+                      |
+              raw artifact store
+                      |
+           normalize -> validate -> diff
+                      |
+               human approval
+                      |
+            snapshot publisher/signing
+                      |
+          HTTPS + ETag / version manifest
+                      |
+             Android TV synchronizer
+                      |
+          verify -> stage -> atomic activate
+                      |
+               Room / SQLite
+                      |
+                  TV UI
+```
+
+The TV is a display node, not a web scraper and not the authority that decides religious correctness.
+
+## Repository layout
+
+```text
+apps/tv-android/              Kotlin Android TV client
+cmd/api/                      Go HTTP API entry point
+cmd/ingestor/                 Go scheduled/manual ingest entry point
+internal/domain/              source-independent domain rules
+internal/providers/           source adapters
+internal/publication/         validation, approval and snapshot building
+internal/devices/             pairing, manifests and heartbeats
+web/admin/                    operator/approver UI
+contracts/                    OpenAPI and JSON Schemas
+examples/                     synthetic fixtures only
+docs/adr/                     architecture decisions
+research/                     sanitized evidence and research notes
+```
+
+The code directories are intentionally empty in this docs-first package. Codex creates them through bounded tasks in [CODEX_TASKS.md](CODEX_TASKS.md).
+
+## Backend style
+
+Start as a modular monolith in Go. Separate modules by domain boundary, not by deployment:
+
+- `catalog`: mosque, locality, timezone and device bindings;
+- `sources`: source registry, permission and retrieval policy;
+- `ingest`: fetch/import, raw hash and parser execution;
+- `schedule`: normalized adhan times and comparison;
+- `iqamah`: mosque-local rules and overrides;
+- `approval`: review state and audit trail;
+- `publication`: immutable signed snapshots;
+- `campaigns`: QR and announcements;
+- `devices`: pairing, manifest, heartbeat and rollout;
+- `admin`: operator and approver workflows.
+
+Do not introduce a message broker or microservices until measured load or organizational boundaries require them. A database-backed job/outbox table is enough for the first releases.
+
+## TV client layers
+
+```text
+presentation/    Compose for TV screens and focus behavior
+domain/          next-event, countdown and rule resolution
+repository/      local schedule/config interfaces
+data/local/      Room, DataStore, staged snapshot files
+data/remote/     manifest/snapshot HTTP client
+sync/            WorkManager and explicit "sync now"
+platform/        boot, keep-screen-on, clock/network diagnostics
+```
+
+Composables only observe local state. A network response never directly mutates what is visible; it first passes signature/schema/domain validation and an atomic activation transaction.
+
+## Source ingestion pipeline
+
+1. **Retrieve or import.** Store raw bytes unchanged when terms permit, otherwise store immutable metadata plus an approved fixture.
+2. **Fingerprint.** Record SHA-256, byte count, content type, retrieval time and source revision headers.
+3. **Parse.** A versioned provider adapter creates normalized rows but cannot publish them.
+4. **Validate.** Check schema, timezone, date coverage, duplicate dates, missing prayers and suspicious minute deltas.
+5. **Diff.** Compare against the currently approved schedule and produce a human-readable per-day/per-prayer diff.
+6. **Approve.** Authorized mosque/authority representative accepts or rejects the candidate.
+7. **Build.** Create a deterministic immutable snapshot for a mosque and effective period.
+8. **Sign.** Sign the canonical payload with an offline-protected Ed25519 publication key.
+9. **Roll out.** Publish manifest first to a canary group, then broader devices.
+10. **Observe.** Track activation, coverage remaining, signature failures and rollback.
+
+## Provider interface
+
+Conceptual Go interface:
+
+```go
+type Provider interface {
+    Kind() ProviderKind
+    Retrieve(ctx context.Context, req RetrieveRequest) (RawArtifact, error)
+    Parse(ctx context.Context, raw RawArtifact) (CandidateSchedule, error)
+    ValidateConfig(cfg ProviderConfig) error
+}
+```
+
+`Provider` does not know about Android or UI. `CandidateSchedule` is unapproved by definition.
+
+Supported kinds:
+
+- `manual_file` — mosque-supplied CSV/JSON;
+- `official_api` — documented authorized API;
+- `official_file` — official CSV/XLSX/JSON/PDF;
+- `official_html` — controlled server-side parser of an official table;
+- `calculation` — deterministic local/backend calculation with explicit parameters.
+
+## Published snapshot
+
+A snapshot is immutable and contains:
+
+- schema and snapshot version;
+- mosque identity and IANA timezone;
+- source identity, scope, method and approval;
+- daily adhan rows for an effective period;
+- iqamah rules and exact-date overrides;
+- Jumu'ah sessions;
+- QR/announcement campaigns;
+- referenced theme assets by hash;
+- payload hash, key ID and signature.
+
+See [contracts/prayer-snapshot.schema.json](contracts/prayer-snapshot.schema.json).
+
+## TV synchronization protocol
+
+1. TV requests its small device manifest with `If-None-Match`.
+2. `304` means no update.
+3. On a new snapshot, TV downloads to a staging file.
+4. Verify transport status, size limit, canonical SHA-256, Ed25519 signature, JSON Schema, timezone and date coverage.
+5. Import into staging tables in one Room transaction.
+6. Run domain validation and next-event smoke checks.
+7. Atomically switch `active_snapshot_id`.
+8. Keep at least one prior valid snapshot for rollback.
+9. Report a privacy-safe heartbeat later; display remains independent from heartbeat success.
+
+Never erase the active snapshot before the new one is proven valid.
+
+## Prayer-time resolution
+
+### Adhan
+
+The daily row is already resolved before publication. A TV must not silently recalculate an official row.
+
+### Iqamah
+
+Resolution order:
+
+1. exact-date override;
+2. highest-priority matching date-range + weekday rule;
+3. seasonal rule;
+4. base mosque rule;
+5. unset.
+
+Modes are `fixed_time` and `offset_after_adhan`. An unset iqamah stays unset; the client must not guess.
+
+### Next event
+
+The domain clock uses mosque timezone, not the device default. The sequence must explicitly define whether sunrise and optional events participate in the main countdown. After Isha, the next event may be next-day Fajr.
+
+## Time and timezone
+
+- Store IANA IDs, for example `Europe/Ulyanovsk`.
+- Convert `Instant` to mosque-local date/time at the domain boundary.
+- Detect but do not trust a wrong device timezone.
+- Detect implausible device clock by comparing with signed server time metadata when online; never abruptly alter OS time.
+- Schedule date rollover based on mosque timezone.
+- Cache at least 90 future days; annual coverage is preferred.
+
+## Assets and themes
+
+Built-in themes are packaged with the app. Remote custom images are content-addressed:
+
+```text
+asset_id -> sha256 -> byte length -> media type -> dimensions -> orientation
+```
+
+The TV downloads an asset to staging, validates type/dimensions/hash, then activates it. Keep a built-in fallback background. MVP excludes video backgrounds.
+
+## Autostart and kiosk modes
+
+- **Consumer/best-effort mode:** boot receiver, vendor setting guidance, keep-screen-on and process recovery. Behavior varies by OEM.
+- **Managed mode:** device owner/DPC or compatible EMM, app allowlisted for lock task and optionally configured as Home. This is the reliable digital-signage path.
+
+Treat the modes as separate capabilities and test matrices.
+
+## Failure behavior
+
+| Failure | Required behavior |
+|---|---|
+| no network | continue from local snapshot |
+| backend 5xx | backoff; keep current snapshot |
+| parser drift | block candidate; alert operator |
+| invalid signature/hash | reject before import |
+| new snapshot has gap | reject before activation |
+| device clock wrong | show diagnostic warning; resolve with mosque timezone |
+| corrupt active DB | attempt prior snapshot restore; show safe diagnostic state |
+| campaign image unavailable | hide campaign or use safe local placeholder |
+| source expired | warn; never silently switch provider |
+
+## Observability
+
+Backend metrics:
+
+- source retrieval success/latency/status;
+- parser version and schema-drift failures;
+- schedule coverage and diff magnitude;
+- approval age;
+- snapshot rollout/rollback;
+- devices by last-seen and active snapshot.
+
+TV diagnostics:
+
+- app/build version;
+- device model/OS;
+- mosque and timezone;
+- active/previous snapshot IDs;
+- signature key ID;
+- last successful sync;
+- coverage end and days remaining;
+- clock/timezone mismatch;
+- boot mode and overlay/device-owner status.
+
+Do not include precise user location, Wi-Fi SSID, tokens or full URLs containing secrets in diagnostic export.
+
+## Architectural decisions
+
+See:
+
+- [ADR 0001 — source authority and signed snapshots](docs/adr/0001-source-authority-and-signed-snapshots.md)
+- [ADR 0002 — TV offline-first](docs/adr/0002-tv-offline-first.md)

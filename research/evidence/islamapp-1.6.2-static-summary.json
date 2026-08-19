@@ -1,0 +1,84 @@
+{
+  "evidence_label": "CONFIRMED_STATIC",
+  "artifact": {
+    "display_name": "IslamApp for Mosque 1.6.2 (user-supplied APKPure copy)",
+    "package_name": "islam.islamapp.masjid",
+    "version_name": "1.6.2",
+    "version_code": 62,
+    "apk_sha256": "eeaf087c9ed2a5e69375e60466f3c893439d5eb11a14d96913e2e0a1337d899e",
+    "apk_bytes": 63615043,
+    "min_sdk": 28,
+    "target_sdk": 37,
+    "official_store_signature_compared": false
+  },
+  "tv_packaging": {
+    "leanback_launcher": true,
+    "touchscreen_required": false,
+    "boot_receiver_present": true,
+    "boot_actions_observed": [
+      "BOOT_COMPLETED",
+      "LOCKED_BOOT_COMPLETED",
+      "QUICKBOOT_POWERON"
+    ]
+  },
+  "prayer_parameter_snapshot": {
+    "bundled_snapshot_present": true,
+    "replaceable_app_private_snapshot_present_in_code_path": true,
+    "update_endpoint_host": "dl.islamapp.ru",
+    "periodic_repeat_days_observed": 6,
+    "update_timing_is_inexact": true,
+    "atomic_temp_then_replace_pattern": true,
+    "feature_count": 139,
+    "parameter_types": {
+      "Dynamic": 127,
+      "TimeTable": 12
+    },
+    "russia_feature_count": 66,
+    "geometry_types": {
+      "MultiPolygon": 74,
+      "GeometryCollection": 41,
+      "Polygon": 24
+    },
+    "timetable_day_count": 366,
+    "selection": "coordinates matched to geographic polygons; higher level/specific profile wins",
+    "fallback": "Muslim World League calculation profile when no matching profile is found",
+    "provenance_fields_observed_in_payload": []
+  },
+  "features": {
+    "iqamah_modes": [
+      "fixed_time",
+      "offset_after_adhan"
+    ],
+    "qr_generated_locally": true,
+    "qr_fields": [
+      "url",
+      "short_url",
+      "title",
+      "subtitle",
+      "always_show",
+      "show_with_prayer_times"
+    ],
+    "bundled_theme_pairs": 7,
+    "landscape_background_dimensions": "3840x2160",
+    "portrait_background_dimensions": "2160x3840",
+    "location_services": [
+      "OpenStreetMap Nominatim",
+      "Android Geocoder",
+      "Google/Huawei location libraries"
+    ]
+  },
+  "not_proven": [
+    "runtime execution of every observed code path",
+    "official contractual synchronization with DUM RF, DUM RT or Central DUM",
+    "license/provenance of embedded schedule rows",
+    "official-store APK certificate equality",
+    "exact behavior on a physical TV/box",
+    "ability to upload arbitrary custom backgrounds"
+  ],
+  "sanitization": {
+    "raw_apk_included": false,
+    "raw_or_decrypted_competitor_dataset_included": false,
+    "embedded_secret_included": false,
+    "proprietary_asset_included": false
+  }
+}

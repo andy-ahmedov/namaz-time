@@ -1,0 +1,100 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/source-record.schema.json",
+  "title": "Prayer-time source registry record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "source_id",
+    "kind",
+    "authority_name",
+    "geographic_scope",
+    "timezone_policy",
+    "retrieval",
+    "permission",
+    "validation",
+    "status"
+  ],
+  "properties": {
+    "source_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "kind": {
+      "enum": ["official_api", "official_file", "official_html", "mosque_manual", "approved_calculation"]
+    },
+    "authority_name": { "type": "string", "minLength": 1, "maxLength": 240 },
+    "authority_branch": { "type": "string", "maxLength": 240 },
+    "canonical_url": { "type": "string", "format": "uri" },
+    "contact": { "type": "string", "maxLength": 500 },
+    "geographic_scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["country_code", "description"],
+      "properties": {
+        "country_code": { "type": "string", "pattern": "^[A-Z]{2}$" },
+        "region_codes": { "type": "array", "uniqueItems": true, "items": { "type": "string", "maxLength": 64 } },
+        "locality_ids": { "type": "array", "uniqueItems": true, "items": { "type": "string", "maxLength": 128 } },
+        "description": { "type": "string", "minLength": 1, "maxLength": 1000 }
+      }
+    },
+    "timezone_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode"],
+      "properties": {
+        "mode": { "enum": ["fixed_iana", "per_locality_iana", "provided_by_source"] },
+        "iana_timezone": { "type": "string", "maxLength": 64 }
+      }
+    },
+    "retrieval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mode", "cadence", "stale_after_hours"],
+      "properties": {
+        "mode": { "enum": ["api", "file_download", "controlled_html_adapter", "manual_upload", "local_calculation"] },
+        "cadence": { "enum": ["on_change", "daily", "weekly", "monthly", "annual", "manual"] },
+        "stale_after_hours": { "type": "integer", "minimum": 1, "maximum": 17520 },
+        "honor_etag": { "type": "boolean" },
+        "honor_last_modified": { "type": "boolean" },
+        "rate_limit_note": { "type": "string", "maxLength": 1000 }
+      }
+    },
+    "permission": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status"],
+      "properties": {
+        "status": { "enum": ["unknown", "requested", "granted", "restricted", "denied"] },
+        "license_reference": { "type": "string", "maxLength": 1000 },
+        "attribution_text": { "type": "string", "maxLength": 1000 },
+        "evidence_reference": { "type": "string", "maxLength": 1000 },
+        "expires_on": { "type": "string", "format": "date" }
+      }
+    },
+    "calculation_profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "library": { "type": "string", "maxLength": 240 },
+        "library_version": { "type": "string", "maxLength": 64 },
+        "method": { "type": "string", "maxLength": 240 },
+        "madhab": { "type": "string", "maxLength": 64 },
+        "high_latitude_rule": { "type": "string", "maxLength": 128 },
+        "adjustments_minutes": {
+          "type": "object",
+          "additionalProperties": { "type": "integer", "minimum": -180, "maximum": 180 }
+        }
+      }
+    },
+    "validation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approval_required", "max_automatic_delta_minutes"],
+      "properties": {
+        "approval_required": { "type": "boolean" },
+        "max_automatic_delta_minutes": { "type": "integer", "minimum": 0, "maximum": 180 },
+        "minimum_coverage_days": { "type": "integer", "minimum": 1, "maximum": 732 },
+        "fixture_set": { "type": "string", "maxLength": 240 }
+      }
+    },
+    "status": { "enum": ["draft", "testing", "active", "suspended", "retired"] }
+  }
+}

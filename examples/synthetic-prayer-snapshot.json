@@ -1,0 +1,128 @@
+{
+  "schema_version": "1.0",
+  "snapshot_id": "synthetic-ulsk-demo-2026-08-v1",
+  "data_classification": "synthetic",
+  "generated_at": "2026-08-19T10:00:00Z",
+  "mosque": {
+    "id": "mosque-demo-ulsk",
+    "name": "Синтетическая демонстрационная мечеть",
+    "country_code": "RU",
+    "region": "Ульяновская область",
+    "locality": "Ульяновск",
+    "timezone": "Europe/Ulyanovsk"
+  },
+  "source": {
+    "source_id": "synthetic-fixture-v1",
+    "kind": "mosque_manual",
+    "authority_name": "Synthetic test fixture — not an official authority",
+    "retrieved_at": "2026-08-19T09:55:00Z",
+    "effective_from": "2026-08-19",
+    "effective_to": "2026-08-21",
+    "raw_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "parser_version": "synthetic/1",
+    "license_reference": "Synthetic fixture created for tests",
+    "attribution": "Not real prayer times; do not display in a mosque",
+    "approval": {
+      "status": "approved",
+      "approved_by": "test-suite",
+      "approved_at": "2026-08-19T09:59:00Z",
+      "note": "Schema and UI fixture only"
+    }
+  },
+  "coverage": {
+    "from": "2026-08-19",
+    "to": "2026-08-21"
+  },
+  "prayer_days": [
+    {
+      "date": "2026-08-19",
+      "fajr": "03:12",
+      "sunrise": "05:21",
+      "dhuhr": "12:08",
+      "asr": "16:47",
+      "maghrib": "18:53",
+      "isha": "21:01",
+      "flags": ["synthetic"]
+    },
+    {
+      "date": "2026-08-20",
+      "fajr": "03:14",
+      "sunrise": "05:23",
+      "dhuhr": "12:08",
+      "asr": "16:45",
+      "maghrib": "18:51",
+      "isha": "20:58",
+      "flags": ["synthetic"]
+    },
+    {
+      "date": "2026-08-21",
+      "fajr": "03:16",
+      "sunrise": "05:25",
+      "dhuhr": "12:08",
+      "asr": "16:43",
+      "maghrib": "18:48",
+      "isha": "20:55",
+      "flags": ["synthetic"]
+    }
+  ],
+  "iqamah_rules": [
+    {
+      "id": "iqamah-fajr-demo",
+      "prayer": "fajr",
+      "valid_from": "2026-08-19",
+      "valid_to": "2026-08-21",
+      "weekdays": [1, 2, 3, 4, 5, 6, 7],
+      "priority": 100,
+      "value": {
+        "mode": "offset_after_adhan",
+        "offset_minutes": 25
+      },
+      "reason": "Synthetic UI fixture"
+    },
+    {
+      "id": "iqamah-dhuhr-demo",
+      "prayer": "dhuhr",
+      "valid_from": "2026-08-19",
+      "valid_to": "2026-08-21",
+      "weekdays": [1, 2, 3, 4, 5, 6, 7],
+      "priority": 100,
+      "value": {
+        "mode": "fixed_time",
+        "fixed_time": "13:00"
+      },
+      "reason": "Synthetic UI fixture"
+    }
+  ],
+  "iqamah_date_overrides": [],
+  "jumuah_sessions": [
+    {
+      "id": "jumuah-demo-1",
+      "label": "Джума 1",
+      "khutbah_time": "12:45",
+      "salah_time": "13:00",
+      "valid_from": "2026-08-19",
+      "valid_to": "2026-08-21"
+    }
+  ],
+  "campaigns": [
+    {
+      "id": "campaign-demo",
+      "kind": "website",
+      "url": "https://example.invalid/mosque-demo",
+      "title": "Синтетическая QR-кампания",
+      "subtitle": "Только для проверки интерфейса",
+      "starts_at": "2026-08-19T00:00:00Z",
+      "ends_at": "2026-08-22T00:00:00Z",
+      "placement": "with_prayer_times"
+    }
+  ],
+  "theme": {
+    "theme_id": "builtin-default",
+    "overlay_opacity": 0.58
+  },
+  "integrity": {
+    "canonical_sha256": "0000000000000000000000000000000000000000000000000000000000000000",
+    "signing_key_id": "test-placeholder-key",
+    "signature_ed25519_base64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=="
+  }
+}

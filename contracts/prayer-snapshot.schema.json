@@ -1,0 +1,304 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/prayer-snapshot.schema.json",
+  "title": "Mosque Prayer TV signed snapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "snapshot_id",
+    "data_classification",
+    "generated_at",
+    "mosque",
+    "source",
+    "coverage",
+    "prayer_days",
+    "integrity"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "1.0"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128
+    },
+    "data_classification": {
+      "enum": ["production", "synthetic"]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "mosque": {
+      "$ref": "#/$defs/mosque"
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "coverage": {
+      "$ref": "#/$defs/dateRange"
+    },
+    "prayer_days": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/prayerDay"
+      }
+    },
+    "iqamah_rules": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/iqamahRule"
+      }
+    },
+    "iqamah_date_overrides": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/iqamahOverride"
+      }
+    },
+    "jumuah_sessions": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/jumuahSession"
+      }
+    },
+    "campaigns": {
+      "type": "array",
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/campaign"
+      }
+    },
+    "theme": {
+      "$ref": "#/$defs/theme"
+    },
+    "integrity": {
+      "$ref": "#/$defs/integrity"
+    }
+  },
+  "$defs": {
+    "localDate": {
+      "type": "string",
+      "format": "date"
+    },
+    "localTime": {
+      "type": "string",
+      "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$"
+    },
+    "prayer": {
+      "enum": ["fajr", "dhuhr", "asr", "maghrib", "isha"]
+    },
+    "dateRange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["from", "to"],
+      "properties": {
+        "from": { "$ref": "#/$defs/localDate" },
+        "to": { "$ref": "#/$defs/localDate" }
+      }
+    },
+    "mosque": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "timezone"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "name": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "country_code": { "type": "string", "pattern": "^[A-Z]{2}$" },
+        "region": { "type": "string", "maxLength": 240 },
+        "locality": { "type": "string", "maxLength": 240 },
+        "timezone": { "type": "string", "minLength": 3, "maxLength": 64 }
+      }
+    },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "approved_by", "approved_at"],
+      "properties": {
+        "status": { "const": "approved" },
+        "approved_by": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "approved_at": { "type": "string", "format": "date-time" },
+        "note": { "type": "string", "maxLength": 2000 }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "source_id",
+        "kind",
+        "authority_name",
+        "retrieved_at",
+        "raw_sha256",
+        "approval"
+      ],
+      "properties": {
+        "source_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "kind": {
+          "enum": [
+            "official_api",
+            "official_file",
+            "official_html",
+            "mosque_manual",
+            "approved_calculation"
+          ]
+        },
+        "authority_name": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "authority_branch": { "type": "string", "maxLength": 240 },
+        "canonical_url": { "type": "string", "format": "uri" },
+        "retrieved_at": { "type": "string", "format": "date-time" },
+        "effective_from": { "$ref": "#/$defs/localDate" },
+        "effective_to": { "$ref": "#/$defs/localDate" },
+        "raw_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "parser_version": { "type": "string", "maxLength": 128 },
+        "calculation_profile": { "type": "string", "maxLength": 240 },
+        "license_reference": { "type": "string", "maxLength": 1000 },
+        "attribution": { "type": "string", "maxLength": 1000 },
+        "approval": { "$ref": "#/$defs/approval" }
+      }
+    },
+    "prayerDay": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"],
+      "properties": {
+        "date": { "$ref": "#/$defs/localDate" },
+        "fajr": { "$ref": "#/$defs/localTime" },
+        "sunrise": { "$ref": "#/$defs/localTime" },
+        "dhuhr": { "$ref": "#/$defs/localTime" },
+        "asr": { "$ref": "#/$defs/localTime" },
+        "maghrib": { "$ref": "#/$defs/localTime" },
+        "isha": { "$ref": "#/$defs/localTime" },
+        "duha": { "$ref": "#/$defs/localTime" },
+        "middle_of_night": { "$ref": "#/$defs/localTime" },
+        "last_third_of_night": { "$ref": "#/$defs/localTime" },
+        "flags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "maxLength": 128 }
+        }
+      }
+    },
+    "iqamahValue": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "fixed_time"],
+          "properties": {
+            "mode": { "const": "fixed_time" },
+            "fixed_time": { "$ref": "#/$defs/localTime" }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["mode", "offset_minutes"],
+          "properties": {
+            "mode": { "const": "offset_after_adhan" },
+            "offset_minutes": { "type": "integer", "minimum": 0, "maximum": 240 }
+          }
+        }
+      ]
+    },
+    "iqamahRule": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "prayer", "valid_from", "valid_to", "weekdays", "priority", "value"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "prayer": { "$ref": "#/$defs/prayer" },
+        "valid_from": { "$ref": "#/$defs/localDate" },
+        "valid_to": { "$ref": "#/$defs/localDate" },
+        "weekdays": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": { "type": "integer", "minimum": 1, "maximum": 7 }
+        },
+        "priority": { "type": "integer", "minimum": 0, "maximum": 100000 },
+        "value": { "$ref": "#/$defs/iqamahValue" },
+        "reason": { "type": "string", "maxLength": 1000 }
+      }
+    },
+    "iqamahOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["date", "prayer", "value"],
+      "properties": {
+        "date": { "$ref": "#/$defs/localDate" },
+        "prayer": { "$ref": "#/$defs/prayer" },
+        "value": { "$ref": "#/$defs/iqamahValue" },
+        "reason": { "type": "string", "maxLength": 1000 }
+      }
+    },
+    "jumuahSession": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "label", "salah_time", "valid_from", "valid_to"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "label": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "khutbah_time": { "$ref": "#/$defs/localTime" },
+        "salah_time": { "$ref": "#/$defs/localTime" },
+        "valid_from": { "$ref": "#/$defs/localDate" },
+        "valid_to": { "$ref": "#/$defs/localDate" }
+      }
+    },
+    "campaign": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "kind", "url", "title", "starts_at", "ends_at", "placement"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "kind": { "enum": ["donation", "website", "telegram", "schedule", "contacts", "custom"] },
+        "url": { "type": "string", "format": "uri", "pattern": "^https://" },
+        "title": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "subtitle": { "type": "string", "maxLength": 500 },
+        "starts_at": { "type": "string", "format": "date-time" },
+        "ends_at": { "type": "string", "format": "date-time" },
+        "placement": { "enum": ["always", "with_prayer_times", "rotation"] }
+      }
+    },
+    "assetRef": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["asset_id", "sha256", "media_type", "byte_length", "width", "height"],
+      "properties": {
+        "asset_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "media_type": { "enum": ["image/jpeg", "image/png", "image/webp"] },
+        "byte_length": { "type": "integer", "minimum": 1, "maximum": 20971520 },
+        "width": { "type": "integer", "minimum": 320, "maximum": 7680 },
+        "height": { "type": "integer", "minimum": 180, "maximum": 7680 }
+      }
+    },
+    "theme": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["theme_id", "overlay_opacity"],
+      "properties": {
+        "theme_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "landscape_asset": { "$ref": "#/$defs/assetRef" },
+        "portrait_asset": { "$ref": "#/$defs/assetRef" },
+        "overlay_opacity": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["canonical_sha256", "signing_key_id", "signature_ed25519_base64"],
+      "properties": {
+        "canonical_sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "signing_key_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "signature_ed25519_base64": { "type": "string", "minLength": 80, "maxLength": 120 }
+      }
+    }
+  }
+}
