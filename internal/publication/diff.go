@@ -35,20 +35,21 @@ type PrayerDeltaSummary struct {
 }
 
 type DiffReport struct {
-	PreviousCandidateID       string                       `json:"previous_candidate_id,omitempty"`
-	CandidateID               string                       `json:"candidate_id"`
-	PreviousRawSHA256         string                       `json:"previous_raw_sha256,omitempty"`
-	CandidateRawSHA256        string                       `json:"candidate_raw_sha256"`
-	CandidateNormalizedSHA256 string                       `json:"candidate_normalized_sha256"`
-	PreviousParserVersion     string                       `json:"previous_parser_version,omitempty"`
-	ParserVersion             string                       `json:"parser_version"`
-	Coverage                  domain.DateRange             `json:"coverage"`
-	ChangedDays               int                          `json:"changed_days"`
-	Changes                   []DiffChange                 `json:"changes"`
-	MetadataChanges           []MetadataChange             `json:"metadata_changes"`
-	PrayerDeltas              []PrayerDeltaSummary         `json:"prayer_deltas"`
-	Warnings                  []domain.CandidateDiagnostic `json:"warnings"`
-	SHA256                    string                       `json:"sha256"`
+	PreviousCandidateID       string                            `json:"previous_candidate_id,omitempty"`
+	CandidateID               string                            `json:"candidate_id"`
+	PreviousRawSHA256         string                            `json:"previous_raw_sha256,omitempty"`
+	CandidateRawSHA256        string                            `json:"candidate_raw_sha256"`
+	CandidateNormalizedSHA256 string                            `json:"candidate_normalized_sha256"`
+	PreviousParserVersion     string                            `json:"previous_parser_version,omitempty"`
+	ParserVersion             string                            `json:"parser_version"`
+	Coverage                  domain.DateRange                  `json:"coverage"`
+	ChangedDays               int                               `json:"changed_days"`
+	Changes                   []DiffChange                      `json:"changes"`
+	MetadataChanges           []MetadataChange                  `json:"metadata_changes"`
+	PrayerDeltas              []PrayerDeltaSummary              `json:"prayer_deltas"`
+	SourceComponents          []domain.CandidateSourceComponent `json:"source_components,omitempty"`
+	Warnings                  []domain.CandidateDiagnostic      `json:"warnings"`
+	SHA256                    string                            `json:"sha256"`
 }
 
 func Diff(previous *domain.CandidateSchedule, current domain.CandidateSchedule) (DiffReport, error) {
@@ -61,6 +62,7 @@ func Diff(previous *domain.CandidateSchedule, current domain.CandidateSchedule) 
 		CandidateNormalizedSHA256: current.NormalizedSHA256,
 		ParserVersion:             current.ParserVersion,
 		Coverage:                  current.Coverage,
+		SourceComponents:          append([]domain.CandidateSourceComponent(nil), current.Components...),
 		Warnings:                  append([]domain.CandidateDiagnostic(nil), current.Validation.Warnings...),
 	}
 	var beforeDays []domain.CandidatePrayerDay

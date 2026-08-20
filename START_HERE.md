@@ -93,10 +93,12 @@ T015 добавляет безопасный current-state support bundle без
 инвариантов; это не утверждение production RPO/RTO. T009 использует только инъецируемый
 public-key trust store и test fixture: production key/credentials в APK и Git
 не добавлены. Локальная источниковая часть T010 завершена на предоставленном
-официальном годовом PDF Ульяновска: raw SHA-256, полный 2026 год, сезонные
-переходы и августовская сверка проходят через candidate/diff pipeline без
-автоодобрения. Production-публикация остаётся заблокирована на D-002, D-009,
-D-013 и отдельной физической TV/ADB canary/rollback-приёмке.
+официальном годовом PDF Ульяновска: raw SHA-256, полный 2026 год и сезонные
+переходы проходят через candidate/diff pipeline. D-002 теперь явно использует
+PDF как baseline и фото как приоритетный источник полей августа; immutable
+effective policy сохраняет оба raw provenance/hash и не автоодобряет результат.
+Production-публикация остаётся заблокирована на named religious approval,
+D-009, D-013 и отдельной физической TV/ADB canary/rollback-приёмке.
 
 ## 5. Запрет на гигантскую первую задачу
 

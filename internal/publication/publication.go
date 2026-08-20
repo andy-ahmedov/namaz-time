@@ -161,16 +161,8 @@ func validatePublishRequest(request PublishRequest) error {
 func buildSnapshot(request PublishRequest) (domain.Snapshot, error) {
 	candidate := request.Candidate
 	prayerDays := make([]domain.PrayerDay, len(candidate.Days))
-	overrides := make([]domain.IqamahOverride, 0)
 	for index, day := range candidate.Days {
 		prayerDays[index] = day.PrayerDay
-		if day.DhuhrCongregation != "" {
-			overrides = append(overrides, domain.IqamahOverride{
-				Date: day.Date, Prayer: "dhuhr",
-				Value:  domain.IqamahValue{Mode: "fixed_time", FixedTime: day.DhuhrCongregation},
-				Reason: "Collective-in-mosques value preserved from approved manual source",
-			})
-		}
 	}
 	return domain.Snapshot{
 		SchemaVersion:      "1.0",
@@ -197,9 +189,8 @@ func buildSnapshot(request PublishRequest) (domain.Snapshot, error) {
 				ApprovedAt: request.Approval.ApprovedAt, Scope: request.Approval.Scope, Note: request.Approval.Reason,
 			},
 		},
-		Coverage:        candidate.Coverage,
-		PrayerDays:      prayerDays,
-		IqamahOverrides: overrides,
+		Coverage:   candidate.Coverage,
+		PrayerDays: prayerDays,
 		Integrity: domain.IntegrityMetadata{
 			CanonicalSHA256:        "0000000000000000000000000000000000000000000000000000000000000000",
 			SigningKeyID:           request.SigningKeyID,

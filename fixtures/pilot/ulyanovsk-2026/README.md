@@ -18,9 +18,10 @@ supplied PDF. This label does not establish mosque approval or TV runtime.
 - PDF metadata creation time: `2025-12-23T17:11:55+03:00`.
 - Printed canonical site: `www.rdumul.ru`; printed Telegram: `dumul73`.
 - Project-use permission: confirmed by the product owner on 2026-08-20.
-- Religious approval: D-002 is still open. This fixture can produce only a
-  `needs_review` candidate and must not be called the pilot mosque's approved
-  schedule.
+- Source precedence: D-002 is accepted by the product owner. This PDF is the
+  2026 baseline, while the retained August photo has priority for every field
+  it supplies throughout August. A named religious approval is still absent,
+  so candidates remain `needs_review` and must not be called approved/official.
 
 ## Controlled transcription
 
@@ -30,9 +31,9 @@ collective Dhuhr in mosques, Asr, Maghrib, Isha and source markers. The PDF has
 no daily Hijri column, so no Hijri values are invented. Its SHA-256 is
 `41b44173e99534ffc7d6a1ee7b429f98a95ca863bb29d2971b57e8693dd51538`.
 The resulting candidate has normalized SHA-256
-`99a9c1946a21105413ff8fef4ca6d7637908678f3f89e079eb82f473193ae7c0`;
+`867862c453fc167a9c9b17240dfb4c9a5be0822882c3dfbc68e8c454a4c7efb2`;
 its first-import diff has SHA-256
-`3e9164402713e6a2773d0cec64a160a04ab3c16b4d5251ffd669f30113461a8e`.
+`41e63772fb6d8e96d41caf8fd88a729087e04a5dfc0bbdebc30a92c42c1339db`.
 These fingerprints are regression-pinned and must be rebound to a named
 approval if any source or normalization field changes.
 
@@ -75,6 +76,40 @@ day. They disagree on:
 - transition footnote wording: monthly photo says “Начало”, annual PDF says
   “Завершение”.
 
-`august-reconciliation.csv` stores every numeric disagreement. Cause and source
-precedence remain `UNKNOWN`; values are not silently corrected. A named D-002
-approver must resolve the disagreement before production publication.
+`august-reconciliation.csv` stores every numeric disagreement without changing
+either observed value. D-002 resolves selection deterministically in favor of
+the monthly photo; every row is marked `resolved_monthly_photo_precedence`.
+The resolved ledger SHA-256 is
+`2b7a2f73e6752abaed844bfb0b2985f89a0c77def91421164b7bff252a0c4370`.
+The wording difference is likewise retained as evidence, with the monthly
+source governing effective August flags. This selection is not an iqamah
+decision and is not a religious approval.
+
+## Effective schedule
+
+`effective-policy.json` is the immutable product-policy artifact. Its SHA-256
+is `c7d95bbc900a683b3be4fa66f6d1a8237ccf3e882452674a2cdd946c800d935a`.
+It binds both component candidate IDs, raw SHA-256 values, transcription
+SHA-256 values, normalized SHA-256 values, parser versions, the bounded August
+range and the exact fields supplied by the photo.
+
+`effective-schedule/v1` applies the photo's available fields for all 31 August
+days and leaves other dates on the PDF baseline. The photo has no
+`recommended_fajr` column, so the PDF's printed al-Isfar value remains with
+explicit baseline provenance rather than being invented or erased. Two raw
+`requires_review_*` flags whose source conflict is now resolved are rewritten
+only in derived output to bounded `source_*_preserved_by_monthly_precedence`
+evidence. The raw CSV and image are unchanged.
+
+Deterministic effective fingerprints:
+
+- derived-row transcription SHA-256:
+  `94ef664fafa69192992b7bc5b405baa6678d5a49c8f6b1c770c0281760d60e4f`;
+- normalized candidate SHA-256:
+  `e7bcc16ad55d00f136cbfc5629e2680babf3f71b331dd33ca4f6e1b1207dbf77`;
+- baseline-to-effective diff SHA-256:
+  `de139a27b2f0f5b42253783f5a4aeca11d2f643bee572d860e2c4c24564d7e4e`.
+
+The effective candidate remains `needs_review` for a named approval and retains
+the independent `mosque_iqamah_approval_required` warning. Candidate collective
+Dhuhr is never promoted to TV iqamah by ordinary schedule approval.

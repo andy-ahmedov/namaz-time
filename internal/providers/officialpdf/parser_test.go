@@ -21,7 +21,7 @@ import (
 const (
 	annualRawSHA256           = "82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21"
 	annualTranscriptionSHA256 = "41b44173e99534ffc7d6a1ee7b429f98a95ca863bb29d2971b57e8693dd51538"
-	annualNormalizedSHA256    = "99a9c1946a21105413ff8fef4ca6d7637908678f3f89e079eb82f473193ae7c0"
+	annualNormalizedSHA256    = "867862c453fc167a9c9b17240dfb4c9a5be0822882c3dfbc68e8c454a4c7efb2"
 )
 
 func TestPilotAnnualFixturePreservesFullYearProvenanceAndSeasonalRules(t *testing.T) {
@@ -336,7 +336,7 @@ func TestAugustReconciliationRecordsOnlyObservedSourceDisagreements(t *testing.T
 	}
 	var want []mismatch
 	for _, record := range records[1:] {
-		if len(record) != 5 || record[4] != "requires_approver_resolution" {
+		if len(record) != 5 || record[4] != "resolved_monthly_photo_precedence" {
 			t.Fatalf("invalid reconciliation row %#v", record)
 		}
 		want = append(want, mismatch{record[0], record[1], record[2], record[3]})

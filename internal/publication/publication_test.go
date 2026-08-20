@@ -155,6 +155,38 @@ func TestSignedSnapshotIsDeterministicAndRejectsTamperOrUnknownKey(t *testing.T)
 	}
 }
 
+func TestPublicationDoesNotPromoteCollectiveDhuhrWithoutMosqueIqamahDecision(t *testing.T) {
+	t.Parallel()
+
+	candidate := candidate()
+	candidate.Days[0].DhuhrCongregation = "12:30"
+	if err := domain.FinalizeCandidateIdentity(&candidate); err != nil {
+		t.Fatal(err)
+	}
+	diff, err := publication.Diff(nil, candidate)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := publication.Publish(
+		publishRequest(candidate, diff, approvalFor(candidate, diff)),
+		privateKey,
+	)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(result.Snapshot.IqamahOverrides) != 0 {
+		t.Fatalf("collective Dhuhr was promoted to mosque iqamah: %#v", result.Snapshot.IqamahOverrides)
+	}
+	if result.Snapshot.PrayerDays[0].Dhuhr != candidate.Days[0].Dhuhr {
+		t.Fatalf("Dhuhr onset changed: %#v", result.Snapshot.PrayerDays[0])
+	}
+}
+
 func TestVerifyRejectsMalformedUTF8EvenWhenReplacementRuneWasSigned(t *testing.T) {
 	t.Parallel()
 

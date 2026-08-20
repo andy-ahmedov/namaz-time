@@ -86,9 +86,61 @@ func TestInspectAnnualOfficialPDFFixtureProducesFullYearUnapprovedCandidate(t *t
 	}
 }
 
+func TestInspectEffectivePilotScheduleAppliesAugustPhotoPrecedence(t *testing.T) {
+	t.Parallel()
+
+	workingDirectory, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	root := filepath.Join(workingDirectory, "..", "..", "fixtures", "pilot")
+	annualDir := filepath.Join(root, "ulyanovsk-2026")
+	monthlyDir := filepath.Join(root, "ulyanovsk-2026-08")
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+
+	if code := run([]string{
+		"inspect-effective", "--baseline-dir", annualDir, "--override-dir", monthlyDir,
+	}, &stdout, &stderr); code != 0 {
+		t.Fatalf("run() = %d, stderr = %s", code, stderr.String())
+	}
+	var result inspection
+	if err := json.Unmarshal(stdout.Bytes(), &result); err != nil {
+		t.Fatalf("decode output: %v", err)
+	}
+	if result.Candidate.Status != domain.CandidateNeedsReview || result.Candidate.ParserVersion != "effective-schedule/v1" || len(result.Candidate.Days) != 365 {
+		t.Fatalf("candidate = %#v", result.Candidate)
+	}
+	if result.Candidate.Artifact.SHA256 != effectivePolicySHA256ForCLI || len(result.Candidate.Components) != 2 {
+		t.Fatalf("effective provenance = %#v", result.Candidate)
+	}
+	if len(result.Diff.SourceComponents) != 2 || result.Diff.SourceComponents[0].RawArtifact.SHA256 != annualRawSHA256ForCLI ||
+		result.Diff.SourceComponents[1].RawArtifact.SHA256 != pilotRawSHA256ForCLI {
+		t.Fatalf("diff source components = %#v", result.Diff.SourceComponents)
+	}
+	if got := result.Candidate.Days[235]; got.Date != "2026-08-24" || got.Dhuhr != "12:48" || got.DhuhrCongregation != "13:53" {
+		t.Fatalf("August 24 effective row = %#v", got)
+	}
+	if result.Diff.ChangedDays != 31 || result.Diff.SHA256 == "" {
+		t.Fatalf("effective diff = %#v", result.Diff)
+	}
+	if result.Candidate.NormalizedSHA256 != effectiveNormalizedSHA256ForCLI || result.Diff.SHA256 != effectiveDiffSHA256ForCLI {
+		t.Fatalf("unexpected deterministic effective fingerprints: candidate=%s diff=%s", result.Candidate.NormalizedSHA256, result.Diff.SHA256)
+	}
+	if strings.Contains(stdout.String(), `requires_review_collective_outlier`) || strings.Contains(stdout.String(), `requires_review_dhuhr_source_value`) {
+		t.Fatal("resolved source conflicts remain in effective inspection")
+	}
+	if strings.Contains(stdout.String(), `"status": "approved"`) {
+		t.Fatal("effective inspection must not manufacture approval")
+	}
+}
+
 const pilotRawSHA256ForCLI = "11b4aaaa4765b486103e6532fb560bde9dec6617215fad9c462bd9253cba993c"
-const pilotNormalizedSHA256ForCLI = "b050b6d6f0f567f018112883b80a78146ae42de282ba3f2fa4287963658f705b"
-const pilotDiffSHA256ForCLI = "e6737632e901576039d4728c3d0919e2ca6be83caad6cec519cbab682d39fd76"
+const pilotNormalizedSHA256ForCLI = "85bdfc297bcd5168b0e1f6a0c89012eb4a753294a115197ab1a0892ed97f5c89"
+const pilotDiffSHA256ForCLI = "812a9908a7cc0c067fc6a117f567c9ff4276050344b52283bf2bc8ec1ea6ecfd"
 const annualRawSHA256ForCLI = "82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21"
-const annualNormalizedSHA256ForCLI = "99a9c1946a21105413ff8fef4ca6d7637908678f3f89e079eb82f473193ae7c0"
-const annualDiffSHA256ForCLI = "3e9164402713e6a2773d0cec64a160a04ab3c16b4d5251ffd669f30113461a8e"
+const annualNormalizedSHA256ForCLI = "867862c453fc167a9c9b17240dfb4c9a5be0822882c3dfbc68e8c454a4c7efb2"
+const annualDiffSHA256ForCLI = "41e63772fb6d8e96d41caf8fd88a729087e04a5dfc0bbdebc30a92c42c1339db"
+const effectivePolicySHA256ForCLI = "c7d95bbc900a683b3be4fa66f6d1a8237ccf3e882452674a2cdd946c800d935a"
+const effectiveNormalizedSHA256ForCLI = "e7bcc16ad55d00f136cbfc5629e2680babf3f71b331dd33ca4f6e1b1207dbf77"
+const effectiveDiffSHA256ForCLI = "de139a27b2f0f5b42253783f5a4aeca11d2f643bee572d860e2c4c24564d7e4e"

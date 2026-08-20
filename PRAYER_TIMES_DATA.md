@@ -134,6 +134,12 @@ Block publication on:
 - unresolved parser warnings;
 - unapproved fallback/provider substitution.
 
+A policy-resolved source precedence is not a silent fallback. It must be an
+immutable effective-policy artifact binding exact component candidate/raw/
+transcription/normalized/parser identities, bounded dates and applied fields.
+The current pilot uses the annual PDF as baseline and the retained photo for
+fields present in August 2026. Both raw sources remain unchanged.
+
 Flag for review:
 
 - minute delta above per-prayer threshold;

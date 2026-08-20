@@ -7,7 +7,7 @@ Record product decisions here before converting stable architecture choices into
 | ID | Decision | Status | Owner | Needed by | Notes |
 |---|---|---|---|---|---|
 | D-001 | First pilot mosque and locality | ACCEPTED | Product owner | before T008/T010 | Second Cathedral Mosque of Ulyanovsk, 18A Dzerzhinsky Street, Ulyanovsk; confirmed 2026-08-20 |
-| D-002 | Canonical prayer-time authority/source | OPEN | Mosque approver | before real publication | supplied RDUM Ulyanovsk annual 2026 PDF is the primary pilot candidate source; it conflicts with the earlier August photo on Dhuhr Aug 20–30, Aug 24 collective time and transition wording, so a named religious approver must resolve exact hashes/diff before pilot publication |
+| D-002 | Canonical prayer-time authority/source | ACCEPTED | Product owner | before real publication | 2026 baseline is the retained RDUM Ulyanovsk annual PDF; for every field present in the retained August 2026 photo, the photo has priority throughout August. This source-selection decision does not replace a named religious approval or settle D-009. |
 | D-003 | Written permission and attribution | ACCEPTED | Product owner/source | before real data commit/publication | product owner confirmed project use on 2026-08-20; preserve the exact raw SHA-256 and printed attribution |
 | D-004 | Pilot TV/box model and Android version | OPEN | Installer | before performance/autostart promises | T001 compiles with minSdk 28 / targetSdk 35; this is a scaffold baseline, not a hardware support promise |
 | D-005 | Product name and Android application ID | OPEN | Product owner | before distributable build | T003 deliberately retains the T001 placeholder: `Namaz Time` / `com.example.namaztime.tv` |
@@ -125,9 +125,10 @@ These are proposals until accepted by the product owner:
 - `PROPOSAL` — snapshot signing follows ADR 0003 canonical JSON plus Ed25519;
   only authenticated bytes or the explicitly synthetic bundled fixture can
   reach Room activation.
-- `UNKNOWN` — D-002 remains open. The pilot candidate is `needs_review` and is
-  not labeled approved/official; the `13:53` collective value, starred Fajr/Isha
-  values and 31 August Dhuhr value remain verbatim review evidence.
+- `PROPOSAL` — the raw monthly candidate remains `needs_review` and is not
+  labeled approved/official. D-002 now selects it as the August override input;
+  the `13:53` collective value, starred Fajr/Isha values and 31 August Dhuhr
+  value remain verbatim source evidence rather than invented corrections.
 - `UNKNOWN` — D-013 remains open. The committed key is public and test-only;
   its private half was discarded and no production trust anchor was selected.
 
@@ -144,12 +145,24 @@ These are proposals until accepted by the product owner:
 - `PROPOSAL` — `ulyanovsk-official-pdf-csv/v1` is a source-specific,
   fail-closed controlled-transcription adapter. Al-Isfar and collective Dhuhr
   remain candidate review metadata; absent daily Hijri dates remain absent.
-- `UNKNOWN` — the annual PDF and monthly August photo disagree on Dhuhr onset
-  for Aug 20–30, the Aug 24 collective value and transition-footnote wording.
-  No precedence/correction is inferred; D-002 must resolve the exact diff.
+- `PROPOSAL` — `effective-schedule/v1` binds an immutable policy artifact plus
+  both component candidate/raw/transcription/normalized/parser identities. It
+  uses the PDF as the 2026 baseline and the photo for fields present throughout
+  August; absent monthly al-Isfar values remain explicitly sourced from the PDF.
+  Policy SHA-256 is
+  `c7d95bbc900a683b3be4fa66f6d1a8237ccf3e882452674a2cdd946c800d935a`;
+  effective normalized SHA-256 is
+  `e7bcc16ad55d00f136cbfc5629e2680babf3f71b331dd33ca4f6e1b1207dbf77`.
+- `PROPOSAL` — the twelve numeric source disagreements remain unchanged in the
+  reconciliation ledger but are marked `resolved_monthly_photo_precedence`.
+  Only the two exact source-conflict review flags are rewritten into preserved
+  `source_*` evidence flags in effective output.
 - `UNKNOWN` — D-009 must decide whether any source-wide collective Dhuhr value
-  is the pilot mosque's iqamah. D-013 and physical canary/rollback evidence
-  still block production publication and activation.
+  is the pilot mosque's iqamah. Publication deliberately omits candidate
+  collective values from TV iqamah overrides without that distinct decision.
+- `UNKNOWN` — a named religious approval binding the effective candidate/diff
+  and warnings is still absent. D-013 and physical canary/rollback evidence
+  also block production publication and activation at this checkpoint.
 
 ## T009 device-sync record
 

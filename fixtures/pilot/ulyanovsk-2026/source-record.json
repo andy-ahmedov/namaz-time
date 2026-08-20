@@ -9,7 +9,7 @@
     "country_code": "RU",
     "region_codes": ["RU-ULY"],
     "locality_ids": ["ulyanovsk"],
-    "description": "г. Ульяновск; применение как канонического расписания Второй Соборной мечети требует решения D-002"
+    "description": "г. Ульяновск; D-002 selects this annual PDF as the 2026 baseline, while named religious approval remains required"
   },
   "timezone_policy": {
     "mode": "fixed_iana",

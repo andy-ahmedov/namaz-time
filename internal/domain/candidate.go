@@ -60,18 +60,35 @@ type CandidateValidationReport struct {
 }
 
 type CandidateSchedule struct {
-	ID                  string                    `json:"candidate_id"`
-	DataClassification  DataClassification        `json:"data_classification"`
-	Mosque              Mosque                    `json:"mosque"`
-	Source              CandidateSource           `json:"source"`
-	Artifact            RawArtifact               `json:"artifact"`
-	TranscriptionSHA256 string                    `json:"transcription_sha256"`
-	NormalizedSHA256    string                    `json:"normalized_sha256"`
-	ParserVersion       string                    `json:"parser_version"`
-	Coverage            DateRange                 `json:"coverage"`
-	Days                []CandidatePrayerDay      `json:"days"`
-	Status              CandidateStatus           `json:"status"`
-	Validation          CandidateValidationReport `json:"validation"`
+	ID                  string                     `json:"candidate_id"`
+	DataClassification  DataClassification         `json:"data_classification"`
+	Mosque              Mosque                     `json:"mosque"`
+	Source              CandidateSource            `json:"source"`
+	Artifact            RawArtifact                `json:"artifact"`
+	TranscriptionSHA256 string                     `json:"transcription_sha256"`
+	NormalizedSHA256    string                     `json:"normalized_sha256"`
+	ParserVersion       string                     `json:"parser_version"`
+	Coverage            DateRange                  `json:"coverage"`
+	Days                []CandidatePrayerDay       `json:"days"`
+	Components          []CandidateSourceComponent `json:"source_components,omitempty"`
+	Status              CandidateStatus            `json:"status"`
+	Validation          CandidateValidationReport  `json:"validation"`
+}
+
+// CandidateSourceComponent preserves every immutable input that contributed
+// fields to a composed candidate. The effective policy artifact remains the
+// candidate's primary Artifact; these component bindings make the derived
+// schedule traceable to each retained raw source without mutating any input.
+type CandidateSourceComponent struct {
+	Role                string          `json:"role"`
+	CandidateID         string          `json:"candidate_id"`
+	Source              CandidateSource `json:"source"`
+	RawArtifact         RawArtifact     `json:"raw_artifact"`
+	TranscriptionSHA256 string          `json:"transcription_sha256"`
+	NormalizedSHA256    string          `json:"normalized_sha256"`
+	ParserVersion       string          `json:"parser_version"`
+	Effective           DateRange       `json:"effective"`
+	AppliedFields       []string        `json:"applied_fields"`
 }
 
 type ApprovalDecisionValue string
@@ -112,6 +129,7 @@ func CandidateNormalizedSHA256(candidate CandidateSchedule) (string, error) {
 		ParserVersion       string
 		Coverage            DateRange
 		Days                []CandidatePrayerDay
+		Components          []CandidateSourceComponent `json:"Components,omitempty"`
 	}{
 		candidate.DataClassification,
 		candidate.Mosque,
@@ -121,6 +139,7 @@ func CandidateNormalizedSHA256(candidate CandidateSchedule) (string, error) {
 		candidate.ParserVersion,
 		candidate.Coverage,
 		candidate.Days,
+		candidate.Components,
 	}
 	data, err := json.Marshal(projection)
 	if err != nil {

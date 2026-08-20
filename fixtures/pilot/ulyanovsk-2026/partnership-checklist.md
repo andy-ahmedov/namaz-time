@@ -15,7 +15,7 @@ Second Cathedral Mosque has approved the schedule.
 | Adhan vs congregation semantics | `CONFIRMED_PUBLIC` | Introductory text separately defines onset and recommended collective Dhuhr; D-009 still blocks treating it as pilot iqamah. |
 | Madhab / regional rules | `CONFIRMED_PUBLIC` | Hanafi Asr and Astrakhan-analogy summer Fajr/Isha rules are printed and regression-tested. |
 | Ramadan / exceptional-day policy | `UNKNOWN` | Holidays are listed, but no separate Ramadan override workflow is specified. |
-| Final correction authority | `UNKNOWN` | Requires named D-002 approver. |
+| Final correction authority | `UNKNOWN` | Product owner fixed source precedence, but a named religious approver/correction contact is still required. |
 
 ## Data access and permission
 
@@ -39,13 +39,13 @@ Second Cathedral Mosque has approved the schedule.
 | Full-year coverage | `CONFIRMED_PUBLIC` | 2026-01-01 through 2026-12-31, 365 rows. |
 | Manual comparison | `CONFIRMED_PUBLIC` | All 12 monthly pages reviewed; all 31 August rows compared to the earlier photo. |
 | Seasonal transitions | `CONFIRMED_PUBLIC` | May 10→11 start and Aug 2→3 completion retained as four exact flags. |
-| Alternate-source differences | `UNKNOWN` | Twelve numeric August conflicts and one wording conflict recorded; cause/precedence needs D-002. |
+| Alternate-source differences | `PROPOSAL` | Twelve numeric differences and one wording difference remain recorded; D-002 selects the monthly photo for effective August fields through the hash-bound policy artifact. |
 | Stale threshold | `PROPOSAL` | Source record uses annual/8760 hours; authority agreement is not yet recorded. |
 
 ## Approval and publication
 
-All items remain `BLOCKED`: no named D-002 approver/actor, no approval binding
-the exact raw/transcription/normalized/diff hashes and warnings, no approved
-source label/fallback/correction procedure, no D-013 production signer/trust,
-and no physical canary/rollback drill. The CLI therefore exposes inspection
-only and the candidate remains `needs_review`.
+Production publication remains `BLOCKED`: no named religious approver/actor or
+approval binds the exact effective policy/component/transcription/normalized/
+diff hashes and warnings; D-009, correction/fallback policy, D-013 production
+signer/trust and the physical canary/rollback drill also remain. The CLI exposes
+raw and effective inspection only; every candidate remains `needs_review`.

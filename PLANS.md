@@ -40,16 +40,20 @@ Detailed prompts: [CODEX_TASKS.md](CODEX_TASKS.md).
 | Task | Status | Acceptance / evidence |
 |---|---|---|
 | T009 manifest/snapshot sync | DONE | explicit ephemeral one-use pairing fixture and scoped bearer API; duplicate credential rejection; signed registry and paired-mosque binding; same-origin canonical snapshot URLs; manifest/raw snapshot ETag/304 and Digest; Android AES-GCM/Keystore provisioning, provisioning-scoped durable stage/quarantine/checkpoint, signature/schema/domain/manifest/mosque binding, atomic activation and authenticated rollback; 401/404/500/timeout/tamper/re-pair plus file-backed import/post-commit interruption recovery tests pass |
-| T010 first real source onboarding | BLOCKED | local source slice DONE: authorized raw annual PDF/hash, strict `official_file` controlled transcription, 365-day candidate/diff, seasonal-rule flags and 31-day August reconciliation; production approval/publication remains blocked on named D-002/D-009 decisions, D-013 signer/trust and physical canary/rollback |
+| T010 first real source onboarding | BLOCKED | local source/effective slice DONE: immutable annual PDF baseline plus August photo override policy, both raw/component hash chains, deterministic 365-day effective candidate and 31-day diff; production publication remains blocked on named religious approval, D-009, D-013 signer/trust and physical canary/rollback |
 
 T010's locally executable source slice is complete. The retained PDF SHA-256 is
 `82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21`;
-the strict parser produces a 2026-01-01→2026-12-31 `needs_review` candidate
-with zero blocking validation errors. It preserves al-Isfar as source-only
-metadata, keeps collective Dhuhr separate, binds the printed May/August
-Fajr/Isha transitions and records all twelve numeric August disagreements.
-This does not manufacture the missing approver, production signature or TV
-canary evidence, so the combined T010 task remains `BLOCKED` rather than DONE.
+the strict parser produces a 2026-01-01→2026-12-31 raw `needs_review`
+candidate with zero blocking validation errors. D-002 now binds the PDF as
+baseline and the photo as the priority source for fields present in August.
+`effective-schedule/v1` preserves both raw/component hash chains, retains PDF
+al-Isfar where the photo has no value, keeps collective Dhuhr separate and
+produces normalized SHA-256
+`e7bcc16ad55d00f136cbfc5629e2680babf3f71b331dd33ca4f6e1b1207dbf77`.
+All twelve numeric differences remain visible but policy-resolved. This does
+not manufacture the missing named approval, D-009 decision, production
+signature or TV canary evidence, so T010 remains `BLOCKED` rather than DONE.
 
 T009 completes the locally testable delivery half of the Phase 2 invariant. The
 runtime command refuses to embed fixture credentials or trust keys, requires
@@ -142,7 +146,7 @@ Do not begin until the first pilot is stable.
 - T003 retains the non-production product name/application ID while D-005 is open;
 - T003 implements only the reversible local-first shell while D-008 is open;
 - Room currently uses kapt because Room 2.8.4 KSP processing is incompatible with the scaffold's Kotlin 2.0.21 processor classpath; revisit with a coordinated Kotlin/AGP upgrade;
-- pilot source image is selected and permission is confirmed, but the named mosque/authority prayer-time approver remains open under D-002;
+- pilot source precedence is accepted under D-002, but the named mosque/authority prayer-time approver and an approval binding the effective hashes/warnings remain absent;
 - the official 2026 annual PDF now supplies full-year pilot coverage through T010; its daily Hijri values are absent and therefore remain unset rather than invented;
 - no physical Android TV/box available in the analysis environment;
 - abrupt OS process-kill/journal-recovery remains a future instrumentation/ADB
@@ -155,12 +159,12 @@ Do not begin until the first pilot is stable.
 - D-013 still requires a production signer/KMS, public-key distribution,
   rotation and revocation policy. T008 commits only a public test fixture; its
   ephemeral private key was discarded.
-- local Phase 1/T009 and T010 source onboarding are complete, but a real pilot
-  publication remains intentionally impossible until D-002 resolves the exact
-  annual raw/transcription/diff hashes, warnings and August source conflicts,
-  D-009 decides whether any printed collective value is pilot iqamah, D-013
-  provisions production trust, and a physical canary/rollback drill is
-  performed. T010 therefore remains blocked only at those external gates.
+- local Phase 1/T009 and T010 source/effective onboarding are complete. D-002
+  resolves August precedence through an exact hash-bound policy, but a real
+  pilot publication remains intentionally impossible until a named religious
+  approval binds the effective candidate/diff/warnings, D-009 decides whether
+  any printed collective value is pilot iqamah, D-013 provisions production
+  trust, and a physical canary/rollback drill is performed.
 - T009 intentionally rejects non-empty remote asset manifests; custom asset
   staging/type/dimension activation requires a separately bounded task.
 - T020 preserves clock health as `unknown`/healthy/mismatch locally, while the

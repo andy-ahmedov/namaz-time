@@ -13,8 +13,9 @@ image. This does not establish runtime behavior or religious approval.
   represented as the publisher's publication time.
 - Printed attribution: `rdumul`, `rdumul.ru`, `dum.ul`, `dumul`.
 - Permission: project use confirmed by the product owner on 2026-08-20 (D-003).
-- Approval: D-002 remains open. This fixture may produce only a
-  `needs_review` candidate; it must not produce a production snapshot yet.
+- Source precedence: D-002 selects this retained photo over the annual PDF for
+  fields it contains throughout August. The raw fixture still produces only a
+  `needs_review` candidate; a named religious approval is not manufactured.
 
 `schedule.csv` is a human transcription used by the deterministic manual CSV
 parser. The source's zenith and collective-in-mosques columns remain separate.
@@ -31,13 +32,15 @@ Expected `manual-csv/v1` inspection fingerprints:
 - transcription SHA-256:
   `29c2f62f8eb9da8f984f4e26e81325033bef1499175e24512e569fe534d2f745`;
 - normalized SHA-256:
-  `b050b6d6f0f567f018112883b80a78146ae42de282ba3f2fa4287963658f705b`;
+  `85bdfc297bcd5168b0e1f6a0c89012eb4a753294a115197ab1a0892ed97f5c89`;
 - initial diff SHA-256:
-  `e6737632e901576039d4728c3d0919e2ca6be83caad6cec519cbab682d39fd76`;
+  `812a9908a7cc0c067fc6a117f567c9ff4276050344b52283bf2bc8ec1ea6ecfd`;
 - status `needs_review`, 31 changed days, zero blocking errors.
 
 The fixture covers one month only. T010 now retains the separate annual source
 at `../ulyanovsk-2026/`; its August overlap disagrees with this photo on Dhuhr
 onset for Aug 20–30, the Aug 24 collective value and transition-footnote
-wording. Those conflicts remain unresolved review evidence rather than edits
-to this earlier transcription.
+wording. The immutable values remain source-difference evidence. The effective
+pipeline resolves selection in favor of this photo through
+`../ulyanovsk-2026/effective-policy.json`; neither raw source is edited. This
+does not establish collective Dhuhr as mosque-local iqamah.

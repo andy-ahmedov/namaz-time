@@ -8,7 +8,7 @@
     "country_code": "RU",
     "region_codes": ["RU-ULY"],
     "locality_ids": ["ulyanovsk"],
-    "description": "August 2026 schedule printed for mosques in Ulyanovsk; adoption by the pilot mosque still requires D-002 approval"
+    "description": "August 2026 schedule printed for mosques in Ulyanovsk; D-002 gives this source field priority for August, while named religious approval remains required"
   },
   "timezone_policy": {
     "mode": "fixed_iana",

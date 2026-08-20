@@ -215,12 +215,21 @@ daily Hijri values because the PDF has none. Four required source flags bind
 the printed summer Fajr/Isha transition night (10→11 May) and completion night
 (2→3 August); drift fails before candidate creation.
 
-The full-year candidate and deterministic diff stop at `needs_review`. A
-machine-checked 31-day overlap against the earlier August photo records eleven
-Dhuhr-onset conflicts and one collective-time conflict, while the footnote
-wording conflict remains human review evidence. No precedence is inferred.
-Named mosque/authority approval, the pilot iqamah decision, production signing
-trust and physical rollout/rollback evidence remain outside the local adapter.
+The raw full-year and monthly candidates stop at `needs_review`. The separate
+`effective-schedule/v1` composition transform consumes an immutable policy
+artifact that binds both candidates and raw/transcription/normalized/parser
+identities. It keeps the PDF as the 2026 baseline and applies every field
+actually supplied by the photo for all 31 August days. Missing monthly al-Isfar
+does not erase the explicit PDF value. The machine-checked reconciliation keeps
+eleven Dhuhr-onset differences, one collective-time difference and the wording
+difference unchanged as evidence, while D-002 resolves selection in favor of
+the monthly source.
+
+Composition cannot approve or publish. The effective candidate stays
+`needs_review`; a named mosque/authority approval, the pilot iqamah decision,
+production signing trust and physical rollout/rollback evidence remain outside
+the source transform. Ordinary schedule publication never converts a
+candidate-only collective Dhuhr value into mosque iqamah.
 
 T009 adds the device-facing delivery path. The Go API loads only explicitly
 configured immutable snapshots that pass raw hash, canonical Ed25519,
@@ -381,12 +390,13 @@ referenced snapshot-artifact inventory pass.
 9. **Roll out.** Publish manifest first to a canary group, then broader devices.
 10. **Observe.** Track activation, coverage remaining, signature failures and rollback.
 
-The Phase 1 implementation of steps 1–8 is local and file-backed. It does not
-create an approval actor, production key or rollout channel. The real August
-and full-year 2026 Ulyanovsk artifacts reach `needs_review` only. The annual
-source now proves deterministic 365-day real-source normalization/diff without
-inventing absent Hijri data; only the static annual golden fixture is approved
-with an ephemeral test key.
+The local implementation of steps 1–8 is file-backed. It does not create an
+approval actor, production key or rollout channel. The real August and
+full-year sources plus their hash-bound effective composition reach
+`needs_review` only. The effective 365-day candidate selects monthly August
+fields without inventing absent values and exposes both component provenance
+records in its diff; only synthetic golden fixtures are approved with ephemeral
+test keys.
 
 ## Provider interface
 

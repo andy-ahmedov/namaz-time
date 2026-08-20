@@ -1,0 +1,57 @@
+{
+  "schema_version": "1.0",
+  "composition_id": "ulyanovsk-2026-pdf-with-august-photo-v1",
+  "decided_by": "product-owner",
+  "decided_at": "2026-08-20T11:31:33Z",
+  "reason": "The retained annual PDF is the 2026 baseline; the retained August photo has priority for fields present in that source throughout August 2026.",
+  "baseline": {
+    "candidate_id": "candidate-867862c453fc167a9c9b17240dfb4c9a",
+    "raw_sha256": "82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21",
+    "transcription_sha256": "41b44173e99534ffc7d6a1ee7b429f98a95ca863bb29d2971b57e8693dd51538",
+    "normalized_sha256": "867862c453fc167a9c9b17240dfb4c9a5be0822882c3dfbc68e8c454a4c7efb2",
+    "parser_version": "ulyanovsk-official-pdf-csv/v1"
+  },
+  "overrides": [
+    {
+      "candidate_id": "candidate-85bdfc297bcd5168b0e1f6a0c89012eb",
+      "raw_sha256": "11b4aaaa4765b486103e6532fb560bde9dec6617215fad9c462bd9253cba993c",
+      "transcription_sha256": "29c2f62f8eb9da8f984f4e26e81325033bef1499175e24512e569fe534d2f745",
+      "normalized_sha256": "85bdfc297bcd5168b0e1f6a0c89012eb4a753294a115197ab1a0892ed97f5c89",
+      "parser_version": "manual-csv/v1",
+      "effective_from": "2026-08-01",
+      "effective_to": "2026-08-31",
+      "applied_fields": [
+        "fajr",
+        "sunrise",
+        "zenith",
+        "dhuhr",
+        "dhuhr_congregation",
+        "asr",
+        "maghrib",
+        "isha",
+        "hijri_day",
+        "hijri_month",
+        "hijri_year",
+        "flags"
+      ],
+      "resolved_flag_rewrites": {
+        "requires_review_collective_outlier": "source_collective_outlier_preserved_by_monthly_precedence",
+        "requires_review_dhuhr_source_value": "source_dhuhr_value_preserved_by_monthly_precedence"
+      },
+      "reason": "Product-owner source policy gives the retained August photo priority over the annual PDF for every overlapping value it contains. This does not classify collective Dhuhr as mosque iqamah."
+    }
+  ],
+  "output_source": {
+    "source_id": "effective-ulyanovsk-2026-v1",
+    "kind": "manual_import",
+    "authority_name": "Composite schedule; see bound source components",
+    "authority_branch": "RDUM Ulyanovsk annual PDF baseline with August photo override",
+    "geographic_scope": "Second Cathedral Mosque of Ulyanovsk, 18A Dzerzhinsky Street; Gregorian 2026",
+    "permission_status": "granted",
+    "license_reference": "Product-owner project-use confirmation dated 2026-08-20; component terms remain preserved in provenance",
+    "attribution": "Региональное духовное управление мусульман Ульяновской области в составе ЦДУМ России · www.rdumul.ru · August source marks: rdumul / dum.ul / dumul",
+    "approval_required": true,
+    "max_delta_minutes": 30,
+    "minimum_coverage_days": 365
+  }
+}

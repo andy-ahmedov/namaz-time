@@ -84,6 +84,20 @@ Do not promise guaranteed boot launch in ordinary consumer mode.
 
 ## Source ingest runbook
 
+Inspect the two immutable pilot inputs and their effective composition:
+
+```bash
+go run ./cmd/ingestor inspect --fixture-dir fixtures/pilot/ulyanovsk-2026
+go run ./cmd/ingestor inspect --fixture-dir fixtures/pilot/ulyanovsk-2026-08
+go run ./cmd/ingestor inspect-effective \
+  --baseline-dir fixtures/pilot/ulyanovsk-2026 \
+  --override-dir fixtures/pilot/ulyanovsk-2026-08
+```
+
+The effective command never approves, signs or publishes. Before approval,
+record its policy/component hashes, normalized hash, diff hash, all warnings
+and the separately unresolved D-009 mosque-practice decision.
+
 1. retrieve artifact with identifiable user agent and rate limit;
 2. verify status/content type/size;
 3. store raw hash/metadata;

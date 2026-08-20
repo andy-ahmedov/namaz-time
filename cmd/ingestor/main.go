@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
+	"github.com/andy-ahmedov/namaz-time/internal/providers/effective"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/manual"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/officialpdf"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
@@ -40,14 +41,26 @@ func main() {
 }
 
 func run(args []string, stdout, stderr io.Writer) int {
-	if len(args) == 0 || args[0] != "inspect" {
-		fmt.Fprintln(stderr, "usage: ingestor inspect --fixture-dir <directory>")
+	if len(args) == 0 {
+		writeUsage(stderr)
 		return 2
 	}
+	switch args[0] {
+	case "inspect":
+		return runInspect(args[1:], stdout, stderr)
+	case "inspect-effective":
+		return runInspectEffective(args[1:], stdout, stderr)
+	default:
+		writeUsage(stderr)
+		return 2
+	}
+}
+
+func runInspect(args []string, stdout, stderr io.Writer) int {
 	flags := flag.NewFlagSet("inspect", flag.ContinueOnError)
 	flags.SetOutput(stderr)
 	fixtureDir := flags.String("fixture-dir", "", "directory containing import.json, source-record.json and source files")
-	if err := flags.Parse(args[1:]); err != nil {
+	if err := flags.Parse(args); err != nil {
 		return 2
 	}
 	if *fixtureDir == "" || flags.NArg() != 0 {
@@ -59,6 +72,35 @@ func run(args []string, stdout, stderr io.Writer) int {
 		fmt.Fprintf(stderr, "inspect failed: %v\n", err)
 		return 1
 	}
+	return writeInspection(stdout, stderr, result)
+}
+
+func runInspectEffective(args []string, stdout, stderr io.Writer) int {
+	flags := flag.NewFlagSet("inspect-effective", flag.ContinueOnError)
+	flags.SetOutput(stderr)
+	baselineDir := flags.String("baseline-dir", "", "directory containing the baseline fixture")
+	overrideDir := flags.String("override-dir", "", "directory containing the bounded override fixture")
+	policyFile := flags.String("policy-file", "", "effective policy JSON; defaults to <baseline-dir>/effective-policy.json")
+	if err := flags.Parse(args); err != nil {
+		return 2
+	}
+	if *baselineDir == "" || *overrideDir == "" || flags.NArg() != 0 {
+		fmt.Fprintln(stderr, "inspect-effective requires --baseline-dir and --override-dir")
+		return 2
+	}
+	path := *policyFile
+	if path == "" {
+		path = filepath.Join(*baselineDir, "effective-policy.json")
+	}
+	result, err := inspectEffective(*baselineDir, *overrideDir, path)
+	if err != nil {
+		fmt.Fprintf(stderr, "inspect-effective failed: %v\n", err)
+		return 1
+	}
+	return writeInspection(stdout, stderr, result)
+}
+
+func writeInspection(stdout, stderr io.Writer, result inspection) int {
 	encoder := json.NewEncoder(stdout)
 	encoder.SetIndent("", "  ")
 	encoder.SetEscapeHTML(false)
@@ -67,6 +109,51 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return 1
 	}
 	return 0
+}
+
+func writeUsage(stderr io.Writer) {
+	fmt.Fprintln(stderr, "usage:")
+	fmt.Fprintln(stderr, "  ingestor inspect --fixture-dir <directory>")
+	fmt.Fprintln(stderr, "  ingestor inspect-effective --baseline-dir <directory> --override-dir <directory> [--policy-file <file>]")
+}
+
+func inspectEffective(baselineDirectory, overrideDirectory, policyPath string) (inspection, error) {
+	baseline, err := inspectFixture(baselineDirectory)
+	if err != nil {
+		return inspection{}, fmt.Errorf("inspect baseline: %w", err)
+	}
+	override, err := inspectFixture(overrideDirectory)
+	if err != nil {
+		return inspection{}, fmt.Errorf("inspect override: %w", err)
+	}
+	policyBytes, err := os.ReadFile(policyPath)
+	if err != nil {
+		return inspection{}, fmt.Errorf("read effective policy: %w", err)
+	}
+	policy, err := effective.DecodePolicy(policyBytes)
+	if err != nil {
+		return inspection{}, err
+	}
+	decidedAt, err := time.Parse(time.RFC3339, policy.DecidedAt)
+	if err != nil {
+		return inspection{}, fmt.Errorf("parse effective policy decided_at: %w", err)
+	}
+	artifact, err := effective.CapturePolicyArtifact(filepath.Base(policyPath), decidedAt, bytes.NewReader(policyBytes))
+	if err != nil {
+		return inspection{}, err
+	}
+	candidate, err := effective.Compose(effective.ComposeRequest{
+		Policy: policy, PolicyBytes: policyBytes, PolicyArtifact: artifact,
+		Baseline: baseline.Candidate, Overrides: []domain.CandidateSchedule{override.Candidate},
+	})
+	if err != nil {
+		return inspection{}, err
+	}
+	diff, err := publication.Diff(&baseline.Candidate, candidate)
+	if err != nil {
+		return inspection{}, err
+	}
+	return inspection{Candidate: candidate, Diff: diff}, nil
 }
 
 func inspectFixture(directory string) (inspection, error) {

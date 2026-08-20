@@ -92,6 +92,13 @@ validation_report_json
 created_at
 ```
 
+A derived effective candidate also owns ordered `source_components`. Each
+component records its role (`baseline` or `override`), candidate/source IDs,
+raw artifact metadata and SHA-256, transcription/normalized SHA-256, parser
+version, effective date range and exact applied fields. The effective policy
+artifact is the candidate's primary raw binding; changing policy bytes or any
+component identity creates a different candidate and invalidates approval.
+
 ### `candidate_prayer_day`
 
 ```text
@@ -115,8 +122,9 @@ Primary key: `(candidate_schedule_id, local_date)`.
 
 `recommended_fajr`, zenith and source congregation fields are review evidence;
 they participate in candidate identity/diff but do not become adhan rows.
-Collective Dhuhr can become an iqamah override only after an approval explicitly
-covers that mosque-local practice. Missing daily Hijri fields remain absent.
+Collective Dhuhr can become an iqamah override only through a separate explicit
+mosque-practice decision/configuration that covers that value. Schedule approval
+alone does not promote it. Missing daily Hijri fields remain absent.
 
 ### `approval`
 
