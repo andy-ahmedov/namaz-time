@@ -33,6 +33,9 @@
     <string name="field_jumuah">Friday prayer</string>
     <string name="field_friday_dhuhr">Friday Dhuhr</string>
     <string name="field_theme">Theme</string>
+    <string name="field_background">Background</string>
+    <string name="value_background_golden_dusk">Golden dusk</string>
+    <string name="value_background_blue_hour">Blue hour</string>
     <string name="field_screen_shift">Screen protection</string>
     <string name="field_language">Current language</string>
     <string name="field_supported_languages">Available languages</string>
@@ -63,6 +66,7 @@
     <string name="value_screen_shift_off">Protective shift: disabled</string>
     <string name="action_disable_screen_shift">Disable protective shift</string>
     <string name="action_enable_screen_shift">Enable protective shift</string>
+    <string name="action_switch_background">Background: %1$s</string>
     <string name="campaigns_not_configured">QR and announcements are not configured</string>
     <string name="campaigns_configured_count">Active local campaigns: %1$d</string>
     <string name="language_russian">Russian</string>

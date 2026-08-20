@@ -1,6 +1,8 @@
 package com.example.namaztime.tv.presentation
 
-import androidx.compose.foundation.Canvas
+import androidx.annotation.DrawableRes
+import androidx.annotation.StringRes
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -18,19 +20,56 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Shapes
+import androidx.tv.material3.Typography
 import androidx.tv.material3.darkColorScheme
+import com.example.namaztime.tv.R
+import com.example.namaztime.tv.repository.BLUE_HOUR_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.DEFAULT_BACKGROUND_STYLE_ID
 
 const val TV_ATMOSPHERIC_BACKGROUND_TAG = "tv-atmospheric-background"
+const val TV_BACKGROUND_STYLE_TAG_PREFIX = "tv-background-style-"
+
+internal enum class TvBackgroundStyle(
+    val id: String,
+    @DrawableRes val drawableRes: Int,
+    @StringRes val labelRes: Int,
+    val scrimAlpha: Float,
+) {
+    GOLDEN_DUSK(
+        DEFAULT_BACKGROUND_STYLE_ID,
+        R.drawable.tv_background_golden_dusk,
+        R.string.value_background_golden_dusk,
+        0.26f,
+    ),
+    BLUE_HOUR(
+        BLUE_HOUR_BACKGROUND_STYLE_ID,
+        R.drawable.tv_background_blue_hour,
+        R.string.value_background_blue_hour,
+        0.20f,
+    ),
+    ;
+
+    val next: TvBackgroundStyle
+        get() = entries[(ordinal + 1) % entries.size]
+
+    companion object {
+        fun fromId(id: String): TvBackgroundStyle = entries.firstOrNull { it.id == id } ?: GOLDEN_DUSK
+    }
+}
 
 @Immutable
 internal data class TvSafeFrameInsets(
@@ -65,18 +104,18 @@ internal data class TvColorTokens(
 )
 
 internal val DarkTvColors = TvColorTokens(
-    backgroundTop = Color(0xFF111B2B),
-    backgroundBottom = Color(0xFF071116),
-    backgroundGlow = Color(0xFF9B6340),
-    surfaceTop = Color(0xE63A4050),
-    surfaceBottom = Color(0xF0252935),
-    surfaceStrong = Color(0xF51B202B),
-    surfaceOutline = Color(0x4DFFFFFF),
-    textPrimary = Color(0xFFF8F6F1),
-    textSecondary = Color(0xFFD4D4D1),
-    accent = Color(0xFFFFC978),
-    accentSoft = Color(0x4DFFB85C),
-    accentOutline = Color(0xB3FFC978),
+    backgroundTop = Color(0xFF14233A),
+    backgroundBottom = Color(0xFF07111F),
+    backgroundGlow = Color(0xFFB57936),
+    surfaceTop = Color(0xB3223046),
+    surfaceBottom = Color(0xD10A1425),
+    surfaceStrong = Color(0xEA08111F),
+    surfaceOutline = Color(0x4DFFF4DC),
+    textPrimary = Color(0xFFFFFBF2),
+    textSecondary = Color(0xFFD5D9DE),
+    accent = Color(0xFFFFCF7A),
+    accentSoft = Color(0x4DCB8730),
+    accentOutline = Color(0xCCFFD38A),
     focus = Color(0xFFFFFFFF),
     separator = Color(0x24FFFFFF),
     warning = Color(0xFFFFD38B),
@@ -122,6 +161,39 @@ internal val TvMaterialShapes = Shapes(
     extraLarge = RoundedCornerShape(28.dp),
 )
 
+internal val TvMaterialTypography = Typography().copy(
+    displayLarge = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Bold,
+        fontSize = 58.sp,
+        lineHeight = 64.sp,
+    ),
+    headlineLarge = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Bold,
+        fontSize = 40.sp,
+        lineHeight = 46.sp,
+    ),
+    titleLarge = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 26.sp,
+        lineHeight = 32.sp,
+    ),
+    bodyLarge = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.Normal,
+        fontSize = 20.sp,
+        lineHeight = 28.sp,
+    ),
+    labelLarge = TextStyle(
+        fontFamily = FontFamily.SansSerif,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp,
+        lineHeight = 24.sp,
+    ),
+)
+
 private val LocalTvColors = staticCompositionLocalOf { DarkTvColors }
 
 internal object NamazTvTheme {
@@ -135,6 +207,7 @@ internal fun NamazTvTheme(content: @Composable () -> Unit) {
         MaterialTheme(
             colorScheme = DarkTvMaterialColorScheme,
             shapes = TvMaterialShapes,
+            typography = TvMaterialTypography,
             content = content,
         )
     }
@@ -165,48 +238,19 @@ internal fun TvSafeFrame(
 }
 
 @Composable
-internal fun TvAtmosphericBackground(modifier: Modifier = Modifier) {
-    val colors = NamazTvTheme.colors
-    Canvas(modifier = modifier.fillMaxSize().testTag(TV_ATMOSPHERIC_BACKGROUND_TAG)) {
-        drawRect(
-            brush = Brush.verticalGradient(
-                colors = listOf(colors.backgroundTop, colors.backgroundBottom),
-            ),
+internal fun TvAtmosphericBackground(
+    styleId: String = DEFAULT_BACKGROUND_STYLE_ID,
+    modifier: Modifier = Modifier,
+) {
+    val style = TvBackgroundStyle.fromId(styleId)
+    Box(modifier = modifier.fillMaxSize().testTag(TV_ATMOSPHERIC_BACKGROUND_TAG)) {
+        Image(
+            painter = painterResource(style.drawableRes),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier.fillMaxSize().testTag("$TV_BACKGROUND_STYLE_TAG_PREFIX${style.id}"),
         )
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(
-                    colors.backgroundGlow.copy(alpha = 0.44f),
-                    colors.backgroundGlow.copy(alpha = 0f),
-                ),
-                center = Offset(size.width * 0.86f, size.height * 0.58f),
-                radius = size.minDimension * 0.86f,
-            ),
-            radius = size.minDimension * 0.86f,
-            center = Offset(size.width * 0.86f, size.height * 0.58f),
-        )
-        drawCircle(
-            brush = Brush.radialGradient(
-                colors = listOf(Color(0xFF31516C).copy(alpha = 0.34f), Color.Transparent),
-                center = Offset(size.width * 0.14f, size.height * 0.12f),
-                radius = size.minDimension * 0.72f,
-            ),
-            radius = size.minDimension * 0.72f,
-            center = Offset(size.width * 0.14f, size.height * 0.12f),
-        )
-        val horizon = Path().apply {
-            moveTo(0f, size.height * 0.88f)
-            lineTo(size.width * 0.20f, size.height * 0.79f)
-            lineTo(size.width * 0.38f, size.height * 0.86f)
-            lineTo(size.width * 0.58f, size.height * 0.74f)
-            lineTo(size.width * 0.78f, size.height * 0.84f)
-            lineTo(size.width, size.height * 0.72f)
-            lineTo(size.width, size.height)
-            lineTo(0f, size.height)
-            close()
-        }
-        drawPath(horizon, Color.Black.copy(alpha = 0.20f))
-        drawRect(Color.Black.copy(alpha = 0.18f))
+        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = style.scrimAlpha)))
     }
 }
 

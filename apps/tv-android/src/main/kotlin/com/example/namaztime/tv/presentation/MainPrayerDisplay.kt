@@ -18,17 +18,18 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Button
+import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import com.example.namaztime.tv.R
 import com.example.namaztime.tv.domain.PrayerEventKind
@@ -63,6 +65,9 @@ const val PRAYER_ROW_TEST_TAG_PREFIX = "prayer-row-"
 const val MOSQUE_NAME_TEST_TAG = "mosque-name"
 const val COUNTDOWN_TEST_TAG = "next-prayer-countdown"
 const val JUMUAH_SESSION_TEST_TAG_PREFIX = "jumuah-session-"
+const val BRAND_PILL_TEST_TAG = "brand-pill"
+const val PRAYER_TIME_AREA_TEST_TAG_PREFIX = "prayer-time-area-"
+const val SUNRISE_CENTERED_TIME_TEST_TAG = "sunrise-centered-time"
 
 internal enum class IqamahPresentation {
     MISSING,
@@ -186,12 +191,35 @@ private fun DisplayHeader(
     onOpenSettings: () -> Unit,
 ) {
     val colors = NamazTvTheme.colors
-    var initialFocusRequested by remember(requestInitialFocus) { mutableStateOf(false) }
+    LaunchedEffect(requestInitialFocus, settingsFocusRequester) {
+        if (requestInitialFocus) {
+            withFrameNanos { }
+            withFrameNanos { }
+            runCatching { settingsFocusRequester.requestFocus() }
+        }
+    }
     Box(Modifier.fillMaxWidth().height(metrics.headerHeight)) {
         Column(
             modifier = Modifier.align(Alignment.Center).fillMaxWidth(0.68f),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
+            Row(
+                modifier = Modifier
+                    .testTag(BRAND_PILL_TEST_TAG)
+                    .background(colors.surfaceStrong.copy(alpha = 0.72f), RoundedCornerShape(50))
+                    .border(1.dp, colors.accentOutline, RoundedCornerShape(50))
+                    .padding(horizontal = metrics.inlineGap * 1.5f, vertical = 3.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(metrics.inlineGap / 2),
+            ) {
+                BrandMark(Modifier.width(metrics.brandIconSize).height(metrics.brandIconSize))
+                Text(
+                    text = "NamazTime",
+                    color = colors.accent,
+                    fontSize = metrics.brandSize,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
             Text(
                 text = state.mosqueName,
                 modifier = Modifier.testTag(MOSQUE_NAME_TEST_TAG).semantics { heading() },
@@ -216,17 +244,17 @@ private fun DisplayHeader(
         var focused by remember { mutableStateOf(false) }
         Button(
             onClick = onOpenSettings,
+            colors = ButtonDefaults.colors(
+                containerColor = colors.surfaceStrong.copy(alpha = 0.72f),
+                contentColor = colors.textPrimary,
+                focusedContainerColor = colors.accent,
+                focusedContentColor = colors.backgroundBottom,
+            ),
             modifier = Modifier
                 .align(Alignment.CenterEnd)
                 .height(metrics.settingsHeight)
                 .testTag(MAIN_DISPLAY_SETTINGS_TAG)
                 .focusRequester(settingsFocusRequester)
-                .onGloballyPositioned {
-                    if (requestInitialFocus && !initialFocusRequested) {
-                        initialFocusRequested = true
-                        settingsFocusRequester.requestFocus()
-                    }
-                }
                 .onFocusChanged { focused = it.isFocused }
                 .border(
                     width = if (focused) 3.dp else 1.dp,
@@ -257,6 +285,13 @@ private fun NextEventCard(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
+            state.rows.firstOrNull { it.isNextEvent }?.let { next ->
+                PrayerIcon(
+                    prayerId = next.id,
+                    modifier = Modifier.width(metrics.nextIconSize).height(metrics.nextIconSize),
+                    exposeTestTag = false,
+                )
+            }
             Text(
                 appString(R.string.next_prayer),
                 color = colors.accent,
@@ -374,13 +409,7 @@ private fun PrayerListCard(
                 vertical = metrics.gridVerticalPadding,
             ),
         ) {
-            GridColumns(
-                appString(R.string.prayer_column),
-                appString(R.string.adhan_column),
-                appString(R.string.iqamah_column),
-                metrics,
-                header = true,
-            )
+            PrayerGridHeader(metrics)
             state.rows.forEach { row ->
                 PrayerGridRow(row, metrics, Modifier.weight(1f))
             }
@@ -470,11 +499,10 @@ private fun PrayerGridRow(
                     .background(colors.accent, RoundedCornerShape(4.dp)),
             )
         }
-        GridColumns(
-            row.label,
-            row.adhan,
-            iqamahText,
-            metrics,
+        PrayerGridColumns(
+            row = row,
+            iqamahText = iqamahText,
+            metrics = metrics,
             modifier = Modifier.fillMaxSize().padding(
                 start = if (row.isNextEvent) metrics.inlineGap else 0.dp,
             ),
@@ -483,26 +511,79 @@ private fun PrayerGridRow(
 }
 
 @Composable
-private fun GridColumns(
-    prayer: String,
-    adhan: String,
-    iqamah: String,
+private fun PrayerGridHeader(
     metrics: MainDisplayMetrics,
-    modifier: Modifier = Modifier,
-    header: Boolean = false,
 ) {
     val colors = NamazTvTheme.colors
     Row(
-        modifier = modifier.fillMaxWidth()
-            .then(if (header) Modifier.height(metrics.gridHeaderHeight) else Modifier),
+        modifier = Modifier.fillMaxWidth().height(metrics.gridHeaderHeight),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        GridText(prayer, 1.35f, metrics, header, TextAlign.Start)
-        GridText(adhan, 0.9f, metrics, header, TextAlign.End)
-        GridText(iqamah, 0.9f, metrics, header, TextAlign.End)
+        Spacer(Modifier.width(metrics.prayerIconSize + metrics.inlineGap))
+        GridText(appString(R.string.prayer_column), 1.25f, metrics, true, TextAlign.Start)
+        Row(
+            modifier = Modifier.weight(1.55f),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            GridText(appString(R.string.adhan_column), 1f, metrics, true, TextAlign.Center)
+            Row(
+                modifier = Modifier.weight(1f),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                IqamahIcon(Modifier.width(metrics.headerIconSize).height(metrics.headerIconSize))
+                Spacer(Modifier.width(3.dp))
+                Text(
+                    appString(R.string.iqamah_column),
+                    color = colors.textSecondary,
+                    fontSize = metrics.gridHeaderSize,
+                    fontWeight = FontWeight.Medium,
+                    maxLines = 1,
+                )
+            }
+        }
     }
-    if (header) {
-        Box(Modifier.fillMaxWidth().height(1.dp).background(colors.separator))
+    Box(Modifier.fillMaxWidth().height(1.dp).background(colors.separator))
+}
+
+@Composable
+private fun PrayerGridColumns(
+    row: PrayerDisplayRow,
+    iqamahText: String,
+    metrics: MainDisplayMetrics,
+    modifier: Modifier = Modifier,
+) {
+    val colors = NamazTvTheme.colors
+    Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        PrayerIcon(
+            prayerId = row.id,
+            modifier = Modifier.width(metrics.prayerIconSize).height(metrics.prayerIconSize),
+        )
+        Spacer(Modifier.width(metrics.inlineGap))
+        GridText(row.label, 1.25f, metrics, false, TextAlign.Start)
+        Row(
+            modifier = Modifier
+                .weight(1.55f)
+                .fillMaxHeight()
+                .testTag("$PRAYER_TIME_AREA_TEST_TAG_PREFIX${row.id}"),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            if (row.id == "sunrise") {
+                Text(
+                    row.adhan,
+                    modifier = Modifier.fillMaxWidth().testTag(SUNRISE_CENTERED_TIME_TEST_TAG),
+                    color = if (row.isNextEvent) colors.accent else colors.textPrimary,
+                    fontSize = metrics.prayerRowSize,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = FontFamily.Monospace,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                )
+            } else {
+                GridText(row.adhan, 1f, metrics, false, TextAlign.Center)
+                GridText(iqamahText, 1f, metrics, false, TextAlign.Center)
+            }
+        }
     }
 }
 
@@ -544,6 +625,10 @@ private fun IqamahStatusStrip(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(metrics.sectionGap),
         ) {
+            IqamahIcon(
+                Modifier.width(metrics.iqamahIconSize).height(metrics.iqamahIconSize),
+                exposeTestTag = true,
+            )
             Column(Modifier.weight(1f)) {
                 Text(
                     state.iqamahSummary?.label ?: appString(R.string.iqamah_nearest),
@@ -793,23 +878,31 @@ private data class MainDisplayMetrics(
     val captionSize: TextUnit,
     val sourceDescriptionSize: TextUnit,
     val actionSize: TextUnit,
+    val brandIconSize: Dp,
+    val nextIconSize: Dp,
+    val prayerIconSize: Dp,
+    val headerIconSize: Dp,
+    val iqamahIconSize: Dp,
+    val brandSize: TextUnit,
 ) {
     companion object {
         fun forHeight(height: Dp): MainDisplayMetrics = if (height < 600.dp) {
             MainDisplayMetrics(
                 10.dp, 8.dp, 16.dp, 12.dp, 8.dp, 8.dp,
-                58.dp, 48.dp, 116.dp, 62.dp, 250.dp, 190.dp, 132.dp, 74.dp,
+                76.dp, 48.dp, 106.dp, 62.dp, 250.dp, 190.dp, 132.dp, 74.dp,
                 28.dp, 28.dp, 20.dp, 12.dp, 10.dp, 0.92f,
                 28.sp, 34.sp, 36.sp, 42.sp, 24.sp, 18.sp, 20.sp, 14.sp,
                 17.sp, 15.sp, 13.sp, 12.sp, 15.sp,
+                18.dp, 30.dp, 27.dp, 14.dp, 32.dp, 14.sp,
             )
         } else {
             MainDisplayMetrics(
                 16.dp, 10.dp, 24.dp, 18.dp, 12.dp, 12.dp,
-                76.dp, 56.dp, 150.dp, 76.dp, 330.dp, 240.dp, 170.dp, 96.dp,
+                94.dp, 56.dp, 140.dp, 76.dp, 330.dp, 240.dp, 170.dp, 96.dp,
                 36.dp, 34.dp, 26.dp, 14.dp, 12.dp, 0.94f,
                 38.sp, 46.sp, 50.sp, 58.sp, 30.sp, 23.sp, 27.sp, 18.sp,
                 21.sp, 19.sp, 16.sp, 14.sp, 18.sp,
+                22.dp, 40.dp, 36.dp, 18.dp, 42.dp, 18.sp,
             )
         }
     }

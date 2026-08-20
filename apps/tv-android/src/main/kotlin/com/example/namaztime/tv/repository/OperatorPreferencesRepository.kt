@@ -16,6 +16,7 @@ data class OperatorPreferences(
     val reducedMotion: Boolean = true,
     val languageTag: String = DEFAULT_LANGUAGE_TAG,
     val screenRetentionShiftEnabled: Boolean = true,
+    val backgroundStyleId: String = DEFAULT_BACKGROUND_STYLE_ID,
 )
 
 interface OperatorPreferencesRepository {
@@ -28,6 +29,8 @@ interface OperatorPreferencesRepository {
     suspend fun setLanguageTag(languageTag: String)
 
     suspend fun setScreenRetentionShiftEnabled(enabled: Boolean)
+
+    suspend fun setBackgroundStyleId(styleId: String)
 }
 
 class DataStoreOperatorPreferencesRepository(
@@ -49,6 +52,9 @@ class DataStoreOperatorPreferencesRepository(
                     ?.takeIf(SUPPORTED_LANGUAGE_TAGS::contains)
                     ?: DEFAULT_LANGUAGE_TAG,
                 screenRetentionShiftEnabled = values[SCREEN_RETENTION_SHIFT_ENABLED] ?: true,
+                backgroundStyleId = values[BACKGROUND_STYLE_ID]
+                    ?.takeIf(BUILT_IN_BACKGROUND_STYLE_IDS::contains)
+                    ?: DEFAULT_BACKGROUND_STYLE_ID,
             )
         }
 
@@ -69,6 +75,11 @@ class DataStoreOperatorPreferencesRepository(
         dataStore.edit { it[SCREEN_RETENTION_SHIFT_ENABLED] = enabled }
     }
 
+    override suspend fun setBackgroundStyleId(styleId: String) {
+        require(styleId in BUILT_IN_BACKGROUND_STYLE_IDS) { "unsupported background style" }
+        dataStore.edit { it[BACKGROUND_STYLE_ID] = styleId }
+    }
+
     private companion object {
         val LAST_SETTINGS_DESTINATION = stringPreferencesKey("last_settings_destination")
         val REDUCED_MOTION = booleanPreferencesKey("reduced_motion")
@@ -76,8 +87,15 @@ class DataStoreOperatorPreferencesRepository(
         val SCREEN_RETENTION_SHIFT_ENABLED = booleanPreferencesKey(
             "screen_retention_shift_enabled",
         )
+        val BACKGROUND_STYLE_ID = stringPreferencesKey("background_style_id")
     }
 }
 
 const val DEFAULT_LANGUAGE_TAG = "ru"
 val SUPPORTED_LANGUAGE_TAGS = setOf(DEFAULT_LANGUAGE_TAG, "en")
+const val DEFAULT_BACKGROUND_STYLE_ID = "golden_dusk"
+const val BLUE_HOUR_BACKGROUND_STYLE_ID = "blue_hour"
+val BUILT_IN_BACKGROUND_STYLE_IDS = setOf(
+    DEFAULT_BACKGROUND_STYLE_ID,
+    BLUE_HOUR_BACKGROUND_STYLE_ID,
+)

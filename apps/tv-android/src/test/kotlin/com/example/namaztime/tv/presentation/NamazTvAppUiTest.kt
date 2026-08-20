@@ -224,6 +224,83 @@ class NamazTvAppUiTest {
     }
 
     @Test
+    fun redesignedDisplayExposesBrandPrayerAndIqamahVisualAnchors() {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(schedule()),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        compose.onNodeWithTag("brand-pill").assertIsDisplayed()
+        compose.onNodeWithText("NamazTime").assertIsDisplayed()
+        listOf("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha").forEach { prayer ->
+            compose.onNodeWithTag("prayer-icon-$prayer", useUnmergedTree = true).assertExists()
+        }
+        compose.onNodeWithTag("iqamah-icon").assertIsDisplayed()
+
+        val sunriseTimeArea = compose.onNodeWithTag("prayer-time-area-sunrise", useUnmergedTree = true)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        val sunriseValue = compose.onNodeWithTag("sunrise-centered-time", useUnmergedTree = true)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        assertEquals(
+            (sunriseTimeArea.left + sunriseTimeArea.right) / 2f,
+            (sunriseValue.left + sunriseValue.right) / 2f,
+        )
+    }
+
+    @Test
+    fun originalImageBackgroundAssetsArePackagedForOfflineSelection() {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val goldenDusk = context.resources.getIdentifier(
+            "tv_background_golden_dusk",
+            "drawable",
+            context.packageName,
+        )
+        val blueHour = context.resources.getIdentifier(
+            "tv_background_blue_hour",
+            "drawable",
+            context.packageName,
+        )
+
+        assertTrue("golden dusk image resource must be packaged", goldenDusk != 0)
+        assertTrue("blue hour image resource must be packaged", blueHour != 0)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun appearanceCanSwitchThePersistedOfflineImageBackground() {
+        val preferences = FakeOperatorPreferencesRepository()
+        compose.setContent { NamazTvApp(preferences) }
+
+        compose.onNodeWithTag("$TV_BACKGROUND_STYLE_TAG_PREFIX${com.example.namaztime.tv.repository.DEFAULT_BACKGROUND_STYLE_ID}")
+            .assertIsDisplayed()
+        compose.onNodeWithText("Настройки").performKeyInput { pressKey(Key.Enter) }
+        repeat(SettingsDestination.APPEARANCE.ordinal) { index ->
+            compose.onNodeWithTag(SettingsDestination.entries[index].navigationTestTag)
+                .performKeyInput { pressKey(Key.DirectionDown) }
+        }
+        compose.onNodeWithTag(SettingsDestination.APPEARANCE.navigationTestTag)
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag(SETTINGS_LOCAL_ACTION_TEST_TAG)
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_BACKGROUND_ACTION_TEST_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+
+        compose.onNodeWithTag("$TV_BACKGROUND_STYLE_TAG_PREFIX${com.example.namaztime.tv.repository.BLUE_HOUR_BACKGROUND_STYLE_ID}")
+            .assertIsDisplayed()
+    }
+
+    @Test
     @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
     fun activeCampaignFits1080pDensity() {
         assertActiveCampaignFitsDisplay()
@@ -875,6 +952,11 @@ private class FakeOperatorPreferencesRepository(
     override suspend fun setScreenRetentionShiftEnabled(enabled: Boolean) {
         if (failWrites) throw IOException("synthetic preference storage failure")
         state.value = state.value.copy(screenRetentionShiftEnabled = enabled)
+    }
+
+    override suspend fun setBackgroundStyleId(styleId: String) {
+        if (failWrites) throw IOException("synthetic preference storage failure")
+        state.value = state.value.copy(backgroundStyleId = styleId)
     }
 }
 

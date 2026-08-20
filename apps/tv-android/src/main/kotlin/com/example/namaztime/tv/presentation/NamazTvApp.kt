@@ -16,11 +16,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
@@ -33,6 +33,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Button
+import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import com.example.namaztime.tv.BuildConfig
 import com.example.namaztime.tv.R
@@ -110,7 +111,7 @@ fun NamazTvApp(
     AppLanguageProvider(preferences.languageTag) {
         NamazTvTheme {
             Box(Modifier.fillMaxSize()) {
-                TvAtmosphericBackground()
+                TvAtmosphericBackground(preferences.backgroundStyleId)
                 NavHost(
                     navController = navController,
                     startDestination = DISPLAY_ROUTE,
@@ -161,6 +162,15 @@ fun NamazTvApp(
                                             .setScreenRetentionShiftEnabled(enabled)
                                     } catch (_: IOException) {
                                         // The display remains usable if a preference write fails.
+                                    }
+                                }
+                            },
+                            onBackgroundStyleChanged = { styleId ->
+                                coroutineScope.launch {
+                                    try {
+                                        operatorPreferencesRepository.setBackgroundStyleId(styleId)
+                                    } catch (_: IOException) {
+                                        // The current background remains if persistence fails.
                                     }
                                 }
                             },
@@ -310,7 +320,11 @@ private fun DisplayUnavailableScreen(
     onOpenSettings: () -> Unit,
 ) {
     val settingsFocusRequester = remember { FocusRequester() }
-    var initialFocusRequested by remember { mutableStateOf(false) }
+    LaunchedEffect(settingsFocusRequester) {
+        withFrameNanos { }
+        withFrameNanos { }
+        runCatching { settingsFocusRequester.requestFocus() }
+    }
 
     TvSafeFrame(
         testTag = DISPLAY_UNAVAILABLE_TAG,
@@ -372,14 +386,13 @@ private fun DisplayUnavailableScreen(
                 }
                 Button(
                     onClick = onOpenSettings,
-                    modifier = Modifier
-                        .focusRequester(settingsFocusRequester)
-                        .onGloballyPositioned {
-                            if (!initialFocusRequested) {
-                                initialFocusRequested = true
-                                settingsFocusRequester.requestFocus()
-                            }
-                        },
+                    colors = ButtonDefaults.colors(
+                        containerColor = NamazTvTheme.colors.accentSoft,
+                        contentColor = NamazTvTheme.colors.accent,
+                        focusedContainerColor = NamazTvTheme.colors.accent,
+                        focusedContentColor = NamazTvTheme.colors.backgroundBottom,
+                    ),
+                    modifier = Modifier.focusRequester(settingsFocusRequester),
                 ) {
                     Text(appString(R.string.open_settings))
                 }

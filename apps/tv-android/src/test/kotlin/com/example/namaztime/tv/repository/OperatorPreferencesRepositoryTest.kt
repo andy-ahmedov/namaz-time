@@ -37,6 +37,13 @@ class OperatorPreferencesRepositoryTest {
     }
 
     @Test
+    fun imageBackgroundHasAnExplicitSafeDefault() = runTest {
+        val preferences = repositoryFor(this).preferences.first()
+
+        assertEquals(DEFAULT_BACKGROUND_STYLE_ID, preferences.backgroundStyleId)
+    }
+
+    @Test
     fun languageAndScreenRetentionChoicePersist() = runTest {
         val repository = repositoryFor(this)
 
@@ -48,9 +55,26 @@ class OperatorPreferencesRepositoryTest {
         assertEquals(false, preferences.screenRetentionShiftEnabled)
     }
 
+    @Test
+    fun imageBackgroundChoicePersists() = runTest {
+        val repository = repositoryFor(this)
+
+        repository.setBackgroundStyleId(BLUE_HOUR_BACKGROUND_STYLE_ID)
+
+        assertEquals(
+            BLUE_HOUR_BACKGROUND_STYLE_ID,
+            repository.preferences.first().backgroundStyleId,
+        )
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun unsupportedLanguageCannotBeStored() = runTest {
         repositoryFor(this).setLanguageTag("unexpected")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun unsupportedImageBackgroundCannotBeStored() = runTest {
+        repositoryFor(this).setBackgroundStyleId("unexpected")
     }
 
     private fun repositoryFor(scope: TestScope): OperatorPreferencesRepository {

@@ -20,13 +20,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
@@ -37,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Button
+import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import com.example.namaztime.tv.R
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
@@ -44,6 +45,7 @@ import com.example.namaztime.tv.repository.OperatorPreferences
 
 const val SETTINGS_PAGE_ACTION_TEST_TAG = "settings-page-primary-action"
 const val SETTINGS_LOCAL_ACTION_TEST_TAG = "settings-page-local-action"
+const val SETTINGS_BACKGROUND_ACTION_TEST_TAG = "settings-background-action"
 const val SETTINGS_SHELL_TAG = "settings-shell"
 const val SETTINGS_NAVIGATION_PANEL_TAG = "settings-navigation-panel"
 const val SETTINGS_CONTENT_PANEL_TAG = "settings-content-panel"
@@ -60,6 +62,7 @@ fun SettingsShell(
     appVersion: String = "",
     pilotLocalRuntime: Boolean = false,
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)? = null,
+    onBackgroundStyleChanged: ((String) -> Unit)? = null,
     onLanguageChanged: ((String) -> Unit)? = null,
     onOpenSystemSettings: (() -> Unit)? = null,
 ) {
@@ -69,11 +72,13 @@ fun SettingsShell(
     val pageActionRequester = remember { FocusRequester() }
     val returnActionRequester = remember { FocusRequester() }
     var selectedRoute by rememberSaveable { mutableStateOf(initialDestination.route) }
-    var initialFocusRequested by remember(initialDestination) { mutableStateOf(false) }
     val selectedDestination = SettingsDestination.fromRoute(selectedRoute)
 
     LaunchedEffect(initialDestination) {
         selectedRoute = initialDestination.route
+        withFrameNanos { }
+        withFrameNanos { }
+        runCatching { navigationRequesters.getValue(initialDestination).requestFocus() }
     }
 
     TvSafeFrame(testTag = SETTINGS_SHELL_TAG, modifier = modifier) {
@@ -110,17 +115,21 @@ fun SettingsShell(
                                 selectedRoute = destination.route
                                 onDestinationChanged(destination)
                             },
+                            colors = ButtonDefaults.colors(
+                                containerColor = if (isSelected) {
+                                    NamazTvTheme.colors.accentSoft
+                                } else {
+                                    Color.Transparent
+                                },
+                                contentColor = NamazTvTheme.colors.textPrimary,
+                                focusedContainerColor = NamazTvTheme.colors.accent,
+                                focusedContentColor = NamazTvTheme.colors.backgroundBottom,
+                            ),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .testTag(destination.navigationTestTag)
                                 .semantics { selected = isSelected }
                                 .focusRequester(navigationRequesters.getValue(destination))
-                                .onGloballyPositioned {
-                                    if (destination == initialDestination && !initialFocusRequested) {
-                                        initialFocusRequested = true
-                                        navigationRequesters.getValue(destination).requestFocus()
-                                    }
-                                }
                                 .focusProperties {
                                     destination.previous?.let { up = navigationRequesters.getValue(it) }
                                     destination.next?.let { down = navigationRequesters.getValue(it) }
@@ -175,6 +184,7 @@ fun SettingsShell(
                     appVersion = appVersion,
                     pilotLocalRuntime = pilotLocalRuntime,
                     onScreenRetentionShiftChanged = onScreenRetentionShiftChanged,
+                    onBackgroundStyleChanged = onBackgroundStyleChanged,
                     onLanguageChanged = onLanguageChanged,
                     onOpenSystemSettings = onOpenSystemSettings,
                     modifier = Modifier.padding(28.dp),
@@ -187,6 +197,7 @@ fun SettingsShell(
 private data class LocalSettingsAction(
     val label: String,
     val invoke: () -> Unit,
+    val testTag: String = SETTINGS_LOCAL_ACTION_TEST_TAG,
 )
 
 @Composable
@@ -202,38 +213,62 @@ private fun SettingsPage(
     appVersion: String,
     pilotLocalRuntime: Boolean,
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)?,
+    onBackgroundStyleChanged: ((String) -> Unit)?,
     onLanguageChanged: ((String) -> Unit)?,
     onOpenSystemSettings: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val language = AppLanguage.fromTag(preferences.languageTag)
-    val localAction = when (destination) {
-        SettingsDestination.APPEARANCE -> onScreenRetentionShiftChanged?.let { change ->
-            LocalSettingsAction(
-                label = appString(
-                    if (preferences.screenRetentionShiftEnabled) {
-                        R.string.action_disable_screen_shift
-                    } else {
-                        R.string.action_enable_screen_shift
-                    },
-                ),
-                invoke = { change(!preferences.screenRetentionShiftEnabled) },
-            )
+    val backgroundStyle = TvBackgroundStyle.fromId(preferences.backgroundStyleId)
+    val localActions = when (destination) {
+        SettingsDestination.APPEARANCE -> buildList {
+            onScreenRetentionShiftChanged?.let { change ->
+                add(
+                    LocalSettingsAction(
+                        label = appString(
+                            if (preferences.screenRetentionShiftEnabled) {
+                                R.string.action_disable_screen_shift
+                            } else {
+                                R.string.action_enable_screen_shift
+                            },
+                        ),
+                        invoke = { change(!preferences.screenRetentionShiftEnabled) },
+                    ),
+                )
+            }
+            onBackgroundStyleChanged?.let { change ->
+                add(
+                    LocalSettingsAction(
+                        label = appString(
+                            R.string.action_switch_background,
+                            appString(backgroundStyle.next.labelRes),
+                        ),
+                        invoke = { change(backgroundStyle.next.id) },
+                        testTag = SETTINGS_BACKGROUND_ACTION_TEST_TAG,
+                    ),
+                )
+            }
         }
         SettingsDestination.LANGUAGE -> onLanguageChanged?.let { change ->
-            LocalSettingsAction(
-                label = appString(
-                    R.string.action_switch_language,
-                    appString(language.next.displayNameRes),
+            listOf(
+                LocalSettingsAction(
+                    label = appString(
+                        R.string.action_switch_language,
+                        appString(language.next.displayNameRes),
+                    ),
+                    invoke = { change(language.next.tag) },
                 ),
-                invoke = { change(language.next.tag) },
             )
-        }
+        }.orEmpty()
         SettingsDestination.KIOSK -> onOpenSystemSettings?.let { open ->
-            LocalSettingsAction(appString(R.string.action_open_system_settings), open)
-        }
-        else -> null
+            listOf(LocalSettingsAction(appString(R.string.action_open_system_settings), open))
+        }.orEmpty()
+        else -> emptyList()
     }
+    val secondaryActionRequesters = remember(destination, localActions.size) {
+        List((localActions.size - 1).coerceAtLeast(0)) { FocusRequester() }
+    }
+    val actionRequesters = listOf(pageActionRequester) + secondaryActionRequesters
 
     BoxWithConstraints(modifier = modifier.fillMaxHeight()) {
         val compactPreview = maxHeight < 600.dp
@@ -266,15 +301,22 @@ private fun SettingsPage(
                 compact = compactPreview,
                 modifier = Modifier.weight(1f),
             )
-            localAction?.let { action ->
+            localActions.forEachIndexed { index, action ->
                 Button(
                     onClick = action.invoke,
+                    colors = ButtonDefaults.colors(
+                        containerColor = NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.72f),
+                        contentColor = NamazTvTheme.colors.textPrimary,
+                        focusedContainerColor = NamazTvTheme.colors.accent,
+                        focusedContentColor = NamazTvTheme.colors.backgroundBottom,
+                    ),
                     modifier = Modifier
-                        .testTag(SETTINGS_LOCAL_ACTION_TEST_TAG)
-                        .focusRequester(pageActionRequester)
+                        .testTag(action.testTag)
+                        .focusRequester(actionRequesters[index])
                         .focusProperties {
                             left = navigationRequester
-                            down = returnActionRequester
+                            if (index > 0) up = actionRequesters[index - 1]
+                            down = actionRequesters.getOrNull(index + 1) ?: returnActionRequester
                         },
                 ) {
                     Text(action.label)
@@ -282,12 +324,18 @@ private fun SettingsPage(
             }
             Button(
                 onClick = onExit,
+                colors = ButtonDefaults.colors(
+                    containerColor = NamazTvTheme.colors.accentSoft,
+                    contentColor = NamazTvTheme.colors.accent,
+                    focusedContainerColor = NamazTvTheme.colors.accent,
+                    focusedContentColor = NamazTvTheme.colors.backgroundBottom,
+                ),
                 modifier = Modifier
                     .testTag(SETTINGS_PAGE_ACTION_TEST_TAG)
-                    .focusRequester(if (localAction == null) pageActionRequester else returnActionRequester)
+                    .focusRequester(if (localActions.isEmpty()) pageActionRequester else returnActionRequester)
                     .focusProperties {
                         left = navigationRequester
-                        if (localAction != null) up = pageActionRequester
+                        localActions.lastOrNull()?.let { up = actionRequesters.last() }
                     },
             ) {
                 Text(appString(R.string.return_to_display))
@@ -307,6 +355,7 @@ private fun SettingsContent(
     compact: Boolean,
     modifier: Modifier,
 ) {
+    val backgroundStyle = TvBackgroundStyle.fromId(preferences.backgroundStyleId)
     if (schedule == null) {
         Text(
             text = appString(R.string.no_active_schedule),
@@ -362,6 +411,7 @@ private fun SettingsContent(
         )
         SettingsDestination.APPEARANCE -> listOf(
             R.string.field_theme to appString(R.string.value_dark_theme),
+            R.string.field_background to appString(backgroundStyle.labelRes),
             R.string.field_screen_shift to appString(
                 if (preferences.screenRetentionShiftEnabled) R.string.value_screen_shift_on else R.string.value_screen_shift_off,
             ),

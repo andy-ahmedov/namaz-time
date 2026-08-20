@@ -33,6 +33,9 @@
     <string name="field_jumuah">Пятничный намаз</string>
     <string name="field_friday_dhuhr">Зухр в пятницу</string>
     <string name="field_theme">Тема</string>
+    <string name="field_background">Фон</string>
+    <string name="value_background_golden_dusk">Золотой закат</string>
+    <string name="value_background_blue_hour">Синий час</string>
     <string name="field_screen_shift">Защита экрана</string>
     <string name="field_language">Текущий язык</string>
     <string name="field_supported_languages">Доступные языки</string>
@@ -63,6 +66,7 @@
     <string name="value_screen_shift_off">Защитный сдвиг: выключен</string>
     <string name="action_disable_screen_shift">Выключить защитный сдвиг</string>
     <string name="action_enable_screen_shift">Включить защитный сдвиг</string>
+    <string name="action_switch_background">Фон: %1$s</string>
     <string name="campaigns_not_configured">QR и объявления не настроены</string>
     <string name="campaigns_configured_count">Активных локальных кампаний: %1$d</string>
     <string name="language_russian">Русский</string>
