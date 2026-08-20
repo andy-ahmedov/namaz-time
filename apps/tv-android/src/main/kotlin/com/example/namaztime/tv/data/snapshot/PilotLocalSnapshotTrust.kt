@@ -19,6 +19,8 @@ object PilotLocalSnapshotTrust {
 }
 
 const val PILOT_LOCAL_SNAPSHOT_ASSET = "pilot-local-ulyanovsk-2026-snapshot.json"
+const val PILOT_LOCAL_SNAPSHOT_ID = "ulyanovsk-second-cathedral-2026-pilot-local-v1"
+const val LEGACY_SYNTHETIC_SNAPSHOT_ID = "synthetic-ulsk-demo-2026-08-v1"
 const val PILOT_LOCAL_PRODUCTION_TRUST_ASSET = "pilot-local-production-trust-bundle.json"
 const val PILOT_LOCAL_STAGING_TRUST_ASSET = "pilot-local-staging-trust-bundle.json"
 const val PILOT_LOCAL_TEST_TRUST_ASSET = "pilot-local-test-trust-bundle.json"

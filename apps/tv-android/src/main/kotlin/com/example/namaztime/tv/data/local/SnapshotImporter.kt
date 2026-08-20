@@ -25,6 +25,8 @@ sealed interface SnapshotImportResult {
     ) : SnapshotImportResult
 
     data class AlreadyActive(val snapshotId: String) : SnapshotImportResult
+
+    data class SelectionChanged(val activeSnapshotId: String?) : SnapshotImportResult
 }
 
 class SnapshotImportException(val code: String) : IllegalStateException(code)
@@ -37,7 +39,23 @@ class SnapshotImporter(
     internal suspend fun importAndActivate(snapshot: SnapshotPayload): SnapshotImportResult =
         importAndActivate(SnapshotActivationGate.bundledSynthetic(snapshot))
 
-    suspend fun importAndActivate(input: ActivatableSnapshot): SnapshotImportResult {
+    suspend fun importAndActivate(input: ActivatableSnapshot): SnapshotImportResult =
+        importAndActivate(input, replaceableActiveSnapshotIds = null)
+
+    suspend fun replaceAndActivate(
+        input: ActivatableSnapshot,
+        replaceableActiveSnapshotIds: Set<String>,
+    ): SnapshotImportResult {
+        require(replaceableActiveSnapshotIds.isNotEmpty()) {
+            "replaceable active snapshot IDs must not be empty"
+        }
+        return importAndActivate(input, replaceableActiveSnapshotIds)
+    }
+
+    private suspend fun importAndActivate(
+        input: ActivatableSnapshot,
+        replaceableActiveSnapshotIds: Set<String>?,
+    ): SnapshotImportResult {
         val snapshot = input.payload
         timeEngine.validate(snapshot.toTimeEngineInput())?.let { code ->
             throw SnapshotImportException("time_engine_${code.lowercase(Locale.ROOT)}")
@@ -45,6 +63,13 @@ class SnapshotImporter(
         return database.withTransaction {
             val dao = database.snapshotDao()
             val selection = dao.getSelection()
+            val replacedSnapshotId = replaceableActiveSnapshotIds?.let { replaceableIds ->
+                val activeSnapshotId = selection?.activeSnapshotId
+                if (activeSnapshotId !in replaceableIds) {
+                    return@withTransaction SnapshotImportResult.SelectionChanged(activeSnapshotId)
+                }
+                activeSnapshotId
+            }
             if (dao.snapshotExists(snapshot.snapshotId)) {
                 if (selection?.activeSnapshotId == snapshot.snapshotId) {
                     return@withTransaction SnapshotImportResult.AlreadyActive(snapshot.snapshotId)
@@ -137,13 +162,18 @@ class SnapshotImporter(
             }
 
             beforeActivation.run(snapshot.snapshotId)
-            val previous = selection?.activeSnapshotId
+            val previous = if (replaceableActiveSnapshotIds == null) {
+                selection?.activeSnapshotId
+            } else {
+                null
+            }
             dao.setSelection(
                 SnapshotSelectionEntity(
                     activeSnapshotId = snapshot.snapshotId,
                     previousSnapshotId = previous,
                 ),
             )
+            replacedSnapshotId?.let { dao.deleteSnapshot(it) }
             SnapshotImportResult.Activated(snapshot.snapshotId, previous)
         }
     }

@@ -11,6 +11,7 @@ import com.example.namaztime.tv.data.local.SnapshotImporter
 import com.example.namaztime.tv.data.local.SnapshotSelectionGuard
 import com.example.namaztime.tv.data.snapshot.AndroidSnapshotAssetSource
 import com.example.namaztime.tv.data.snapshot.BundledSnapshotBootstrapper
+import com.example.namaztime.tv.data.snapshot.LEGACY_SYNTHETIC_SNAPSHOT_ID
 import com.example.namaztime.tv.data.snapshot.PILOT_LOCAL_SNAPSHOT_ASSET
 import com.example.namaztime.tv.data.snapshot.PilotLocalSnapshotTrust
 import com.example.namaztime.tv.data.snapshot.SnapshotActivationGate
@@ -51,6 +52,7 @@ class MainActivity : ComponentActivity() {
                 activationGate = { bytes ->
                     SnapshotActivationGate.authenticated(bytes, pilotLocalVerifier)
                 },
+                replaceableActiveSnapshotIds = setOf(LEGACY_SYNTHETIC_SNAPSHOT_ID),
             )
         } else {
             BundledSnapshotBootstrapper(

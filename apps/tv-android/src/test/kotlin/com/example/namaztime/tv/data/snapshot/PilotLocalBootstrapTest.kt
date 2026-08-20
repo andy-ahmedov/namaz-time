@@ -72,6 +72,27 @@ class PilotLocalBootstrapTest {
     }
 
     @Test
+    fun knownLegacySyntheticInstallIsAtomicallyReplacedWithoutSyntheticRollback() = runTest {
+        SnapshotImporter(database).importAndActivate(SnapshotDecoder.decode(syntheticSnapshotBytes()))
+        val verifier = PilotLocalSnapshotTrust.verifier(context)
+        val bootstrapper = BundledSnapshotBootstrapper(
+            selectionGuard = SnapshotSelectionGuard(database, verifier.selectionTrust()),
+            importer = SnapshotImporter(database),
+            assetSource = AndroidSnapshotAssetSource(context, PILOT_LOCAL_SNAPSHOT_ASSET),
+            activationGate = { bytes -> SnapshotActivationGate.authenticated(bytes, verifier) },
+            replaceableActiveSnapshotIds = setOf(LEGACY_SYNTHETIC_SNAPSHOT_ID),
+        )
+
+        bootstrapper.bootstrapIfNeeded()
+
+        val selection = database.snapshotDao().getSelection()
+        assertEquals(PILOT_LOCAL_SNAPSHOT_ID, selection?.activeSnapshotId)
+        assertEquals(null, selection?.previousSnapshotId)
+        assertEquals(false, database.snapshotDao().snapshotExists(LEGACY_SYNTHETIC_SNAPSHOT_ID))
+        assertEquals(SnapshotBootstrapState.Ready(PILOT_LOCAL_SNAPSHOT_ID), bootstrapper.state.value)
+    }
+
+    @Test
     fun d014KeepsLastKnownGoodOnlyInsideCoverageAndFailsClosedAfterYearEnd() = runTest {
         val verifier = PilotLocalSnapshotTrust.verifier(context)
         val bytes = AndroidSnapshotAssetSource(context, PILOT_LOCAL_SNAPSHOT_ASSET).read()

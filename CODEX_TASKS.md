@@ -424,3 +424,11 @@ settings instead of pretending to enable device-owner/autostart. D-pad tests
 cover every section/action and 720p/1080p/4K safe frames. The product owner will
 perform emulator runtime acceptance separately, so that evidence remains
 `UNKNOWN` rather than being promoted from local tests.
+
+An in-place update from the prior pilot APK is explicit rather than requiring
+data clearing: under the same Room transaction, only
+`synthetic-ulsk-demo-2026-08-v1` may be replaced, the authenticated real pilot
+snapshot becomes active and the synthetic row is deleted instead of becoming
+last-known-good. A concurrent/unexpected active ID makes replacement abort
+without persistence, so this debug migration cannot overwrite a paired real or
+remote snapshot.

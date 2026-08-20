@@ -46,6 +46,8 @@ class AuthenticatedRoomSnapshotActivator(
                 is SnapshotImportResult.Activated -> result.previousSnapshotId
                 is SnapshotImportResult.AlreadyActive ->
                     snapshotDao.getSelection()?.previousSnapshotId
+                is SnapshotImportResult.SelectionChanged ->
+                    throw SnapshotActivationRejectedException("snapshot_import_selection_changed")
             }
         } catch (error: SnapshotImportException) {
             throw SnapshotActivationRejectedException("snapshot_import_${error.code}")

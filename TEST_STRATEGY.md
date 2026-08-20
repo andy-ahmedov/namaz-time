@@ -164,7 +164,11 @@ JVM/Robolectric/build facts. Settings tests traverse every section and real
 local action with D-pad input, verify Room-projected provenance/policy state,
 Russian safe defaults, persisted English selection and localized main/error/QR
 semantics. Responsive settings bounds remain pinned at 720p, 1080p-density and
-4K-density. The product owner owns emulator acceptance.
+4K-density. An upgrade regression seeds the exact legacy synthetic active ID,
+then proves authenticated pilot activation and synthetic removal occur in one
+transaction with no previous pointer; a negative importer regression proves an
+unexpected active ID is not overwritten. The product owner owns emulator
+acceptance.
 
 ## Physical device tests
 

@@ -2,6 +2,7 @@ package com.example.namaztime.tv.data.snapshot
 
 import android.content.Context
 import com.example.namaztime.tv.data.local.SnapshotImportException
+import com.example.namaztime.tv.data.local.SnapshotImportResult
 import com.example.namaztime.tv.data.local.SnapshotImporter
 import com.example.namaztime.tv.data.local.SnapshotSelectionResolver
 import com.example.namaztime.tv.data.local.SnapshotSelectionResolution
@@ -40,6 +41,7 @@ class BundledSnapshotBootstrapper(
     private val assetSource: SnapshotAssetSource?,
     private val activationGate: (ByteArray) -> ActivatableSnapshot =
         SnapshotActivationGate::bundledSynthetic,
+    private val replaceableActiveSnapshotIds: Set<String> = emptySet(),
 ) {
     private val mutableState = MutableStateFlow<SnapshotBootstrapState>(
         SnapshotBootstrapState.Pending,
@@ -55,23 +57,29 @@ class BundledSnapshotBootstrapper(
             mutableState.value = SnapshotBootstrapState.Diagnostic("SNAPSHOT_DATABASE_READ_FAILED")
             return
         }
-        when (selection) {
+        val replaceableSelectionId = when (selection) {
             is SnapshotSelectionResolution.Active -> {
-                mutableState.value = SnapshotBootstrapState.Ready(selection.snapshotId)
-                return
+                if (selection.snapshotId !in replaceableActiveSnapshotIds) {
+                    mutableState.value = SnapshotBootstrapState.Ready(selection.snapshotId)
+                    return
+                }
+                selection.snapshotId
             }
             is SnapshotSelectionResolution.Recovered -> {
-                mutableState.value = SnapshotBootstrapState.Ready(
-                    selection.snapshotId,
-                    recoveryCode = "SNAPSHOT_PREVIOUS_RESTORED",
-                )
-                return
+                if (selection.snapshotId !in replaceableActiveSnapshotIds) {
+                    mutableState.value = SnapshotBootstrapState.Ready(
+                        selection.snapshotId,
+                        recoveryCode = "SNAPSHOT_PREVIOUS_RESTORED",
+                    )
+                    return
+                }
+                selection.snapshotId
             }
             SnapshotSelectionResolution.Corrupt -> {
                 mutableState.value = SnapshotBootstrapState.Diagnostic("SNAPSHOT_ACTIVE_INVALID")
                 return
             }
-            SnapshotSelectionResolution.Missing -> Unit
+            SnapshotSelectionResolution.Missing -> null
         }
 
         if (assetSource == null) {
@@ -81,8 +89,16 @@ class BundledSnapshotBootstrapper(
 
         mutableState.value = try {
             val snapshot = activationGate(assetSource.read())
-            importer.importAndActivate(snapshot)
-            SnapshotBootstrapState.Ready(snapshot.payload.snapshotId)
+            val result = if (replaceableSelectionId == null) {
+                importer.importAndActivate(snapshot)
+            } else {
+                importer.replaceAndActivate(snapshot, replaceableActiveSnapshotIds)
+            }
+            when (result) {
+                is SnapshotImportResult.SelectionChanged ->
+                    SnapshotBootstrapState.Diagnostic("SNAPSHOT_SELECTION_CHANGED")
+                else -> SnapshotBootstrapState.Ready(snapshot.payload.snapshotId)
+            }
         } catch (error: SnapshotValidationException) {
             SnapshotBootstrapState.Diagnostic("SNAPSHOT_${error.code.uppercase()}")
         } catch (error: IOException) {

@@ -85,6 +85,23 @@ class SnapshotImporterTest {
     }
 
     @Test
+    fun replacementCannotOverwriteAnUnexpectedActiveSnapshot() = runTest {
+        val active = SnapshotDecoder.decode(syntheticFixture())
+        val replacement = active.copy(snapshotId = "synthetic-approved-pilot-replacement")
+        val importer = SnapshotImporter(database)
+        importer.importAndActivate(active)
+
+        val result = importer.replaceAndActivate(
+            SnapshotActivationGate.bundledSynthetic(replacement),
+            replaceableActiveSnapshotIds = setOf("different-legacy-snapshot"),
+        )
+
+        assertEquals(SnapshotImportResult.SelectionChanged(active.snapshotId), result)
+        assertEquals(active.snapshotId, dao.getSelection()?.activeSnapshotId)
+        assertEquals(false, dao.snapshotExists(replacement.snapshotId))
+    }
+
+    @Test
     fun authenticatedGoFixturePassesTheOnlySignedActivationGate() = runTest {
         val fixture = File(
             "../../fixtures/verification/synthetic-signed-snapshot.json",

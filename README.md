@@ -146,6 +146,10 @@ snapshot: мечеть, provenance/approval, +5 икамат, пятничная
 автозапуска честно показывает неактивный режим и открывает системные настройки,
 не обещая device-owner/kiosk. Новый emulator runtime прогон выполняет владелец
 продукта отдельно; локальные тесты не маркируются как `CONFIRMED_RUNTIME`.
+При установке `0.4.0-pilot-local` поверх прежнего demo APK очищать данные не
+обязательно: приложение атомарно заменяет только известный legacy synthetic
+snapshot. Любой другой активный real/remote snapshot эта миграция не трогает;
+synthetic snapshot не сохраняется как rollback.
 T011 добавляет независимое PostgreSQL-хранилище production pairing: случайные
 одноразовые коды и device tokens, только hash/HMAC at rest, expiry/rate limits,
 атомарный single-use redeem, revocation, mosque-scoped composite constraints и
