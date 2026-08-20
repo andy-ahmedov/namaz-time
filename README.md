@@ -43,7 +43,18 @@
    make lint
    ```
 
-5. Продолжить с задачей `T008` из [CODEX_TASKS.md](CODEX_TASKS.md).
+5. Проверить локально завершённый Phase 1 и открытые pilot decisions в
+   [PLANS.md](PLANS.md); не начинать Phase 2 до отдельного решения.
+
+Реальный pilot fixture можно безопасно прогнать до candidate/diff без
+одобрения и signing key:
+
+```bash
+go run ./cmd/ingestor inspect \
+  --fixture-dir fixtures/pilot/ulyanovsk-2026-08
+```
+
+Команда не имеет approve/publish режима и возвращает `needs_review`.
 
 Gradle запускается через репозиторный wrapper. Android application ID
 `com.example.namaztime.tv` является временным значением T001 и должен быть
@@ -91,6 +102,11 @@ flags и полной provenance/theme metadata. T005 добавил адапт�
 икамата, отдельные пятничные сессии, точный countdown и безопасные состояния
 для отсутствующего покрытия/DST-конфликтов. T007 добавил локальную генерацию
 QR, строгую HTTPS/lifecycle-валидацию, безопасное скрытие невалидных и
-просроченных кампаний и operator preview без сетевого разрешения. Следующий
-этап — manual-import/publication prototype T008. Runtime-проверка на физическом
-Android TV/box ещё не выполнена и не подменяется Robolectric-тестом.
+просроченных кампаний и operator preview без сетевого разрешения. T008 добавил
+строгий manual CSV provider, raw/transcription/normalized provenance,
+детерминированный diff, approval gate, canonical Ed25519 signing и
+cross-platform Go/Android verification. Реальное расписание Ульяновска
+сохранено как `needs_review`, потому что D-002 не называет religious approver;
+оно не опубликовано и не названо официальным. Локальный Phase 1 завершён.
+Runtime-проверка на физическом Android TV/box ещё не выполнена и не
+подменяется Robolectric-тестом.

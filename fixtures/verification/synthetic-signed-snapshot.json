@@ -1,0 +1,55 @@
+{
+  "schema_version": "1.0",
+  "snapshot_id": "synthetic-android-verification-v1",
+  "data_classification": "synthetic",
+  "generated_at": "2026-08-20T00:00:00Z",
+  "mosque": {
+    "id": "synthetic-verification-mosque",
+    "name": "Synthetic verification fixture",
+    "country_code": "ZZ",
+    "timezone": "Europe/Ulyanovsk"
+  },
+  "source": {
+    "source_id": "synthetic-verification-source",
+    "kind": "manual_import",
+    "authority_name": "Synthetic fixture — not an authority",
+    "geographic_scope": "Cross-platform verification tests only",
+    "retrieved_at": "2026-08-20T00:00:00Z",
+    "effective_from": "2026-08-20",
+    "effective_to": "2026-08-20",
+    "raw_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "parser_version": "manual-csv/v1",
+    "license_reference": "Synthetic fixture",
+    "attribution": "Not real prayer times",
+    "approval": {
+      "status": "approved",
+      "approval_id": "approval-android-verification-fixture",
+      "approved_by": "fixture-generator",
+      "approved_at": "2026-08-20T00:00:00Z",
+      "approval_scope": "Synthetic verification fixture only"
+    }
+  },
+  "coverage": {
+    "from": "2026-08-20",
+    "to": "2026-08-20"
+  },
+  "prayer_days": [
+    {
+      "date": "2026-08-20",
+      "fajr": "03:00",
+      "sunrise": "05:00",
+      "dhuhr": "12:10",
+      "asr": "16:00",
+      "maghrib": "19:00",
+      "isha": "21:00",
+      "flags": [
+        "synthetic"
+      ]
+    }
+  ],
+  "integrity": {
+    "canonical_sha256": "ab243b30bb0be93d071ff86a8aa558ecfb438816f0fdd678887872c377e8fa7c",
+    "signing_key_id": "phase1-fixture-key-2026-08",
+    "signature_ed25519_base64": "S7Esv+f17JKgZLK+CmKTWUYUV6x+cfvrVu9UiAZhBpOBsF6O2EQf5JGsEshVo5n8iPUXiftrdptQH+veFB5XAA=="
+  }
+}

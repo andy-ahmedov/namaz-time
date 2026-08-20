@@ -38,22 +38,30 @@
 - `contracts/prayer-snapshot.schema.json`
 - `contracts/source-record.schema.json`
 - `examples/synthetic-prayer-snapshot.json`
+- `fixtures/pilot/ulyanovsk-2026-08/` — authorized raw August 2026 image,
+  provenance/source record and controlled transcription; unapproved.
+- `fixtures/synthetic/manual-annual-2025.csv` — static 365-day parser/publication golden.
+- `fixtures/verification/` — signed synthetic snapshot plus public test key only.
 - `docs/adr/0001-source-authority-and-signed-snapshots.md`
 - `docs/adr/0002-tv-offline-first.md`
+- `docs/adr/0003-canonical-snapshot-signatures.md`
 
 ## Technical scaffold
 
 - `go.mod` — Go module identity and language baseline.
 - `cmd/api/` — compilable control-plane API entry-point placeholder.
-- `cmd/ingestor/` — compilable ingestion entry-point placeholder.
+- `cmd/ingestor/` — local manual-fixture inspection CLI; it cannot approve or publish.
 - `internal/domain/` — source-independent snapshot types, validation and contract fixtures.
-- `internal/providers/` — provider adapter package boundary.
+- `internal/providers/manual/` — strict raw-artifact + manual CSV candidate provider.
+- `internal/publication/` — deterministic diff, approval gate, canonical signing and verification.
 - `settings.gradle.kts`, `build.gradle.kts`, `gradle/` — Android Gradle build and wrapper.
 - `apps/tv-android/` — Compose for TV shell, D-pad/UI tests, DataStore
   preferences, strict bundled-snapshot bootstrap, Room v1 baseline and tested
   v1→v2→v3 source-flags/provenance migrations, and the responsive offline main
   prayer display with a mosque-timezone next-event/iqamah/Jumu'ah engine and a
-  locally generated, lifecycle-validated optional QR campaign panel.
+  locally generated, lifecycle-validated optional QR campaign panel. Signed
+  production snapshots require cross-platform Ed25519 authenticity evidence
+  before the atomic Room importer can accept them.
 - `.github/workflows/ci.yml` — documentation, Go and Android CI gates.
 
 ## Quality, security and operations

@@ -1,0 +1,6 @@
+{
+  "signing_key_id": "phase1-fixture-key-2026-08",
+  "public_key_ed25519_base64": "VJYq/F5ADWNXu45g3hlgnzQFYb7ICFvdTWB2NDMW4fA=",
+  "classification": "test-only-public-key",
+  "private_key_retained": false
+}

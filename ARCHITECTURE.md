@@ -154,6 +154,27 @@ and clearly labels it as preview. The audit model stores campaign ID plus a
 SHA-256 target fingerprint; durable publication audit and domain allowlisting
 remain later work pending D-010.
 
+T008 implements the first provider as a strict, network-free `manual-csv/v1`
+adapter. Raw artifact capture is separate from the human transcription; the
+candidate binds both SHA-256 values, a normalized-candidate hash, parser
+version, mosque scope and named IANA timezone. Exact header drift, invalid
+times/order, gaps, duplicates, scope mismatch, insufficient coverage and
+ungranted permission fail closed. Source markers, large day-to-day deltas and
+collective-in-mosques values remain warnings that a later approval must
+explicitly acknowledge. The provider can emit only `needs_review` or
+`validation_failed`. `Parse` revalidates the complete source record even when
+the caller bypasses JSON decoding, so a manual transcription cannot claim an
+`official_*` provider kind or a disabled retrieval policy.
+
+The separate publication package recomputes the candidate and diff bindings,
+requires an exact human approval, builds a deterministic snapshot and signs
+the canonical payload defined by ADR 0003. Android accepts production data
+only through that authenticated-byte gate; the only other activation path is
+the explicitly synthetic bundled fixture. The app still has no network
+permission and all activation remains inside the existing Room transaction.
+Go and Android both reject malformed UTF-8, explicit JSON nulls and invalid
+typed iqamah, Jumu'ah, campaign or theme children before activation.
+
 Small operator UI preferences, including the last focused settings section and
 reduced-motion default, use a single Preferences DataStore instance. Schedule
 data never moves into DataStore, and the Compose shell contains no network
@@ -171,6 +192,12 @@ client.
 8. **Sign.** Sign the canonical payload with an offline-protected Ed25519 publication key.
 9. **Roll out.** Publish manifest first to a canary group, then broader devices.
 10. **Observe.** Track activation, coverage remaining, signature failures and rollback.
+
+The Phase 1 implementation of steps 1–8 is local and file-backed. It does not
+create an approval actor, production key or rollout channel. The real August
+2026 Ulyanovsk artifact reaches `needs_review` only; the static 365-day
+synthetic golden fixture proves deterministic publication without inventing
+missing real months.
 
 ## Provider interface
 

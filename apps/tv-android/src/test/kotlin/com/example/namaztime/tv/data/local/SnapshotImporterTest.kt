@@ -3,13 +3,20 @@ package com.example.namaztime.tv.data.local
 import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
+import com.example.namaztime.tv.data.snapshot.SnapshotActivationGate
+import com.example.namaztime.tv.data.snapshot.SnapshotAuthenticityVerifier
 import com.example.namaztime.tv.data.snapshot.SnapshotDecoder
 import com.example.namaztime.tv.data.snapshot.SnapshotAssetReference
 import com.example.namaztime.tv.data.snapshot.SnapshotIqamahOverride
 import com.example.namaztime.tv.data.snapshot.SnapshotIqamahRule
 import com.example.namaztime.tv.data.snapshot.SnapshotIqamahValue
+import com.example.namaztime.tv.data.snapshot.SnapshotValidationException
 import java.io.File
+import java.util.Base64
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -75,6 +82,52 @@ class SnapshotImporterTest {
         assertEquals(SnapshotImportResult.AlreadyActive(snapshot.snapshotId), result)
         assertEquals(1, dao.countSnapshots())
         assertEquals(3, dao.countPrayerDays(snapshot.snapshotId))
+    }
+
+    @Test
+    fun authenticatedGoFixturePassesTheOnlySignedActivationGate() = runTest {
+        val fixture = File(
+            "../../fixtures/verification/synthetic-signed-snapshot.json",
+        ).readBytes()
+        val key = Json.parseToJsonElement(
+            File("../../fixtures/verification/phase1-public-key.json").readText(),
+        ).jsonObject
+        val keyId = key.getValue("signing_key_id").jsonPrimitive.content
+        val publicKey = Base64.getDecoder().decode(
+            key.getValue("public_key_ed25519_base64").jsonPrimitive.content,
+        )
+        val activatable = SnapshotActivationGate.authenticated(
+            fixture,
+            SnapshotAuthenticityVerifier(mapOf(keyId to publicKey)),
+        )
+
+        val result = SnapshotImporter(database).importAndActivate(activatable)
+
+        assertEquals(
+            SnapshotImportResult.Activated("synthetic-android-verification-v1", null),
+            result,
+        )
+        assertEquals("synthetic-android-verification-v1", dao.getSelection()?.activeSnapshotId)
+    }
+
+    @Test
+    fun unverifiedProductionPayloadCannotReachTheImporter() = runTest {
+        val production = SnapshotDecoder.decode(
+            syntheticFixture().decodeToString()
+                .replaceFirst(
+                    "\"data_classification\": \"synthetic\"",
+                    "\"data_classification\": \"production\"",
+                )
+                .encodeToByteArray(),
+        )
+
+        try {
+            SnapshotImporter(database).importAndActivate(production)
+            fail("expected production authenticity rejection")
+        } catch (error: SnapshotValidationException) {
+            assertEquals("bundled_requires_synthetic", error.code)
+        }
+        assertEquals(0, dao.countSnapshots())
     }
 
     @Test

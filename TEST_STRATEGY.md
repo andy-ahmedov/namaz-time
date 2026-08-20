@@ -74,6 +74,10 @@ No live external site is required for normal CI. A separate scheduled canary may
 - correct SHA-256;
 - valid/invalid/unknown-key Ed25519 signature;
 - tampered byte rejection;
+- malformed UTF-8 and schema-only optional-child drift rejection in Go and
+  Android;
+- correctly signed invalid iqamah, Jumu'ah, campaign and theme children fail
+  closed;
 - payload size limit;
 - duplicate date rejection;
 - insufficient future coverage rejection;
@@ -160,6 +164,12 @@ make test-android-instrumented   # device/emulator job
 ```
 
 A provider/publication PR cannot merge without fixtures and diff/validation tests.
+
+T008 adds a static 365-day synthetic CSV golden, a real authorized one-month
+pilot candidate fixture and a public cross-platform signature fixture. The
+pilot fixture is validation/diff evidence only while D-002 is open. Direct
+parser-entry provenance bypasses, normalized metadata/Hijri-only diffs and
+cross-runtime malformed UTF-8 are regression-tested.
 
 ## Release evidence
 

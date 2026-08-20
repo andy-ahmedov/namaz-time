@@ -120,10 +120,16 @@ scope
 reason
 approved_at
 raw_sha256
+transcription_sha256
+normalized_sha256
 diff_sha256
+parser_version
+acknowledged_warning_codes
 ```
 
-Approval must bind to exact raw/diff hashes so a changed candidate cannot reuse an old decision.
+Approval must bind to exact raw/transcription/normalized/diff hashes and parser
+version so a changed candidate cannot reuse an old decision. Every unresolved
+parser-warning code must be acknowledged explicitly.
 
 ### `approved_schedule`
 
@@ -312,6 +318,9 @@ request_id
 ## Snapshot canonicalization
 
 Use a documented deterministic JSON encoding or sign a canonical binary envelope. Do not sign arbitrary serializer output that can reorder fields between versions. The schema must define integer/string formats and exclude timestamps generated after signing.
+
+Phase 1 canonical JSON and trust-boundary details are fixed in
+[ADR 0003](docs/adr/0003-canonical-snapshot-signatures.md).
 
 ## Tenant isolation
 

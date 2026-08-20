@@ -161,6 +161,11 @@ published -> superseded
 
 Only named authorized roles can approve. Publication is reversible and separate from approval.
 
+For manual transcription, approval also binds the raw-artifact,
+transcription, normalized-candidate and diff SHA-256 values plus parser
+version. Parser warnings are not informational decoration: every warning code
+must be explicitly acknowledged or publication fails closed.
+
 ## Snapshot provenance
 
 Every published TV snapshot includes:
@@ -173,6 +178,7 @@ geographic_scope
 canonical_reference
 retrieved_at
 raw_sha256
+transcription_sha256 (when human transcription is separate from the raw artifact)
 parser_version
 calculation_profile (nullable)
 approval_id

@@ -121,6 +121,19 @@ The presence of analytics/location libraries in a competitor APK is not a reason
 - no payment credentials handled by TV app;
 - expire campaigns automatically.
 
+## Snapshot authenticity
+
+- canonical SHA-256 and Ed25519 verification precede strict snapshot decoding
+  and Room activation;
+- signing-key IDs resolve only through an injected public-key trust store;
+- unknown keys, tampering, invalid signatures and payloads over 5 MiB fail
+  closed without changing last-known-good;
+- Android uses the official Tink Android Ed25519 verifier for minSdk 28 rather
+  than assuming a newer platform JCA provider;
+- the Phase 1 verification key is public/test-only; no private key or
+  production trust anchor is stored in Git or the APK;
+- production key custody, rotation and revocation remain D-013.
+
 ## Asset upload safety
 
 - server-side content-type sniffing;

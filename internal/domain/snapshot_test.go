@@ -55,6 +55,136 @@ func TestSyntheticSnapshotMatchesJSONSchemaAndDomain(t *testing.T) {
 	}
 }
 
+func TestDecodeSnapshotRejectsMalformedUTF8(t *testing.T) {
+	t.Parallel()
+
+	data := readRepositoryFile(t, "examples", "synthetic-prayer-snapshot.json")
+	data = bytes.Replace(data, []byte("Synthetic"), []byte{'S', 0xff}, 1)
+	if _, err := DecodeSnapshot(data); err == nil {
+		t.Fatal("DecodeSnapshot() error = nil for malformed UTF-8")
+	}
+}
+
+func TestDecodeSnapshotRejectsSchemaOnlyShapeDrift(t *testing.T) {
+	t.Parallel()
+
+	valid := readRepositoryFile(t, "examples", "synthetic-prayer-snapshot.json")
+	tests := []struct {
+		name string
+		data []byte
+	}{
+		{
+			name: "required numeric property omitted",
+			data: bytes.Replace(valid, []byte(`"priority": 100,`), nil, 1),
+		},
+		{
+			name: "explicit null",
+			data: bytes.Replace(valid, []byte(`"subtitle": "Только для проверки интерфейса"`), []byte(`"subtitle": null`), 1),
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			if bytes.Equal(test.data, valid) {
+				t.Fatal("test mutation did not apply")
+			}
+			if _, err := DecodeSnapshot(test.data); err == nil {
+				t.Fatal("DecodeSnapshot() error = nil for schema-only drift")
+			}
+		})
+	}
+}
+
+func TestSnapshotValidationRejectsMalformedOptionalSections(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		mutate   func(*Snapshot)
+		wantPath string
+		wantCode string
+	}{
+		{
+			name: "iqamah rule",
+			mutate: func(snapshot *Snapshot) {
+				snapshot.IqamahRules = []IqamahRule{{
+					ID: "rule", Prayer: "invalid", ValidFrom: "2026-08-20", ValidTo: "2026-08-20",
+					Weekdays: []int{1}, Value: IqamahValue{Mode: "fixed_time", FixedTime: "13:00"},
+				}}
+			},
+			wantPath: "iqamah_rules[0].prayer",
+			wantCode: "unsupported_value",
+		},
+		{
+			name: "iqamah override",
+			mutate: func(snapshot *Snapshot) {
+				snapshot.IqamahOverrides = []IqamahOverride{{
+					Date: "2026-08-20", Prayer: "dhuhr",
+					Value: IqamahValue{Mode: "offset_after_adhan", OffsetMinutes: intPointer(241)},
+				}}
+			},
+			wantPath: "iqamah_date_overrides[0].value.offset_minutes",
+			wantCode: "out_of_range",
+		},
+		{
+			name: "jumuah",
+			mutate: func(snapshot *Snapshot) {
+				snapshot.JumuahSessions = []JumuahSession{{
+					ID: "j1", Label: "Friday", SalahTime: "25:00",
+					ValidFrom: "2026-08-20", ValidTo: "2026-08-20",
+				}}
+			},
+			wantPath: "jumuah_sessions[0].salah_time",
+			wantCode: "invalid_time",
+		},
+		{
+			name: "campaign",
+			mutate: func(snapshot *Snapshot) {
+				snapshot.Campaigns = []Campaign{{
+					ID: "c1", Kind: "website", URL: "http://example.org", Title: "Website",
+					StartsAt: "2026-08-20T00:00:00Z", EndsAt: "2026-08-21T00:00:00Z", Placement: "always",
+				}}
+			},
+			wantPath: "campaigns[0].url",
+			wantCode: "invalid_https_url",
+		},
+		{
+			name: "campaign lowercase RFC3339 range",
+			mutate: func(snapshot *Snapshot) {
+				snapshot.Campaigns = []Campaign{{
+					ID: "c1", Kind: "website", URL: "https://example.org", Title: "Website",
+					StartsAt: "2026-08-21t00:00:00z", EndsAt: "2026-08-20t00:00:00z", Placement: "always",
+				}}
+			},
+			wantPath: "campaigns[0]",
+			wantCode: "invalid_range",
+		},
+		{
+			name: "theme asset",
+			mutate: func(snapshot *Snapshot) {
+				snapshot.Theme = &Theme{
+					ThemeID: "theme", OverlayOpacity: 0.5,
+					LandscapeAsset: &AssetReference{AssetID: "asset", SHA256: "bad", MediaType: "image/png", ByteLength: 1, Width: 320, Height: 180},
+				}
+			},
+			wantPath: "theme.landscape_asset.sha256",
+			wantCode: "invalid_sha256",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			snapshot := cloneSnapshot(t, loadSyntheticSnapshot(t))
+			test.mutate(&snapshot)
+			assertValidationError(t, snapshot, test.wantPath, test.wantCode)
+		})
+	}
+}
+
+func intPointer(value int) *int { return &value }
+
 func TestSnapshotValidationRejectsInvalidSchedules(t *testing.T) {
 	t.Parallel()
 

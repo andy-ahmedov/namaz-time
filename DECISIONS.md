@@ -113,6 +113,24 @@ These are proposals until accepted by the product owner:
   the QR is software-decoded in a JVM test and Compose bounds are checked with
   Robolectric at 720p, 1080p and 4K density profiles.
 
+## T008 manual-publication record
+
+- `CONFIRMED_PUBLIC` — the retained Ulyanovsk image visibly covers August 2026,
+  distinguishes Dhuhr onset from a collective-in-mosques column and prints the
+  `rdumul` / `rdumul.ru` / `dum.ul` / `dumul` attribution. Its exact SHA-256 is
+  `11b4aaaa4765b486103e6532fb560bde9dec6617215fad9c462bd9253cba993c`.
+- `PROPOSAL` — manual imports bind raw-artifact, transcription, normalized
+  candidate and deterministic diff hashes plus parser version. Every parser
+  warning code requires explicit approval acknowledgement before publication.
+- `PROPOSAL` — snapshot signing follows ADR 0003 canonical JSON plus Ed25519;
+  only authenticated bytes or the explicitly synthetic bundled fixture can
+  reach Room activation.
+- `UNKNOWN` — D-002 remains open. The pilot candidate is `needs_review` and is
+  not labeled approved/official; the `13:53` collective value, starred Fajr/Isha
+  values and 31 August Dhuhr value remain verbatim review evidence.
+- `UNKNOWN` — D-013 remains open. The committed key is public and test-only;
+  its private half was discarded and no production trust anchor was selected.
+
 ## Decision template
 
 ```text

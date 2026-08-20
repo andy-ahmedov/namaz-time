@@ -73,15 +73,9 @@ class BundledSnapshotBootstrapper(
         }
 
         mutableState.value = try {
-            val snapshot = SnapshotDecoder.decode(assetSource.read())
-            if (snapshot.dataClassification != "synthetic") {
-                throw SnapshotValidationException(
-                    path = "data_classification",
-                    code = "bundled_requires_synthetic",
-                )
-            }
+            val snapshot = SnapshotActivationGate.bundledSynthetic(assetSource.read())
             importer.importAndActivate(snapshot)
-            SnapshotBootstrapState.Ready(snapshot.snapshotId)
+            SnapshotBootstrapState.Ready(snapshot.payload.snapshotId)
         } catch (error: SnapshotValidationException) {
             SnapshotBootstrapState.Diagnostic("SNAPSHOT_${error.code.uppercase()}")
         } catch (error: IOException) {

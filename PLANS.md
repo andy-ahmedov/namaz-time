@@ -31,7 +31,7 @@ Goal: one TV shows a synthetic, then approved, offline schedule for one mosque.
 | T005 main prayer screen | DONE | responsive offline layout with six adhan rows, explicit missing/not-applicable iqamah, explicit preview-day/time/next-event placeholders, conservative source states, fixed-width countdown, recovery warning and D-pad settings path; measured bounds tested at 720p/1080p/4K profiles |
 | T006 time/next-event engine | DONE | mosque-IANA clock, exact boundaries, next-day Fajr, explicit sunrise policy, iqamah override/range/weekday/priority resolution, separate Friday sessions and fail-closed DST/config diagnostics; exhaustive local tests pass |
 | T007 QR campaign | DONE | local ZXing QR; exact HTTPS/lifecycle validation; lifecycle-independent operator preview; hashed audit stub; invalid, expired or overlapping campaigns fail closed without affecting prayer display; 720p/1080p/4K Robolectric coverage |
-| T008 manual approved CSV/JSON provider | TODO | raw hash → diff → approval → signed snapshot |
+| T008 manual approved CSV/JSON provider | DONE | strict `manual-csv/v1` provider and inspect CLI; raw/transcription/normalized hashes; gap/order/scope/delta validation; deterministic diff and warning acknowledgements; approval-bound publication; canonical SHA-256 + Ed25519; Go/Android tamper/unknown-key verification; real August pilot retained as `needs_review`, never auto-approved |
 
 Detailed prompts: [CODEX_TASKS.md](CODEX_TASKS.md).
 
@@ -108,3 +108,9 @@ Do not begin until the first pilot is stable.
 - D-010 still requires an approved pilot QR destination/domain; T007 therefore
   exercises only the authorized local mechanism with synthetic `example.org`
   fixtures and does not invent a live campaign.
+- D-013 still requires a production signer/KMS, public-key distribution,
+  rotation and revocation policy. T008 commits only a public test fixture; its
+  ephemeral private key was discarded.
+- local Phase 1 is complete, but a real pilot publication remains intentionally
+  impossible until D-002 approves the exact raw/transcription/diff hashes and
+  acknowledges parser warnings. T009/Phase 2 has not started.

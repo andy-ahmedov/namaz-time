@@ -1,0 +1,38 @@
+{
+  "source_id": "manual-rdumul-ulsk-2026-08",
+  "kind": "manual_import",
+  "authority_name": "rdumul.ru-attributed schedule publisher (legal name unconfirmed)",
+  "authority_branch": "Ulyanovsk schedule shown in the supplied image",
+  "canonical_url": "https://rdumul.ru",
+  "geographic_scope": {
+    "country_code": "RU",
+    "region_codes": ["RU-ULY"],
+    "locality_ids": ["ulyanovsk"],
+    "description": "August 2026 schedule printed for mosques in Ulyanovsk; adoption by the pilot mosque still requires D-002 approval"
+  },
+  "timezone_policy": {
+    "mode": "fixed_iana",
+    "iana_timezone": "Europe/Ulyanovsk"
+  },
+  "retrieval": {
+    "mode": "manual_upload",
+    "cadence": "manual",
+    "stale_after_hours": 744,
+    "honor_etag": false,
+    "honor_last_modified": false,
+    "rate_limit_note": "No network retrieval; operator-supplied file only"
+  },
+  "permission": {
+    "status": "granted",
+    "license_reference": "Product-owner confirmation dated 2026-08-20",
+    "attribution_text": "rdumul · rdumul.ru · dum.ul · dumul",
+    "evidence_reference": "DECISIONS.md D-003 and the retained raw image"
+  },
+  "validation": {
+    "approval_required": true,
+    "max_automatic_delta_minutes": 30,
+    "minimum_coverage_days": 31,
+    "fixture_set": "fixtures/pilot/ulyanovsk-2026-08"
+  },
+  "status": "testing"
+}

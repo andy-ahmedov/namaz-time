@@ -1,6 +1,8 @@
 package com.example.namaztime.tv.data.local
 
 import androidx.room.withTransaction
+import com.example.namaztime.tv.data.snapshot.ActivatableSnapshot
+import com.example.namaztime.tv.data.snapshot.SnapshotActivationGate
 import com.example.namaztime.tv.data.snapshot.SnapshotPayload
 import com.example.namaztime.tv.domain.IqamahDateOverrideInput
 import com.example.namaztime.tv.domain.IqamahRuleInput
@@ -32,7 +34,11 @@ class SnapshotImporter(
     private val beforeActivation: BeforeSnapshotActivation = BeforeSnapshotActivation {},
     private val timeEngine: PrayerTimeEngine = PrayerTimeEngine(),
 ) {
-    suspend fun importAndActivate(snapshot: SnapshotPayload): SnapshotImportResult {
+    internal suspend fun importAndActivate(snapshot: SnapshotPayload): SnapshotImportResult =
+        importAndActivate(SnapshotActivationGate.bundledSynthetic(snapshot))
+
+    suspend fun importAndActivate(input: ActivatableSnapshot): SnapshotImportResult {
+        val snapshot = input.payload
         timeEngine.validate(snapshot.toTimeEngineInput())?.let { code ->
             throw SnapshotImportException("time_engine_${code.lowercase(Locale.ROOT)}")
         }

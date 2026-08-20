@@ -1,0 +1,16 @@
+{
+  "data_classification": "production",
+  "mosque": {
+    "id": "second-cathedral-mosque-ulyanovsk",
+    "name": "Вторая Соборная мечеть Ульяновска",
+    "country_code": "RU",
+    "region": "Ульяновская область",
+    "locality": "Ульяновск, ул. Дзержинского, 18А",
+    "timezone": "Europe/Ulyanovsk"
+  },
+  "artifact_filename": "time-namaz.jpg",
+  "artifact_content_type": "image/jpeg",
+  "artifact_captured_at": "2026-08-19T22:53:41Z",
+  "artifact_sha256": "11b4aaaa4765b486103e6532fb560bde9dec6617215fad9c462bd9253cba993c",
+  "transcription_filename": "schedule.csv"
+}
