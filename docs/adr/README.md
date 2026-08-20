@@ -10,3 +10,4 @@ Create an ADR for durable decisions affecting correctness, source authority, sec
 - [0006 — Device heartbeat is latest-only and non-authoritative](0006-heartbeat-is-latest-only-and-non-authoritative.md)
 - [0007 — Canary rollouts are bounded device assignments](0007-canary-rollouts-are-bounded-device-assignments.md)
 - [0008 — Support bundles are bounded current state](0008-support-bundles-are-bounded-current-state.md)
+- [0009 — Fleet backups restore into a clean database](0009-fleet-backups-restore-into-a-clean-database.md)

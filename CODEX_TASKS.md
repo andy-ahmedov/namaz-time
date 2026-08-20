@@ -195,3 +195,27 @@ missing/cross-mosque devices share `404`; PostgreSQL integration proves the
 bundle is assembled only from current bounded rows and contains no secret/URL;
 HTTP/OpenAPI tests prove strict authentication, `no-store`, stable schema and
 backend error handling; full/race/PostgreSQL gates pass.
+
+## T016 — PostgreSQL backup and restore drill
+
+**Goal:** prove that durable fleet state can be recovered into a clean database
+without weakening schema/version, authentication, assignment or append-only
+audit invariants.
+
+**In scope:** a disposable PostgreSQL 18 logical backup/restore harness; a
+synthetic linked v4 fleet fixture; custom-format archive integrity metadata;
+fail-closed corrupt-archive handling; exact-schema verification; restored
+device/admin authentication, current assignment/latest health reads and audit/
+idempotency mutation guards; production recovery runbook and evidence template.
+
+**Non-goals:** production credentials or data, managed cloud backup setup,
+point-in-time-recovery automation, production RPO/RTO claims, signing-key/raw-
+artifact backup, in-place restore, physical-TV validation, or unblocking T010.
+
+**Acceptance:** `make test-postgres-restore` restores only into a newly created
+database, rejects a truncated archive, verifies schema v4 and the linked fixture
+through repository/service boundaries, and proves restored append-only triggers;
+`make test-postgres`, full/race gates and docs pass. The runbook treats the dump
+as sensitive, separates database/schema ownership from runtime grants, records
+SHA-256 as integrity evidence rather than authenticity, and requires independent
+snapshot-artifact/signing-key recovery.

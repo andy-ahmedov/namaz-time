@@ -107,6 +107,20 @@ elapsed. The long-running API receives no schema-owner DSN: a short-lived
 migration process owns DDL, while the API role only verifies the exact ledger
 version. Cross-mosque denial uses the same `404` as an unknown resource.
 
+PostgreSQL backups are sensitive even though device/admin credentials and
+pairing codes are stored only as verifiers: the archive also contains tenant
+identity, assignment URLs, operational state and audit history. Backup archives
+must use access-controlled encrypted storage and an authenticated/immutable
+inventory; a bare SHA-256 records accidental corruption but does not prove who
+created the archive. Never commit, attach to tickets or expose an archive to a
+TV/device network.
+
+Logical dumps omit owner and ACL restoration. Database roles, least-privilege
+grants and credentials are recreated from deployment-controlled configuration,
+not copied from the archive. Restore drills use a new isolated database and do
+not make production RPO/RTO claims or replace separate signing-key, signed-
+snapshot and raw-source recovery.
+
 ## Admin authorization
 
 Roles:

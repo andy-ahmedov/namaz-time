@@ -50,6 +50,7 @@
 - `docs/adr/0006-heartbeat-is-latest-only-and-non-authoritative.md`
 - `docs/adr/0007-canary-rollouts-are-bounded-device-assignments.md`
 - `docs/adr/0008-support-bundles-are-bounded-current-state.md`
+- `docs/adr/0009-fleet-backups-restore-into-a-clean-database.md`
 
 ## Technical scaffold
 
@@ -86,11 +87,15 @@
 - `TEST_STRATEGY.md`
 - `SECURITY_PRIVACY.md`
 - `OPERATIONS.md`
+- `BACKUP_RESTORE_RUNBOOK.md`
 - `SOURCE_PARTNERSHIP_CHECKLIST.md`
 - `CONTRIBUTING.md`
 - `scripts/docs-check.sh`
 - `scripts/android-tv-evidence.sh` — read-only ADB evidence helper for owned test hardware.
 - `scripts/test-postgres.sh` — disposable PostgreSQL pairing/RBAC/admin integration gate.
+- `scripts/test-postgres-restore.sh` — disposable clean-database backup/restore gate.
+- `scripts/fixtures/postgres-backup-restore-seed.sql` — synthetic linked fleet
+  recovery fixture; contains no production data or plaintext production secret.
 - `Makefile`
 - `SHA256SUMS.txt`
 

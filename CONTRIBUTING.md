@@ -50,8 +50,10 @@ signing key or production trust anchor to Gradle resources, APK assets or Git.
 
 Fleet/pairing changes also run `make test-postgres`. It starts a disposable
 local PostgreSQL 18 container, runs migration/restart/concurrency/isolation
-tests and removes the container. Never replace this evidence with a SQL mock
-when changing credential consumption or mosque scoping.
+tests, then performs the clean-database backup/restore drill and removes both
+ephemeral containers. `make test-postgres-restore` runs only the restore drill.
+Never replace this evidence with a SQL mock when changing credential
+consumption, mosque scoping or recovery behavior.
 
 `make test-android-unit` includes the Robolectric Compose focus test. Commit
 Room schema exports under `apps/tv-android/schemas/` whenever the schema changes;

@@ -325,6 +325,20 @@ Backend:
 - separate signing-key backup/rotation policy;
 - quarterly restore drill.
 
+The executable local PostgreSQL drill and the production-safe procedure are in
+[BACKUP_RESTORE_RUNBOOK.md](BACKUP_RESTORE_RUNBOOK.md). Run the local evidence:
+
+```bash
+make test-postgres-restore
+```
+
+The logical database archive contains sensitive tenant and credential-verifier
+state, is never stored in Git, and is restored without applying archived owner/
+ACL commands.
+Reapply deployment-managed roles/grants after restoring into a new isolated
+database. Database recovery is incomplete until referenced signed snapshots,
+raw-artifact custody and signing-key recovery have been verified separately.
+
 TV:
 
 - active + previous snapshot locally;

@@ -306,6 +306,23 @@ snapshot URLs, network/account/location data, arbitrary maps, logs or history.
 Missing assignment/heartbeat becomes an omitted object rather than invented
 values. The projection cannot mutate display, assignment or publication state.
 
+### Fleet database recovery boundary (T016)
+
+The fleet PostgreSQL database is one recovery unit for mosque/device identity,
+hashed credentials, pairing state, assignments, latest health, idempotency and
+audit evidence. A logical backup is transaction-consistent, but it is not a
+complete service backup: immutable signed snapshot bytes, raw source artifacts,
+runtime configuration, database roles/grants and publication signing keys have
+separate custody and recovery procedures.
+
+Restore is always into a newly provisioned isolated database. The deployment
+reapplies roles and least-privilege grants while restore suppresses archived
+ownership and ACL commands,
+then the same runtime repository verifies the exact migration ledger and reads
+restored identities/current state. Append-only triggers are exercised after
+restore. No API replica may start against the target until these checks and the
+referenced snapshot-artifact inventory pass.
+
 ## Source ingestion pipeline
 
 1. **Retrieve or import.** Store raw bytes unchanged when terms permit, otherwise store immutable metadata plus an approved fixture.

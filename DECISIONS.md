@@ -242,6 +242,24 @@ These are proposals until accepted by the product owner:
   absence were reproduced locally against disposable PostgreSQL 18. This does
   not represent a production support workflow or physical-TV export.
 
+## T016 backup/restore record
+
+- `PROPOSAL` — fleet PostgreSQL logical backups are custom archives restored
+  only into a clean isolated database without applying archived owner/ACL
+  commands; deployment-managed roles and least-privilege grants are reapplied
+  separately.
+- `PROPOSAL` — a database dump is sensitive and incomplete on its own. It needs
+  encrypted restricted storage plus an authenticated immutable inventory, and
+  separate recovery for signed snapshots, permitted raw sources, runtime
+  configuration and publication signing keys.
+- `PROPOSAL` — archive SHA-256 and byte count are corruption evidence, not
+  source authenticity. Production RPO/RTO and point-in-time recovery remain
+  deployment decisions and cannot be inferred from a local logical restore.
+- `CONFIRMED_RUNTIME` — exact v4 schema, linked fleet state, device/admin
+  authentication and append-only triggers were restored locally from an intact
+  PostgreSQL 18 custom archive; a truncated archive was rejected. This is not a
+  production-data restore or disaster-recovery timing claim.
+
 ## Decision template
 
 ```text

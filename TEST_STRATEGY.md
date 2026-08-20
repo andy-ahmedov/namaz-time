@@ -237,6 +237,19 @@ least-privileged runtime database role. The PostgreSQL harness waits for a real
 `SELECT 1` connection before starting tests so an early readiness signal cannot
 race server startup. No schema migration or retention job is introduced.
 
+T016 adds `make test-postgres-restore`. A disposable PostgreSQL 18 source is
+migrated to v4 and seeded with linked synthetic mosque/admin/device/pairing/
+assignment/latest-health/audit/idempotency state. The gate creates a custom
+archive, records its SHA-256 and size, rejects a deliberately
+truncated copy, and restores the intact archive with `--single-transaction`
+and without applying archived owner/ACL commands into a newly created database.
+Go then uses the real repository/managers to
+verify the exact migration ledger, device/admin authentication, current support
+projection and restored update/delete/truncate guards on both append-only
+tables. This is `CONFIRMED_RUNTIME` evidence for a controlled local backend
+restore only; it does not measure production RPO/RTO or recover external
+snapshot/source/key stores.
+
 ## Release evidence
 
 Each release records:

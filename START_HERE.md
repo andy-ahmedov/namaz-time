@@ -88,7 +88,9 @@ privacy-safe heartbeat и server last-seen без зависимости display
 телеметрии. T014 добавляет атомарную canary/rollback-раскатку уже
 верифицированных snapshots на bounded device cohorts.
 T015 добавляет безопасный current-state support bundle без нового сбора
-или истории. T009 использует только инъецируемый
+или истории. T016 добавляет воспроизводимый PostgreSQL backup/restore drill в
+новую изолированную БД с проверкой schema/auth/current-state/append-only
+инвариантов; это не утверждение production RPO/RTO. T009 использует только инъецируемый
 public-key trust store и test fixture: production key/credentials в APK и Git
 не добавлены. T010 остаётся заблокирован на D-002, полном годовом источнике,
 D-013 и отдельной физической TV/ADB canary/rollback-приёмке.

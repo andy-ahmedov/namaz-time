@@ -138,5 +138,10 @@ T014 добавляет bounded canary cohorts: группа до 100 устро
 T015 даёт mosque-scoped `device-support-bundle/v1`: только текущие
 device/assignment/latest-health поля, `no-store`, без secrets, URLs,
 сетевых identifiers, логов и новой истории.
+T016 добавляет локальный PostgreSQL 18 backup/restore drill: intact custom
+archive восстанавливается только в новую БД и проверяется через реальные
+schema/auth/current-state/append-only границы, а усечённый архив отклоняется.
+Production RPO/RTO и отдельное восстановление snapshots/raw sources/signing
+keys этим тестом не заявляются.
 Runtime-проверка на физическом Android TV/box ещё не выполнена и не
 подменяется Robolectric-тестом.

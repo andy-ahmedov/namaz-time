@@ -1,23 +1,33 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 
 container_name="namaz-time-postgres-test-$$"
+container_id=""
 
 cleanup() {
-  docker rm -f "${container_name}" >/dev/null 2>&1 || true
+  if [[ -n "${container_id}" ]]; then
+    docker rm -f "${container_id}" >/dev/null 2>&1 || true
+  fi
 }
-trap cleanup EXIT INT TERM
+trap cleanup EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
-docker run --rm --detach \
+started_container_id="$(docker run --rm --detach \
   --name "${container_name}" \
   --publish 127.0.0.1::5432 \
   --env POSTGRES_DB=namaz_time_test \
   --env POSTGRES_USER=namaz_time_test \
   --env POSTGRES_PASSWORD=local-integration-only \
-  postgres:18-alpine >/dev/null
+  postgres:18-alpine)"
+if [[ ! "${started_container_id}" =~ ^[0-9a-f]{64}$ ]]; then
+  echo "Docker did not return a valid PostgreSQL integration container ID" >&2
+  exit 1
+fi
+container_id="${started_container_id}"
 
 database_ready() {
-  docker exec "${container_name}" psql \
+  docker exec "${container_id}" psql \
     --username namaz_time_test \
     --dbname namaz_time_test \
     --no-psqlrc \
@@ -37,7 +47,7 @@ if ! database_ready; then
   exit 1
 fi
 
-mapped_port="$(docker port "${container_name}" 5432/tcp | sed -n 's/.*://p')"
+mapped_port="$(docker port "${container_id}" 5432/tcp | sed -n 's/.*://p')"
 if [[ ! "${mapped_port}" =~ ^[0-9]+$ ]]; then
   echo "Could not resolve PostgreSQL integration port" >&2
   exit 1
