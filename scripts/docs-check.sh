@@ -94,13 +94,26 @@ if jsonschema is not None:
         json.loads(path.read_text(encoding='utf-8'))
         for path in sorted((root / 'contracts').glob('publication-*.schema.json'))
     ]
-    for schema in [snapshot_schema, source_schema, *publication_schemas]:
+    approval_trust_schema = json.loads((root / 'contracts/approval-trust-bundle.schema.json').read_text(encoding='utf-8'))
+    approval_receipt_schema = json.loads((root / 'contracts/approval-receipt.schema.json').read_text(encoding='utf-8'))
+    mosque_policy_schema = json.loads((root / 'contracts/mosque-prayer-policy.schema.json').read_text(encoding='utf-8'))
+    for schema in [snapshot_schema, source_schema, *publication_schemas, approval_trust_schema, approval_receipt_schema, mosque_policy_schema]:
         jsonschema.Draft202012Validator.check_schema(schema)
     example = json.loads((root / 'examples/synthetic-prayer-snapshot.json').read_text(encoding='utf-8'))
     jsonschema.Draft202012Validator(snapshot_schema).validate(example)
     trust_bundle = json.loads((root / 'fixtures/verification/phase1-trust-bundle.json').read_text(encoding='utf-8'))
     trust_schema = next(schema for schema in publication_schemas if schema['title'] == 'Snapshot publication public trust bundle')
     jsonschema.Draft202012Validator(trust_schema).validate(trust_bundle)
+    pilot = root / 'fixtures/pilot/ulyanovsk-2026'
+    jsonschema.Draft202012Validator(approval_trust_schema).validate(
+        json.loads((pilot / 'approver-trust-bundle.json').read_text(encoding='utf-8'))
+    )
+    jsonschema.Draft202012Validator(approval_receipt_schema).validate(
+        json.loads((pilot / 'approval-receipt.json').read_text(encoding='utf-8'))
+    )
+    jsonschema.Draft202012Validator(mosque_policy_schema).validate(
+        json.loads((pilot / 'mosque-prayer-policy.json').read_text(encoding='utf-8'))
+    )
 else:
     example = json.loads((root / 'examples/synthetic-prayer-snapshot.json').read_text(encoding='utf-8'))
 

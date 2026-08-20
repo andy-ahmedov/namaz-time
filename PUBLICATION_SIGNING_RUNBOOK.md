@@ -9,9 +9,10 @@ Evidence labels:
 - `PROPOSAL` — the commands and lifecycle below are the accepted deployment
   procedure until a real protected signer and pilot rollout execute them.
 - `UNKNOWN` — signer vendor, production key IDs, named security operators and
-  recovery quorum are deployment inputs and are not invented here. The
-  religious-approval identity provider or approver-signature root is likewise
-  unresolved; local publisher strings are not authentication evidence.
+  recovery quorum are deployment inputs and are not invented here. KMS is the
+  accepted custody class, but its concrete provider is not selected. The pilot
+  approval root is now the separate Ed25519 key identified by
+  `ulyanovsk-approver-akhmedov-2026-01`; only its public bundle is committed.
 
 ## Roles and protected inputs
 
@@ -33,8 +34,8 @@ integrity-sensitive release evidence.
 
 Preconditions: source permission is granted; the effective inspection has no
 blocking error; every warning is acknowledged; a named religious approval
-binds the exact hashes; D-009 has supplied any desired mosque-local iqamah; the
-selected key is `active` in the production trust bundle.
+binds the exact hashes and mosque policy; D-009 is represented by that policy;
+the selected snapshot key is `active` in the production trust bundle.
 
 1. Recreate inspection from immutable sources:
 
@@ -45,20 +46,61 @@ selected key is `active` in the production trust bundle.
      > /secure/release/inspection.json
    ```
 
-2. Assemble a publication request. Outputs are exclusive-create and never
+2. Verify the signed religious approval before any KMS request. Initial key
+   generation is a one-time custody operation outside Git:
+
+   ```bash
+   go run ./cmd/approver keygen \
+     -identity approver:ulyanovsk-mosques:akhmedov-elmaddin-fazil-ogly \
+     -key-id ulyanovsk-approver-akhmedov-2026-01 \
+     -generated-at 2026-08-20T14:30:00Z \
+     -private-key-out /secure/approver/ulyanovsk-approver.private.pem \
+     -trust-bundle-out /secure/release/approver-trust-bundle.json
+
+   go run ./cmd/approver sign \
+     -private-key /secure/approver/ulyanovsk-approver.private.pem \
+     -key-id ulyanovsk-approver-akhmedov-2026-01 \
+     -trust-bundle /secure/release/approver-trust-bundle.json \
+     -decision /secure/release/approval-decision.json \
+     -inspection /secure/release/inspection.json \
+     -prayer-policy /secure/release/mosque-prayer-policy.json \
+     -out /secure/release/approval-receipt.json
+
+   go run ./cmd/approver verify \
+     -receipt /secure/release/approval-receipt.json \
+     -trust-bundle /secure/release/approver-trust-bundle.json \
+     -inspection /secure/release/inspection.json \
+     -prayer-policy /secure/release/mosque-prayer-policy.json
+   ```
+
+   Never regenerate the key to reproduce a receipt. Rotation uses a new key ID
+   and a monotonic approval-trust revision. For revision 2 and later, pass the
+   exact directly preceding accepted bundle to `sign` and `verify` as
+   `-previous-trust-bundle`; production `publisher assemble` requires the same
+   predecessor as `-previous-approval-trust-bundle`. Revision 1 rejects an
+   unexpected predecessor. Back up the current private approval
+   key through a protected operator-controlled channel; mode `0600` alone is
+   not a disaster-recovery plan.
+
+3. Assemble a publication request. Outputs are exclusive-create and never
    overwrite earlier evidence:
 
    ```bash
-   go run ./cmd/publisher assemble \
+     go run ./cmd/publisher assemble \
      -inspection /secure/release/inspection.json \
-     -approval /secure/release/approval.json \
+     -approval-receipt /secure/release/approval-receipt.json \
+     -approval-trust-bundle /secure/release/approver-trust-bundle.json \
+     -prayer-policy /secure/release/mosque-prayer-policy.json \
      -snapshot-id ulyanovsk-second-cathedral-2026-v1 \
      -generated-at 2026-08-20T12:00:00Z \
      -signing-key-id prod-schedule-2026-01 \
      -out /secure/release/publication-request.json
    ```
 
-3. Prepare exact signer input:
+   For approval trust revision 2 and later, add
+   `-previous-approval-trust-bundle` with the exact preceding bundle.
+
+4. Prepare exact signer input:
 
    ```bash
    go run ./cmd/publisher prepare \
@@ -69,24 +111,25 @@ selected key is `active` in the production trust bundle.
      -out /secure/release/signing-request.json
    ```
 
-4. The signer operator checks request ID, key ID, canonical SHA-256, snapshot
+5. The signer operator checks request ID, key ID, canonical SHA-256, snapshot
    identity, mosque, coverage, provenance hashes and approval identity. The
    protected service signs two domain-separated messages with the same active
    Ed25519 key: the decoded `canonical_payload_base64` bytes and the publication
    attestation returned by `BuildAttestationPayload`. The attestation binds the
-   exact signing-request SHA-256, approver/signer principals, times and exactly
+   exact signing-request SHA-256, approver receipt/trust/policy hashes,
+   approver/signer principals, times and exactly
    one audit predecessor or the one-time ledger genesis reason. It returns
    strict `publication-signing-response.schema.json` JSON. Signer policy must
    permit genesis only while initializing a new environment ledger. Never
    export its key.
 
-   Before signing, the protected service must authenticate an external approval
-   receipt or identity-provider assertion and match its immutable principal and
-   exact candidate/diff hashes to the request. The repository cannot enable
-   production signing while `approver_identity` is only an unauthenticated
-   local claim; selecting that approval trust root remains a rollout blocker.
+   Before signing, the protected KMS wrapper must independently verify the
+   signed approval receipt against the pinned approval trust bundle and match
+   its immutable principal, candidate/diff, warning and prayer-policy hashes to
+   the request. `cmd/publisher assemble` performs the same check on the release
+   host, but that is not a substitute for signer-side authorization.
 
-5. Finalize. For every publication after the first, pass the complete prior
+6. Finalize. For every publication after the first, pass the complete prior
    receipt so its signer attestation is verified before extending the chain.
    The signer response must contain the identical `published_at` and
    `previous_receipt_sha256`. For the first publication only, replace
@@ -108,7 +151,7 @@ selected key is `active` in the production trust bundle.
      -out-snapshot /secure/release/snapshot.json
    ```
 
-6. Verify independently before registry admission:
+7. Verify independently before registry admission:
 
    ```bash
    go run ./cmd/publisher verify \

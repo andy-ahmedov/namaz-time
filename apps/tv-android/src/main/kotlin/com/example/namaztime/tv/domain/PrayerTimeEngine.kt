@@ -361,6 +361,10 @@ class PrayerTimeEngine(
     ): List<PrayerEvent> {
         val events = mutableListOf<PrayerEvent>()
         prayers.values.forEach { prayer ->
+            // A published Friday session is the congregation event replacing
+            // Dhuhr. Keep Dhuhr visible in the daily table as source evidence,
+            // but do not let it compete with Jumuah in countdown selection.
+            if (prayer.id == "dhuhr" && jumuah.isNotEmpty()) return@forEach
             if (prayer.id != "sunrise" || countdownPolicy.includeSunrise) {
                 events += event(
                     kind = PrayerEventKind.ADHAN,

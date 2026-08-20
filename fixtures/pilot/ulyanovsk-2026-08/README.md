@@ -19,8 +19,10 @@ image. This does not establish runtime behavior or religious approval.
 
 `schedule.csv` is a human transcription used by the deterministic manual CSV
 parser. The source's zenith and collective-in-mosques columns remain separate.
-The collective value is retained as an iqamah candidate, not merged into Dhuhr
-onset. Asterisks and legible unusual values are flags, not silently corrected:
+The collective value is retained as a distinct source field and is not merged
+by the parser. The later signed mosque policy explicitly selects it as Dhuhr
+adhan and derives iqamah separately. Asterisks and legible unusual values are
+flags, not silently corrected:
 
 - 2026-08-02 Isha `23:15` has the printed summer-calculation marker;
 - 2026-08-03 Fajr `01:10` has the printed summer-calculation marker;

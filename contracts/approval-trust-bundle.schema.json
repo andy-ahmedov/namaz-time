@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/approval-trust-bundle.schema.json",
+  "title": "Mosque schedule approval public trust bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "revision", "environment", "generated_at", "keys"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "revision": { "type": "integer", "minimum": 1, "maximum": 9223372036854775807 },
+    "environment": { "enum": ["test", "staging", "production"] },
+    "generated_at": { "$ref": "#/$defs/canonicalTimestamp" },
+    "keys": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 32,
+      "items": { "$ref": "#/$defs/key" }
+    }
+  },
+  "$defs": {
+    "canonicalTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "key": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["key_id", "algorithm", "approver_identity", "public_key_ed25519_base64", "status", "not_before"],
+      "properties": {
+        "key_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+        "algorithm": { "const": "ed25519" },
+        "approver_identity": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "public_key_ed25519_base64": { "type": "string", "pattern": "^[A-Za-z0-9+/]{43}=$" },
+        "status": { "enum": ["scheduled", "active", "retired", "revoked"] },
+        "not_before": { "$ref": "#/$defs/canonicalTimestamp" },
+        "not_after": { "$ref": "#/$defs/canonicalTimestamp" },
+        "revoked_at": { "$ref": "#/$defs/canonicalTimestamp" },
+        "revocation_reason": { "type": "string", "minLength": 1, "maxLength": 500 }
+      }
+    }
+  }
+}

@@ -10,12 +10,12 @@ Second Cathedral Mosque has approved the schedule.
 | Item | Status | Evidence / blocker |
 |---|---|---|
 | Organizational name | `CONFIRMED_PUBLIC` | Printed authority name is recorded verbatim in `source-record.json`. |
-| Named contact and role | `UNKNOWN` | The PDF prints organization channels, but no integration approver/contact role. |
+| Named contact and role | `PROPOSAL` | Product owner identifies Ахмедов Эльмаддин Фазил Оглы, representative of Ulyanovsk mosques; stable signed identity is retained. Public third-party role verification is not claimed. |
 | Territory/locality | `CONFIRMED_PUBLIC` | Calendar cover and all monthly tables are for `г. Ульяновск`. |
-| Adhan vs congregation semantics | `CONFIRMED_PUBLIC` | Introductory text separately defines onset and recommended collective Dhuhr; D-009 still blocks treating it as pilot iqamah. |
+| Adhan vs congregation semantics | `PROPOSAL` | The named mosque approver states that the collective-Dhuhr column is Dhuhr adhan for Ulyanovsk mosques; iqamah is independently derived as adhan +5. This does not rewrite the source text. |
 | Madhab / regional rules | `CONFIRMED_PUBLIC` | Hanafi Asr and Astrakhan-analogy summer Fajr/Isha rules are printed and regression-tested. |
-| Ramadan / exceptional-day policy | `UNKNOWN` | Holidays are listed, but no separate Ramadan override workflow is specified. |
-| Final correction authority | `UNKNOWN` | Product owner fixed source precedence, but a named religious approver/correction contact is still required. |
+| Ramadan / exceptional-day policy | `PROPOSAL` | Approver states that no separate Ramadan or holiday rule is currently defined; no exception is invented. |
+| Final correction authority | `PROPOSAL` | Corrections are assigned to the admin workflow; exact stale/fallback policy remains D-014. |
 
 ## Data access and permission
 
@@ -44,9 +44,10 @@ Second Cathedral Mosque has approved the schedule.
 
 ## Approval and publication
 
-Production publication remains `BLOCKED`: no named religious approver/actor or
-approval binds the exact effective policy/component/transcription/normalized/
-diff hashes and warnings; D-009, correction/fallback policy, real protected
-signer/trust deployment and the physical canary/rollback drill also remain.
-D-013 tooling can proceed only after such an approval and never changes the
-candidate's `needs_review` state by itself.
+Named approval and D-009 are complete as a signed receipt over the exact
+effective candidate/diff/warnings and mosque policy. Production publication
+remains `BLOCKED` on the concrete KMS provider and Ed25519 key, a distinct
+security/signer operator, authenticated signing-trust deployment, D-014's exact
+stale/fallback policy and the paired-emulator canary/rollback drill after
+signing. Physical OEM validation is deferred and non-blocking. Approval remains
+separate from the candidate's intentional `needs_review` workflow status.

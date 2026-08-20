@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/andy-ahmedov/namaz-time/internal/approval"
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
 	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
@@ -126,6 +127,10 @@ func runAssemble(args []string, stderr io.Writer) error {
 	flags.SetOutput(stderr)
 	inspectionPath := flags.String("inspection", "", "strict ingestor inspection JSON")
 	approvalPath := flags.String("approval", "", "strict approval decision JSON")
+	approvalReceiptPath := flags.String("approval-receipt", "", "signed production approval receipt JSON")
+	approvalTrustPath := flags.String("approval-trust-bundle", "", "pinned public approval trust bundle JSON")
+	previousApprovalTrustPath := flags.String("previous-approval-trust-bundle", "", "direct predecessor for approval trust revision greater than one")
+	prayerPolicyPath := flags.String("prayer-policy", "", "approved mosque prayer policy JSON")
 	snapshotID := flags.String("snapshot-id", "", "immutable snapshot ID")
 	generatedAtText := flags.String("generated-at", "", "canonical UTC RFC3339 generation time")
 	keyID := flags.String("signing-key-id", "", "active trust-bundle signing key ID")
@@ -133,23 +138,78 @@ func runAssemble(args []string, stderr io.Writer) error {
 	if err := flags.Parse(args); err != nil {
 		return err
 	}
-	if *inspectionPath == "" || *approvalPath == "" || *snapshotID == "" || *generatedAtText == "" || *keyID == "" || *outputPath == "" || flags.NArg() != 0 {
-		return errors.New("inspection, approval, snapshot ID, generated-at, signing-key-id and out are required")
+	if *inspectionPath == "" || *snapshotID == "" || *generatedAtText == "" || *keyID == "" || *outputPath == "" || flags.NArg() != 0 {
+		return errors.New("inspection, snapshot ID, generated-at, signing-key-id and out are required")
 	}
 	generatedAt, err := time.Parse(time.RFC3339, *generatedAtText)
 	if err != nil || generatedAt.UTC().Format(time.RFC3339) != *generatedAtText {
 		return errors.New("generated-at must be canonical UTC RFC3339")
 	}
 	var inspection inspectionInput
-	var approval domain.ApprovalDecision
 	if err := readStrictJSON(*inspectionPath, &inspection); err != nil {
 		return fmt.Errorf("read inspection: %w", err)
 	}
-	if err := readStrictJSON(*approvalPath, &approval); err != nil {
-		return fmt.Errorf("read approval: %w", err)
+	var decision domain.ApprovalDecision
+	var evidence *publication.ApprovalEvidence
+	var prayerPolicy *publication.MosquePrayerPolicy
+	if inspection.Candidate.DataClassification == domain.DataClassificationProduction {
+		if *approvalPath != "" || *approvalReceiptPath == "" || *approvalTrustPath == "" || *prayerPolicyPath == "" {
+			return errors.New("production assemble requires signed approval-receipt, approval-trust-bundle and prayer-policy; unsigned -approval is forbidden")
+		}
+		var policy publication.MosquePrayerPolicy
+		if err := readStrictJSON(*prayerPolicyPath, &policy); err != nil {
+			return fmt.Errorf("read prayer policy: %w", err)
+		}
+		policySHA256, err := publication.MosquePrayerPolicySHA256(policy)
+		if err != nil {
+			return fmt.Errorf("validate prayer policy: %w", err)
+		}
+		trustBytes, err := readRegularFile(*approvalTrustPath)
+		if err != nil {
+			return fmt.Errorf("read approval trust bundle: %w", err)
+		}
+		var previousTrustBytes []byte
+		if *previousApprovalTrustPath != "" {
+			previousTrustBytes, err = readRegularFile(*previousApprovalTrustPath)
+			if err != nil {
+				return fmt.Errorf("read previous approval trust bundle: %w", err)
+			}
+		}
+		approvalPolicy, err := approval.DecodeTrustBundleChain(trustBytes, previousTrustBytes)
+		if err != nil {
+			return err
+		}
+		if approvalPolicy.Environment() != "production" {
+			return errors.New("production approval requires a production approval trust bundle")
+		}
+		receiptBytes, err := readRegularFile(*approvalReceiptPath)
+		if err != nil {
+			return fmt.Errorf("read approval receipt: %w", err)
+		}
+		verified, verifiedEvidence, err := approval.Verify(receiptBytes, approvalPolicy, policySHA256)
+		if err != nil {
+			return fmt.Errorf("verify approval receipt: %w", err)
+		}
+		if err := validateApprovalAgainstInspection(verified, inspection, policySHA256); err != nil {
+			return err
+		}
+		decision = verified
+		evidence = &publication.ApprovalEvidence{
+			ReceiptSHA256: verifiedEvidence.ReceiptSHA256, TrustRevision: verifiedEvidence.TrustRevision,
+			TrustBundleSHA256: verifiedEvidence.TrustBundleSHA256, ApprovalKeyID: verifiedEvidence.KeyID,
+		}
+		prayerPolicy = &policy
+	} else {
+		if *approvalPath == "" || *approvalReceiptPath != "" || *approvalTrustPath != "" || *previousApprovalTrustPath != "" || *prayerPolicyPath != "" {
+			return errors.New("synthetic assemble requires exactly -approval and no production approval inputs")
+		}
+		if err := readStrictJSON(*approvalPath, &decision); err != nil {
+			return fmt.Errorf("read approval: %w", err)
+		}
 	}
 	request := publication.PublishRequest{
-		Previous: inspection.Previous, Candidate: inspection.Candidate, Diff: inspection.Diff, Approval: approval,
+		Previous: inspection.Previous, Candidate: inspection.Candidate, Diff: inspection.Diff, Approval: decision,
+		ApprovalEvidence: evidence, MosquePrayerPolicy: prayerPolicy,
 		SnapshotID: *snapshotID, GeneratedAt: generatedAt, SigningKeyID: *keyID,
 	}
 	data, err := json.MarshalIndent(request, "", "  ")
@@ -157,6 +217,31 @@ func runAssemble(args []string, stderr io.Writer) error {
 		return fmt.Errorf("encode publication request: %w", err)
 	}
 	return writeExclusive(*outputPath, append(data, '\n'))
+}
+
+func validateApprovalAgainstInspection(decision domain.ApprovalDecision, inspection inspectionInput, prayerPolicySHA256 string) error {
+	candidate := inspection.Candidate
+	recomputed, err := publication.Diff(inspection.Previous, candidate)
+	if err != nil || recomputed.SHA256 != inspection.Diff.SHA256 {
+		return errors.New("approval inspection diff is not reproducible")
+	}
+	normalized, err := domain.CandidateNormalizedSHA256(candidate)
+	if err != nil || normalized != candidate.NormalizedSHA256 {
+		return errors.New("approval candidate fingerprint is not reproducible")
+	}
+	if decision.CandidateID != candidate.ID || decision.RawSHA256 != candidate.Artifact.SHA256 || decision.TranscriptionSHA256 != candidate.TranscriptionSHA256 || decision.NormalizedSHA256 != candidate.NormalizedSHA256 || decision.DiffSHA256 != inspection.Diff.SHA256 || decision.ParserVersion != candidate.ParserVersion || decision.PrayerPolicySHA256 != prayerPolicySHA256 {
+		return errors.New("signed approval does not bind the exact inspection and prayer policy")
+	}
+	acknowledged := make(map[string]struct{}, len(decision.AcknowledgedWarningCodes))
+	for _, code := range decision.AcknowledgedWarningCodes {
+		acknowledged[code] = struct{}{}
+	}
+	for _, warning := range candidate.Validation.Warnings {
+		if _, ok := acknowledged[warning.Code]; !ok {
+			return fmt.Errorf("signed approval does not acknowledge warning %q", warning.Code)
+		}
+	}
+	return nil
 }
 
 func runVerify(args []string, stderr io.Writer) error {

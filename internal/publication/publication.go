@@ -18,13 +18,22 @@ import (
 )
 
 type PublishRequest struct {
-	Previous     *domain.CandidateSchedule `json:"previous_candidate,omitempty"`
-	Candidate    domain.CandidateSchedule  `json:"candidate"`
-	Diff         DiffReport                `json:"diff"`
-	Approval     domain.ApprovalDecision   `json:"approval"`
-	SnapshotID   string                    `json:"snapshot_id"`
-	GeneratedAt  time.Time                 `json:"generated_at"`
-	SigningKeyID string                    `json:"signing_key_id"`
+	Previous           *domain.CandidateSchedule `json:"previous_candidate,omitempty"`
+	Candidate          domain.CandidateSchedule  `json:"candidate"`
+	Diff               DiffReport                `json:"diff"`
+	Approval           domain.ApprovalDecision   `json:"approval"`
+	ApprovalEvidence   *ApprovalEvidence         `json:"approval_evidence,omitempty"`
+	MosquePrayerPolicy *MosquePrayerPolicy       `json:"mosque_prayer_policy,omitempty"`
+	SnapshotID         string                    `json:"snapshot_id"`
+	GeneratedAt        time.Time                 `json:"generated_at"`
+	SigningKeyID       string                    `json:"signing_key_id"`
+}
+
+type ApprovalEvidence struct {
+	ReceiptSHA256     string `json:"receipt_sha256"`
+	TrustRevision     uint64 `json:"trust_revision"`
+	TrustBundleSHA256 string `json:"trust_bundle_sha256"`
+	ApprovalKeyID     string `json:"approval_key_id"`
 }
 
 type Result struct {
@@ -74,6 +83,11 @@ type AuditReceipt struct {
 	ApproverIdentity      string `json:"approver_identity"`
 	ApprovedAt            string `json:"approved_at"`
 	ApprovalScope         string `json:"approval_scope"`
+	PrayerPolicySHA256    string `json:"prayer_policy_sha256,omitempty"`
+	ApprovalReceiptSHA256 string `json:"approval_receipt_sha256,omitempty"`
+	ApprovalTrustRevision uint64 `json:"approval_trust_revision,omitempty"`
+	ApprovalTrustSHA256   string `json:"approval_trust_sha256,omitempty"`
+	ApprovalKeyID         string `json:"approval_key_id,omitempty"`
 	SignerIdentity        string `json:"signer_identity"`
 	PublishedAt           string `json:"published_at"`
 	SignedAt              string `json:"signed_at"`
@@ -300,11 +314,18 @@ func buildAuditReceipt(request PublishRequest, result Result, audit AuditMetadat
 		TranscriptionSHA256: request.Candidate.TranscriptionSHA256, NormalizedSHA256: request.Candidate.NormalizedSHA256,
 		DiffSHA256: request.Diff.SHA256, ParserVersion: request.Candidate.ParserVersion,
 		ApprovalID: request.Approval.ID, ApproverIdentity: request.Approval.Actor, ApprovedAt: request.Approval.ApprovedAt, ApprovalScope: request.Approval.Scope,
-		SignerIdentity: audit.SignerIdentity, SignedAt: audit.SignedAt.UTC().Format(time.RFC3339), PublishedAt: audit.PublishedAt.UTC().Format(time.RFC3339), PreviousReceiptSHA256: audit.PreviousReceiptSHA256,
+		PrayerPolicySHA256: request.Approval.PrayerPolicySHA256,
+		SignerIdentity:     audit.SignerIdentity, SignedAt: audit.SignedAt.UTC().Format(time.RFC3339), PublishedAt: audit.PublishedAt.UTC().Format(time.RFC3339), PreviousReceiptSHA256: audit.PreviousReceiptSHA256,
 		TrustBundleRevision: audit.TrustBundleRevision, TrustBundleSHA256: audit.TrustBundleSHA256,
 		SigningRequestSHA256: audit.SigningRequestSHA256, AttestationSignature: audit.AttestationSignature,
 		SigningRequestID:   audit.SigningRequestID,
 		ChainGenesisReason: audit.ChainGenesisReason,
+	}
+	if request.ApprovalEvidence != nil {
+		receipt.ApprovalReceiptSHA256 = request.ApprovalEvidence.ReceiptSHA256
+		receipt.ApprovalTrustRevision = request.ApprovalEvidence.TrustRevision
+		receipt.ApprovalTrustSHA256 = request.ApprovalEvidence.TrustBundleSHA256
+		receipt.ApprovalKeyID = request.ApprovalEvidence.ApprovalKeyID
 	}
 	encoded, err := json.Marshal(receipt)
 	if err != nil {
@@ -379,6 +400,16 @@ func validatePublishRequest(request PublishRequest) error {
 		request.Diff.CandidateNormalizedSHA256 != request.Candidate.NormalizedSHA256 {
 		return newError("publish snapshot", "approval_binding_mismatch", errors.New("approval/diff does not bind to exact candidate inputs"))
 	}
+	if err := validateMosquePrayerPolicyBinding(request); err != nil {
+		return err
+	}
+	if request.Candidate.DataClassification == domain.DataClassificationProduction {
+		if request.MosquePrayerPolicy == nil || request.ApprovalEvidence == nil || !validSHA256(request.ApprovalEvidence.ReceiptSHA256) || request.ApprovalEvidence.TrustRevision == 0 || !validSHA256(request.ApprovalEvidence.TrustBundleSHA256) || request.ApprovalEvidence.ApprovalKeyID == "" {
+			return newError("publish snapshot", "authenticated_approval_required", errors.New("production publication requires authenticated approval evidence"))
+		}
+	} else if request.ApprovalEvidence != nil {
+		return newError("publish snapshot", "approval_evidence_invalid", errors.New("synthetic publication cannot carry production approval evidence"))
+	}
 	normalizedSHA256, err := domain.CandidateNormalizedSHA256(request.Candidate)
 	if err != nil || normalizedSHA256 != request.Candidate.NormalizedSHA256 {
 		return newError("publish snapshot", "candidate_binding_mismatch", errors.New("normalized candidate fingerprint does not match content"))
@@ -401,6 +432,18 @@ func buildSnapshot(request PublishRequest) (domain.Snapshot, error) {
 	prayerDays := make([]domain.PrayerDay, len(candidate.Days))
 	for index, day := range candidate.Days {
 		prayerDays[index] = day.PrayerDay
+		if request.MosquePrayerPolicy != nil && request.MosquePrayerPolicy.DhuhrAdhanSource == DhuhrAdhanFromCongregation {
+			if day.DhuhrCongregation == "" {
+				return domain.Snapshot{}, newError("publish snapshot", "prayer_policy_invalid", fmt.Errorf("day %s has no approved Dhuhr congregation value", day.Date))
+			}
+			prayerDays[index].Dhuhr = day.DhuhrCongregation
+		}
+	}
+	var iqamahRules []domain.IqamahRule
+	var jumuahSessions []domain.JumuahSession
+	if request.MosquePrayerPolicy != nil {
+		iqamahRules = append([]domain.IqamahRule(nil), request.MosquePrayerPolicy.IqamahRules...)
+		jumuahSessions = append([]domain.JumuahSession(nil), request.MosquePrayerPolicy.JumuahSessions...)
 	}
 	return domain.Snapshot{
 		SchemaVersion:      "1.0",
@@ -427,8 +470,10 @@ func buildSnapshot(request PublishRequest) (domain.Snapshot, error) {
 				ApprovedAt: request.Approval.ApprovedAt, Scope: request.Approval.Scope, Note: request.Approval.Reason,
 			},
 		},
-		Coverage:   candidate.Coverage,
-		PrayerDays: prayerDays,
+		Coverage:       candidate.Coverage,
+		PrayerDays:     prayerDays,
+		IqamahRules:    iqamahRules,
+		JumuahSessions: jumuahSessions,
 		Integrity: domain.IntegrityMetadata{
 			CanonicalSHA256:        "0000000000000000000000000000000000000000000000000000000000000000",
 			SigningKeyID:           request.SigningKeyID,

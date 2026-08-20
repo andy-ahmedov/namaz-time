@@ -218,7 +218,9 @@ func TestProductionPublicationEnforcesApprovalBeforeGenerationAndSeparateSigner(
 	if _, err := publication.PrepareSigning(request, policy); !publication.IsErrorCode(err, "approval_time_invalid") {
 		t.Fatalf("post-generation approval PrepareSigning() error = %v", err)
 	}
+	policySHA256 := request.Approval.PrayerPolicySHA256
 	request.Approval = approvalFor(candidate, diff)
+	request.Approval.PrayerPolicySHA256 = policySHA256
 	prepared, err := publication.PrepareSigning(request, policy)
 	if err != nil {
 		t.Fatal(err)

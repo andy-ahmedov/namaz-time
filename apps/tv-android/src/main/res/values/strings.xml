@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Namaz Time</string>
+    <string name="app_name">NamazTime</string>
     <string name="open_settings">Настройки</string>
 </resources>

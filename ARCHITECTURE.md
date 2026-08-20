@@ -31,8 +31,10 @@ Official authority / mosque / approved calculation profile
                   TV UI
 ```
 
-Production publication is an explicit two-step boundary. The publisher
-recreates approval-bound canonical bytes, and an isolated KMS/HSM signer
+Production publication has two independent signatures. A dedicated approver
+key signs the exact candidate/diff/warnings and canonical mosque prayer policy;
+the approval public trust bundle cannot sign snapshots. The publisher verifies
+that receipt and recreates approval-bound canonical bytes, and an isolated KMS/HSM signer
 returns Ed25519 signatures over both the snapshot and a domain-separated
 provenance/approval/trust/actor/audit-chain attestation. Finalization verifies both against a
 versioned environment-scoped public trust bundle before emitting immutable
@@ -210,7 +212,8 @@ the caller bypasses JSON decoding, so a manual transcription cannot claim an
 `official_*` provider kind or a disabled retrieval policy.
 
 The separate publication package recomputes the candidate and diff bindings,
-requires an exact human approval, builds a deterministic snapshot and signs
+requires an exact signed human approval and mosque prayer policy for production,
+builds a deterministic snapshot and signs
 the canonical payload defined by ADR 0003. Android accepts production data
 only through that authenticated-byte gate; the only other activation path is
 the explicitly synthetic bundled fixture. At the T008 checkpoint the app still
@@ -240,10 +243,11 @@ difference unchanged as evidence, while D-002 resolves selection in favor of
 the monthly source.
 
 Composition cannot approve or publish. The effective candidate stays
-`needs_review`; a named mosque/authority approval, the pilot iqamah decision,
-protected production key provisioning and physical rollout/rollback evidence remain outside
-the source transform. Ordinary schedule publication never converts a
-candidate-only collective Dhuhr value into mosque iqamah.
+`needs_review`. The pilot's named mosque approval now binds the source decision,
+the interpretation of collective Dhuhr as Dhuhr adhan, +5-minute iqamah rules
+and Friday 13:15 Jumu'ah through a separate signed policy. Protected production
+snapshot-key provisioning and rollout/rollback evidence remain outside the
+source transform. The collective Dhuhr value never becomes iqamah.
 
 T009 adds the device-facing delivery path. The Go API loads only explicitly
 configured immutable snapshots that pass raw hash, canonical Ed25519,

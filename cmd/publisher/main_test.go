@@ -27,6 +27,45 @@ func TestPublisherHasNoPrivateKeyInputAndRequiresExplicitWorkflow(t *testing.T) 
 	}
 }
 
+func TestProductionAssembleRejectsUnsignedApprovalDecision(t *testing.T) {
+	t.Parallel()
+
+	directory := t.TempDir()
+	candidate := domain.CandidateSchedule{
+		DataClassification:  domain.DataClassificationProduction,
+		Mosque:              domain.Mosque{ID: "pilot", Name: "Pilot", CountryCode: "RU", Timezone: "Europe/Ulyanovsk"},
+		Source:              domain.CandidateSource{SourceID: "pilot", Kind: domain.ProviderKindManualImport, AuthorityName: "Pilot", GeographicScope: "Pilot", PermissionStatus: "granted", ApprovalRequired: true},
+		Artifact:            domain.RawArtifact{Filename: "pilot.csv", ContentType: "text/csv", CapturedAt: "2026-08-20T00:00:00Z", ByteLength: 1, SHA256: strings.Repeat("a", 64)},
+		TranscriptionSHA256: strings.Repeat("b", 64), ParserVersion: "manual-csv/v1",
+		Coverage: domain.DateRange{From: "2026-08-20", To: "2026-08-20"},
+		Days:     []domain.CandidatePrayerDay{{PrayerDay: domain.PrayerDay{Date: "2026-08-20", Fajr: "03:00", Sunrise: "05:00", Dhuhr: "12:00", Asr: "16:00", Maghrib: "19:00", Isha: "21:00"}}},
+		Status:   domain.CandidateNeedsReview,
+	}
+	if err := domain.FinalizeCandidateIdentity(&candidate); err != nil {
+		t.Fatal(err)
+	}
+	diff, err := publication.Diff(nil, candidate)
+	if err != nil {
+		t.Fatal(err)
+	}
+	approvalDecision := domain.ApprovalDecision{
+		ID: "unsigned", Decision: domain.ApprovalApproved, Actor: "self-asserted",
+		ApprovedAt: "2026-08-20T00:00:00Z", Scope: "must be rejected",
+		CandidateID: candidate.ID, RawSHA256: candidate.Artifact.SHA256,
+		TranscriptionSHA256: candidate.TranscriptionSHA256, NormalizedSHA256: candidate.NormalizedSHA256,
+		DiffSHA256: diff.SHA256, ParserVersion: candidate.ParserVersion,
+	}
+	inspectionPath := writeJSONFile(t, directory, "production-inspection.json", inspectionInput{Candidate: candidate, Diff: diff})
+	approvalPath := writeJSONFile(t, directory, "unsigned-approval.json", approvalDecision)
+	if err := run([]string{
+		"assemble", "-inspection", inspectionPath, "-approval", approvalPath,
+		"-snapshot-id", "production-pilot-v1", "-generated-at", "2026-08-20T00:01:00Z",
+		"-signing-key-id", "production-key", "-out", filepath.Join(directory, "request.json"),
+	}, io.Discard); err == nil {
+		t.Fatal("production assemble accepted an unsigned approval decision")
+	}
+}
+
 func TestPublisherCommandsCompleteSyntheticAirGappedWorkflow(t *testing.T) {
 	t.Parallel()
 
@@ -118,6 +157,19 @@ func TestPublisherCommandsCompleteSyntheticAirGappedWorkflow(t *testing.T) {
 		release()
 		t.Fatal("publication ledger accepted a repeated genesis")
 	}
+}
+
+func writeJSONFile(t *testing.T, directory, name string, value any) string {
+	t.Helper()
+	data, err := json.Marshal(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	path := filepath.Join(directory, name)
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return path
 }
 
 func TestWriteExclusiveNeverOverwritesEvidence(t *testing.T) {

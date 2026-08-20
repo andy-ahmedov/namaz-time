@@ -20,8 +20,9 @@ supplied PDF. This label does not establish mosque approval or TV runtime.
 - Project-use permission: confirmed by the product owner on 2026-08-20.
 - Source precedence: D-002 is accepted by the product owner. This PDF is the
   2026 baseline, while the retained August photo has priority for every field
-  it supplies throughout August. A named religious approval is still absent,
-  so candidates remain `needs_review` and must not be called approved/official.
+  it supplies throughout August. The named approval is a separate signed
+  receipt; candidates intentionally remain `needs_review` until the publication
+  boundary and must not be called published/official merely because parsed.
 
 ## Controlled transcription
 
@@ -110,6 +111,30 @@ Deterministic effective fingerprints:
 - baseline-to-effective diff SHA-256:
   `de139a27b2f0f5b42253783f5a4aeca11d2f643bee572d860e2c4c24564d7e4e`.
 
-The effective candidate remains `needs_review` for a named approval and retains
-the independent `mosque_iqamah_approval_required` warning. Candidate collective
-Dhuhr is never promoted to TV iqamah by ordinary schedule approval.
+The candidate record remains `needs_review` by design; approval is a separate
+immutable record rather than a provider status mutation. The named approver
+acknowledges `mosque_iqamah_approval_required` and binds a distinct mosque
+policy. Candidate collective Dhuhr is never promoted directly to TV iqamah.
+
+## Named approval and mosque policy
+
+The product owner identified Ахмедов Эльмаддин Фазил Оглы, representative of
+Ulyanovsk mosques and the Second Cathedral Mosque, as the responsible schedule
+approver. Stable identity:
+`approver:ulyanovsk-mosques:akhmedov-elmaddin-fazil-ogly`.
+
+- `mosque-prayer-policy.json` canonical SHA-256:
+  `8803f54236cd9191a3362c2bdb0e1921f6225350434ca671e9f3f961f3fd4416`;
+- `approver-trust-bundle.json` raw SHA-256:
+  `29ab69e969e75bee879cbe5f73993e711c160da754f4182653c32cb058ad2974`;
+- `approval-receipt.json` raw SHA-256:
+  `b1e3baea680fe84887d9978bf9f2ab7fa85b3221a548fcb33e61a9001b3a6cd5`.
+
+The private approval key is not in the repository. It is stored under the
+local operator account with mode `0600`; production custody backup/transfer is
+still an operator responsibility. The signed receipt approves the exact
+candidate/diff/warnings, selects `dhuhr_congregation` as mosque Dhuhr adhan,
+adds +5-minute iqamah rules for all daily prayers (excluding Friday Dhuhr), and
+adds one Friday Jumuah at 13:15. No Ramadan or holiday exception is invented.
+The raw PDF/photo/CSV values remain unchanged; notably 24 August Dhuhr adhan is
+the explicitly accepted photo value `13:53`.

@@ -40,7 +40,9 @@ Tests are allocated in that order.
 - multiple sessions;
 - Friday local date;
 - effective range and locale;
-- Dhuhr source row remains intact.
+- Dhuhr source row remains intact;
+- an active Friday Jumuah replaces Dhuhr in countdown events without deleting
+  the displayed/provenance Dhuhr row.
 
 ## Provider contract tests
 
@@ -66,6 +68,11 @@ No live external site is required for normal CI. A separate scheduled canary may
 - parser version included in approval;
 - invalid timezone and date gaps block publication;
 - deterministic diff hash.
+- signed approval receipt binds candidate/raw/transcription/normalized/diff,
+  every warning code and the exact mosque-prayer-policy hash;
+- revoked/rebound approver keys and trust-revision resurrection fail closed;
+- approved collective-Dhuhr mapping, +5 iqamah and Friday 13:15 Jumuah are
+  present in the prepared 365-day snapshot without raw-source mutation.
 
 ## Snapshot tests
 
@@ -227,10 +234,13 @@ An immutable effective-policy fixture binds both raw/candidate/transcription/
 normalized/parser identities. Composer tests apply fields present in the photo
 for all 31 August days, retain PDF al-Isfar when the photo has no such field,
 reject policy/hash/range/field drift, rewrite only the two resolved review flags
-and preserve the D-009 warning. The effective candidate remains unapproved; a
-publication regression rejects it without named approval and another proves a
-schedule approval cannot silently promote collective Dhuhr into iqamah. This
-is static/local evidence, not physical TV or production signer evidence.
+and preserve the D-009 warning. The effective candidate remains `needs_review`
+as provider output; publication rejects it without the exact signed named
+approval. Approval receipt/trust lifecycle tests bind the candidate, diff,
+warnings and mosque policy. Publication regressions prove the collective Dhuhr
+field changes only through that explicit policy, becomes Dhuhr adhan rather
+than iqamah, and emits the approved +5 rules and Friday Jumu'ah. This is
+static/local evidence, not physical TV or production signer evidence.
 
 T009 adds real HTTP-handler tests for one-use pairing, bearer isolation,
 manifest/snapshot 200 and 304, Digest and registry-time signature rejection.

@@ -54,14 +54,16 @@ go run ./cmd/ingestor inspect \
   --fixture-dir fixtures/pilot/ulyanovsk-2026
 ```
 
-Команда не имеет approve/publish режима и возвращает `needs_review`. После
-реального approval D-013 workflow выполняется отдельной командой
-`cmd/publisher`; подробные prepare/finalize/verify шаги приведены в
+Команда не имеет approve/publish режима и возвращает `needs_review`. Named
+pilot approval и D-009 теперь хранятся как отдельная подписанная квитанция и
+mosque policy. `cmd/approver` проверяет их до продолжения D-013 workflow в
+`cmd/publisher`; keygen/sign/assemble/prepare/finalize/verify описаны в
 [PUBLICATION_SIGNING_RUNBOOK.md](PUBLICATION_SIGNING_RUNBOOK.md).
 
 Gradle запускается через репозиторный wrapper. Android application ID
 `com.example.namaztime.tv` является временным значением T001 и должен быть
-заменён после решения D-005.
+заменён после окончательного решения D-005; принятое отображаемое название —
+`NamazTime`.
 
 ## Карта документов
 
@@ -113,9 +115,10 @@ cross-platform Go/Android verification. T010 добавил отдельный �
 неизменённый raw-файл и SHA-256, 365-дневная controlled transcription,
 source-only аль-исфар, раздельные наступление Зухра/коллективное время,
 переходы летнего исчисления 10→11 мая и 2→3 августа, а также проверяемую
-сверку всех 31 августовских строк. Годовой candidate остаётся `needs_review`:
-D-002 не называет religious approver, а расхождения источников не исправлены
-по догадке. Локальный Phase 1 завершён.
+сверку всех 31 августовских строк. Эффективный candidate остаётся
+`needs_review` до отдельной approval/publication границы; августовские
+расхождения разрешены явной приоритетной политикой, а не исправлены по догадке.
+Локальный Phase 1 завершён.
 T009 добавил явно ephemeral/test-only one-use pairing fixture и bearer-scoped
 Go read API, ETag/304 и Digest, полную registry-time signature/schema/mosque
 validation, Android Keystore/AES-GCM provisioning, same-origin HTTPS,
@@ -125,9 +128,10 @@ private/production signing key в APK/Git не встроены. Источни�
 завершена локально. D-002 и D-013 приняты; protected-signer, двойная
 snapshot/provenance attestation, монотонный trust lifecycle и обязательный API
 receipt реализованы без production private key. Первая production
-publication остаётся `BLOCKED` на named religious approval, D-009 для
-mosque-local коллективного времени, реальном KMS/HSM/trust deployment и
-физическом canary/rollback drill.
+publication остаётся `BLOCKED` только на конкретном production KMS Ed25519
+ключе, отдельном security/signer операторе, authenticated snapshot-trust
+deployment и canary/rollback drill. Named approval, D-009 и отдельная
+approval-квитанция уже зафиксированы и проверяются локально.
 T011 добавляет независимое PostgreSQL-хранилище production pairing: случайные
 одноразовые коды и device tokens, только hash/HMAC at rest, expiry/rate limits,
 атомарный single-use redeem, revocation, mosque-scoped composite constraints и

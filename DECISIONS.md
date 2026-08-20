@@ -7,19 +7,20 @@ Record product decisions here before converting stable architecture choices into
 | ID | Decision | Status | Owner | Needed by | Notes |
 |---|---|---|---|---|---|
 | D-001 | First pilot mosque and locality | ACCEPTED | Product owner | before T008/T010 | Second Cathedral Mosque of Ulyanovsk, 18A Dzerzhinsky Street, Ulyanovsk; confirmed 2026-08-20 |
-| D-002 | Canonical prayer-time authority/source | ACCEPTED | Product owner | before real publication | 2026 baseline is the retained RDUM Ulyanovsk annual PDF; for every field present in the retained August 2026 photo, the photo has priority throughout August. This source-selection decision does not replace a named religious approval or settle D-009. |
+| D-002 | Canonical prayer-time authority/source | ACCEPTED | Product owner | before real publication | 2026 baseline is the retained RDUM Ulyanovsk annual PDF; for every field present in the retained August 2026 photo, the photo has priority throughout August. Named approval and D-009 are recorded separately and cryptographically bound to the effective candidate. |
 | D-003 | Written permission and attribution | ACCEPTED | Product owner/source | before real data commit/publication | product owner confirmed project use on 2026-08-20; preserve the exact raw SHA-256 and printed attribution |
-| D-004 | Pilot TV/box model and Android version | OPEN | Installer | before performance/autostart promises | T001 compiles with minSdk 28 / targetSdk 35; this is a scaffold baseline, not a hardware support promise |
-| D-005 | Product name and Android application ID | OPEN | Product owner | before distributable build | T003 deliberately retains the T001 placeholder: `Namaz Time` / `com.example.namaztime.tv` |
+| D-004 | Pilot TV/box model and Android version | OPEN | Installer | before performance/autostart promises | Android Studio TV Emulator API 36 / 1920×1080 is the current controlled runtime; physical TV/box remains unselected and emulator evidence is not an OEM support promise |
+| D-005 | Product name and Android application ID | OPEN | Product owner | before distributable build | product name accepted as `NamazTime` on 2026-08-20; `com.example.namaztime.tv` remains a non-production placeholder until a final application ID is selected |
 | D-006 | Repository software license | OPEN | Product owner | before public release | do not assume competitor/data licenses |
 | D-007 | Required languages for pilot | OPEN | Mosque | T005 | Russian + ? |
 | D-008 | Local-only vs remote admin in MVP | OPEN | Product owner | before remote administration | T003 implements only the reversible local-first settings shell; it does not choose the final administration mode |
-| D-009 | Iqamah/Jumu'ah rule policy | OPEN | Mosque approver | T006 | fixed/offset, exceptions, sessions |
+| D-009 | Iqamah/Jumu'ah rule policy | ACCEPTED | Mosque approver | T006/T010 | all iqamah values are adhan +5 minutes; Friday Dhuhr congregation is replaced by one Jumuah at 13:15; no separate Ramadan/holiday exceptions yet; collective-Dhuhr source column is the mosque Dhuhr adhan |
 | D-010 | QR campaign domains and approval | OPEN | Mosque | T007 | HTTPS and official destination |
 | D-011 | Best-effort boot vs managed kiosk | OPEN | Installer/product | before pilot deployment | separate support promises |
 | D-012 | Analytics/crash reporting policy | OPEN | Product/privacy | before store release | recommended privacy-minimal default |
-| D-013 | Snapshot signer/KMS strategy | ACCEPTED | Product owner / security owner | before production publication | Ed25519 in KMS/HSM or isolated signer; separate approver/signer; versioned public trust bundle with staged rotation, retirement and emergency revocation; no production private material in Git/APK/API/ordinary CI |
+| D-013 | Snapshot signer/KMS strategy | ACCEPTED | Product owner / security owner | before production publication | KMS selected; exact vendor/service, production Ed25519 key and distinct security operator remain deployment inputs. Separate approver/signer, versioned trust, rotation/revocation and no production private material in Git/APK/API/ordinary CI remain mandatory. |
 | D-014 | Source stale/expiry/fallback behavior | OPEN | Mosque approver | before real source | default: no silent fallback |
+| D-015 | Pilot schedule delivery channel | ACCEPTED | Product owner | pilot rollout | Pair the Android TV client with the API and deliver signed immutable snapshots through the existing T009 manifest/sync path; no APK-embedded production schedule. |
 
 ## Confirmed repository proposals
 
@@ -91,9 +92,10 @@ These are proposals until accepted by the product owner:
 - `PROPOSAL` — nonexistent and ambiguous DST wall times both fail closed. The
   snapshot contract has no fold/offset evidence, so the client does not guess
   which occurrence a source intended during a fall-back overlap.
-- `UNKNOWN` — D-009 remains open for the pilot's actual iqamah and Jumu'ah
-  values. T006 supports explicit fixed/offset rules and sessions but creates no
-  mosque policy or missing value by inference.
+- `PROPOSAL` — D-009 is accepted in the signed pilot policy: five minutes after
+  adhan for each daily congregation; Friday Dhuhr iqamah is omitted because one
+  Jumuah at 13:15 replaces it. Dhuhr remains visible as a source row, but does
+  not compete with Jumuah in Friday countdown events.
 - `CONFIRMED_RUNTIME` is not claimed for wall-clock behavior on a television;
   current evidence is deterministic JVM/Robolectric execution with injected
   clocks and named timezone databases.
@@ -158,13 +160,18 @@ These are proposals until accepted by the product owner:
   reconciliation ledger but are marked `resolved_monthly_photo_precedence`.
   Only the two exact source-conflict review flags are rewritten into preserved
   `source_*` evidence flags in effective output.
-- `UNKNOWN` — D-009 must decide whether any source-wide collective Dhuhr value
-  is the pilot mosque's iqamah. Publication deliberately omits candidate
-  collective values from TV iqamah overrides without that distinct decision.
-- `UNKNOWN` — a named religious approval binding the effective candidate/diff
-  and warnings is still absent. Protected production key provisioning,
-  authenticated trust-bundle deployment and physical canary/rollback evidence
-  also block the first production activation; the D-013 policy itself is accepted.
+- `PROPOSAL` — named approver identity
+  `approver:ulyanovsk-mosques:akhmedov-elmaddin-fazil-ogly` represents Ахмедов
+  Эльмаддин Фазил Оглы, representative of Ulyanovsk mosques and the Second
+  Cathedral Mosque. The signed receipt binds the exact effective candidate,
+  diff, warnings and mosque policy; the private approval key is outside Git.
+- `PROPOSAL` — the approver states that the source collective-Dhuhr column is
+  the mosque Dhuhr adhan, not iqamah. Publication therefore selects that value
+  as Dhuhr adhan and derives iqamah only from the separately approved +5 rule.
+- `UNKNOWN` — the selected KMS vendor/key, a distinct named security operator,
+  authenticated production signing-trust deployment and D-014 still block the
+  first production activation. The paired Android TV emulator is the accepted
+  canary target; physical OEM evidence remains a separate future check.
 
 ## T009 device-sync record
 

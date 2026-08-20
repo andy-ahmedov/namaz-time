@@ -15,7 +15,7 @@ Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 | Create docs-first Codex package | DONE | `make docs-check` passes |
 | Runtime black-box validation on physical TV/box | BLOCKED | requires device/ADB test environment; see `BLACK_BOX_VALIDATION_PLAN.md` |
 | Choose first pilot mosque/source | DONE | D-001 accepted for the Second Cathedral Mosque of Ulyanovsk; August 2026 photo selected as the first manual-import source fixture |
-| Choose pilot hardware | DEFERRED | D-004 remains open; physical TV/ADB validation will be performed separately and does not block local Phase 1 work |
+| Choose pilot hardware | DEFERRED | Android Studio TV Emulator API 36 / 1920×1080 is the controlled development runtime; D-004 physical TV/box model remains open and separate |
 | Confirm license/permission for first schedule | DONE | product owner confirmed project use/redistribution permission on 2026-08-20; source SHA-256 recorded for T008 |
 
 ## Phase 1 — bounded technical vertical slice
@@ -40,7 +40,7 @@ Detailed prompts: [CODEX_TASKS.md](CODEX_TASKS.md).
 | Task | Status | Acceptance / evidence |
 |---|---|---|
 | T009 manifest/snapshot sync | DONE | explicit ephemeral one-use pairing fixture and scoped bearer API; duplicate credential rejection; signed registry and paired-mosque binding; same-origin canonical snapshot URLs; manifest/raw snapshot ETag/304 and Digest; Android AES-GCM/Keystore provisioning, provisioning-scoped durable stage/quarantine/checkpoint, signature/schema/domain/manifest/mosque binding, atomic activation and authenticated rollback; 401/404/500/timeout/tamper/re-pair plus file-backed import/post-commit interruption recovery tests pass |
-| T010 first real source onboarding | BLOCKED | local source/effective and D-013 publication slices DONE: immutable PDF baseline + August photo override, deterministic 365-day candidate/diff, protected-signer protocol, strict Go/Android lifecycle trust, staged rotation/revocation, exclusive snapshot/audit receipts and runbook; first production publication remains blocked on named religious approval, D-009, real protected key/trust deployment and physical canary/rollback |
+| T010 first real source onboarding | BLOCKED | local source/effective, named approval, D-009 and D-013 publication slices DONE: immutable PDF baseline + August override, deterministic 365-day candidate/diff, signed approver receipt, Dhuhr/iqamah/Jumuah policy, protected-signer protocol, emulator runtime and rollback evidence model; first production publication remains blocked on D-014, a concrete KMS Ed25519 key, distinct security operator and authenticated signing-trust deployment; paired emulator canary follows those inputs, physical OEM acceptance is deferred/non-blocking |
 
 T010's locally executable source slice is complete. The retained PDF SHA-256 is
 `82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21`;
@@ -51,15 +51,23 @@ baseline and the photo as the priority source for fields present in August.
 al-Isfar where the photo has no value, keeps collective Dhuhr separate and
 produces normalized SHA-256
 `e7bcc16ad55d00f136cbfc5629e2680babf3f71b331dd33ca4f6e1b1207dbf77`.
-All twelve numeric differences remain visible but policy-resolved. This does
-not manufacture the missing named approval, D-009 decision, provisioned
-production key/signature, authenticated religious-approval principal or TV
-canary evidence, so T010 remains `BLOCKED`
-rather than DONE. D-013 is accepted and locally implemented: production code
+All twelve numeric differences remain visible and policy-resolved. Named
+approver `approver:ulyanovsk-mosques:akhmedov-elmaddin-fazil-ogly` signed the
+exact candidate/diff/warnings and policy SHA-256. D-009 maps the approved
+collective-Dhuhr source value to Dhuhr adhan, applies iqamah +5 minutes, omits
+Friday Dhuhr iqamah and publishes one Jumuah at 13:15. This does not manufacture
+a provisioned production KMS key/signature, distinct signer operator,
+authenticated signing-trust deployment or D-014 stale/fallback decision, so T010
+remains `BLOCKED` rather than DONE. D-013 is accepted and locally implemented: production code
 accepts only an isolated signer interface/two-signature response, Go/API
 and Android consume the same `scheduled`/`active`/`retired`/`revoked` public
 trust model with direct-predecessor transition checks, and finalization emits a
 signer-attested hash-chained receipt required by production API admission.
+The `0.3.0-pilot-local` debug APK was rebuilt, installed and D-pad checked on
+the selected API 36 Android TV emulator; SHA-256 is
+`1308f1e65622335ab988ca481a508613d80ab882540929e56c40541e76f98539`.
+It intentionally retains the visibly synthetic bootstrap until a KMS-signed
+production snapshot is delivered through D-015/T009 pairing and sync.
 
 T009 completes the locally testable delivery half of the Phase 2 invariant. The
 runtime command refuses to embed fixture credentials or trust keys, requires
@@ -101,7 +109,7 @@ unsigned content paths:
 | Future branch | Status | Required decision/dependency |
 |---|---|---|
 | browser admin portal/session | BLOCKED | D-008 plus deployment identity-provider/session model; bearer bootstrap and production credentials must not be invented in Git |
-| remote iqamah/Jumu'ah rules | BLOCKED | mosque policy D-009 and the T010/D-013 approval/signature publication path |
+| remote iqamah/Jumu'ah mutation | BLOCKED | initial D-009 policy is approved; remote changes still require an authenticated admin/approval workflow and the provisioned T010/D-013 signer |
 | QR and announcement campaigns | BLOCKED | destination/approval policy D-010 and the T010/D-013 approval/signature publication path |
 | custom background upload pipeline | BLOCKED | asset custody/type/size/CDN policy plus the T010/D-013 signed publication path |
 
@@ -158,26 +166,29 @@ Do not begin until the first pilot is stable.
 - T003 retains the non-production product name/application ID while D-005 is open;
 - T003 implements only the reversible local-first shell while D-008 is open;
 - Room currently uses kapt because Room 2.8.4 KSP processing is incompatible with the scaffold's Kotlin 2.0.21 processor classpath; revisit with a coordinated Kotlin/AGP upgrade;
-- pilot source precedence is accepted under D-002, but the named mosque/authority prayer-time approver and an approval binding the effective hashes/warnings remain absent;
+- pilot source precedence, named mosque approver, exact signed approval and D-009 mosque policy are accepted; organizational role verification is based on the product-owner statement and public third-party verification is not claimed;
 - the official 2026 annual PDF now supplies full-year pilot coverage through T010; its daily Hijri values are absent and therefore remain unset rather than invented;
-- no physical Android TV/box available in the analysis environment;
+- Android TV Emulator API 36 at 1920×1080 is available and provides controlled runtime evidence; no physical Android TV/box evidence is available;
 - abrupt OS process-kill/journal-recovery remains a future instrumentation/ADB
   acceptance case; T004 locally proves transactional rollback followed by a
   file-backed database close/reopen, not a physical-device process death;
-- product name, package ID and license remain undecided.
+- product name is `NamazTime`; production package ID and license remain undecided.
 - D-010 still requires an approved pilot QR destination/domain; T007 therefore
   exercises only the authorized local mechanism with synthetic `example.org`
   fixtures and does not invent a live campaign.
-- D-013 policy and local implementation are complete under ADR 0011. A real
-  KMS/HSM key, named security operators, authenticated production trust-bundle
+- D-013 policy and local implementation are complete under ADR 0011. KMS is
+  selected as the custody class, but the concrete provider, real Ed25519 key,
+  a signer/security operator distinct from the approver, authenticated production trust-bundle
   deployment and measured rotation/revocation drill remain external rollout
   inputs. T008's public test key is never promoted; its private half was discarded.
-- local Phase 1/T009 and T010 source/effective onboarding are complete. D-002
-  resolves August precedence through an exact hash-bound policy, but a real
-  pilot publication remains intentionally impossible until a named religious
-  approval binds the effective candidate/diff/warnings, D-009 decides whether
-  any printed collective value is pilot iqamah, protected production key/trust
-  deployment is provisioned, and a physical canary/rollback drill is performed.
+- local Phase 1/T009 and T010 source/effective/approval onboarding are complete.
+  D-002 resolves August precedence; the signed approval binds the effective
+  candidate/diff/warnings; D-009 separately treats collective Dhuhr as adhan
+  and derives iqamah +5. A real pilot publication remains intentionally
+  impossible until protected production KMS key/trust deployment and a distinct
+  signer operator are provisioned and D-014 is accepted. The resulting signed
+  snapshot will use the already selected paired emulator for canary/rollback;
+  physical OEM acceptance remains a separate future validation.
 - T009 intentionally rejects non-empty remote asset manifests; custom asset
   staging/type/dimension activation requires a separately bounded task.
 - T020 preserves clock health as `unknown`/healthy/mismatch locally, while the

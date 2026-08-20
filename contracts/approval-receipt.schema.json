@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/approval-receipt.schema.json",
+  "title": "Signed mosque schedule approval receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "approval", "prayer_policy_sha256", "approval_key_id", "signature_ed25519_base64"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "approval": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["approval_id", "decision", "actor", "approved_at", "scope", "candidate_id", "raw_sha256", "transcription_sha256", "normalized_sha256", "diff_sha256", "parser_version", "prayer_policy_sha256"],
+      "properties": {
+        "approval_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "decision": { "const": "approved" },
+        "actor": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "approved_at": { "$ref": "#/$defs/canonicalTimestamp" },
+        "scope": { "type": "string", "minLength": 1, "maxLength": 500 },
+        "reason": { "type": "string", "maxLength": 2000 },
+        "candidate_id": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "raw_sha256": { "$ref": "#/$defs/sha256" },
+        "transcription_sha256": { "$ref": "#/$defs/sha256" },
+        "normalized_sha256": { "$ref": "#/$defs/sha256" },
+        "diff_sha256": { "$ref": "#/$defs/sha256" },
+        "parser_version": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "prayer_policy_sha256": { "$ref": "#/$defs/sha256" },
+        "acknowledged_warning_codes": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": { "type": "string", "minLength": 1, "maxLength": 128 }
+        }
+      }
+    },
+    "prayer_policy_sha256": { "$ref": "#/$defs/sha256" },
+    "approval_key_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+    "signature_ed25519_base64": { "type": "string", "pattern": "^[A-Za-z0-9+/]{86}==$" }
+  },
+  "$defs": {
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "canonicalTimestamp": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    }
+  }
+}

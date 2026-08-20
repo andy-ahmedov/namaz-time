@@ -113,6 +113,7 @@ type ApprovalDecision struct {
 	NormalizedSHA256         string                `json:"normalized_sha256"`
 	DiffSHA256               string                `json:"diff_sha256"`
 	ParserVersion            string                `json:"parser_version"`
+	PrayerPolicySHA256       string                `json:"prayer_policy_sha256,omitempty"`
 	AcknowledgedWarningCodes []string              `json:"acknowledged_warning_codes,omitempty"`
 }
 

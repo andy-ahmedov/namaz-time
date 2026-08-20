@@ -45,6 +45,11 @@ type SigningRequest struct {
 	ApproverIdentity       string          `json:"approver_identity"`
 	ApprovedAt             string          `json:"approved_at"`
 	ApprovalScope          string          `json:"approval_scope"`
+	PrayerPolicySHA256     string          `json:"prayer_policy_sha256,omitempty"`
+	ApprovalReceiptSHA256  string          `json:"approval_receipt_sha256,omitempty"`
+	ApprovalTrustRevision  uint64          `json:"approval_trust_revision,omitempty"`
+	ApprovalTrustSHA256    string          `json:"approval_trust_sha256,omitempty"`
+	ApprovalKeyID          string          `json:"approval_key_id,omitempty"`
 	Snapshot               domain.Snapshot `json:"unsigned_snapshot"`
 }
 
@@ -82,6 +87,11 @@ type publicationAttestation struct {
 	ApproverIdentity      string `json:"approver_identity"`
 	ApprovedAt            string `json:"approved_at"`
 	ApprovalScope         string `json:"approval_scope"`
+	PrayerPolicySHA256    string `json:"prayer_policy_sha256,omitempty"`
+	ApprovalReceiptSHA256 string `json:"approval_receipt_sha256,omitempty"`
+	ApprovalTrustRevision uint64 `json:"approval_trust_revision,omitempty"`
+	ApprovalTrustSHA256   string `json:"approval_trust_sha256,omitempty"`
+	ApprovalKeyID         string `json:"approval_key_id,omitempty"`
 	TrustBundleRevision   uint64 `json:"trust_bundle_revision"`
 	TrustBundleSHA256     string `json:"trust_bundle_sha256"`
 	SignerIdentity        string `json:"signer_identity"`
@@ -130,8 +140,17 @@ func PrepareSigning(request PublishRequest, policy *trust.Policy) (SigningReques
 	binding := sha256.Sum256([]byte(
 		request.Candidate.ID + "\x00" + request.Candidate.Artifact.SHA256 + "\x00" + request.Candidate.TranscriptionSHA256 + "\x00" +
 			request.Candidate.NormalizedSHA256 + "\x00" + request.Diff.SHA256 + "\x00" + request.Approval.ID + "\x00" +
+			request.Approval.PrayerPolicySHA256 + "\x00" + approvalEvidenceBinding(request.ApprovalEvidence) + "\x00" +
 			request.SnapshotID + "\x00" + request.SigningKeyID + "\x00" + hex.EncodeToString(hash[:]),
 	))
+	var approvalReceiptSHA256, approvalTrustSHA256, approvalKeyID string
+	var approvalTrustRevision uint64
+	if request.ApprovalEvidence != nil {
+		approvalReceiptSHA256 = request.ApprovalEvidence.ReceiptSHA256
+		approvalTrustRevision = request.ApprovalEvidence.TrustRevision
+		approvalTrustSHA256 = request.ApprovalEvidence.TrustBundleSHA256
+		approvalKeyID = request.ApprovalEvidence.ApprovalKeyID
+	}
 	return SigningRequest{
 		SchemaVersion: "1.0", RequestID: "signing-" + hex.EncodeToString(binding[:16]), Environment: policy.Environment(),
 		TrustBundleRevision: policy.Revision(), TrustBundleSHA256: policy.SHA256(),
@@ -141,7 +160,10 @@ func PrepareSigning(request PublishRequest, policy *trust.Policy) (SigningReques
 		TranscriptionSHA256: request.Candidate.TranscriptionSHA256, NormalizedSHA256: request.Candidate.NormalizedSHA256,
 		DiffSHA256: request.Diff.SHA256, ParserVersion: request.Candidate.ParserVersion,
 		ApprovalID: request.Approval.ID, ApproverIdentity: request.Approval.Actor, ApprovedAt: request.Approval.ApprovedAt,
-		ApprovalScope: request.Approval.Scope, Snapshot: snapshot,
+		ApprovalScope: request.Approval.Scope, PrayerPolicySHA256: request.Approval.PrayerPolicySHA256,
+		ApprovalReceiptSHA256: approvalReceiptSHA256, ApprovalTrustRevision: approvalTrustRevision,
+		ApprovalTrustSHA256: approvalTrustSHA256, ApprovalKeyID: approvalKeyID,
+		Snapshot: snapshot,
 	}, nil
 }
 
@@ -247,7 +269,10 @@ func BuildAttestationPayload(prepared SigningRequest, response SigningResponse) 
 		TranscriptionSHA256: prepared.TranscriptionSHA256, NormalizedSHA256: prepared.NormalizedSHA256,
 		DiffSHA256: prepared.DiffSHA256, ParserVersion: prepared.ParserVersion,
 		ApprovalID: prepared.ApprovalID, ApproverIdentity: prepared.ApproverIdentity, ApprovedAt: prepared.ApprovedAt,
-		ApprovalScope: prepared.ApprovalScope, TrustBundleRevision: prepared.TrustBundleRevision, TrustBundleSHA256: prepared.TrustBundleSHA256,
+		ApprovalScope: prepared.ApprovalScope, PrayerPolicySHA256: prepared.PrayerPolicySHA256,
+		ApprovalReceiptSHA256: prepared.ApprovalReceiptSHA256, ApprovalTrustRevision: prepared.ApprovalTrustRevision,
+		ApprovalTrustSHA256: prepared.ApprovalTrustSHA256, ApprovalKeyID: prepared.ApprovalKeyID,
+		TrustBundleRevision: prepared.TrustBundleRevision, TrustBundleSHA256: prepared.TrustBundleSHA256,
 		SignerIdentity: response.SignerIdentity, SignedAt: response.SignedAt,
 		PublishedAt: response.PublishedAt, PreviousReceiptSHA256: response.PreviousReceiptSHA256,
 		ChainGenesisReason: response.ChainGenesisReason,
@@ -361,6 +386,9 @@ func VerifyAuditReceiptHead(receipt AuditReceipt, policy *trust.Policy) error {
 		CandidateID: receipt.CandidateID, RawSHA256: receipt.RawSHA256, TranscriptionSHA256: receipt.TranscriptionSHA256,
 		NormalizedSHA256: receipt.NormalizedSHA256, DiffSHA256: receipt.DiffSHA256, ParserVersion: receipt.ParserVersion,
 		ApprovalID: receipt.ApprovalID, ApproverIdentity: receipt.ApproverIdentity, ApprovedAt: receipt.ApprovedAt, ApprovalScope: receipt.ApprovalScope,
+		PrayerPolicySHA256: receipt.PrayerPolicySHA256, ApprovalReceiptSHA256: receipt.ApprovalReceiptSHA256,
+		ApprovalTrustRevision: receipt.ApprovalTrustRevision, ApprovalTrustSHA256: receipt.ApprovalTrustSHA256,
+		ApprovalKeyID:       receipt.ApprovalKeyID,
 		TrustBundleRevision: receipt.TrustBundleRevision, TrustBundleSHA256: receipt.TrustBundleSHA256,
 		SignerIdentity: receipt.SignerIdentity, SignedAt: receipt.SignedAt,
 		PublishedAt: receipt.PublishedAt, PreviousReceiptSHA256: receipt.PreviousReceiptSHA256,
@@ -385,6 +413,9 @@ func verifyAuditReceiptSelf(receipt AuditReceipt) error {
 		len(receipt.SignerIdentity) < 1 || len(receipt.SignerIdentity) > 240 || strings.EqualFold(strings.TrimSpace(receipt.ApproverIdentity), strings.TrimSpace(receipt.SignerIdentity)) || receipt.TrustBundleRevision == 0 ||
 		!validSHA256(receipt.SigningRequestSHA256) || !signingRequestIDPattern.MatchString(receipt.SigningRequestID) || len(receipt.ApprovalScope) < 1 || len(receipt.ApprovalScope) > 500 {
 		return errors.New("audit receipt required metadata is missing")
+	}
+	if receipt.Environment == "production" && (!validSHA256(receipt.PrayerPolicySHA256) || !validSHA256(receipt.ApprovalReceiptSHA256) || receipt.ApprovalTrustRevision == 0 || !validSHA256(receipt.ApprovalTrustSHA256) || receipt.ApprovalKeyID == "") {
+		return errors.New("production audit receipt authenticated approval evidence is missing")
 	}
 	for _, hash := range []string{receipt.SnapshotSHA256, receipt.CanonicalSHA256, receipt.RawSHA256, receipt.TranscriptionSHA256, receipt.NormalizedSHA256, receipt.DiffSHA256, receipt.TrustBundleSHA256, receipt.ReceiptSHA256} {
 		if !validSHA256(hash) {
@@ -413,6 +444,13 @@ func verifyAuditReceiptSelf(receipt AuditReceipt) error {
 		return errors.New("audit receipt hash does not match content")
 	}
 	return nil
+}
+
+func approvalEvidenceBinding(evidence *ApprovalEvidence) string {
+	if evidence == nil {
+		return ""
+	}
+	return fmt.Sprintf("%s\x00%d\x00%s\x00%s", evidence.ReceiptSHA256, evidence.TrustRevision, evidence.TrustBundleSHA256, evidence.ApprovalKeyID)
 }
 
 func finalizedSnapshotSHA256(prepared SigningRequest, response SigningResponse) (string, error) {

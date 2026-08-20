@@ -121,10 +121,10 @@ source_flags
 Primary key: `(candidate_schedule_id, local_date)`.
 
 `recommended_fajr`, zenith and source congregation fields are review evidence;
-they participate in candidate identity/diff but do not become adhan rows.
-Collective Dhuhr can become an iqamah override only through a separate explicit
-mosque-practice decision/configuration that covers that value. Schedule approval
-alone does not promote it. Missing daily Hijri fields remain absent.
+they participate in candidate identity/diff but do not become adhan rows by
+default. A separately signed, mosque-scoped prayer policy may explicitly select
+the source's `dhuhr_congregation` field as the effective Dhuhr adhan. It does not
+turn that field into iqamah. Missing daily Hijri fields remain absent.
 
 ### `approval`
 
@@ -141,12 +141,26 @@ transcription_sha256
 normalized_sha256
 diff_sha256
 parser_version
+prayer_policy_sha256
 acknowledged_warning_codes
 ```
 
 Approval must bind to exact raw/transcription/normalized/diff hashes and parser
-version so a changed candidate cannot reuse an old decision. Every unresolved
-parser-warning code must be acknowledged explicitly.
+version plus the canonical mosque-prayer-policy hash, so a changed candidate or
+local rule cannot reuse an old decision. Every unresolved parser-warning code
+must be acknowledged explicitly. Production approval is carried as a separate
+Ed25519-signed receipt. Its trust bundle binds the stable approver identity to a
+distinct approval key and uses monotonic `scheduled`/`active`/`retired`/`revoked`
+key lifecycle; it never authorizes a snapshot signature.
+
+### `mosque_prayer_policy`
+
+Immutable, mosque- and coverage-scoped local interpretation approved alongside
+the candidate. It records which source field is the effective Dhuhr adhan,
+iqamah rules, Jumu'ah sessions/replacement behavior, explicit Ramadan/holiday
+exception state and the correction owner. Its canonical SHA-256 is stored in
+the approval decision, signed approval receipt, publication signing request and
+publication audit receipt.
 
 ### `approved_schedule`
 

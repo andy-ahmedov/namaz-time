@@ -1,0 +1,88 @@
+{
+  "schema_version": "1.0",
+  "policy_id": "second-cathedral-mosque-ulyanovsk-2026-v1",
+  "mosque_id": "second-cathedral-mosque-ulyanovsk",
+  "valid_from": "2026-01-01",
+  "valid_to": "2026-12-31",
+  "dhuhr_adhan_source": "dhuhr_congregation",
+  "dhuhr_replaced_by_jumuah_friday": true,
+  "iqamah_rules": [
+    {
+      "id": "fajr-plus-five-2026",
+      "prayer": "fajr",
+      "valid_from": "2026-01-01",
+      "valid_to": "2026-12-31",
+      "weekdays": [1, 2, 3, 4, 5, 6, 7],
+      "priority": 100,
+      "value": {
+        "mode": "offset_after_adhan",
+        "offset_minutes": 5
+      },
+      "reason": "Approved mosque policy: iqamah is five minutes after adhan."
+    },
+    {
+      "id": "dhuhr-plus-five-except-friday-2026",
+      "prayer": "dhuhr",
+      "valid_from": "2026-01-01",
+      "valid_to": "2026-12-31",
+      "weekdays": [1, 2, 3, 4, 6, 7],
+      "priority": 100,
+      "value": {
+        "mode": "offset_after_adhan",
+        "offset_minutes": 5
+      },
+      "reason": "Approved mosque policy: Friday Dhuhr congregation is replaced by one Jumuah session."
+    },
+    {
+      "id": "asr-plus-five-2026",
+      "prayer": "asr",
+      "valid_from": "2026-01-01",
+      "valid_to": "2026-12-31",
+      "weekdays": [1, 2, 3, 4, 5, 6, 7],
+      "priority": 100,
+      "value": {
+        "mode": "offset_after_adhan",
+        "offset_minutes": 5
+      },
+      "reason": "Approved mosque policy: iqamah is five minutes after adhan."
+    },
+    {
+      "id": "maghrib-plus-five-2026",
+      "prayer": "maghrib",
+      "valid_from": "2026-01-01",
+      "valid_to": "2026-12-31",
+      "weekdays": [1, 2, 3, 4, 5, 6, 7],
+      "priority": 100,
+      "value": {
+        "mode": "offset_after_adhan",
+        "offset_minutes": 5
+      },
+      "reason": "Approved mosque policy: iqamah is five minutes after adhan."
+    },
+    {
+      "id": "isha-plus-five-2026",
+      "prayer": "isha",
+      "valid_from": "2026-01-01",
+      "valid_to": "2026-12-31",
+      "weekdays": [1, 2, 3, 4, 5, 6, 7],
+      "priority": 100,
+      "value": {
+        "mode": "offset_after_adhan",
+        "offset_minutes": 5
+      },
+      "reason": "Approved mosque policy: iqamah is five minutes after adhan."
+    }
+  ],
+  "jumuah_sessions": [
+    {
+      "id": "jumuah-friday-1315-2026",
+      "label": "Джума",
+      "salah_time": "13:15",
+      "valid_from": "2026-01-01",
+      "valid_to": "2026-12-31"
+    }
+  ],
+  "ramadan_exceptions": "none",
+  "holiday_exceptions": "none",
+  "correction_owner": "admin"
+}

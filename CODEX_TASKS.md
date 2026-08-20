@@ -119,9 +119,14 @@ photo priority for every field it supplies in August, exact component hash
 bindings and no raw edits. `effective-schedule/v1` produces a deterministic
 365-day `needs_review` candidate/diff and resolves only the recorded source
 conflicts. Ordinary publication cannot promote collective Dhuhr into iqamah.
-A named religious approval, D-009, protected production key/trust deployment
-and a physical canary/rollback drill remain `BLOCKED`, so T010 is not marked
-DONE. D-013 itself is ACCEPTED and locally implemented: strict public trust
+A named religious approval and D-009 are now locally complete: a separate
+approver key signs the exact candidate/diff/warnings and mosque policy; Dhuhr
+adhan uses the approved collective column, iqamah is +5, and one Friday Jumuah
+is 13:15. A concrete production KMS Ed25519 key, distinct security operator,
+authenticated signing-trust deployment and D-014 stale/fallback policy remain
+`BLOCKED`, so T010 is not marked DONE. The selected paired Android TV emulator
+is sufficient for the future canary/rollback checkpoint; physical OEM testing
+is deferred and is not a local development blocker. D-013 itself is ACCEPTED and locally implemented: strict public trust
 bundles share lifecycle semantics across Go/API/Android; production raw-key
 signing is forbidden; isolated prepare/finalize tooling verifies exact
 approval/candidate/diff/trust/actor/chain bindings with a second

@@ -94,9 +94,10 @@ go run ./cmd/ingestor inspect-effective \
   --override-dir fixtures/pilot/ulyanovsk-2026-08
 ```
 
-The effective command never approves, signs or publishes. Before approval,
-record its policy/component hashes, normalized hash, diff hash, all warnings
-and the separately unresolved D-009 mosque-practice decision.
+The effective command never approves, signs or publishes. The committed pilot
+approval receipt separately binds its policy/component hashes, normalized
+hash, diff hash, all warning codes and accepted D-009 mosque policy. Recreate
+and verify it with `cmd/approver`; never edit the receipt or policy in place.
 
 1. retrieve artifact with identifiable user agent and rate limit;
 2. verify status/content type/size;
@@ -108,6 +109,13 @@ and the separately unresolved D-009 mosque-practice decision.
 8. build/sign snapshot;
 9. canary rollout;
 10. verify activation before broad rollout.
+
+For the pilot, the approved operational transform is source-aware: candidate
+`dhuhr_congregation` becomes the TV Dhuhr adhan, while the original onset stays
+in candidate provenance; iqamah is +5 minutes; Friday Dhuhr iqamah is replaced
+by one Jumuah at 13:15. Any change creates a new policy hash and requires a new
+signed approval. Correction actions are assigned to the admin workflow, but
+D-014 still must decide expiry/fallback behavior after coverage ends.
 
 ## Snapshot rollback runbook
 

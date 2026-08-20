@@ -186,6 +186,30 @@ class PrayerTimeEngineTest {
     }
 
     @Test
+    fun `Friday Jumuah replaces Dhuhr in countdown events while retaining displayed Dhuhr time`() {
+        val result = engine.resolve(
+            schedule(
+                days = listOf(day("2026-08-21")),
+                sessions = listOf(
+                    JumuahSessionInput(
+                        "pilot-friday",
+                        "Джума",
+                        null,
+                        "13:15",
+                        "2026-01-01",
+                        "2026-12-31",
+                    ),
+                ),
+            ),
+            Instant.parse("2026-08-21T07:00:00Z"),
+        ).available()
+
+        assertEquals("12:00", result.prayers.getValue("dhuhr").adhan.toString())
+        assertEquals(PrayerEventKind.JUMUAH, result.nextEvent?.kind)
+        assertEquals("pilot-friday", result.nextEvent?.jumuahSessionId)
+    }
+
+    @Test
     fun `Jumuah sessions are absent on non-Friday local dates`() {
         val result = engine.resolve(
             schedule(

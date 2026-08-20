@@ -25,9 +25,13 @@ attestation also binds stable approver/signer principals, signing/publication
 times, the exact trust-bundle hash/revision and the audit predecessor or the
 one explicitly authorized ledger genesis.
 The protected signer must authenticate the approval principal and approval
-receipt/assertion independently; string inequality in publisher tooling is a
-structural guard, not identity proof. The approval identity provider or
-approver-signature root is a deployment decision and blocks first production.
+receipt independently; string inequality in publisher tooling is a structural
+guard, not identity proof. The pilot uses a separate Ed25519 approval root with
+stable principal
+`approver:ulyanovsk-mosques:akhmedov-elmaddin-fazil-ogly`. The receipt binds the
+candidate/diff/warnings and canonical mosque prayer policy, and is independently
+verified by both the release host and KMS wrapper. Approval trust has its own
+monotonic lifecycle and cannot authorize snapshot signatures.
 
 Public trust is a strict bundle with a monotonically pinned positive revision,
 an environment and, for each
@@ -84,9 +88,10 @@ logged or embedded in application/runtime configuration.
 
 - The repository can implement and test the full public protocol without a
   production secret or vendor choice.
-- A real publication still needs a named approver, a provisioned protected
-  signer, authenticated distribution of the production public bundle and a
-  canary/rollback drill.
+- A real publication still needs a provisioned protected snapshot signer, a
+  distinct named security/signer operator, authenticated distribution of the
+  production snapshot trust bundle and a canary/rollback drill. The named pilot
+  approver and approval-signature root are complete locally.
 - Revoking a compromised key intentionally makes artifacts signed only by that
   key unavailable for new serving/activation; operators must publish a known-
   good replacement under a non-compromised key.

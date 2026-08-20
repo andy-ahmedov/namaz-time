@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "revision": 1,
+  "environment": "production",
+  "generated_at": "2026-08-20T14:30:00Z",
+  "keys": [
+    {
+      "key_id": "ulyanovsk-approver-akhmedov-2026-01",
+      "algorithm": "ed25519",
+      "approver_identity": "approver:ulyanovsk-mosques:akhmedov-elmaddin-fazil-ogly",
+      "public_key_ed25519_base64": "15nZnS2tgY3ih++avMazMzOApu/PoWbdglNtDIQh3ts=",
+      "status": "active",
+      "not_before": "2026-08-20T14:30:00Z"
+    }
+  ]
+}

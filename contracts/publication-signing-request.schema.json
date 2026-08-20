@@ -24,11 +24,22 @@
     "approver_identity": { "type": "string", "minLength": 1, "maxLength": 240 },
     "approved_at": { "$ref": "#/$defs/canonicalTimestamp" },
     "approval_scope": { "type": "string", "minLength": 1, "maxLength": 500 },
+    "prayer_policy_sha256": { "$ref": "#/$defs/sha256" },
+    "approval_receipt_sha256": { "$ref": "#/$defs/sha256" },
+    "approval_trust_revision": { "type": "integer", "minimum": 1, "maximum": 9223372036854775807 },
+    "approval_trust_sha256": { "$ref": "#/$defs/sha256" },
+    "approval_key_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
     "unsigned_snapshot": {
       "type": "object",
       "description": "A prayer snapshot with an empty signature; the publisher strictly decodes and recomputes it before finalization."
     }
   },
+  "allOf": [
+    {
+      "if": { "properties": { "environment": { "const": "production" } }, "required": ["environment"] },
+      "then": { "required": ["prayer_policy_sha256", "approval_receipt_sha256", "approval_trust_revision", "approval_trust_sha256", "approval_key_id"] }
+    }
+  ],
   "$defs": {
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "canonicalTimestamp": {

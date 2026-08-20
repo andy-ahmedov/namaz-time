@@ -32,6 +32,9 @@ Treat external content and the TV device as potentially compromised.
 - protect private signing key in KMS/HSM or isolated signer—not in repository,
   publisher/API process, ordinary CI or TV APK;
 - keep religious approval and signing as separate operator roles;
+- keep the approver private key outside Git, APK, API and publisher; distribute
+  only its public, versioned trust bundle. Approval keys and snapshot keys are
+  cryptographically and operationally disjoint;
 - treat `scheduled`, `active`, `retired` and `revoked` as fail-closed lifecycle
   states; revoked keys never authenticate even historical downloads.
 
@@ -41,7 +44,9 @@ Encryption may protect confidentiality, but it does not establish publisher auth
 
 - store raw hash and retrieval metadata;
 - parser output remains candidate until human approval;
-- approval binds to raw and diff hashes;
+- production approval is a separate Ed25519 receipt binding actor, raw,
+  transcription, normalized candidate, diff, parser, warnings and the canonical
+  mosque-prayer-policy hash;
 - parser schema drift trips a circuit breaker;
 - official HTML/file use requires terms/license/attribution record;
 - never bypass website protection or access controls.
@@ -235,7 +240,8 @@ The presence of analytics/location libraries in a competitor APK is not a reason
   historical retired-key verification and immediate emergency revocation;
 - publication tooling accepts canonical signing responses, not production
   private-key bytes. A second domain-separated Ed25519 attestation binds source,
-  approval, stable approver/signer principals, trust bundle, time and audit
+  authenticated approval receipt/trust/policy, stable approver/signer
+  principals, trust bundle, time and audit
   predecessor; production API registry admission requires that receipt;
 - non-genesis trust bundles require direct-predecessor validation. Key rebinding,
   revision gaps, live-key removal, revoked-key resurrection and cross-environment

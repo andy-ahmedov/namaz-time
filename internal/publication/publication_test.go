@@ -187,6 +187,94 @@ func TestPublicationDoesNotPromoteCollectiveDhuhrWithoutMosqueIqamahDecision(t *
 	}
 }
 
+func TestApprovedMosquePolicyUsesCollectiveDhuhrAsAdhanAndPublishesIqamahAndJumuah(t *testing.T) {
+	t.Parallel()
+
+	candidate := candidate()
+	candidate.Days[0].Dhuhr = "12:00"
+	candidate.Days[0].DhuhrCongregation = "12:15"
+	if err := domain.FinalizeCandidateIdentity(&candidate); err != nil {
+		t.Fatal(err)
+	}
+	diff, err := publication.Diff(nil, candidate)
+	if err != nil {
+		t.Fatal(err)
+	}
+	approval := approvalFor(candidate, diff)
+	offset := 5
+	policy := &publication.MosquePrayerPolicy{
+		SchemaVersion: "1.0", PolicyID: "pilot-policy-2026", MosqueID: candidate.Mosque.ID,
+		ValidFrom: candidate.Coverage.From, ValidTo: candidate.Coverage.To,
+		DhuhrAdhanSource:            "dhuhr_congregation",
+		DhuhrReplacedByJumuahFriday: true,
+		IqamahRules: []domain.IqamahRule{{
+			ID: "all-prayers-plus-five", Prayer: "fajr", ValidFrom: candidate.Coverage.From,
+			ValidTo: candidate.Coverage.To, Weekdays: []int{1, 2, 3, 4, 5, 6, 7}, Priority: 100,
+			Value: domain.IqamahValue{Mode: "offset_after_adhan", OffsetMinutes: &offset},
+		}},
+		JumuahSessions: []domain.JumuahSession{{
+			ID: "friday-1315", Label: "Джума", SalahTime: "13:15",
+			ValidFrom: candidate.Coverage.From, ValidTo: candidate.Coverage.To,
+		}},
+	}
+	policyHash, err := publication.MosquePrayerPolicySHA256(*policy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	approval.PrayerPolicySHA256 = policyHash
+	request := publishRequest(candidate, diff, approval)
+	request.MosquePrayerPolicy = policy
+	_, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result, err := publication.Publish(request, privateKey)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if result.Snapshot.PrayerDays[0].Dhuhr != "12:15" {
+		t.Fatalf("Dhuhr adhan = %q", result.Snapshot.PrayerDays[0].Dhuhr)
+	}
+	if len(result.Snapshot.IqamahRules) != 1 || len(result.Snapshot.JumuahSessions) != 1 {
+		t.Fatalf("policy not published: iqamah=%#v jumuah=%#v", result.Snapshot.IqamahRules, result.Snapshot.JumuahSessions)
+	}
+
+	tampered := request
+	tampered.MosquePrayerPolicy = &publication.MosquePrayerPolicy{
+		SchemaVersion: "1.0", PolicyID: "tampered", MosqueID: candidate.Mosque.ID,
+		ValidFrom: candidate.Coverage.From, ValidTo: candidate.Coverage.To,
+		DhuhrAdhanSource: publication.DhuhrAdhanFromOnset,
+	}
+	if _, err := publication.Publish(tampered, privateKey); !publication.IsErrorCode(err, "prayer_policy_binding_mismatch") {
+		t.Fatalf("tampered policy Publish() error = %v", err)
+	}
+}
+
+func TestMosquePrayerPolicyRejectsJumuahReplacementContradictions(t *testing.T) {
+	t.Parallel()
+
+	offset := 5
+	policy := publication.MosquePrayerPolicy{
+		SchemaVersion: "1.0", PolicyID: "pilot-policy-2026", MosqueID: "pilot-mosque",
+		ValidFrom: "2026-01-01", ValidTo: "2026-12-31",
+		DhuhrAdhanSource:            publication.DhuhrAdhanFromCongregation,
+		DhuhrReplacedByJumuahFriday: true,
+		IqamahRules: []domain.IqamahRule{{
+			ID: "dhuhr-plus-five", Prayer: "dhuhr", ValidFrom: "2026-01-01", ValidTo: "2026-12-31",
+			Weekdays: []int{5}, Priority: 100,
+			Value: domain.IqamahValue{Mode: "offset_after_adhan", OffsetMinutes: &offset},
+		}},
+	}
+	if _, err := publication.MosquePrayerPolicySHA256(policy); err == nil {
+		t.Fatal("Friday Dhuhr iqamah was accepted while Jumuah replaces Dhuhr")
+	}
+	policy.IqamahRules = nil
+	if _, err := publication.MosquePrayerPolicySHA256(policy); err == nil {
+		t.Fatal("Jumuah replacement was accepted without a Jumuah session")
+	}
+}
+
 func TestVerifyRejectsMalformedUTF8EvenWhenReplacementRuneWasSigned(t *testing.T) {
 	t.Parallel()
 
@@ -462,9 +550,27 @@ func approvalFor(candidate domain.CandidateSchedule, diff publication.DiffReport
 }
 
 func publishRequest(candidate domain.CandidateSchedule, diff publication.DiffReport, approval domain.ApprovalDecision) publication.PublishRequest {
-	return publication.PublishRequest{
+	request := publication.PublishRequest{
 		Candidate: candidate, Diff: diff, Approval: approval,
 		SnapshotID: "synthetic-2025-snapshot-v1", GeneratedAt: time.Date(2025, 1, 1, 0, 0, 0, 0, time.UTC),
 		SigningKeyID: "test-signing-key",
 	}
+	if candidate.DataClassification == domain.DataClassificationProduction {
+		policy := &publication.MosquePrayerPolicy{
+			SchemaVersion: "1.0", PolicyID: "production-test-policy", MosqueID: candidate.Mosque.ID,
+			ValidFrom: candidate.Coverage.From, ValidTo: candidate.Coverage.To,
+			DhuhrAdhanSource: publication.DhuhrAdhanFromOnset,
+		}
+		policySHA256, err := publication.MosquePrayerPolicySHA256(*policy)
+		if err != nil {
+			panic(err)
+		}
+		request.MosquePrayerPolicy = policy
+		request.Approval.PrayerPolicySHA256 = policySHA256
+		request.ApprovalEvidence = &publication.ApprovalEvidence{
+			ReceiptSHA256: strings.Repeat("a", 64), TrustRevision: 1,
+			TrustBundleSHA256: strings.Repeat("b", 64), ApprovalKeyID: "production-approval-test-key",
+		}
+	}
+	return request
 }
