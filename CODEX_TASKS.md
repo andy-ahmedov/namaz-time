@@ -151,3 +151,26 @@ revocation/scope behavior and server-trusted last-seen; admin list exposes only
 the allowlisted projection; Android tests prove same-origin authenticated JSON,
 bounded enums and failure-isolated best-effort reporting; full/race/PostgreSQL
 gates pass.
+
+## T014 — bounded canary rollout cohorts
+
+**Goal:** target a small server-side device cohort with an already verified
+immutable snapshot and roll it back without weakening per-device manifest
+monotonicity.
+
+**In scope:** mosque-scoped rollout-group label on devices; idempotent group
+membership mutation; bounded atomic group assignment; verified artifact
+registry lookup; exact 24-hour retry response; per-device monotonic manifest
+versions and canonical audit hashes; rollback by assigning a previous verified
+snapshot as a new manifest version.
+
+**Non-goals:** percentage/random targeting, automatic promotion, publication or
+approval, production signing keys, remote iqamah/Jumu'ah mutation, campaign or
+asset upload, analytics, physical-TV validation, or groups larger than the
+documented transaction bound.
+
+**Acceptance:** RBAC/HTTP tests reject cross-mosque access and unverified
+artifacts; PostgreSQL integration proves atomic multi-device assignment,
+idempotent retry, deterministic lock order, bounded group size, monotonic
+rollback and migration v4↔v3; manifest reads expose only each device's durable
+assignment; full/race/PostgreSQL gates pass.

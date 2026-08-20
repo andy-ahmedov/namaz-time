@@ -222,6 +222,55 @@ func TestRuntimeLoadsRestartSafePostgresPairingWithoutLiteralSecrets(t *testing.
 	if healthRows != 1 || !forcedClockMismatch {
 		t.Fatalf("least-privilege heartbeat state: rows=%d clock_mismatch=%v", healthRows, forcedClockMismatch)
 	}
+	runtimePool, err := pgxpool.New(ctx, runtimeDatabaseURL)
+	if err != nil {
+		t.Fatalf("connect runtime role for rollout: %v", err)
+	}
+	runtimeRepository := devices.NewPostgresPairingRepository(runtimePool)
+	runtimeAdmin, err := devices.NewAdminFleetManager(devices.AdminFleetManagerConfig{
+		Repository: runtimeRepository, IdempotencyKey: adminIdempotencyKey,
+		Now: func() time.Time { return time.Date(2026, 8, 20, 12, 5, 0, 0, time.UTC) },
+	})
+	if err != nil {
+		runtimePool.Close()
+		t.Fatalf("configure runtime rollout manager: %v", err)
+	}
+	runtimePrincipal, err := runtimeAdmin.AuthenticateAdmin(ctx, adminToken)
+	if err != nil {
+		runtimePool.Close()
+		t.Fatalf("authenticate runtime rollout admin: %v", err)
+	}
+	if err := runtimeAdmin.SetDeviceRolloutGroup(ctx, runtimePrincipal, devices.AdminSetRolloutGroupCommand{
+		MosqueID: "mosque-runtime-0001", DeviceID: issued.DeviceID, RolloutGroup: "canary-runtime-01",
+		Reason: "least privilege canary", RequestID: "request-runtime-group-01",
+		IdempotencyKey: "idem-runtime-group-0001",
+	}); err != nil {
+		runtimePool.Close()
+		t.Fatalf("set least-privilege rollout group: %v", err)
+	}
+	rollout, err := runtimeAdmin.AssignRolloutGroup(ctx, runtimePrincipal, devices.AdminAssignRolloutGroupCommand{
+		MosqueID: "mosque-runtime-0001", RolloutGroup: "canary-runtime-01",
+		SnapshotID:     "synthetic-runtime-snapshot-01",
+		SnapshotURL:    "https://api.example.invalid/v1/snapshots/synthetic-runtime-snapshot-01",
+		SnapshotSHA256: strings.Repeat("a", 64), SigningKeyID: "runtime-test-key-01",
+		SnapshotMosqueID: "mosque-runtime-0001", SnapshotTimezone: "Europe/Ulyanovsk",
+		Reason: "least privilege rollout", RequestID: "request-runtime-rollout-01",
+		IdempotencyKey: "idem-runtime-rollout-0001",
+	})
+	runtimePool.Close()
+	if err != nil || rollout.DeviceCount != 1 || rollout.Assignments[0].ManifestVersion != 1 {
+		t.Fatalf("least-privilege rollout = %#v, %v", rollout, err)
+	}
+	var storedRolloutGroup, storedRolloutSnapshot string
+	if err := pool.QueryRow(ctx, `
+		SELECT d.rollout_group, a.snapshot_id
+		FROM devices d JOIN device_assignments a ON a.device_id = d.id
+		WHERE d.id = $1`, issued.DeviceID).Scan(&storedRolloutGroup, &storedRolloutSnapshot); err != nil {
+		t.Fatalf("read least-privilege rollout: %v", err)
+	}
+	if storedRolloutGroup != "canary-runtime-01" || storedRolloutSnapshot != "synthetic-runtime-snapshot-01" {
+		t.Fatalf("least-privilege rollout state = %q/%q", storedRolloutGroup, storedRolloutSnapshot)
+	}
 
 	pool.Close()
 

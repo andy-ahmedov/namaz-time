@@ -521,6 +521,66 @@ func TestAdminFleetHTTPRequiresAuthScopeAndIdempotency(t *testing.T) {
 		admin.assignCommand.SnapshotMosqueID != "synthetic-verification-mosque" {
 		t.Fatalf("admin assignment response = %d %s, command=%#v", assigned.StatusCode, assigned.Body, admin.assignCommand)
 	}
+	grouped := adminRequest(
+		t, http.MethodPut, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices/device-production-0001/rollout-group",
+		[]byte(`{"rollout_group":"canary-group-0001","reason":"select canary"}`),
+		"admin-bearer-token-valid-0001", "idem-admin-group-set-01",
+	)
+	if grouped.StatusCode != http.StatusNoContent || admin.groupCommand.RolloutGroup != "canary-group-0001" {
+		t.Fatalf("admin rollout-group response = %d %s, command=%#v", grouped.StatusCode, grouped.Body, admin.groupCommand)
+	}
+	privateGroupField := adminRequest(
+		t, http.MethodPut, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices/device-production-0001/rollout-group",
+		[]byte(`{"rollout_group":"canary-group-0001","reason":"private field","wifi_ssid":"private"}`),
+		"admin-bearer-token-valid-0001", "idem-admin-group-private-1",
+	)
+	if privateGroupField.StatusCode != http.StatusBadRequest {
+		t.Fatalf("private rollout-group field response = %d %s", privateGroupField.StatusCode, privateGroupField.Body)
+	}
+	admin.rolloutResult = RolloutAssignmentResult{
+		RolloutGroup: "canary-group-0001", SnapshotID: "synthetic-android-verification-v1", DeviceCount: 1,
+		Assignments: []DeviceAssignment{{
+			DeviceID: "device-production-0001", ManifestVersion: 2,
+			SnapshotID: "synthetic-android-verification-v1", SnapshotSHA256: config.Snapshots[0].SHA256,
+		}},
+	}
+	rollout := adminRequest(
+		t, http.MethodPut, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/rollout-groups/canary-group-0001/assignment",
+		[]byte(`{"snapshot_id":"synthetic-android-verification-v1","minimum_app_version":"0.2.0-shell","reason":"canary rollout"}`),
+		"admin-bearer-token-valid-0001", "idem-admin-group-assign-01",
+	)
+	if rollout.StatusCode != http.StatusOK || admin.rolloutCommand.SnapshotSHA256 != config.Snapshots[0].SHA256 ||
+		!strings.Contains(rollout.Body, `"device_count":1`) {
+		t.Fatalf("admin rollout assignment response = %d %s, command=%#v", rollout.StatusCode, rollout.Body, admin.rolloutCommand)
+	}
+	admin.rolloutRetry = RolloutAssignmentResult{
+		RolloutGroup: "canary-group-0001", SnapshotID: "removed-snapshot-0001", DeviceCount: 1,
+		Assignments: []DeviceAssignment{{
+			DeviceID: "device-production-0001", ManifestVersion: 3,
+			SnapshotID: "removed-snapshot-0001", SnapshotURL: "https://api.example.invalid/v1/snapshots/removed-snapshot-0001",
+			SnapshotSHA256: strings.Repeat("b", 64), SigningKeyID: "removed-key",
+		}},
+	}
+	admin.rolloutRetryFound = true
+	historicalRollout := adminRequest(
+		t, http.MethodPut, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/rollout-groups/canary-group-0001/assignment",
+		[]byte(`{"snapshot_id":"removed-snapshot-0001","reason":"historical group retry"}`),
+		"admin-bearer-token-valid-0001", "idem-admin-group-history-1",
+	)
+	if historicalRollout.StatusCode != http.StatusOK || !strings.Contains(historicalRollout.Body, "removed-snapshot-0001") {
+		t.Fatalf("removed-artifact rollout retry = %d %s", historicalRollout.StatusCode, historicalRollout.Body)
+	}
+	admin.rolloutRetryFound = false
+	admin.rolloutErr = ErrRolloutGroupTooLarge
+	oversizedRollout := adminRequest(
+		t, http.MethodPut, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/rollout-groups/canary-group-0001/assignment",
+		[]byte(`{"snapshot_id":"synthetic-android-verification-v1","reason":"oversized canary"}`),
+		"admin-bearer-token-valid-0001", "idem-admin-group-overflow-1",
+	)
+	if oversizedRollout.StatusCode != http.StatusConflict || !strings.Contains(oversizedRollout.Body, "rollout_group_too_large") {
+		t.Fatalf("oversized rollout response = %d %s", oversizedRollout.StatusCode, oversizedRollout.Body)
+	}
+	admin.rolloutErr = nil
 	admin.retryAssignment = DeviceAssignment{
 		DeviceID: "device-production-0001", ManifestVersion: 1,
 		SnapshotID: "removed-snapshot-0001", SnapshotURL: "https://api.example.invalid/v1/snapshots/removed-snapshot-0001",
@@ -548,7 +608,17 @@ func TestAdminFleetHTTPRequiresAuthScopeAndIdempotency(t *testing.T) {
 			t.Fatalf("cross-scope assignment %s status = %d", snapshotID, denied.StatusCode)
 		}
 	}
-	if admin.authorizeCalls != beforeAuthorizationCalls+2 {
+	for _, snapshotID := range []string{"synthetic-android-verification-v1", "unknown-snapshot-0001"} {
+		denied := adminRequest(
+			t, http.MethodPut, server.URL+"/v1/admin/mosques/other-mosque-000001/rollout-groups/canary-group-0001/assignment",
+			[]byte(`{"snapshot_id":"`+snapshotID+`","reason":"cross scope group probe"}`),
+			"admin-bearer-token-valid-0001", "idem-admin-group-probe-01",
+		)
+		if denied.StatusCode != http.StatusNotFound {
+			t.Fatalf("cross-scope rollout assignment %s status = %d", snapshotID, denied.StatusCode)
+		}
+	}
+	if admin.authorizeCalls != beforeAuthorizationCalls+4 {
 		t.Fatalf("assignment registry lookup bypassed scope preauthorization: calls=%d", admin.authorizeCalls)
 	}
 	admin.authorizeErr = nil
@@ -773,6 +843,12 @@ type recordingHTTPAdminBackend struct {
 	retryErr           error
 	assignmentDeviceID string
 	assignmentMosqueID string
+	groupCommand       AdminSetRolloutGroupCommand
+	rolloutCommand     AdminAssignRolloutGroupCommand
+	rolloutResult      RolloutAssignmentResult
+	rolloutRetry       RolloutAssignmentResult
+	rolloutRetryFound  bool
+	rolloutErr         error
 }
 
 func (backend *recordingHTTPAdminBackend) AuthorizeAdminScope(_ AdminPrincipal, _ string, _ bool) error {
@@ -812,6 +888,28 @@ func (backend *recordingHTTPAdminBackend) AssignDevice(_ context.Context, _ Admi
 		SnapshotURL: command.SnapshotURL, SnapshotSHA256: command.SnapshotSHA256,
 		SigningKeyID: command.SigningKeyID, MinimumAppVersion: command.MinimumAppVersion,
 	}, nil
+}
+
+func (backend *recordingHTTPAdminBackend) SetDeviceRolloutGroup(_ context.Context, _ AdminPrincipal, command AdminSetRolloutGroupCommand) error {
+	backend.groupCommand = command
+	return nil
+}
+
+func (backend *recordingHTTPAdminBackend) RetryRolloutAssignment(
+	_ context.Context,
+	_ AdminPrincipal,
+	_ AdminRolloutAssignmentRetryQuery,
+) (RolloutAssignmentResult, bool, error) {
+	return backend.rolloutRetry, backend.rolloutRetryFound, nil
+}
+
+func (backend *recordingHTTPAdminBackend) AssignRolloutGroup(
+	_ context.Context,
+	_ AdminPrincipal,
+	command AdminAssignRolloutGroupCommand,
+) (RolloutAssignmentResult, error) {
+	backend.rolloutCommand = command
+	return backend.rolloutResult, backend.rolloutErr
 }
 
 func (backend *recordingHTTPAdminBackend) GetDeviceAssignment(_ context.Context, deviceID, mosqueID string) (DeviceAssignment, error) {

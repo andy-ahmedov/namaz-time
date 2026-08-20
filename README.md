@@ -124,12 +124,16 @@ T012 добавляет migration v2, verifier-only admin tokens, global/local R
 mosque-scoped list/issue/revoke/assignment API, durable idempotency с ротацией
 HMAC key ring и повторную registry-проверку assignment на device read path.
 Schema-owner DSN используется только отдельной короткоживущей migration-командой;
-На checkpoint T012 API запусклся с runtime role и read-only проверял
-точную версию v2; T013 поднимает тот же fail-closed контракт до v3.
+На checkpoint T012 API запускался с runtime role и read-only проверял
+точную версию v2; T013/T014 поднимают тот же fail-closed контракт
+до v4.
 Первичный admin bootstrap остаётся привилегированной out-of-band операцией без
 сетевого shortcut. Наличие T011/T012 не снимает блокировку T010.
 T013 добавляет bearer/path-scoped privacy-safe heartbeat: PostgreSQL хранит
 только последнее health-состояние и server last-seen, admin list остаётся в
 mosque RBAC, а Android best-effort reporter не влияет на sync/display result.
+T014 добавляет bounded canary cohorts: группа до 100 устройств
+атомарно получает только уже верифицированный snapshot, а rollback
+создаёт новые monotonic manifest versions без частичного commit.
 Runtime-проверка на физическом Android TV/box ещё не выполнена и не
 подменяется Robolectric-тестом.

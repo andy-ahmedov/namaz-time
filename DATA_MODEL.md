@@ -280,6 +280,11 @@ and the plaintext bearer credential is returned once and never stored.
 T013 migration v3 adds `last_seen_at` to this row. It is server-received time,
 not the untrusted timestamp supplied by the TV.
 
+T014 migration v4 persists `rollout_group` as an optional bounded label on this
+same mosque-owned row. It has no content authority and is used only to select a
+small transactional assignment cohort. Revoked devices are never assigned by a
+cohort operation.
+
 ### `device_health`
 
 Latest-only operational health, one row per composite-scoped device:
@@ -416,6 +421,9 @@ assigned_at
 
 Each non-idempotent change increments `manifest_version`. Registry hash/key and
 snapshot mosque/timezone are checked before write and again before serving.
+T014 group rollout expands to these same per-device rows atomically; there is no
+group-level manifest that could bypass device scoping. A rollback points them to
+an older verified `snapshot_id` while still incrementing each manifest version.
 
 ### `audit_event`
 

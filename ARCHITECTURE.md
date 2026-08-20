@@ -274,8 +274,23 @@ joins only the latest row through the existing mosque RBAC boundary. Android
 constructs the endpoint from the provisioned manifest origin/path. A wrapper
 may report after sync, but ignores every non-cancellation reporting failure and
 returns the original sync result, keeping display and activation independent.
-The current API read-only verifies exact schema v3; lower, gapped and future
-ledgers all fail startup.
+T014 advances the current API's exact-schema check to v4; lower, gapped and
+future ledgers all fail startup.
+
+### Bounded canary rollout cohorts (T014)
+
+Migration v4 adds an optional mosque-scoped rollout label to each device. A
+mosque administrator explicitly sets or clears membership; there is no
+percentage targeting or client-selected cohort. Group assignment resolves only
+an immutable snapshot already admitted to the API registry, then selects and
+locks members in sorted ID order with a 101st-row overflow sentinel. It updates
+at most 100 durable assignments in one PostgreSQL transaction.
+
+Each device keeps its own monotonic `manifest_version`, canonical before/after
+hash and audit row. Exact retries return the stored batch response before
+registry lookup. Assigning a prior verified snapshot is therefore a rollback
+with a newer manifest version, not a downgrade. Failure, an oversized cohort or
+scope mismatch leaves all member assignments unchanged.
 
 ## Source ingestion pipeline
 

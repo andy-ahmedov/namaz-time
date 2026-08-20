@@ -152,7 +152,8 @@ func (repository *PostgresPairingRepository) ListAdminDevices(ctx context.Contex
 		       COALESCE(h.reported_snapshot_id, ''), COALESCE(h.sync_status, ''),
 		       h.coverage_days_remaining, h.clock_mismatch,
 		       h.timezone_mismatch, COALESCE(h.storage_health, ''),
-		       COALESCE(h.memory_health, ''), COALESCE(h.boot_mode, ''), COALESCE(h.kiosk_mode, '')
+		       COALESCE(h.memory_health, ''), COALESCE(h.boot_mode, ''), COALESCE(h.kiosk_mode, ''),
+		       COALESCE(d.rollout_group, '')
 		FROM devices d
 		LEFT JOIN device_assignments a ON a.device_id = d.id AND a.mosque_id = d.mosque_id
 		LEFT JOIN device_health h ON h.device_id = d.id AND h.mosque_id = d.mosque_id
@@ -171,7 +172,7 @@ func (repository *PostgresPairingRepository) ListAdminDevices(ctx context.Contex
 			&device.SnapshotID, &device.ManifestVersion, &device.LastSeenAt,
 			&device.ReportedSnapshotID, &device.SyncStatus, &device.CoverageDaysRemaining,
 			&device.ClockMismatch, &device.TimezoneMismatch, &device.StorageHealth,
-			&device.MemoryHealth, &device.BootMode, &device.KioskMode,
+			&device.MemoryHealth, &device.BootMode, &device.KioskMode, &device.RolloutGroup,
 		); err != nil {
 			return nil, fmt.Errorf("admin list devices: scan: %w", err)
 		}
@@ -385,6 +386,270 @@ func (repository *PostgresPairingRepository) ReadAdminAssignmentRetry(
 		return DeviceAssignment{}, false, fmt.Errorf("admin retry assignment: commit: %w", err)
 	}
 	return assignment, true, nil
+}
+
+func (repository *PostgresPairingRepository) SetAdminDeviceRolloutGroup(
+	ctx context.Context,
+	mutation AdminRolloutGroupMutation,
+) error {
+	if mutation.Command.MosqueID != mutation.Scope.MosqueID {
+		return ErrAdminResourceNotFound
+	}
+	tx, err := repository.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("admin set rollout group: begin transaction: %w", err)
+	}
+	defer rollbackTransaction(tx)
+	if err := authorizeAdminScope(ctx, tx, mutation.Scope, true); err != nil {
+		return err
+	}
+	if err := lockAdminIdempotency(ctx, tx, mutation.IdempotencyHash); err != nil {
+		return fmt.Errorf("admin set rollout group: lock idempotency: %w", err)
+	}
+	resourceID, _, found, err := readAdminRequest(
+		ctx, tx, mutation.Scope, "assign_device", mutation.IdempotencyHash, mutation.RequestHash,
+	)
+	if err != nil {
+		return err
+	}
+	if found {
+		if resourceID != mutation.Command.DeviceID {
+			return ErrAdminIdempotencyConflict
+		}
+		return commitTransaction(ctx, tx, "admin set rollout group: commit idempotent read")
+	}
+	var status, previousGroup string
+	if err := tx.QueryRow(ctx, `
+		SELECT d.status, COALESCE(d.rollout_group, '')
+		FROM devices d JOIN mosques m ON m.id = d.mosque_id
+		WHERE d.id = $1 AND d.mosque_id = $2 AND m.status = 'active'
+		FOR UPDATE OF d`, mutation.Command.DeviceID, mutation.Scope.MosqueID).Scan(&status, &previousGroup); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrAdminResourceNotFound
+		}
+		return fmt.Errorf("admin set rollout group: lock device: %w", err)
+	}
+	if status == "revoked" {
+		return ErrAdminResourceNotFound
+	}
+	if previousGroup != mutation.Command.RolloutGroup {
+		if _, err := tx.Exec(ctx, `
+			UPDATE devices SET rollout_group = NULLIF($3, '')
+			WHERE id = $1 AND mosque_id = $2`, mutation.Command.DeviceID, mutation.Scope.MosqueID, mutation.Command.RolloutGroup); err != nil {
+			return fmt.Errorf("admin set rollout group: update device: %w", err)
+		}
+		beforeHash := hashAdminRequest("device_rollout_group", mutation.Command.DeviceID, mutation.Scope.MosqueID, previousGroup)
+		afterHash := hashAdminRequest("device_rollout_group", mutation.Command.DeviceID, mutation.Scope.MosqueID, mutation.Command.RolloutGroup)
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO audit_events (
+				id, occurred_at, actor_type, actor_id, mosque_id, action, entity_type,
+				entity_id, before_hash, after_hash, reason, request_id
+			) VALUES ($1, $2, 'admin', $3, $4, 'device.rollout_group_changed', 'device', $5, $6, $7, $8, $9)`,
+			mutation.AuditID, mutation.ChangedAt, mutation.Scope.ActorID, mutation.Scope.MosqueID,
+			mutation.Command.DeviceID, beforeHash[:], afterHash[:], mutation.Command.Reason, mutation.Command.RequestID,
+		); err != nil {
+			return fmt.Errorf("admin set rollout group: append audit: %w", err)
+		}
+	}
+	if err := insertAdminRequest(
+		ctx, tx, mutation.Scope, "assign_device", mutation.Command.DeviceID,
+		mutation.IdempotencyHash, mutation.RequestHash, nil,
+	); err != nil {
+		return err
+	}
+	return commitTransaction(ctx, tx, "admin set rollout group: commit")
+}
+
+func (repository *PostgresPairingRepository) ReadAdminRolloutAssignmentRetry(
+	ctx context.Context,
+	scope AdminRepositoryScope,
+	idempotencyHash, requestHash [sha256.Size]byte,
+) (RolloutAssignmentResult, bool, error) {
+	tx, err := repository.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return RolloutAssignmentResult{}, false, fmt.Errorf("admin retry rollout assignment: begin transaction: %w", err)
+	}
+	defer rollbackTransaction(tx)
+	if err := authorizeAdminScope(ctx, tx, scope, true); err != nil {
+		return RolloutAssignmentResult{}, false, err
+	}
+	resourceID, response, found, err := readAdminRequest(
+		ctx, tx, scope, "assign_device", idempotencyHash, requestHash,
+	)
+	if err != nil {
+		return RolloutAssignmentResult{}, false, err
+	}
+	if !found {
+		return RolloutAssignmentResult{}, false, commitTransaction(ctx, tx, "admin retry rollout assignment: commit miss")
+	}
+	var result RolloutAssignmentResult
+	if len(response) == 0 || json.Unmarshal(response, &result) != nil || result.RolloutGroup != resourceID ||
+		result.DeviceCount != len(result.Assignments) {
+		return RolloutAssignmentResult{}, false, errors.New("admin retry rollout assignment: stored response is invalid")
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return RolloutAssignmentResult{}, false, fmt.Errorf("admin retry rollout assignment: commit: %w", err)
+	}
+	return result, true, nil
+}
+
+func (repository *PostgresPairingRepository) AssignAdminRolloutGroup(
+	ctx context.Context,
+	mutation AdminRolloutAssignmentMutation,
+) (RolloutAssignmentResult, error) {
+	if mutation.Command.MosqueID != mutation.Scope.MosqueID {
+		return RolloutAssignmentResult{}, ErrAdminResourceNotFound
+	}
+	tx, err := repository.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: begin transaction: %w", err)
+	}
+	defer rollbackTransaction(tx)
+	if err := authorizeAdminScope(ctx, tx, mutation.Scope, true); err != nil {
+		return RolloutAssignmentResult{}, err
+	}
+	if err := lockAdminIdempotency(ctx, tx, mutation.IdempotencyHash); err != nil {
+		return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: lock idempotency: %w", err)
+	}
+	resourceID, response, found, err := readAdminRequest(
+		ctx, tx, mutation.Scope, "assign_device", mutation.IdempotencyHash, mutation.RequestHash,
+	)
+	if err != nil {
+		return RolloutAssignmentResult{}, err
+	}
+	if found {
+		var result RolloutAssignmentResult
+		if len(response) == 0 || json.Unmarshal(response, &result) != nil || result.RolloutGroup != resourceID ||
+			result.DeviceCount != len(result.Assignments) {
+			return RolloutAssignmentResult{}, errors.New("admin rollout assignment idempotency response is invalid")
+		}
+		if err := tx.Commit(ctx); err != nil {
+			return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: commit idempotent read: %w", err)
+		}
+		return result, nil
+	}
+	rows, err := tx.Query(ctx, `
+		SELECT d.id, m.timezone_id
+		FROM devices d JOIN mosques m ON m.id = d.mosque_id
+		WHERE d.mosque_id = $1 AND d.rollout_group = $2
+		  AND d.status <> 'revoked' AND m.status = 'active'
+		ORDER BY d.id
+		LIMIT $3
+		FOR UPDATE OF d`, mutation.Scope.MosqueID, mutation.Command.RolloutGroup, MaxRolloutGroupDevices+1)
+	if err != nil {
+		return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: lock devices: %w", err)
+	}
+	var deviceIDs []string
+	var timezoneID string
+	for rows.Next() {
+		var deviceID, deviceTimezone string
+		if err := rows.Scan(&deviceID, &deviceTimezone); err != nil {
+			rows.Close()
+			return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: scan device: %w", err)
+		}
+		if timezoneID == "" {
+			timezoneID = deviceTimezone
+		} else if timezoneID != deviceTimezone {
+			rows.Close()
+			return RolloutAssignmentResult{}, errors.New("admin assign rollout group: inconsistent mosque timezone")
+		}
+		deviceIDs = append(deviceIDs, deviceID)
+	}
+	if err := rows.Err(); err != nil {
+		rows.Close()
+		return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: iterate devices: %w", err)
+	}
+	rows.Close()
+	if len(deviceIDs) == 0 || mutation.Command.SnapshotMosqueID != mutation.Scope.MosqueID ||
+		mutation.Command.SnapshotTimezone != timezoneID {
+		return RolloutAssignmentResult{}, ErrAdminResourceNotFound
+	}
+	if len(deviceIDs) > MaxRolloutGroupDevices {
+		return RolloutAssignmentResult{}, ErrRolloutGroupTooLarge
+	}
+	result := RolloutAssignmentResult{
+		RolloutGroup: mutation.Command.RolloutGroup,
+		SnapshotID:   mutation.Command.SnapshotID,
+		DeviceCount:  len(deviceIDs),
+		Assignments:  make([]DeviceAssignment, 0, len(deviceIDs)),
+	}
+	for _, deviceID := range deviceIDs {
+		assignment := DeviceAssignment{
+			DeviceID: deviceID, SnapshotID: mutation.Command.SnapshotID,
+			SnapshotURL: mutation.Command.SnapshotURL, SnapshotSHA256: mutation.Command.SnapshotSHA256,
+			SigningKeyID: mutation.Command.SigningKeyID, MinimumAppVersion: mutation.Command.MinimumAppVersion,
+			ManifestVersion: 1,
+		}
+		var previous *DeviceAssignment
+		current, err := readDeviceAssignment(ctx, tx, deviceID, mutation.Scope.MosqueID)
+		if err == nil {
+			previous = &current
+			assignment.ManifestVersion = current.ManifestVersion + 1
+		} else if !errors.Is(err, ErrDeviceAssignmentNotFound) {
+			return RolloutAssignmentResult{}, err
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO device_assignments (
+				device_id, mosque_id, manifest_version, snapshot_id, snapshot_url,
+				snapshot_sha256, signing_key_id, minimum_app_version, assigned_by_actor_id, assigned_at
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, NULLIF($8, ''), $9, $10)
+			ON CONFLICT (device_id) DO UPDATE SET
+				manifest_version = EXCLUDED.manifest_version,
+				snapshot_id = EXCLUDED.snapshot_id,
+				snapshot_url = EXCLUDED.snapshot_url,
+				snapshot_sha256 = EXCLUDED.snapshot_sha256,
+				signing_key_id = EXCLUDED.signing_key_id,
+				minimum_app_version = EXCLUDED.minimum_app_version,
+				assigned_by_actor_id = EXCLUDED.assigned_by_actor_id,
+				assigned_at = EXCLUDED.assigned_at
+			WHERE device_assignments.mosque_id = EXCLUDED.mosque_id`,
+			assignment.DeviceID, mutation.Scope.MosqueID, assignment.ManifestVersion,
+			assignment.SnapshotID, assignment.SnapshotURL, assignment.SnapshotSHA256,
+			assignment.SigningKeyID, assignment.MinimumAppVersion, mutation.Scope.ActorID, mutation.AssignedAt,
+		); err != nil {
+			return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: upsert device %q: %w", deviceID, err)
+		}
+		var beforeHash any
+		if previous != nil {
+			digest := hashDeviceAssignment(*previous, mutation.Scope.MosqueID)
+			beforeHash = digest[:]
+		}
+		afterHash := hashDeviceAssignment(assignment, mutation.Scope.MosqueID)
+		auditID := rolloutAuditID(mutation.AuditSeed, deviceID)
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO audit_events (
+				id, occurred_at, actor_type, actor_id, mosque_id, action, entity_type,
+				entity_id, before_hash, after_hash, reason, request_id
+			) VALUES ($1, $2, 'admin', $3, $4, 'device.assigned', 'device', $5, $6, $7, $8, $9)`,
+			auditID, mutation.AssignedAt, mutation.Scope.ActorID, mutation.Scope.MosqueID,
+			deviceID, beforeHash, afterHash[:], mutation.Command.Reason, mutation.Command.RequestID,
+		); err != nil {
+			return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: audit device %q: %w", deviceID, err)
+		}
+		result.Assignments = append(result.Assignments, assignment)
+	}
+	response, err = json.Marshal(result)
+	if err != nil {
+		return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: encode response: %w", err)
+	}
+	if err := insertAdminRequest(
+		ctx, tx, mutation.Scope, "assign_device", mutation.Command.RolloutGroup,
+		mutation.IdempotencyHash, mutation.RequestHash, response,
+	); err != nil {
+		return RolloutAssignmentResult{}, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: commit: %w", err)
+	}
+	return result, nil
+}
+
+func rolloutAuditID(seed [sha256.Size]byte, deviceID string) string {
+	payload := make([]byte, 0, len(seed)+1+len(deviceID))
+	payload = append(payload, seed[:]...)
+	payload = append(payload, 0)
+	payload = append(payload, deviceID...)
+	return deterministicUUID(sha256.Sum256(payload))
 }
 
 func hashDeviceAssignment(assignment DeviceAssignment, mosqueID string) [sha256.Size]byte {

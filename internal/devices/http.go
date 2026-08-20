@@ -227,6 +227,8 @@ func (s *Service) routes() http.Handler {
 	mux.HandleFunc("POST /v1/admin/mosques/{mosqueId}/pairing-codes", s.handleAdminIssuePairing)
 	mux.HandleFunc("POST /v1/admin/mosques/{mosqueId}/devices/{deviceId}/revoke", s.handleAdminRevokeDevice)
 	mux.HandleFunc("PUT /v1/admin/mosques/{mosqueId}/devices/{deviceId}/assignment", s.handleAdminAssignDevice)
+	mux.HandleFunc("PUT /v1/admin/mosques/{mosqueId}/devices/{deviceId}/rollout-group", s.handleAdminSetRolloutGroup)
+	mux.HandleFunc("PUT /v1/admin/mosques/{mosqueId}/rollout-groups/{groupId}/assignment", s.handleAdminAssignRolloutGroup)
 	return securityHeaders(mux)
 }
 
@@ -494,6 +496,11 @@ type adminAssignmentRequest struct {
 	Reason            string `json:"reason"`
 }
 
+type adminRolloutGroupRequest struct {
+	RolloutGroup *string `json:"rollout_group"`
+	Reason       string  `json:"reason"`
+}
+
 func (s *Service) handleAdminIssuePairing(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Cache-Control", "no-store")
 	principal, ok := s.authenticateAdminRequest(writer, request)
@@ -643,6 +650,106 @@ func (s *Service) handleAdminAssignDevice(writer http.ResponseWriter, request *h
 	writeJSON(writer, http.StatusOK, assignment)
 }
 
+func (s *Service) handleAdminSetRolloutGroup(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	var input adminRolloutGroupRequest
+	if !decodeAdminJSON(writer, request, &input) {
+		return
+	}
+	if input.RolloutGroup == nil || !validIdempotencyKey(request.Header.Get("Idempotency-Key")) ||
+		!validAuditText(input.Reason, 512) {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	requestID, err := newRequestID()
+	if err != nil {
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	err = s.adminBackend.SetDeviceRolloutGroup(backendContext, principal, AdminSetRolloutGroupCommand{
+		MosqueID: request.PathValue("mosqueId"), DeviceID: request.PathValue("deviceId"),
+		RolloutGroup: *input.RolloutGroup, Reason: input.Reason, RequestID: requestID,
+		IdempotencyKey: request.Header.Get("Idempotency-Key"),
+	})
+	if err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Service) handleAdminAssignRolloutGroup(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	var input adminAssignmentRequest
+	if !decodeAdminJSON(writer, request, &input) {
+		return
+	}
+	if !validIdempotencyKey(request.Header.Get("Idempotency-Key")) || !validAuditText(input.Reason, 512) {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	mosqueID := request.PathValue("mosqueId")
+	rolloutGroup := request.PathValue("groupId")
+	if err := s.adminBackend.AuthorizeAdminScope(principal, mosqueID, true); err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	retried, found, err := s.adminBackend.RetryRolloutAssignment(
+		backendContext,
+		principal,
+		AdminRolloutAssignmentRetryQuery{
+			MosqueID: mosqueID, RolloutGroup: rolloutGroup, SnapshotID: input.SnapshotID,
+			MinimumAppVersion: input.MinimumAppVersion, Reason: input.Reason,
+			IdempotencyKey: request.Header.Get("Idempotency-Key"),
+		},
+	)
+	cancel()
+	if err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	if found {
+		writeJSON(writer, http.StatusOK, retried)
+		return
+	}
+	artifact, exists := s.snapshots[input.SnapshotID]
+	if !exists || artifact.mosqueID != mosqueID || s.publicBase == nil {
+		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
+		return
+	}
+	requestID, err := newRequestID()
+	if err != nil {
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+		return
+	}
+	snapshotURL := s.publicBase.ResolveReference(&url.URL{Path: "/v1/snapshots/" + url.PathEscape(artifact.id)}).String()
+	backendContext, cancel = context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	result, err := s.adminBackend.AssignRolloutGroup(backendContext, principal, AdminAssignRolloutGroupCommand{
+		MosqueID: mosqueID, RolloutGroup: rolloutGroup,
+		SnapshotID: artifact.id, SnapshotURL: snapshotURL, SnapshotSHA256: artifact.sha256,
+		SigningKeyID: artifact.signingKeyID, SnapshotMosqueID: artifact.mosqueID,
+		SnapshotTimezone: artifact.timezone, MinimumAppVersion: input.MinimumAppVersion,
+		Reason: input.Reason, RequestID: requestID, IdempotencyKey: request.Header.Get("Idempotency-Key"),
+	})
+	if err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	writeJSON(writer, http.StatusOK, result)
+}
+
 func (s *Service) authenticateAdminRequest(writer http.ResponseWriter, request *http.Request) (AdminPrincipal, bool) {
 	if s.adminBackend == nil {
 		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
@@ -689,6 +796,8 @@ func writeAdminOperationError(writer http.ResponseWriter, err error) {
 		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
 	case errors.Is(err, ErrAdminIdempotencyConflict):
 		writeAPIError(writer, http.StatusConflict, "idempotency_conflict", false)
+	case errors.Is(err, ErrRolloutGroupTooLarge):
+		writeAPIError(writer, http.StatusConflict, "rollout_group_too_large", false)
 	case errors.Is(err, ErrAdminResourceNotFound):
 		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
 	default:

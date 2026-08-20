@@ -217,6 +217,16 @@ same-origin device-path construction, absence of token and mosque ID from JSON,
 exact field allowlist/enums, response mapping and that best-effort reporting
 cannot change a completed sync result.
 
+T014 advances the PostgreSQL ledger through v4 and explicitly rolls v4 back to
+v3 without losing pairing, administration or latest health state. Integration
+tests set two mosque-scoped cohort members, assign them in deterministic order,
+prove exact retry creates no new versions, and roll back to a prior snapshot
+with newer manifest versions. A 101-device cohort fails before any assignment.
+HTTP tests prove artifact metadata is registry-derived and the same RBAC,
+unknown-field, idempotency and historical-retry boundaries apply to cohort
+writes. Normal device manifest reads continue to consume only each durable
+per-device assignment.
+
 ## Release evidence
 
 Each release records:

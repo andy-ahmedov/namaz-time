@@ -18,7 +18,10 @@ var (
 	ErrAdminIdempotencyConflict = errors.New("admin idempotency conflict")
 	ErrInvalidAdminRequest      = errors.New("invalid admin request")
 	ErrDeviceAssignmentNotFound = errors.New("device assignment not found")
+	ErrRolloutGroupTooLarge     = errors.New("rollout group exceeds transaction bound")
 )
+
+const MaxRolloutGroupDevices = 100
 
 type AdminRole string
 
@@ -61,6 +64,7 @@ type FleetDevice struct {
 	MemoryHealth          DeviceHealth     `json:"memory_health,omitempty"`
 	BootMode              DeviceBootMode   `json:"boot_mode,omitempty"`
 	KioskMode             DeviceKioskMode  `json:"kiosk_mode,omitempty"`
+	RolloutGroup          string           `json:"rollout_group,omitempty"`
 }
 
 type AdminIssuePairingCommand struct {
@@ -103,6 +107,46 @@ type AdminAssignmentRetryQuery struct {
 	IdempotencyKey    string
 }
 
+type AdminSetRolloutGroupCommand struct {
+	MosqueID       string
+	DeviceID       string
+	RolloutGroup   string
+	Reason         string
+	RequestID      string
+	IdempotencyKey string
+}
+
+type AdminAssignRolloutGroupCommand struct {
+	MosqueID          string
+	RolloutGroup      string
+	SnapshotID        string
+	SnapshotURL       string
+	SnapshotSHA256    string
+	SigningKeyID      string
+	SnapshotMosqueID  string
+	SnapshotTimezone  string
+	MinimumAppVersion string
+	Reason            string
+	RequestID         string
+	IdempotencyKey    string
+}
+
+type AdminRolloutAssignmentRetryQuery struct {
+	MosqueID          string
+	RolloutGroup      string
+	SnapshotID        string
+	MinimumAppVersion string
+	Reason            string
+	IdempotencyKey    string
+}
+
+type RolloutAssignmentResult struct {
+	RolloutGroup string             `json:"rollout_group"`
+	SnapshotID   string             `json:"snapshot_id"`
+	DeviceCount  int                `json:"device_count"`
+	Assignments  []DeviceAssignment `json:"assignments"`
+}
+
 type AdminRepositoryScope struct {
 	ActorID     string
 	MosqueID    string
@@ -138,6 +182,24 @@ type AdminAssignmentMutation struct {
 	RequestHash     [sha256.Size]byte
 }
 
+type AdminRolloutGroupMutation struct {
+	Scope           AdminRepositoryScope
+	Command         AdminSetRolloutGroupCommand
+	ChangedAt       time.Time
+	AuditID         string
+	IdempotencyHash [sha256.Size]byte
+	RequestHash     [sha256.Size]byte
+}
+
+type AdminRolloutAssignmentMutation struct {
+	Scope           AdminRepositoryScope
+	Command         AdminAssignRolloutGroupCommand
+	AssignedAt      time.Time
+	AuditSeed       [sha256.Size]byte
+	IdempotencyHash [sha256.Size]byte
+	RequestHash     [sha256.Size]byte
+}
+
 type AdminFleetRepository interface {
 	AuthenticateAdmin(context.Context, [sha256.Size]byte) (AdminPrincipal, error)
 	CreateAdminPairing(context.Context, AdminPairingMutation) (PairingRecord, error)
@@ -145,6 +207,9 @@ type AdminFleetRepository interface {
 	RevokeAdminDevice(context.Context, AdminRevocationMutation) error
 	ReadAdminAssignmentRetry(context.Context, AdminRepositoryScope, [sha256.Size]byte, [sha256.Size]byte) (DeviceAssignment, bool, error)
 	AssignAdminDevice(context.Context, AdminAssignmentMutation) (DeviceAssignment, error)
+	SetAdminDeviceRolloutGroup(context.Context, AdminRolloutGroupMutation) error
+	ReadAdminRolloutAssignmentRetry(context.Context, AdminRepositoryScope, [sha256.Size]byte, [sha256.Size]byte) (RolloutAssignmentResult, bool, error)
+	AssignAdminRolloutGroup(context.Context, AdminRolloutAssignmentMutation) (RolloutAssignmentResult, error)
 	GetDeviceAssignment(context.Context, string, string) (DeviceAssignment, error)
 }
 
@@ -156,6 +221,9 @@ type AdminFleetBackend interface {
 	RevokeDevice(context.Context, AdminPrincipal, AdminRevokeDeviceCommand) error
 	RetryAssignment(context.Context, AdminPrincipal, AdminAssignmentRetryQuery) (DeviceAssignment, bool, error)
 	AssignDevice(context.Context, AdminPrincipal, AdminAssignDeviceCommand) (DeviceAssignment, error)
+	SetDeviceRolloutGroup(context.Context, AdminPrincipal, AdminSetRolloutGroupCommand) error
+	RetryRolloutAssignment(context.Context, AdminPrincipal, AdminRolloutAssignmentRetryQuery) (RolloutAssignmentResult, bool, error)
+	AssignRolloutGroup(context.Context, AdminPrincipal, AdminAssignRolloutGroupCommand) (RolloutAssignmentResult, error)
 	GetDeviceAssignment(context.Context, string, string) (DeviceAssignment, error)
 }
 
@@ -397,6 +465,128 @@ func (manager *AdminFleetManager) RetryAssignment(ctx context.Context, principal
 
 func hashAdminAssignmentRequest(mosqueID, deviceID, snapshotID, minimumAppVersion, reason string) [sha256.Size]byte {
 	return hashAdminRequest("assign_device", mosqueID, deviceID, snapshotID, minimumAppVersion, reason)
+}
+
+func (manager *AdminFleetManager) SetDeviceRolloutGroup(
+	ctx context.Context,
+	principal AdminPrincipal,
+	command AdminSetRolloutGroupCommand,
+) error {
+	if !validIdentifier(command.MosqueID) || !validIdentifier(command.DeviceID) ||
+		(command.RolloutGroup != "" && !validRolloutGroup(command.RolloutGroup)) ||
+		!validAuditText(command.Reason, 512) || !validIdentifier(command.RequestID) ||
+		!validIdempotencyKey(command.IdempotencyKey) {
+		return ErrInvalidAdminRequest
+	}
+	scope, allowed := manager.writeScope(principal, command.MosqueID)
+	if !allowed {
+		return ErrAdminResourceNotFound
+	}
+	mutation := AdminRolloutGroupMutation{
+		Scope: scope, Command: command, ChangedAt: manager.now().UTC(),
+		AuditID:         deterministicUUID(manager.digest(0, "audit_rollout_group", principal.ActorID, command.MosqueID, command.IdempotencyKey)),
+		IdempotencyHash: hashAdminRequest("idempotency", principal.ActorID, "set_rollout_group", command.IdempotencyKey),
+		RequestHash: hashAdminRequest(
+			"set_rollout_group", command.MosqueID, command.DeviceID, command.RolloutGroup, command.Reason,
+		),
+	}
+	if err := manager.repository.SetAdminDeviceRolloutGroup(ctx, mutation); err != nil {
+		return mapAdminRepositoryError("set device rollout group", err)
+	}
+	return nil
+}
+
+func (manager *AdminFleetManager) AssignRolloutGroup(
+	ctx context.Context,
+	principal AdminPrincipal,
+	command AdminAssignRolloutGroupCommand,
+) (RolloutAssignmentResult, error) {
+	if !validRolloutGroup(command.RolloutGroup) || !validRolloutAssignmentCommand(command) {
+		return RolloutAssignmentResult{}, ErrInvalidAdminRequest
+	}
+	scope, allowed := manager.writeScope(principal, command.MosqueID)
+	if !allowed {
+		return RolloutAssignmentResult{}, ErrAdminResourceNotFound
+	}
+	mutation := AdminRolloutAssignmentMutation{
+		Scope: scope, Command: command, AssignedAt: manager.now().UTC(),
+		AuditSeed:       manager.digest(0, "audit_rollout_assign", principal.ActorID, command.MosqueID, command.IdempotencyKey),
+		IdempotencyHash: hashAdminRequest("idempotency", principal.ActorID, "assign_rollout_group", command.IdempotencyKey),
+		RequestHash: hashAdminRolloutAssignmentRequest(
+			command.MosqueID, command.RolloutGroup, command.SnapshotID, command.MinimumAppVersion, command.Reason,
+		),
+	}
+	result, err := manager.repository.AssignAdminRolloutGroup(ctx, mutation)
+	if err != nil {
+		return RolloutAssignmentResult{}, mapAdminRepositoryError("assign rollout group", err)
+	}
+	if result.RolloutGroup != command.RolloutGroup || result.SnapshotID != command.SnapshotID ||
+		result.DeviceCount < 1 || result.DeviceCount > MaxRolloutGroupDevices ||
+		len(result.Assignments) != result.DeviceCount {
+		return RolloutAssignmentResult{}, errors.New("assign rollout group: repository returned invalid result")
+	}
+	return result, nil
+}
+
+func (manager *AdminFleetManager) RetryRolloutAssignment(
+	ctx context.Context,
+	principal AdminPrincipal,
+	query AdminRolloutAssignmentRetryQuery,
+) (RolloutAssignmentResult, bool, error) {
+	if !validIdentifier(query.MosqueID) || !validRolloutGroup(query.RolloutGroup) ||
+		!validIdentifier(query.SnapshotID) || len(query.MinimumAppVersion) > 64 ||
+		!validAuditText(query.Reason, 512) || !validIdempotencyKey(query.IdempotencyKey) {
+		return RolloutAssignmentResult{}, false, ErrInvalidAdminRequest
+	}
+	scope, allowed := manager.writeScope(principal, query.MosqueID)
+	if !allowed {
+		return RolloutAssignmentResult{}, false, ErrAdminResourceNotFound
+	}
+	idempotencyHash := hashAdminRequest("idempotency", principal.ActorID, "assign_rollout_group", query.IdempotencyKey)
+	requestHash := hashAdminRolloutAssignmentRequest(
+		query.MosqueID, query.RolloutGroup, query.SnapshotID, query.MinimumAppVersion, query.Reason,
+	)
+	result, found, err := manager.repository.ReadAdminRolloutAssignmentRetry(ctx, scope, idempotencyHash, requestHash)
+	if err != nil {
+		return RolloutAssignmentResult{}, false, mapAdminRepositoryError("retry rollout assignment", err)
+	}
+	return result, found, nil
+}
+
+func validRolloutAssignmentCommand(command AdminAssignRolloutGroupCommand) bool {
+	parsedSnapshotURL, urlErr := url.Parse(command.SnapshotURL)
+	snapshotZone, zoneErr := time.LoadLocation(command.SnapshotTimezone)
+	return validIdentifier(command.MosqueID) && validIdentifier(command.SnapshotID) &&
+		validSHA256(command.SnapshotSHA256) && len(command.SigningKeyID) >= 1 &&
+		len(command.SigningKeyID) <= 128 && command.SnapshotMosqueID == command.MosqueID &&
+		len(command.SnapshotTimezone) >= 3 && len(command.SnapshotTimezone) <= 64 &&
+		len(command.MinimumAppVersion) <= 64 && zoneErr == nil &&
+		snapshotZone.String() == command.SnapshotTimezone &&
+		!strings.HasPrefix(command.SnapshotTimezone, "+") && !strings.HasPrefix(command.SnapshotTimezone, "-") &&
+		urlErr == nil && parsedSnapshotURL.Scheme == "https" && parsedSnapshotURL.Host != "" &&
+		parsedSnapshotURL.User == nil && parsedSnapshotURL.RawQuery == "" && parsedSnapshotURL.Fragment == "" &&
+		len(command.SnapshotURL) <= 2048 && validAuditText(command.Reason, 512) &&
+		validIdentifier(command.RequestID) && validIdempotencyKey(command.IdempotencyKey)
+}
+
+func validRolloutGroup(group string) bool {
+	if len(group) < 8 || len(group) > 64 || !asciiLetterOrDigit(group[0]) {
+		return false
+	}
+	for index := 1; index < len(group); index++ {
+		if !asciiLetterOrDigit(group[index]) && group[index] != '.' && group[index] != '_' && group[index] != '-' {
+			return false
+		}
+	}
+	return true
+}
+
+func asciiLetterOrDigit(value byte) bool {
+	return value >= 'a' && value <= 'z' || value >= 'A' && value <= 'Z' || value >= '0' && value <= '9'
+}
+
+func hashAdminRolloutAssignmentRequest(mosqueID, group, snapshotID, minimumAppVersion, reason string) [sha256.Size]byte {
+	return hashAdminRequest("assign_rollout_group", mosqueID, group, snapshotID, minimumAppVersion, reason)
 }
 
 func (manager *AdminFleetManager) GetDeviceAssignment(ctx context.Context, deviceID, mosqueID string) (DeviceAssignment, error) {

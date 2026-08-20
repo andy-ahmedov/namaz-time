@@ -61,10 +61,10 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 		t.Fatalf("commit v1 fixture: %v", err)
 	}
 	if err := repository.MigrateUp(t.Context()); err != nil {
-		t.Fatalf("upgrade v1 to v2: %v", err)
+		t.Fatalf("upgrade v1 to current: %v", err)
 	}
 	var versions int
-	var adminTable, healthTable bool
+	var adminTable, healthTable, rolloutColumn bool
 	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM schema_migrations`).Scan(&versions); err != nil {
 		t.Fatalf("count upgraded versions: %v", err)
 	}
@@ -74,11 +74,40 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('device_health') IS NOT NULL`).Scan(&healthTable); err != nil {
 		t.Fatalf("inspect v3 table: %v", err)
 	}
-	if versions != PairingSchemaVersion || !adminTable || !healthTable {
-		t.Fatalf("upgraded schema: versions=%d admin_table=%v health_table=%v", versions, adminTable, healthTable)
+	if err := pool.QueryRow(t.Context(), `
+		SELECT EXISTS (
+			SELECT 1 FROM information_schema.columns
+			WHERE table_schema = 'public' AND table_name = 'devices' AND column_name = 'rollout_group'
+		)`).Scan(&rolloutColumn); err != nil {
+		t.Fatalf("inspect v4 column: %v", err)
+	}
+	if versions != PairingSchemaVersion || !adminTable || !healthTable || !rolloutColumn {
+		t.Fatalf("upgraded schema: versions=%d admin_table=%v health_table=%v rollout_column=%v", versions, adminTable, healthTable, rolloutColumn)
 	}
 	if err := repository.VerifySchema(t.Context()); err != nil {
 		t.Fatalf("VerifySchema(current) error = %v", err)
+	}
+	if err := repository.MigrateTo(t.Context(), 3); err != nil {
+		t.Fatalf("rollback current schema to v3: %v", err)
+	}
+	var v3Versions int
+	var preservedHealth, removedRollout bool
+	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM schema_migrations`).Scan(&v3Versions); err != nil {
+		t.Fatalf("count v3 rollback versions: %v", err)
+	}
+	if err := pool.QueryRow(t.Context(), `
+		SELECT to_regclass('device_health') IS NOT NULL,
+		       NOT EXISTS (
+			   SELECT 1 FROM information_schema.columns
+			   WHERE table_schema = 'public' AND table_name = 'devices' AND column_name = 'rollout_group'
+		       )`).Scan(&preservedHealth, &removedRollout); err != nil {
+		t.Fatalf("inspect v4 to v3 rollback: %v", err)
+	}
+	if v3Versions != 3 || !preservedHealth || !removedRollout {
+		t.Fatalf("v4 to v3 rollback: versions=%d health=%v rollout_removed=%v", v3Versions, preservedHealth, removedRollout)
+	}
+	if err := repository.MigrateUp(t.Context()); err != nil {
+		t.Fatalf("reapply current schema after v3 rollback: %v", err)
 	}
 	if err := repository.MigrateTo(t.Context(), 2); err != nil {
 		t.Fatalf("rollback current schema to v2: %v", err)

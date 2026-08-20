@@ -163,6 +163,13 @@ existing device bearer and exact device path, and a revoked or cross-device
 principal receives the same unauthorized outcome. Delivery failure cannot
 affect cached display or snapshot activation.
 
+T014 rollout groups are operator-assigned opaque labels, not audience segments.
+They contain no location, attendee or behavioral attributes and are visible
+only through the existing mosque-scoped admin projection. Group assignment
+accepts only a snapshot ID resolved from the verified immutable registry,
+rechecks RBAC in the database transaction, excludes revoked devices and fails
+atomically above the 100-device bound. Devices never choose their own group.
+
 ## Analytics/crash reporting
 
 Default proposal: no advertising SDKs. Crash reporting is opt-in per deployment or privacy-reviewed, with:

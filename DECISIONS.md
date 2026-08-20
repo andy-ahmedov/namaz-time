@@ -211,6 +211,23 @@ These are proposals until accepted by the product owner:
   access were reproduced in disposable PostgreSQL 18. Android sender behavior
   is locally unit-tested, not physical-TV runtime evidence.
 
+## T014 canary-rollout record
+
+- `PROPOSAL` — a rollout group is a bounded operator label on a mosque-owned
+  device, not a demographic or analytics segment; devices cannot self-enrol.
+- `PROPOSAL` — one cohort transaction uses a 101st-row overflow sentinel, locks
+  non-revoked devices in deterministic ID order and updates at most 100, all or
+  none, of their durable assignments.
+- `PROPOSAL` — cohort assignment accepts only an immutable artifact already
+  verified in the API registry. It cannot approve, sign or publish content and
+  does not unblock T010.
+- `PROPOSAL` — rollback assigns a previous verified snapshot as a new monotonic
+  manifest version; every device retains an individual canonical audit chain.
+- `CONFIRMED_RUNTIME` — migration v4↔v3, two-device atomic rollout, exact retry,
+  monotonic rollback, oversized-cohort rejection and mosque isolation were
+  reproduced locally in disposable PostgreSQL 18. This is controlled backend
+  evidence, not a production rollout or physical-TV canary.
+
 ## Decision template
 
 ```text

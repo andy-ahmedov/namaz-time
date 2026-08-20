@@ -185,7 +185,7 @@ a retryable `500` instead of exhausting the connection pool indefinitely.
 The private JSON config never accepts a literal `database_url`. Migrations run
 out of band through the short-lived `cmd/migrate` process with a schema-owner
 credential. API startup carries only the least-privileged runtime DSN, opens a
-bounded pgx pool, verifies the exact current migration ledger (v3) without
+bounded pgx pool, verifies the exact current migration ledger (v4) without
 changing it, and fails
 closed if the database, exact schema or key is unavailable.
 
@@ -219,3 +219,25 @@ fields are resolved from the server's verified immutable registry, persisted
 with a monotonically increasing manifest version, and checked again on every
 device manifest/snapshot read. This does not approve, sign or publish a new
 snapshot and therefore does not unblock T010.
+
+## T014 bounded canary rollout cohorts
+
+Two additional mosque-admin writes target an explicit server-side cohort:
+
+- `PUT /v1/admin/mosques/{mosqueId}/devices/{deviceId}/rollout-group`;
+- `PUT /v1/admin/mosques/{mosqueId}/rollout-groups/{groupId}/assignment`.
+
+The first sets an 8–64 character ASCII slug (`A-Z`, `a-z`, digits, `.`, `_`,
+`-`), or clears it with an empty string. The
+second atomically assigns one artifact already verified by the server registry
+to the current non-revoked cohort, in deterministic device-ID order. A cohort
+contains at most 100 devices per transaction; a larger target fails with `409`
+and changes no assignment. Each changed device receives a new monotonically
+increasing manifest version and its own canonical audit transition.
+
+Both writes use the T012 RBAC, reason and 24-hour idempotency contract. An exact
+group-assignment retry is read from durable evidence before current registry
+lookup. Rollback submits the previous verified snapshot ID as a new group
+assignment; snapshot versions may move backward, but manifest versions never
+do. Cohort labels select devices only: they cannot approve, sign, upload or
+mutate snapshot content.

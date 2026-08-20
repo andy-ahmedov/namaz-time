@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -81,6 +82,17 @@ func TestPostgresAdminFleetLifecycleAndIsolation(t *testing.T) {
 		RequestID: "request-admin-forged-001", IdempotencyKey: "idem-admin-forged-0001", ExpiresIn: 10 * time.Minute,
 	}); !errors.Is(err, ErrAdminResourceNotFound) {
 		t.Fatalf("repository accepted forged local scope: %v", err)
+	}
+	if _, err := manager.AssignRolloutGroup(t.Context(), forgedLocal, AdminAssignRolloutGroupCommand{
+		MosqueID: "mosque-kazan-00000001", RolloutGroup: "canary-group-0001",
+		SnapshotID:     "synthetic-rollout-verification-v2",
+		SnapshotURL:    "https://api.example.invalid/v1/snapshots/synthetic-rollout-verification-v2",
+		SnapshotSHA256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		SigningKeyID:   "phase1-fixture-key-2026-08", SnapshotMosqueID: "mosque-kazan-00000001",
+		SnapshotTimezone: "Europe/Moscow", Reason: "forged rollout scope",
+		RequestID: "request-admin-forged-rollout", IdempotencyKey: "idem-admin-forged-rollout",
+	}); !errors.Is(err, ErrAdminResourceNotFound) {
+		t.Fatalf("repository accepted forged rollout scope: %v", err)
 	}
 	forgedViewer := viewer
 	forgedViewer.Memberships = []AdminMembership{{MosqueID: "mosque-ulyanovsk-0001", Role: AdminRoleMosqueAdmin}}
@@ -285,6 +297,147 @@ func TestPostgresAdminFleetLifecycleAndIsolation(t *testing.T) {
 		t.Fatalf("cross-mosque GetDeviceAssignment() error = %v", err)
 	}
 
+	canaryPeer, err := manager.IssuePairing(t.Context(), local, AdminIssuePairingCommand{
+		MosqueID: "mosque-ulyanovsk-0001", Reason: "prepare second canary",
+		RequestID: "request-canary-peer-0001", IdempotencyKey: "idem-canary-peer-0001", ExpiresIn: 10 * time.Minute,
+	})
+	if err != nil {
+		t.Fatalf("IssuePairing(canary peer) error = %v", err)
+	}
+	for index, deviceID := range []string{issued.DeviceID, canaryPeer.DeviceID} {
+		if err := manager.SetDeviceRolloutGroup(t.Context(), local, AdminSetRolloutGroupCommand{
+			MosqueID: "mosque-ulyanovsk-0001", DeviceID: deviceID, RolloutGroup: "canary-group-0001",
+			Reason: "select bounded canary", RequestID: fmt.Sprintf("request-canary-set-%04d", index),
+			IdempotencyKey: fmt.Sprintf("idem-canary-set-%04d", index),
+		}); err != nil {
+			t.Fatalf("SetDeviceRolloutGroup(%s) error = %v", deviceID, err)
+		}
+	}
+	rolloutCommand := AdminAssignRolloutGroupCommand{
+		MosqueID: "mosque-ulyanovsk-0001", RolloutGroup: "canary-group-0001",
+		SnapshotID:     "synthetic-rollout-verification-v2",
+		SnapshotURL:    "https://api.example.invalid/v1/snapshots/synthetic-rollout-verification-v2",
+		SnapshotSHA256: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+		SigningKeyID:   "phase1-fixture-key-2026-08", SnapshotMosqueID: "mosque-ulyanovsk-0001",
+		SnapshotTimezone: "Europe/Ulyanovsk", Reason: "canary verified snapshot",
+		RequestID: "request-canary-assign-0001", IdempotencyKey: "idem-canary-assign-0001",
+	}
+	rollout, err := manager.AssignRolloutGroup(t.Context(), local, rolloutCommand)
+	if err != nil || rollout.DeviceCount != 2 || rollout.Assignments[0].DeviceID > rollout.Assignments[1].DeviceID {
+		t.Fatalf("AssignRolloutGroup() = %#v, %v", rollout, err)
+	}
+	rolloutCommand.RequestID = "request-canary-assign-0002"
+	retriedRollout, err := manager.AssignRolloutGroup(t.Context(), local, rolloutCommand)
+	if err != nil || !rolloutResultsEqual(retriedRollout, rollout) {
+		t.Fatalf("idempotent AssignRolloutGroup() = %#v, %v; want %#v", retriedRollout, err, rollout)
+	}
+	rollbackCommand := rolloutCommand
+	rollbackCommand.SnapshotID = assignment.SnapshotID
+	rollbackCommand.SnapshotURL = assignment.SnapshotURL
+	rollbackCommand.SnapshotSHA256 = assignment.SnapshotSHA256
+	rollbackCommand.SigningKeyID = assignment.SigningKeyID
+	rollbackCommand.Reason = "rollback canary to last-known-good"
+	rollbackCommand.RequestID = "request-canary-rollback-01"
+	rollbackCommand.IdempotencyKey = "idem-canary-rollback-0001"
+	rollback, err := manager.AssignRolloutGroup(t.Context(), local, rollbackCommand)
+	if err != nil || rollback.DeviceCount != 2 {
+		t.Fatalf("AssignRolloutGroup(rollback) = %#v, %v", rollback, err)
+	}
+	versions := make(map[string]int64)
+	for _, rolledBack := range rollback.Assignments {
+		versions[rolledBack.DeviceID] = rolledBack.ManifestVersion
+	}
+	if versions[issued.DeviceID] != 4 || versions[canaryPeer.DeviceID] != 2 {
+		t.Fatalf("rollback manifest versions = %#v", versions)
+	}
+	rolloutIssued := rolloutAssignmentForDevice(t, rollout, issued.DeviceID)
+	rollbackIssued := rolloutAssignmentForDevice(t, rollback, issued.DeviceID)
+	assertRolloutAuditTransition(t, pool, issued.DeviceID, "canary verified snapshot", secondAssignment, rolloutIssued)
+	assertRolloutAuditTransition(t, pool, issued.DeviceID, "rollback canary to last-known-good", rolloutIssued, rollbackIssued)
+	concurrentCommands := []AdminAssignRolloutGroupCommand{rolloutCommand, rolloutCommand}
+	for index := range concurrentCommands {
+		concurrentCommands[index].SnapshotID = fmt.Sprintf("synthetic-concurrent-rollout-%02d", index)
+		concurrentCommands[index].SnapshotURL = "https://api.example.invalid/v1/snapshots/" + concurrentCommands[index].SnapshotID
+		concurrentCommands[index].SnapshotSHA256 = strings.Repeat(fmt.Sprint(index+1), 64)
+		concurrentCommands[index].Reason = fmt.Sprintf("concurrent canary %d", index)
+		concurrentCommands[index].RequestID = fmt.Sprintf("request-concurrent-rollout-%02d", index)
+		concurrentCommands[index].IdempotencyKey = fmt.Sprintf("idem-concurrent-rollout-%02d", index)
+	}
+	var rolloutWait sync.WaitGroup
+	concurrentResults := make(chan RolloutAssignmentResult, len(concurrentCommands))
+	concurrentErrors := make(chan error, len(concurrentCommands))
+	for _, concurrentCommand := range concurrentCommands {
+		rolloutWait.Add(1)
+		go func(command AdminAssignRolloutGroupCommand) {
+			defer rolloutWait.Done()
+			result, assignErr := manager.AssignRolloutGroup(t.Context(), local, command)
+			if assignErr != nil {
+				concurrentErrors <- assignErr
+				return
+			}
+			concurrentResults <- result
+		}(concurrentCommand)
+	}
+	rolloutWait.Wait()
+	close(concurrentResults)
+	close(concurrentErrors)
+	for assignErr := range concurrentErrors {
+		t.Fatalf("concurrent AssignRolloutGroup() error = %v", assignErr)
+	}
+	if len(concurrentResults) != len(concurrentCommands) {
+		t.Fatalf("concurrent rollout results = %d", len(concurrentResults))
+	}
+	var finalIssuedVersion, finalPeerVersion int64
+	if err := pool.QueryRow(t.Context(), `
+		SELECT manifest_version FROM device_assignments WHERE device_id = $1`, issued.DeviceID).Scan(&finalIssuedVersion); err != nil {
+		t.Fatalf("read concurrent issued version: %v", err)
+	}
+	if err := pool.QueryRow(t.Context(), `
+		SELECT manifest_version FROM device_assignments WHERE device_id = $1`, canaryPeer.DeviceID).Scan(&finalPeerVersion); err != nil {
+		t.Fatalf("read concurrent peer version: %v", err)
+	}
+	if finalIssuedVersion != 6 || finalPeerVersion != 4 {
+		t.Fatalf("concurrent rollout versions = %d/%d", finalIssuedVersion, finalPeerVersion)
+	}
+	listedAfterRollout, err := manager.ListDevices(t.Context(), viewer, "mosque-ulyanovsk-0001")
+	if err != nil {
+		t.Fatalf("ListDevices(after rollout) error = %v", err)
+	}
+	var grouped int
+	for _, device := range listedAfterRollout {
+		if device.RolloutGroup == "canary-group-0001" {
+			grouped++
+		}
+	}
+	if grouped != 2 {
+		t.Fatalf("canary devices in fleet projection = %d", grouped)
+	}
+
+	if _, err := pool.Exec(t.Context(), `
+		INSERT INTO devices (id, mosque_id, status, rollout_group, created_at)
+		SELECT 'device-overflow-' || lpad(value::text, 4, '0'),
+		       'mosque-ulyanovsk-0001', 'pending', 'overflow-group-01', clock_timestamp()
+		FROM generate_series(1, 101) AS value`); err != nil {
+		t.Fatalf("seed oversized rollout group: %v", err)
+	}
+	overflow := rolloutCommand
+	overflow.RolloutGroup = "overflow-group-01"
+	overflow.RequestID = "request-overflow-assign-01"
+	overflow.IdempotencyKey = "idem-overflow-assign-0001"
+	if _, err := manager.AssignRolloutGroup(t.Context(), local, overflow); !errors.Is(err, ErrRolloutGroupTooLarge) {
+		t.Fatalf("oversized AssignRolloutGroup() error = %v", err)
+	}
+	var overflowAssignments int
+	if err := pool.QueryRow(t.Context(), `
+		SELECT count(*) FROM device_assignments a
+		JOIN devices d ON d.id = a.device_id
+		WHERE d.rollout_group = 'overflow-group-01'`).Scan(&overflowAssignments); err != nil {
+		t.Fatalf("count oversized rollout assignments: %v", err)
+	}
+	if overflowAssignments != 0 {
+		t.Fatalf("oversized rollout partially assigned %d devices", overflowAssignments)
+	}
+
 	revoke := AdminRevokeDeviceCommand{
 		MosqueID: "mosque-ulyanovsk-0001", DeviceID: issued.DeviceID, Reason: "device replaced",
 		RequestID: "request-admin-revoke-01", IdempotencyKey: "idem-admin-revoke-0001",
@@ -301,7 +454,63 @@ func TestPostgresAdminFleetLifecycleAndIsolation(t *testing.T) {
 		"device.assigned":       "assign verified snapshot",
 		"device.revoked":        "device replaced",
 	})
+	var rolloutGroupAuditCount int
+	if err := pool.QueryRow(t.Context(), `
+		SELECT count(*) FROM audit_events
+		WHERE actor_id = $1 AND action = 'device.rollout_group_changed'
+		  AND reason = 'select bounded canary'`, local.ActorID).Scan(&rolloutGroupAuditCount); err != nil {
+		t.Fatalf("inspect rollout group audit: %v", err)
+	}
+	if rolloutGroupAuditCount != 2 {
+		t.Fatalf("rollout group audit count = %d", rolloutGroupAuditCount)
+	}
 	assertAdminRequestsAreAppendOnly(t, pool)
+}
+
+func rolloutResultsEqual(left, right RolloutAssignmentResult) bool {
+	if left.RolloutGroup != right.RolloutGroup || left.SnapshotID != right.SnapshotID ||
+		left.DeviceCount != right.DeviceCount || len(left.Assignments) != len(right.Assignments) {
+		return false
+	}
+	for index := range left.Assignments {
+		if left.Assignments[index] != right.Assignments[index] {
+			return false
+		}
+	}
+	return true
+}
+
+func rolloutAssignmentForDevice(t *testing.T, result RolloutAssignmentResult, deviceID string) DeviceAssignment {
+	t.Helper()
+	for _, assignment := range result.Assignments {
+		if assignment.DeviceID == deviceID {
+			return assignment
+		}
+	}
+	t.Fatalf("rollout result has no assignment for %s", deviceID)
+	return DeviceAssignment{}
+}
+
+func assertRolloutAuditTransition(
+	t *testing.T,
+	pool *pgxpool.Pool,
+	deviceID, reason string,
+	before, after DeviceAssignment,
+) {
+	t.Helper()
+	var beforeHash, afterHash []byte
+	if err := pool.QueryRow(t.Context(), `
+		SELECT before_hash, after_hash FROM audit_events
+		WHERE action = 'device.assigned' AND entity_id = $1 AND reason = $2`, deviceID, reason).Scan(
+		&beforeHash, &afterHash,
+	); err != nil {
+		t.Fatalf("read rollout audit transition %s: %v", reason, err)
+	}
+	wantBefore := hashDeviceAssignment(before, "mosque-ulyanovsk-0001")
+	wantAfter := hashDeviceAssignment(after, "mosque-ulyanovsk-0001")
+	if !bytes.Equal(beforeHash, wantBefore[:]) || !bytes.Equal(afterHash, wantAfter[:]) {
+		t.Fatalf("rollout audit %s = %x/%x, want %x/%x", reason, beforeHash, afterHash, wantBefore, wantAfter)
+	}
 }
 
 func assertAdminRequestsAreAppendOnly(t *testing.T, pool *pgxpool.Pool) {

@@ -187,6 +187,57 @@ func TestAdminFleetManagerBindsAssignmentRevocationAndAuthentication(t *testing.
 	}
 }
 
+func TestAdminFleetManagerBindsBoundedRolloutCohort(t *testing.T) {
+	t.Parallel()
+
+	repository := newRecordingAdminRepository()
+	manager := mustAdminFleetManager(t, repository)
+	principal := AdminPrincipal{
+		ActorID: "actor-mosque-admin-0001",
+		Memberships: []AdminMembership{{
+			MosqueID: "mosque-ulyanovsk-0001", Role: AdminRoleMosqueAdmin,
+		}},
+	}
+	set := AdminSetRolloutGroupCommand{
+		MosqueID: "mosque-ulyanovsk-0001", DeviceID: "device-display-0001",
+		RolloutGroup: "canary-group-0001", Reason: "select canary",
+		RequestID: "request-group-set-0001", IdempotencyKey: "idem-group-set-0001",
+	}
+	if err := manager.SetDeviceRolloutGroup(t.Context(), principal, set); err != nil {
+		t.Fatalf("SetDeviceRolloutGroup() error = %v", err)
+	}
+
+	command := AdminAssignRolloutGroupCommand{
+		MosqueID: "mosque-ulyanovsk-0001", RolloutGroup: "canary-group-0001",
+		SnapshotID:     "synthetic-android-verification-v1",
+		SnapshotURL:    "https://api.example.invalid/v1/snapshots/synthetic-android-verification-v1",
+		SnapshotSHA256: "5b55f00294077efcae22e4ff48fc44aca352f25a26abc68a819caa3593fa674d",
+		SigningKeyID:   "phase1-fixture-key-2026-08", SnapshotMosqueID: "mosque-ulyanovsk-0001",
+		SnapshotTimezone: "Europe/Ulyanovsk", MinimumAppVersion: "0.2.0-shell",
+		Reason: "canary approved snapshot", RequestID: "request-group-assign-0001",
+		IdempotencyKey: "idem-group-assign-0001",
+	}
+	result, err := manager.AssignRolloutGroup(t.Context(), principal, command)
+	if err != nil {
+		t.Fatalf("AssignRolloutGroup() error = %v", err)
+	}
+	if result.RolloutGroup != command.RolloutGroup || result.SnapshotID != command.SnapshotID || result.DeviceCount != 2 {
+		t.Fatalf("AssignRolloutGroup() = %#v", result)
+	}
+
+	cross := command
+	cross.MosqueID = "mosque-kazan-00000001"
+	cross.SnapshotMosqueID = cross.MosqueID
+	if _, err := manager.AssignRolloutGroup(t.Context(), principal, cross); !errors.Is(err, ErrAdminResourceNotFound) {
+		t.Fatalf("cross-mosque AssignRolloutGroup() error = %v", err)
+	}
+	invalid := command
+	invalid.RolloutGroup = "x"
+	if _, err := manager.AssignRolloutGroup(t.Context(), principal, invalid); !errors.Is(err, ErrInvalidAdminRequest) {
+		t.Fatalf("invalid AssignRolloutGroup() error = %v", err)
+	}
+}
+
 func mustAdminFleetManager(t *testing.T, repository AdminFleetRepository) *AdminFleetManager {
 	t.Helper()
 	manager, err := NewAdminFleetManager(AdminFleetManagerConfig{
@@ -213,6 +264,7 @@ type recordingAdminRepository struct {
 	revocations             map[[sha256.Size]byte][sha256.Size]byte
 	revocationRows          int
 	lastAssignCommand       AdminAssignDeviceCommand
+	rolloutResult           RolloutAssignmentResult
 }
 
 type adminPairingFixture struct {
@@ -225,6 +277,13 @@ func newRecordingAdminRepository() *recordingAdminRepository {
 		pairings: make(map[[sha256.Size]byte]adminPairingFixture), assignments: make(map[string]DeviceAssignment),
 		assignmentRequests: make(map[[sha256.Size]byte]DeviceAssignment), revocations: make(map[[sha256.Size]byte][sha256.Size]byte),
 		assignmentRequestHashes: make(map[[sha256.Size]byte][sha256.Size]byte),
+		rolloutResult: RolloutAssignmentResult{
+			RolloutGroup: "canary-group-0001", SnapshotID: "synthetic-android-verification-v1", DeviceCount: 2,
+			Assignments: []DeviceAssignment{
+				{DeviceID: "device-display-0001", ManifestVersion: 1, SnapshotID: "synthetic-android-verification-v1"},
+				{DeviceID: "device-display-0002", ManifestVersion: 1, SnapshotID: "synthetic-android-verification-v1"},
+			},
+		},
 	}
 }
 
@@ -300,4 +359,23 @@ func (repository *recordingAdminRepository) GetDeviceAssignment(_ context.Contex
 		return DeviceAssignment{}, ErrDeviceAssignmentNotFound
 	}
 	return assignment, nil
+}
+
+func (repository *recordingAdminRepository) SetAdminDeviceRolloutGroup(_ context.Context, _ AdminRolloutGroupMutation) error {
+	return nil
+}
+
+func (repository *recordingAdminRepository) ReadAdminRolloutAssignmentRetry(
+	_ context.Context,
+	_ AdminRepositoryScope,
+	_, _ [sha256.Size]byte,
+) (RolloutAssignmentResult, bool, error) {
+	return RolloutAssignmentResult{}, false, nil
+}
+
+func (repository *recordingAdminRepository) AssignAdminRolloutGroup(
+	_ context.Context,
+	_ AdminRolloutAssignmentMutation,
+) (RolloutAssignmentResult, error) {
+	return repository.rolloutResult, nil
 }

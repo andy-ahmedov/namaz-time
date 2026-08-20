@@ -185,13 +185,13 @@ or credential:
 ```bash
 go run ./cmd/migrate \
   -database-url-env NAMAZ_MIGRATION_DATABASE_URL \
-  -target-version 3
+  -target-version 4
 ```
 
 The command applies embedded migrations under a transaction-scoped advisory
 lock and exits. Only then start the API with `NAMAZ_DATABASE_URL` for the
-least-privileged runtime role. API startup performs a read-only exact-v3 ledger
-check and refuses missing, v1, gapped or future schemas. The runtime role must
+least-privileged runtime role. API startup performs a read-only exact-v4 ledger
+check and refuses missing, lower, gapped or future schemas. The runtime role must
 not own schema/functions/triggers.
 
 Minimum runtime privileges are deployment-managed: `SELECT` on mosque/device/
@@ -205,14 +205,18 @@ audit/idempotency update/delete/truncate. It requires `SELECT` on
 `schema_migrations` solely for startup verification. Verify the grants in
 staging rather than granting broad schema ownership.
 
-For a controlled T013-to-T012 rollback, stop heartbeat/write traffic, take a
-verified database backup, and run `-target-version 2`; migration `000003` down
+For a controlled T014-to-T013 rollback, stop rollout writes, take a verified
+database backup, and run `-target-version 3`; migration `000004` down removes
+only cohort labels/indexes while preserving every per-device assignment,
+pairing/admin row and latest health state. For T013-to-T012, stop heartbeat/write
+traffic, take another verified backup, and run `-target-version 2`; migration
+`000003` down
 drops only latest health and `last_seen_at`. For T012-to-T011, then run target
 `1`; migration `000002` down drops admin identities, idempotency evidence and
 assignments while v1 mosque/device/pairing/rate/audit state remains. The command
 rejects target `0`; complete schema removal exists only as a repository test
-helper. The current v3 binary refuses to start on either lower target until v3
-is reapplied.
+helper. The current v4 binary refuses to start on any lower target until v4 is
+reapplied.
 
 Run the restart/concurrency/migration suite in a disposable local PostgreSQL 18
 container:
@@ -266,6 +270,22 @@ heartbeat traffic at the trusted ingress if a compromised device floods it,
 while preserving normal daily reports. Never add SSID/BSSID, network address,
 location, account identifiers, installed apps, logs or full URLs to this
 endpoint.
+
+## T014 canary rollout operation
+
+Assign a stable cohort label only to explicitly selected devices. Confirm the
+group contains at most 100 non-revoked rows and that the target snapshot already
+exists in the API's verified registry. Record an incident/change reason and a
+fresh idempotency key, then call the group assignment endpoint. The response is
+the exact ordered list of durable per-device manifest versions; retain it as
+rollout evidence.
+
+Observe server last-seen, reported snapshot and sync state, but remember that
+heartbeat fields are diagnostic claims. Promotion remains a separate explicit
+operation. To roll back, submit the previous verified snapshot ID with a new
+reason/idempotency key; verify every returned manifest version increased. A
+`409 rollout_group_too_large` or any other failure means no member assignment
+was changed. Physical activation evidence is still required for production.
 
 ## Device support bundle
 
