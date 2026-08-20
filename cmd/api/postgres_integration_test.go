@@ -113,7 +113,7 @@ func TestRuntimeLoadsRestartSafePostgresPairingWithoutLiteralSecrets(t *testing.
 	repository := devices.NewPostgresPairingRepository(pool)
 	manager, err := devices.NewPairingManager(devices.PairingManagerConfig{
 		Repository: repository, RateLimitKey: rateKey,
-		Now: func() time.Time { return time.Date(2026, 8, 20, 12, 0, 0, 0, time.UTC) },
+		Now: time.Now,
 		RateLimits: devices.PairingRateLimits{
 			Window: 10 * time.Minute, SourceAttempts: 20, DeviceAttempts: 10, CodeAttempts: 5,
 		},
