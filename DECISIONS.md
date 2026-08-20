@@ -131,6 +131,28 @@ These are proposals until accepted by the product owner:
 - `UNKNOWN` — D-013 remains open. The committed key is public and test-only;
   its private half was discarded and no production trust anchor was selected.
 
+## T009 device-sync record
+
+- `PROPOSAL` — bearer-authenticated manifest and snapshot URLs must share one
+  HTTPS origin until a separate CDN credential/allowlist design is approved.
+- `PROPOSAL` — `manifest_version` is monotonic; authorized rollback publishes a
+  newer manifest pointing to a prior immutable snapshot, which is downloaded,
+  authenticated and transactionally re-imported.
+- `PROPOSAL` — sync transport state and rejected raw bytes use an atomic local
+  file journal scoped by a device/mosque/timezone/origin fingerprint, while
+  Room remains the only display schedule authority.
+- `PROPOSAL` — publisher signature, manifest ID/key and paired mosque ID/IANA
+  timezone are independent activation bindings; any mismatch fails closed.
+- `PROPOSAL` — the T009 pairing fixture is explicitly ephemeral/test-only.
+  Persistent expiry, attempt/rate state and restart-safe consumption belong to
+  the future production issuer and are not claimed here.
+- `PROPOSAL` — non-empty remote asset manifests fail closed in T009 rather than
+  silently activating themes whose assets were not staged.
+- `UNKNOWN` — D-013 still blocks production trust-store provisioning. T009
+  proves the path with an injected public test key only and embeds no key/token.
+- `CONFIRMED_RUNTIME` is not claimed for WorkManager/OEM process behavior or a
+  physical TV; evidence is local Go/JVM/Robolectric plus file-backed DB reopen.
+
 ## Decision template
 
 ```text

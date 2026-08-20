@@ -273,6 +273,24 @@ last_seen_at
 status
 ```
 
+### TV sync checkpoint (local file)
+
+Transport state is not schedule authority and therefore stays outside Room:
+
+```text
+provisioning fingerprint (device + mosque + timezone + manifest origin)
+accepted manifest ETag/version
+accepted snapshot ID/raw SHA-256/byte length/signing key ID
+pending manifest + ETag
+last rejected snapshot ID + bounded code
+```
+
+The checkpoint and raw stage are written using fsync plus atomic rename. Room
+continues to own only immutable schedule/config rows and the atomic
+active/previous selection. Tokens are stored separately in an AES-GCM envelope
+under Android Keystore, never in the checkpoint. A fingerprint mismatch after
+re-pairing quarantines an old stage and resets only transport metadata.
+
 ### `pairing_code`
 
 Hash short-lived codes; never store plaintext after issue.

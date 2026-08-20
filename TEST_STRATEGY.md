@@ -171,6 +171,17 @@ pilot fixture is validation/diff evidence only while D-002 is open. Direct
 parser-entry provenance bypasses, normalized metadata/Hijri-only diffs and
 cross-runtime malformed UTF-8 are regression-tested.
 
+T009 adds real HTTP-handler tests for one-use pairing, bearer isolation,
+manifest/snapshot 200 and 304, Digest and registry-time signature rejection.
+Android tests cover 200/304/401/404/500/timeout, raw length/hash tamper,
+manifest null/schema/version/origin/app-version failures, signature and
+manifest ID/key/mosque substitution, encrypted provisioning, re-pairing with
+pending staged bytes, unique constrained
+WorkManager scheduling and local-only no-op behavior. File-backed Room tests
+close/reopen after interruption inside import and after activation commit but
+before checkpoint finalization; both preserve last-known-good and resume the
+durable stage without a second download.
+
 ## Release evidence
 
 Each release records:

@@ -49,7 +49,19 @@ class SnapshotImporter(
                 if (selection?.activeSnapshotId == snapshot.snapshotId) {
                     return@withTransaction SnapshotImportResult.AlreadyActive(snapshot.snapshotId)
                 }
-                throw SnapshotImportException("snapshot_id_conflict")
+                if (selection?.previousSnapshotId != snapshot.snapshotId || selection.activeSnapshotId == null) {
+                    throw SnapshotImportException("snapshot_id_conflict")
+                }
+                // Re-import authenticated rollback bytes rather than trusting an old local copy.
+                // The temporary pointer change and cascade delete are invisible until commit;
+                // interruption rolls the whole operation back to the current active snapshot.
+                dao.setSelection(
+                    SnapshotSelectionEntity(
+                        activeSnapshotId = selection.activeSnapshotId,
+                        previousSnapshotId = null,
+                    ),
+                )
+                dao.deleteSnapshot(snapshot.snapshotId)
             }
 
             dao.insertSnapshot(snapshot.toEntity())

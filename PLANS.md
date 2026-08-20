@@ -37,6 +37,19 @@ Detailed prompts: [CODEX_TASKS.md](CODEX_TASKS.md).
 
 ## Phase 2 — production-grade source and publication pipeline
 
+| Task | Status | Acceptance / evidence |
+|---|---|---|
+| T009 manifest/snapshot sync | DONE | explicit ephemeral one-use pairing fixture and scoped bearer API; duplicate credential rejection; signed registry and paired-mosque binding; same-origin canonical snapshot URLs; manifest/raw snapshot ETag/304 and Digest; Android AES-GCM/Keystore provisioning, provisioning-scoped durable stage/quarantine/checkpoint, signature/schema/domain/manifest/mosque binding, atomic activation and authenticated rollback; 401/404/500/timeout/tamper/re-pair plus file-backed import/post-commit interruption recovery tests pass |
+| T010 first real source onboarding | BLOCKED | requires completed `SOURCE_PARTNERSHIP_CHECKLIST.md`, named D-002 approver, full-year authorized source, D-013 production signer/trust distribution and physical canary/rollback drill |
+
+T009 completes the locally testable delivery half of the Phase 2 invariant. The
+runtime command refuses to embed fixture credentials or trust keys, requires
+an explicit ephemeral-test-only mode for its process-local pairing fixture and
+accepts only a private explicit config. Android remote work remains
+unprovisioned in a normal local-only install; a worker is scheduled only after
+pairing/trust configuration is supplied. Non-empty remote asset manifests fail
+closed until asset staging is implemented.
+
 - PostgreSQL migrations and audit/outbox tables.
 - Source registry and permission metadata.
 - Raw artifact storage policy.
@@ -44,7 +57,7 @@ Detailed prompts: [CODEX_TASKS.md](CODEX_TASKS.md).
 - Minute-level candidate diff UI.
 - Two-person or named-approver publication control.
 - Ed25519 signing and key rotation.
-- Device manifest, staged rollout and rollback.
+- Device manifest, staged download and local/manifest rollback. (T009 local slice DONE; production rollout groups remain part of T010 operations.)
 - Coverage/staleness alerts.
 - First authority/mosque source adapter.
 
@@ -111,6 +124,10 @@ Do not begin until the first pilot is stable.
 - D-013 still requires a production signer/KMS, public-key distribution,
   rotation and revocation policy. T008 commits only a public test fixture; its
   ephemeral private key was discarded.
-- local Phase 1 is complete, but a real pilot publication remains intentionally
-  impossible until D-002 approves the exact raw/transcription/diff hashes and
-  acknowledges parser warnings. T009/Phase 2 has not started.
+- local Phase 1 and T009 are complete, but a real pilot publication remains
+  intentionally impossible until D-002 approves the exact
+  raw/transcription/diff hashes and warnings, a full-year source is obtained,
+  D-013 provisions production trust, and a physical canary/rollback drill is
+  performed. T010 is therefore blocked rather than partially fabricated.
+- T009 intentionally rejects non-empty remote asset manifests; custom asset
+  staging/type/dimension activation requires a separately bounded task.

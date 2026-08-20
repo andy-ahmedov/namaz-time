@@ -54,6 +54,11 @@ the APK trust configuration and is not a production trust anchor.
   revocation before real publication.
 - T009 must preserve downloaded raw bytes for diagnostics, but activation
   still depends on this verifier and the existing atomic Room transaction.
+- T009's Go serving registry also verifies this signature and strict snapshot
+  contract before exposing bytes. Android independently verifies again and
+binds manifest raw hash/length, snapshot ID and signing-key ID.
+Both serving and activation also bind the signed mosque ID and IANA timezone to
+the paired/provisioned mosque; a valid signature for another mosque is rejected.
 
 ## Rejected alternatives
 

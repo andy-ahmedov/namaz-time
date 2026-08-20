@@ -92,6 +92,34 @@ Do not promise guaranteed boot launch in ordinary consumer mode.
 6. do not delete bad evidence;
 7. correct source/candidate and repeat full approval.
 
+The rollback manifest must use a new, monotonic `manifest_version` even when it
+points to an older snapshot. The TV downloads and re-verifies those bytes,
+re-imports them transactionally and keeps the replaced snapshot as previous.
+A decreased version or same-version identity change is treated as a downgrade/
+conflict, not an authorized rollback.
+
+## T009 device API startup
+
+The local runtime has no embedded credential or trust default:
+
+```text
+go run ./cmd/api -config /private/path/api-config.json -listen 127.0.0.1:8080
+```
+
+The config must be `0600`; referenced public-key/snapshot files must be regular,
+bounded, non-symlink files inside its directory. `public_base_url` must be the
+external HTTPS origin. Configured pairing fixtures require
+`pairing_fixture_mode: "ephemeral-test-only"`: they are process-local and are
+not a production expiring/rate-limited issuer. TLS termination and production
+secret injection are deployment responsibilities. Do not promote the Phase 1
+public test key to production.
+
+Android stores at most one pending and one rejected raw snapshot locally. A
+pending checkpoint is resumed before any network request after process restart
+only if its provisioning fingerprint still matches; re-pairing quarantines it.
+Rejected support codes are bounded and credentials/full URLs never enter the
+diagnostic record.
+
 ## Device support bundle
 
 Structured JSON/text only:

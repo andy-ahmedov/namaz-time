@@ -43,8 +43,8 @@
    make lint
    ```
 
-5. Проверить локально завершённый Phase 1 и открытые pilot decisions в
-   [PLANS.md](PLANS.md); не начинать Phase 2 до отдельного решения.
+5. Проверить локально завершённые Phase 1/T009 и блокеры T010 в
+   [PLANS.md](PLANS.md).
 
 Реальный pilot fixture можно безопасно прогнать до candidate/diff без
 одобрения и signing key:
@@ -108,5 +108,13 @@ QR, строгую HTTPS/lifecycle-валидацию, безопасное ск
 cross-platform Go/Android verification. Реальное расписание Ульяновска
 сохранено как `needs_review`, потому что D-002 не называет religious approver;
 оно не опубликовано и не названо официальным. Локальный Phase 1 завершён.
+T009 добавил явно ephemeral/test-only one-use pairing fixture и bearer-scoped
+Go read API, ETag/304 и Digest, полную registry-time signature/schema/mosque
+validation, Android Keystore/AES-GCM provisioning, same-origin HTTPS,
+provisioning-scoped durable stage/quarantine, WorkManager и атомарный
+activate/rollback с file-backed process-interruption тестами. Ни test token, ни
+private/production signing key в APK/Git не встроены; T010 заблокирован на
+D-002, полном годовом источнике, D-013 и
+физическом canary/rollback drill.
 Runtime-проверка на физическом Android TV/box ещё не выполнена и не
 подменяется Robolectric-тестом.

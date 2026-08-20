@@ -41,6 +41,9 @@ interface SnapshotDao {
     @Query("SELECT * FROM snapshots WHERE snapshotId = :snapshotId LIMIT 1")
     suspend fun getSnapshot(snapshotId: String): SnapshotEntity?
 
+    @Query("DELETE FROM snapshots WHERE snapshotId = :snapshotId")
+    suspend fun deleteSnapshot(snapshotId: String)
+
     @Query("SELECT * FROM themes WHERE snapshotId = :snapshotId LIMIT 1")
     suspend fun getTheme(snapshotId: String): ThemeEntity?
 

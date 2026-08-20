@@ -170,10 +170,35 @@ The separate publication package recomputes the candidate and diff bindings,
 requires an exact human approval, builds a deterministic snapshot and signs
 the canonical payload defined by ADR 0003. Android accepts production data
 only through that authenticated-byte gate; the only other activation path is
-the explicitly synthetic bundled fixture. The app still has no network
-permission and all activation remains inside the existing Room transaction.
+the explicitly synthetic bundled fixture. At the T008 checkpoint the app still
+has no network permission and all activation remains inside the existing Room
+transaction. T009 adds only the permissions required for the separate sync
+layer; display repositories remain network-free.
 Go and Android both reject malformed UTF-8, explicit JSON nulls and invalid
 typed iqamah, Jumu'ah, campaign or theme children before activation.
+
+T009 adds the device-facing delivery path. The Go API loads only explicitly
+configured immutable snapshots that pass raw hash, canonical Ed25519,
+schema/domain, snapshot-ID/signing-key and paired-mosque binding checks. Pairing
+fixtures are explicitly ephemeral/test-only, one-use in process, duplicate-
+credential rejecting, bearer-scoped to one device assignment, and absent unless
+a private runtime config supplies them. The configured public HTTPS origin and
+canonical snapshot path are validated before startup. Responses implement
+strong ETag/304; snapshot responses also include the raw-byte Digest.
+
+On Android, pairing is strict and its device token is AES-GCM encrypted under
+an Android Keystore key. The synchronizer accepts same-origin HTTPS only,
+persists a fsync/atomic-rename checkpoint plus one staged or quarantined raw
+file, scoped by device/mosque/timezone/manifest-origin fingerprint so an old
+pending stage cannot cross re-pairing, and never exposes network state to
+Compose. Manifest/raw byte identity,
+canonical signature, schema/domain validation and the existing time-engine
+smoke check plus provisioned mosque ID/timezone binding all precede the Room
+transaction. An authorized rollback
+re-imports authenticated previous bytes transactionally rather than trusting a
+possibly corrupt old local copy. File-backed tests reopen after interruption
+inside import and after Room commit/before checkpoint finalization. WorkManager
+runs only for provisioned remote mode; 304 or failure never clears Room.
 
 Small operator UI preferences, including the last focused settings section and
 reduced-motion default, use a single Preferences DataStore instance. Schedule
@@ -252,6 +277,11 @@ See [contracts/prayer-snapshot.schema.json](contracts/prayer-snapshot.schema.jso
 9. Report a privacy-safe heartbeat later; display remains independent from heartbeat success.
 
 Never erase the active snapshot before the new one is proven valid.
+
+Manifest versions never decrease. Server rollback publishes a newer manifest
+version pointing at a previously signed snapshot. Same-version identity drift,
+304 without an accepted local ETag, cross-origin snapshot URLs and non-empty
+asset lists unsupported by the current client fail closed.
 
 ## Prayer-time resolution
 

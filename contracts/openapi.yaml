@@ -60,7 +60,11 @@ paths:
           description: Manifest unchanged
         '401':
           $ref: '#/components/responses/ErrorResponse'
+        '403':
+          $ref: '#/components/responses/ErrorResponse'
         '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
           $ref: '#/components/responses/ErrorResponse'
   /v1/snapshots/{snapshotId}:
     get:
@@ -89,12 +93,11 @@ paths:
             Digest:
               schema:
                 type: string
+              description: Base64 SHA-256 of the exact response bytes.
           content:
             application/json:
               schema:
-                type: object
-                description: See prayer-snapshot.schema.json for the normative schema.
-                additionalProperties: true
+                $ref: './prayer-snapshot.schema.json'
         '304':
           description: Cached representation is current
         '401':
@@ -162,12 +165,17 @@ components:
       properties:
         device_id:
           type: string
+          minLength: 8
+          maxLength: 128
         device_token:
           type: string
           writeOnly: true
+          minLength: 16
+          maxLength: 4096
         manifest_url:
           type: string
-          format: uri
+          format: uri-reference
+          description: Same HTTPS origin as the pairing endpoint after resolution.
         mosque:
           type: object
           additionalProperties: false
@@ -175,10 +183,17 @@ components:
           properties:
             id:
               type: string
+              minLength: 1
+              maxLength: 128
             name:
               type: string
+              minLength: 1
+              maxLength: 240
             timezone:
               type: string
+              minLength: 3
+              maxLength: 64
+              description: Named IANA timezone ID; fixed numeric offsets are invalid.
     DeviceInfo:
       type: object
       additionalProperties: false
@@ -186,18 +201,22 @@ components:
       properties:
         app_version:
           type: string
+          minLength: 1
           maxLength: 64
         os_version:
           type: string
+          minLength: 1
           maxLength: 128
         model:
           type: string
+          minLength: 1
           maxLength: 240
         capabilities:
           type: array
           uniqueItems: true
           items:
             type: string
+            minLength: 1
             maxLength: 128
     DeviceManifest:
       type: object
@@ -215,25 +234,34 @@ components:
           minimum: 1
         snapshot_id:
           type: string
+          minLength: 8
+          maxLength: 128
         snapshot_url:
           type: string
           format: uri
+          pattern: '^https://'
+          description: Must share origin with the authenticated manifest URL in T009.
         snapshot_sha256:
           type: string
           pattern: '^[a-f0-9]{64}$'
         snapshot_byte_length:
           type: integer
           minimum: 1
-          maximum: 52428800
+          maximum: 5242880
         signing_key_id:
           type: string
+          minLength: 1
+          maxLength: 128
         minimum_app_version:
           type: string
+          minLength: 1
+          maxLength: 64
         server_time:
           type: string
           format: date-time
         assets:
           type: array
+          description: T009 Android rejects a non-empty list until staged asset activation is implemented.
           items:
             $ref: '#/components/schemas/AssetManifestItem'
     AssetManifestItem:
@@ -243,9 +271,12 @@ components:
       properties:
         asset_id:
           type: string
+          minLength: 1
+          maxLength: 128
         url:
           type: string
           format: uri
+          pattern: '^https://'
         sha256:
           type: string
           pattern: '^[a-f0-9]{64}$'

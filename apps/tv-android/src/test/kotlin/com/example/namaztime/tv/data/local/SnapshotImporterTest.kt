@@ -229,6 +229,59 @@ class SnapshotImporterTest {
     }
 
     @Test
+    fun authorizedRollbackReimportsExistingPreviousAndKeepsReplacedSnapshotRestorable() = runTest {
+        val first = SnapshotDecoder.decode(syntheticFixture())
+        val second = first.copy(snapshotId = "synthetic-ulsk-demo-2026-08-v2")
+        val importer = SnapshotImporter(database)
+        importer.importAndActivate(first)
+        importer.importAndActivate(second)
+
+        val result = importer.importAndActivate(first)
+
+        assertEquals(SnapshotImportResult.Activated(first.snapshotId, second.snapshotId), result)
+        assertEquals(first.snapshotId, dao.getSelection()?.activeSnapshotId)
+        assertEquals(second.snapshotId, dao.getSelection()?.previousSnapshotId)
+        assertEquals(2, dao.countSnapshots())
+        assertEquals(3, dao.countPrayerDays(first.snapshotId))
+    }
+
+    @Test
+    fun rollbackInterruptionLeavesCurrentActiveAndPreviousUntouchedAfterReopen() = runTest {
+        database.close()
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        fileDatabaseName = "snapshot-rollback-failure-${System.nanoTime()}.db"
+        database = Room.databaseBuilder(context, NamazDatabase::class.java, fileDatabaseName!!)
+            .allowMainThreadQueries()
+            .build()
+        dao = database.snapshotDao()
+        val first = SnapshotDecoder.decode(syntheticFixture())
+        val second = first.copy(snapshotId = "synthetic-ulsk-demo-2026-08-v2")
+        SnapshotImporter(database).apply {
+            importAndActivate(first)
+            importAndActivate(second)
+        }
+
+        try {
+            SnapshotImporter(
+                database = database,
+                beforeActivation = BeforeSnapshotActivation { throw SimulatedActivationFailure() },
+            ).importAndActivate(first)
+            throw AssertionError("expected simulated rollback interruption")
+        } catch (_: SimulatedActivationFailure) {
+            // Transaction must roll back before the file-backed database is reopened.
+        }
+        database.close()
+        database = Room.databaseBuilder(context, NamazDatabase::class.java, fileDatabaseName!!)
+            .allowMainThreadQueries()
+            .build()
+        dao = database.snapshotDao()
+
+        assertEquals(second.snapshotId, dao.getSelection()?.activeSnapshotId)
+        assertEquals(first.snapshotId, dao.getSelection()?.previousSnapshotId)
+        assertEquals(2, dao.countSnapshots())
+    }
+
+    @Test
     fun transactionFailurePreservesActiveAfterFileDatabaseReopen() = runTest {
         database.close()
         val context = ApplicationProvider.getApplicationContext<Context>()

@@ -41,6 +41,12 @@ wrapper, JDK 17 and Android SDK 35. A PR description lists exact commands
 actually executed; do not claim instrumented/device coverage from local unit
 tests.
 
+Device-sync changes must cover HTTP status/ETag behavior, manifest-to-payload
+binding, last-known-good preservation and at least one durable interruption
+boundary. WorkManager is pinned to stable `2.11.2`; dependency/permission
+changes require an updated threat review. Never add a fixture token, private
+signing key or production trust anchor to Gradle resources, APK assets or Git.
+
 `make test-android-unit` includes the Robolectric Compose focus test. Commit
 Room schema exports under `apps/tv-android/schemas/` whenever the schema changes;
 future versions must add and test an explicit migration rather than use a

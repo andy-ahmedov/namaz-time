@@ -51,6 +51,19 @@ Encryption may protect confidentiality, but it does not establish publisher auth
 - no secret in QR after pairing expiry;
 - no tokens in URLs or logs.
 
+T009 additionally requires the manifest and bearer-authenticated snapshot URL
+to share one HTTPS origin. Android encrypts the provisioning record with
+AES-256-GCM and fixed context AAD under a non-exportable Android Keystore key;
+tamper/wrong-key reads fail closed. Pending transport state is fingerprinted to
+the paired device, mosque, timezone and manifest origin; re-pairing quarantines
+old staged bytes without mutating Room. Both the Go assignment gate and Android
+activation gate bind signed snapshot mosque ID/timezone to provisioning.
+
+The Go runtime config containing fixture credentials must be mode `0600` and
+cannot reference symlinks or files outside its directory. Its T009 pairing
+issuer is explicitly process-local and test-only, not the persistent expiring/
+rate-limited production issuer required by this section.
+
 ## Admin authorization
 
 Roles:
@@ -133,6 +146,25 @@ The presence of analytics/location libraries in a competitor APK is not a reason
 - the Phase 1 verification key is public/test-only; no private key or
   production trust anchor is stored in Git or the APK;
 - production key custody, rotation and revocation remain D-013.
+
+The Go device registry also performs the full public-key signature/schema/domain
+verification at startup. A matching raw download SHA alone cannot make bytes
+servable. Android independently repeats verification and binds manifest ID,
+raw length/hash and signing-key ID before Room activation.
+
+## T009 Android permission review
+
+- explicit application permission: `INTERNET`;
+- WorkManager merge requirements: `ACCESS_NETWORK_STATE`, `WAKE_LOCK`,
+  `RECEIVE_BOOT_COMPLETED` and `FOREGROUND_SERVICE` for constrained work,
+  rescheduling and library foreground support;
+- cleartext traffic is explicitly disabled;
+- regression tests assert absence of location, contacts, camera, microphone and
+  external-storage permissions.
+
+Remote work is not scheduled in local-only/unprovisioned mode. These permissions
+do not authorize UI network reads, analytics, identifiers or background source
+scraping.
 
 ## Asset upload safety
 

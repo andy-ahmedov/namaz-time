@@ -49,7 +49,9 @@
 ## Technical scaffold
 
 - `go.mod` — Go module identity and language baseline.
-- `cmd/api/` — compilable control-plane API entry-point placeholder.
+- `cmd/api/` — private-configured device pairing/manifest/snapshot HTTP runtime.
+- `internal/devices/` — strict pairing fixture, bearer-scoped manifest/snapshot
+  service and signed immutable registry validation.
 - `cmd/ingestor/` — local manual-fixture inspection CLI; it cannot approve or publish.
 - `internal/domain/` — source-independent snapshot types, validation and contract fixtures.
 - `internal/providers/manual/` — strict raw-artifact + manual CSV candidate provider.
@@ -61,7 +63,10 @@
   prayer display with a mosque-timezone next-event/iqamah/Jumu'ah engine and a
   locally generated, lifecycle-validated optional QR campaign panel. Signed
   production snapshots require cross-platform Ed25519 authenticity evidence
-  before the atomic Room importer can accept them.
+  before the atomic Room importer can accept them. T009 adds encrypted device
+  provisioning, paired-mosque binding, same-origin bounded HTTPS,
+  provisioning-scoped durable stage/quarantine/checkpoint, WorkManager
+  scheduling and authenticated rollback/recovery tests.
 - `.github/workflows/ci.yml` — documentation, Go and Android CI gates.
 
 ## Quality, security and operations
