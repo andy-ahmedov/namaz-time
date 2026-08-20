@@ -19,8 +19,6 @@ import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
@@ -53,13 +51,13 @@ internal enum class TvBackgroundStyle(
         DEFAULT_BACKGROUND_STYLE_ID,
         R.drawable.tv_background_golden_dusk,
         R.string.value_background_golden_dusk,
-        0.26f,
+        0.18f,
     ),
     BLUE_HOUR(
         BLUE_HOUR_BACKGROUND_STYLE_ID,
         R.drawable.tv_background_blue_hour,
         R.string.value_background_blue_hour,
-        0.20f,
+        0.16f,
     ),
     ;
 
@@ -107,17 +105,17 @@ internal val DarkTvColors = TvColorTokens(
     backgroundTop = Color(0xFF14233A),
     backgroundBottom = Color(0xFF07111F),
     backgroundGlow = Color(0xFFB57936),
-    surfaceTop = Color(0xB3223046),
-    surfaceBottom = Color(0xD10A1425),
-    surfaceStrong = Color(0xEA08111F),
-    surfaceOutline = Color(0x4DFFF4DC),
+    surfaceTop = Color(0x8F2B3341),
+    surfaceBottom = Color(0xB5161C28),
+    surfaceStrong = Color(0xB0161C27),
+    surfaceOutline = Color(0x59FFF4DC),
     textPrimary = Color(0xFFFFFBF2),
     textSecondary = Color(0xFFD5D9DE),
     accent = Color(0xFFFFCF7A),
     accentSoft = Color(0x4DCB8730),
     accentOutline = Color(0xCCFFD38A),
     focus = Color(0xFFFFFFFF),
-    separator = Color(0x24FFFFFF),
+    separator = Color(0x2BFFFFFF),
     warning = Color(0xFFFFD38B),
 )
 
@@ -265,26 +263,13 @@ internal fun TvGlassPanel(
     val shape = RoundedCornerShape(radius)
     Box(
         modifier = modifier
-            .shadow(
-                elevation = if (accented) 16.dp else 10.dp,
-                shape = shape,
-                ambientColor = Color.Black.copy(alpha = 0.34f),
-                spotColor = if (accented) colors.accent.copy(alpha = 0.22f) else Color.Black,
-            )
             .clip(shape)
             .background(
-                brush = if (accented) {
-                    Brush.linearGradient(
-                        listOf(colors.accentSoft, colors.surfaceBottom),
-                    )
-                } else {
-                    Brush.verticalGradient(
-                        listOf(colors.surfaceTop, colors.surfaceBottom),
-                    )
-                },
+                color = if (accented) colors.surfaceBottom else colors.surfaceTop,
+                shape = shape,
             )
             .border(
-                width = if (accented) 1.5.dp else 1.dp,
+                width = if (accented) 1.dp else 0.75.dp,
                 color = if (accented) colors.accentOutline else colors.surfaceOutline,
                 shape = shape,
             ),

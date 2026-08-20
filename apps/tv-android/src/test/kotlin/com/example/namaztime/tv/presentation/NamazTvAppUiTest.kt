@@ -63,7 +63,7 @@ class NamazTvAppUiTest {
     fun dpadOpensSettingsAndRestoresDisplayFocusOnExit() {
         compose.setContent { NamazTvApp(FakeOperatorPreferencesRepository()) }
 
-        compose.onNodeWithText("Настройки").assertIsFocused().performKeyInput {
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused().performKeyInput {
             pressKey(Key.Enter)
         }
         compose.onNodeWithTag(TV_ATMOSPHERIC_BACKGROUND_TAG).assertIsDisplayed()
@@ -76,7 +76,7 @@ class NamazTvAppUiTest {
             pressKey(Key.Enter)
         }
 
-        compose.onNodeWithText("Настройки").assertIsFocused()
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
     }
 
     @Test
@@ -96,7 +96,7 @@ class NamazTvAppUiTest {
             )
         }
 
-        compose.onNodeWithText("Настройки").performKeyInput { pressKey(Key.Enter) }
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).performKeyInput { pressKey(Key.Enter) }
         repeat(SettingsDestination.LANGUAGE.ordinal) { index ->
             compose.onNodeWithTag(SettingsDestination.entries[index].navigationTestTag)
                 .performKeyInput { pressKey(Key.DirectionDown) }
@@ -119,8 +119,8 @@ class NamazTvAppUiTest {
             .assertIsFocused()
             .performKeyInput { pressKey(Key.Enter) }
         compose.onNodeWithText("Next prayer").assertIsDisplayed()
-        compose.onNodeWithText("Until the next event").assertIsDisplayed()
-        compose.onNodeWithText("Settings").assertIsFocused()
+        compose.onNodeWithText("Until adhan").assertIsDisplayed()
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
     }
 
     @Test
@@ -133,7 +133,7 @@ class NamazTvAppUiTest {
         }
 
         compose.runOnIdle { assertTrue(hostView.keepScreenOn) }
-        compose.onNodeWithText("Настройки").performKeyInput { pressKey(Key.Enter) }
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).performKeyInput { pressKey(Key.Enter) }
         compose.onNodeWithTag(SETTINGS_SHELL_TAG).assertIsDisplayed()
         compose.runOnIdle { assertFalse(hostView.keepScreenOn) }
 
@@ -154,7 +154,7 @@ class NamazTvAppUiTest {
             NamazTvApp(FakeOperatorPreferencesRepository(failWrites = true))
         }
 
-        compose.onNodeWithText("Настройки").performKeyInput { pressKey(Key.Enter) }
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).performKeyInput { pressKey(Key.Enter) }
         compose.onNodeWithTag(SettingsDestination.initial.navigationTestTag).performKeyInput {
             pressKey(Key.DirectionDown)
         }
@@ -183,7 +183,7 @@ class NamazTvAppUiTest {
             compose.onNodeWithTag("$PRAYER_ROW_TEST_TAG_PREFIX$prayer").assertExists()
         }
         compose.onNodeWithText("Следующий намаз").assertExists()
-        compose.onNodeWithText("До следующего события").assertExists()
+        compose.onNodeWithText("До следующего события").assertDoesNotExist()
         compose.onNodeWithText("03:20:00").assertExists()
         compose.onNodeWithTag(NEXT_EVENT_CARD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(LOCAL_CLOCK_CARD_TAG).assertIsDisplayed()
@@ -203,7 +203,7 @@ class NamazTvAppUiTest {
     }
 
     @Test
-    fun approvedProductionScheduleHasNoSyntheticOrTestMarker() {
+    fun approvedProductionScheduleKeepsTechnicalMarkersOffDisplay() {
         val approved = schedule().copy(
             mosqueName = "Вторая Соборная мечеть Ульяновска",
             diagnostics = schedule().diagnostics?.copy(dataClassification = "production"),
@@ -219,7 +219,7 @@ class NamazTvAppUiTest {
         }
 
         compose.onNodeWithText("Вторая Соборная мечеть Ульяновска").assertIsDisplayed()
-        compose.onNodeWithText("УТВЕРЖДЁННЫЕ ДАННЫЕ").assertIsDisplayed()
+        compose.onNodeWithText("УТВЕРЖДЁННЫЕ ДАННЫЕ").assertDoesNotExist()
         compose.onNodeWithText("ТЕСТОВЫЕ ДАННЫЕ").assertDoesNotExist()
     }
 
@@ -257,6 +257,80 @@ class NamazTvAppUiTest {
     }
 
     @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun displayCompositionMatchesTheReferenceProportions() {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(schedule()),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        val root = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        val composition = compose.onNodeWithTag("reference-display-composition")
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        val next = compose.onNodeWithTag(NEXT_EVENT_CARD_TAG).getUnclippedBoundsInRoot()
+        val clock = compose.onNodeWithTag(LOCAL_CLOCK_CARD_TAG).getUnclippedBoundsInRoot()
+        val prayers = compose.onNodeWithTag(PRAYER_LIST_CARD_TAG).getUnclippedBoundsInRoot()
+        val strip = compose.onNodeWithTag(IQAMAH_STRIP_TAG).getUnclippedBoundsInRoot()
+
+        val rootWidth = root.right - root.left
+        val compositionWidth = composition.right - composition.left
+        val leftWidth = next.right - next.left
+        val prayerWidth = prayers.right - prayers.left
+        val prayerHeight = prayers.bottom - prayers.top
+        val nextHeight = next.bottom - next.top
+        val clockHeight = clock.bottom - clock.top
+        val settings = compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+
+        assertTrue(compositionWidth >= rootWidth * 0.70f)
+        assertTrue(compositionWidth <= rootWidth * 0.76f)
+        assertTrue(kotlin.math.abs(leftWidth.value - prayerWidth.value) <= prayerWidth.value * 0.04f)
+        assertTrue(nextHeight >= prayerHeight * 0.56f)
+        assertTrue(nextHeight <= prayerHeight * 0.62f)
+        assertTrue(clockHeight >= prayerHeight * 0.36f)
+        assertTrue(clockHeight <= prayerHeight * 0.42f)
+        assertEquals(composition.left, strip.left)
+        assertEquals(composition.right, strip.right)
+        assertTrue(kotlin.math.abs((settings.right - settings.left).value - (settings.bottom - settings.top).value) <= 2f)
+        assertTrue(settings.right - settings.left <= 60.dp)
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun referenceDecorativeAnchorsRemainVisibleAndSemantic() {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(
+                    schedule().copy(locality = "Ульяновск, ул. Дзержинского, 18А"),
+                ),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        compose.onNodeWithTag("mosque-location-ornament").assertIsDisplayed()
+        compose.onNodeWithTag("next-event-ornament-divider").assertIsDisplayed()
+        compose.onNodeWithTag("clock-ornament-divider").assertIsDisplayed()
+        compose.onNodeWithTag("calendar-icon", useUnmergedTree = true).assertExists()
+        compose.onNodeWithContentDescription("Настройки").assertIsFocused()
+    }
+
+    @Test
     fun originalImageBackgroundAssetsArePackagedForOfflineSelection() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val goldenDusk = context.resources.getIdentifier(
@@ -283,7 +357,7 @@ class NamazTvAppUiTest {
 
         compose.onNodeWithTag("$TV_BACKGROUND_STYLE_TAG_PREFIX${com.example.namaztime.tv.repository.DEFAULT_BACKGROUND_STYLE_ID}")
             .assertIsDisplayed()
-        compose.onNodeWithText("Настройки").performKeyInput { pressKey(Key.Enter) }
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).performKeyInput { pressKey(Key.Enter) }
         repeat(SettingsDestination.APPEARANCE.ordinal) { index ->
             compose.onNodeWithTag(SettingsDestination.entries[index].navigationTestTag)
                 .performKeyInput { pressKey(Key.DirectionDown) }
@@ -381,7 +455,7 @@ class NamazTvAppUiTest {
         }
 
         compose.onNodeWithTag(QR_CAMPAIGN_PANEL_TAG).assertDoesNotExist()
-        compose.onNodeWithText("Настройки").performKeyInput { pressKey(Key.Enter) }
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).performKeyInput { pressKey(Key.Enter) }
         repeat(SettingsDestination.CAMPAIGNS.ordinal) {
             compose.onNodeWithTag(SettingsDestination.entries[it].navigationTestTag)
                 .performKeyInput { pressKey(Key.DirectionDown) }
@@ -656,7 +730,7 @@ class NamazTvAppUiTest {
         compose.onNodeWithText("Код поддержки: SNAPSHOT_INVALID_TIMEZONE").assertExists()
         compose.onNodeWithTag(DISPLAY_UNAVAILABLE_TAG).assertIsDisplayed()
         compose.onNodeWithTag(UNAVAILABLE_PANEL_TAG).assertIsDisplayed()
-        compose.onNodeWithText("Настройки").assertIsFocused()
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
     }
 
     @Test
@@ -690,7 +764,7 @@ class NamazTvAppUiTest {
 
         compose.onNodeWithText("Расписание недоступно").assertExists()
         compose.onNodeWithText("Код поддержки: SCHEDULE_DATE_OUTSIDE_COVERAGE").assertExists()
-        compose.onNodeWithText("Настройки").assertIsFocused()
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
     }
 
     @Test
@@ -738,7 +812,7 @@ class NamazTvAppUiTest {
         compose.onNodeWithText(
             "Код поддержки: SNAPSHOT_LOCAL_INVALID_PRAYER_DAY_FLAGS",
         ).assertExists()
-        compose.onNodeWithText("Настройки").assertIsFocused()
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
     }
 
     private fun assertResponsiveDisplayIsVisible(

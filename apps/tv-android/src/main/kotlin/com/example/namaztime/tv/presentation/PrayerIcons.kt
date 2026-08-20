@@ -23,7 +23,7 @@ internal fun PrayerIcon(
     Canvas(
         if (exposeTestTag) modifier.testTag("$PRAYER_ICON_TEST_TAG_PREFIX$prayerId") else modifier,
     ) {
-        val stroke = Stroke(width = size.minDimension * 0.075f, cap = StrokeCap.Round)
+        val stroke = Stroke(width = size.minDimension * 0.055f, cap = StrokeCap.Round)
         val center = Offset(size.width / 2f, size.height / 2f)
         val radius = size.minDimension * 0.22f
         fun horizon(y: Float = size.height * 0.68f) {
@@ -96,7 +96,7 @@ internal fun IqamahIcon(
     exposeTestTag: Boolean = false,
 ) {
     Canvas(if (exposeTestTag) modifier.testTag(IQAMAH_ICON_TEST_TAG) else modifier) {
-        val width = size.minDimension * 0.075f
+        val width = size.minDimension * 0.055f
         val stroke = Stroke(width, cap = StrokeCap.Round)
         drawArc(tint, 180f, 180f, false, Offset(size.width * 0.17f, size.height * 0.10f), Size(size.width * 0.66f, size.height * 0.72f), style = stroke)
         drawLine(tint, Offset(size.width * 0.17f, size.height * 0.46f), Offset(size.width * 0.17f, size.height * 0.86f), width)
@@ -113,7 +113,7 @@ internal fun BrandMark(
     tint: Color = NamazTvTheme.colors.accent,
 ) {
     Canvas(modifier) {
-        val stroke = Stroke(size.minDimension * 0.11f, cap = StrokeCap.Round)
+        val stroke = Stroke(size.minDimension * 0.08f, cap = StrokeCap.Round)
         drawArc(tint, 55f, 250f, false, Offset(size.width * 0.08f, size.height * 0.08f), Size(size.width * 0.72f, size.height * 0.72f), style = stroke)
         drawCircle(tint, size.minDimension * 0.055f, Offset(size.width * 0.76f, size.height * 0.25f))
     }

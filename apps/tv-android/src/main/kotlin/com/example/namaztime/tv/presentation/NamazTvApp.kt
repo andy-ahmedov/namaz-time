@@ -392,7 +392,9 @@ private fun DisplayUnavailableScreen(
                         focusedContainerColor = NamazTvTheme.colors.accent,
                         focusedContentColor = NamazTvTheme.colors.backgroundBottom,
                     ),
-                    modifier = Modifier.focusRequester(settingsFocusRequester),
+                    modifier = Modifier
+                        .testTag(MAIN_DISPLAY_SETTINGS_TAG)
+                        .focusRequester(settingsFocusRequester),
                 ) {
                     Text(appString(R.string.open_settings))
                 }
