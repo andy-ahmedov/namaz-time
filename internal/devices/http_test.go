@@ -2,17 +2,20 @@ package devices
 
 import (
 	"bytes"
+	"context"
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strings"
 	"testing"
+	"time"
 )
 
 const (
@@ -201,6 +204,14 @@ func TestDeviceReadPathFailsClosedOnInvalidConfigurationAndRequests(t *testing.T
 			}
 		})
 	}
+	if _, err := NewService(ServiceConfig{BackendTimeout: time.Second}); err == nil {
+		t.Fatal("NewService() accepted a backend timeout without a persistent backend")
+	}
+	if _, err := NewService(ServiceConfig{
+		PairingBackend: &recordingHTTPPairingBackend{}, BackendTimeout: 31 * time.Second,
+	}); err == nil {
+		t.Fatal("NewService() accepted an excessive backend timeout")
+	}
 
 	service, err := NewService(ServiceConfig{})
 	if err != nil {
@@ -222,6 +233,152 @@ func TestDeviceReadPathFailsClosedOnInvalidConfigurationAndRequests(t *testing.T
 	missingSnapshot := request(t, http.MethodGet, server.URL+"/v1/snapshots/not-found", nil, testToken, "")
 	if missingSnapshot.StatusCode != http.StatusUnauthorized {
 		t.Fatalf("unknown token must not reveal snapshot existence: %d", missingSnapshot.StatusCode)
+	}
+}
+
+func TestProductionPairingBackendPreservesPublicContractAndFailureBoundaries(t *testing.T) {
+	t.Parallel()
+
+	backend := &recordingHTTPPairingBackend{
+		provisioning: PairingProvisioning{
+			DeviceID: "device-production-0001", Token: "production-token-returned-once-0001",
+			Mosque: MosqueIdentity{ID: "mosque-production-0001", Name: "Production Mosque", Timezone: "Europe/Ulyanovsk"},
+		},
+		principal: DevicePrincipal{
+			DeviceID: "device-production-0001",
+			Mosque:   MosqueIdentity{ID: "mosque-production-0001", Name: "Production Mosque", Timezone: "Europe/Ulyanovsk"},
+		},
+	}
+	service, err := NewService(ServiceConfig{
+		PublicBaseURL:  "https://api.example.invalid",
+		PairingBackend: backend,
+	})
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+	server := httptest.NewServer(service.Handler())
+	t.Cleanup(server.Close)
+
+	pairBody := []byte(`{"pairing_code":"ABCDEFGHIJKLMNOPQRSTUVWX26","device":{"app_version":"1.0.0","os_version":"35","model":"Android TV"}}`)
+	paired := request(t, http.MethodPost, server.URL+"/v1/devices/pair", pairBody, "", "")
+	if paired.StatusCode != http.StatusOK || !strings.Contains(paired.Body, backend.provisioning.Token) {
+		t.Fatalf("pair response = %d %s", paired.StatusCode, paired.Body)
+	}
+	if backend.attempt.Code == "" || backend.attempt.SourceAddress == "" || !validIdentifier(backend.attempt.RequestID) {
+		t.Fatalf("backend attempt = %#v", backend.attempt)
+	}
+
+	manifest := request(
+		t, http.MethodGet, server.URL+"/v1/devices/device-production-0001/manifest",
+		nil, backend.provisioning.Token, "",
+	)
+	if manifest.StatusCode != http.StatusNotFound {
+		t.Fatalf("unassigned production manifest status = %d", manifest.StatusCode)
+	}
+	crossDevice := request(
+		t, http.MethodGet, server.URL+"/v1/devices/device-production-0002/manifest",
+		nil, backend.provisioning.Token, "",
+	)
+	if crossDevice.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("cross-device manifest status = %d", crossDevice.StatusCode)
+	}
+	backend.authErr = errors.New("database unavailable")
+	infrastructureFailure := request(
+		t, http.MethodGet, server.URL+"/v1/devices/device-production-0001/manifest",
+		nil, backend.provisioning.Token, "",
+	)
+	if infrastructureFailure.StatusCode != http.StatusInternalServerError ||
+		!strings.Contains(infrastructureFailure.Body, `"retryable":true`) {
+		t.Fatalf("auth infrastructure response = %d %s", infrastructureFailure.StatusCode, infrastructureFailure.Body)
+	}
+	snapshotInfrastructureFailure := request(
+		t, http.MethodGet, server.URL+"/v1/snapshots/synthetic-android-verification-v1",
+		nil, backend.provisioning.Token, "",
+	)
+	if snapshotInfrastructureFailure.StatusCode != http.StatusInternalServerError ||
+		!strings.Contains(snapshotInfrastructureFailure.Body, `"retryable":true`) {
+		t.Fatalf("snapshot auth infrastructure response = %d %s", snapshotInfrastructureFailure.StatusCode, snapshotInfrastructureFailure.Body)
+	}
+	backend.authErr = ErrDeviceUnauthorized
+	rejectedCredential := request(
+		t, http.MethodGet, server.URL+"/v1/devices/device-production-0001/manifest",
+		nil, backend.provisioning.Token, "",
+	)
+	if rejectedCredential.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("rejected credential status = %d", rejectedCredential.StatusCode)
+	}
+	backend.authErr = nil
+
+	backend.pairErr = ErrPairingInvalid
+	invalid := request(t, http.MethodPost, server.URL+"/v1/devices/pair", pairBody, "", "")
+	backend.pairErr = ErrPairingRateLimited
+	limited := request(t, http.MethodPost, server.URL+"/v1/devices/pair", pairBody, "", "")
+	if invalid.StatusCode != http.StatusBadRequest || limited.StatusCode != http.StatusTooManyRequests {
+		t.Fatalf("pair failure statuses: invalid=%d limited=%d", invalid.StatusCode, limited.StatusCode)
+	}
+	if strings.Contains(invalid.Body, pairBodySecret(pairBody)) || strings.Contains(limited.Body, pairBodySecret(pairBody)) {
+		t.Fatal("pair failure disclosed the submitted code")
+	}
+
+	withAssignments := validServiceConfig(t)
+	withAssignments.PairingFixtures = nil
+	withAssignments.PairingBackend = backend
+	if _, err := NewService(withAssignments); err == nil {
+		t.Fatal("NewService() accepted static assignments with a persistent pairing backend")
+	}
+}
+
+func TestProductionPairingBackendCallsHaveBoundedDeadlines(t *testing.T) {
+	t.Parallel()
+
+	backend := &deadlineHTTPPairingBackend{}
+	service, err := NewService(ServiceConfig{
+		PairingBackend: backend,
+		BackendTimeout: 20 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+	server := httptest.NewServer(service.Handler())
+	t.Cleanup(server.Close)
+
+	client := &http.Client{Timeout: 500 * time.Millisecond}
+	started := time.Now()
+	pairRequest, err := http.NewRequest(
+		http.MethodPost,
+		server.URL+"/v1/devices/pair",
+		bytes.NewBufferString(`{"pairing_code":"ABCDEFGHIJKLMNOPQRSTUVWX26","device":{"app_version":"1","os_version":"35","model":"TV"}}`),
+	)
+	if err != nil {
+		t.Fatalf("NewRequest(pair) error = %v", err)
+	}
+	pairRequest.Header.Set("Content-Type", "application/json")
+	pairResponse, err := client.Do(pairRequest)
+	if err != nil {
+		t.Fatalf("Do(pair) error = %v", err)
+	}
+	pairResponse.Body.Close()
+	if pairResponse.StatusCode != http.StatusInternalServerError || time.Since(started) >= 250*time.Millisecond {
+		t.Fatalf("bounded pair response = %d after %s", pairResponse.StatusCode, time.Since(started))
+	}
+
+	started = time.Now()
+	authRequest, err := http.NewRequest(
+		http.MethodGet,
+		server.URL+"/v1/devices/device-production-0001/manifest",
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("NewRequest(auth) error = %v", err)
+	}
+	authRequest.Header.Set("Authorization", "Bearer valid-length-bearer-token")
+	authResponse, err := client.Do(authRequest)
+	if err != nil {
+		t.Fatalf("Do(auth) error = %v", err)
+	}
+	authResponse.Body.Close()
+	if authResponse.StatusCode != http.StatusInternalServerError || time.Since(started) >= 250*time.Millisecond {
+		t.Fatalf("bounded auth response = %d after %s", authResponse.StatusCode, time.Since(started))
 	}
 }
 
@@ -323,3 +480,34 @@ func validServiceConfig(t *testing.T) ServiceConfig {
 		}},
 	}
 }
+
+type recordingHTTPPairingBackend struct {
+	attempt      PairingAttempt
+	provisioning PairingProvisioning
+	pairErr      error
+	principal    DevicePrincipal
+	authErr      error
+}
+
+type deadlineHTTPPairingBackend struct{}
+
+func (*deadlineHTTPPairingBackend) Pair(ctx context.Context, _ PairingAttempt) (PairingProvisioning, error) {
+	<-ctx.Done()
+	return PairingProvisioning{}, ctx.Err()
+}
+
+func (*deadlineHTTPPairingBackend) Authenticate(ctx context.Context, _ string) (DevicePrincipal, error) {
+	<-ctx.Done()
+	return DevicePrincipal{}, ctx.Err()
+}
+
+func (backend *recordingHTTPPairingBackend) Pair(_ context.Context, attempt PairingAttempt) (PairingProvisioning, error) {
+	backend.attempt = attempt
+	return backend.provisioning, backend.pairErr
+}
+
+func (backend *recordingHTTPPairingBackend) Authenticate(_ context.Context, _ string) (DevicePrincipal, error) {
+	return backend.principal, backend.authErr
+}
+
+func pairBodySecret(_ []byte) string { return "ABCDEFGHIJKLMNOPQRSTUVWX26" }

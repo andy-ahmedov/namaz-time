@@ -45,13 +45,16 @@
 - `docs/adr/0001-source-authority-and-signed-snapshots.md`
 - `docs/adr/0002-tv-offline-first.md`
 - `docs/adr/0003-canonical-snapshot-signatures.md`
+- `docs/adr/0004-production-pairing-and-fleet-scope.md`
 
 ## Technical scaffold
 
 - `go.mod` — Go module identity and language baseline.
-- `cmd/api/` — private-configured device pairing/manifest/snapshot HTTP runtime.
-- `internal/devices/` — strict pairing fixture, bearer-scoped manifest/snapshot
-  service and signed immutable registry validation.
+- `cmd/api/` — private-configured device pairing/manifest/snapshot HTTP runtime,
+  including explicit PostgreSQL production-pairing wiring.
+- `internal/devices/` — strict pairing fixture, production pairing manager and
+  PostgreSQL migrations/repository, bearer-scoped manifest/snapshot service and
+  signed immutable registry validation.
 - `cmd/ingestor/` — local manual-fixture inspection CLI; it cannot approve or publish.
 - `internal/domain/` — source-independent snapshot types, validation and contract fixtures.
 - `internal/providers/manual/` — strict raw-artifact + manual CSV candidate provider.
@@ -78,6 +81,7 @@
 - `CONTRIBUTING.md`
 - `scripts/docs-check.sh`
 - `scripts/android-tv-evidence.sh` — read-only ADB evidence helper for owned test hardware.
+- `scripts/test-postgres.sh` — disposable PostgreSQL pairing integration gate.
 - `Makefile`
 - `SHA256SUMS.txt`
 

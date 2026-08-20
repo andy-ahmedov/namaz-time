@@ -120,6 +120,56 @@ only if its provisioning fingerprint still matches; re-pairing quarantines it.
 Rejected support codes are bounded and credentials/full URLs never enter the
 diagnostic record.
 
+## T011 PostgreSQL pairing startup
+
+Production pairing is explicit and cannot be combined with T009 fixtures or
+static assignments. The private `0600` config contains environment-variable
+names, not credential values:
+
+```json
+{
+  "public_base_url": "https://api.example.invalid",
+  "pairing_backend": "postgres",
+  "database_url_env": "NAMAZ_DATABASE_URL",
+  "pairing_rate_limit_key_env": "NAMAZ_PAIRING_RATE_KEY",
+  "pairing_backend_timeout_seconds": 5,
+  "pairing_rate_limits": {
+    "window_seconds": 600,
+    "source_attempts": 20,
+    "device_attempts": 10,
+    "code_attempts": 5
+  },
+  "trusted_public_key_files": [],
+  "snapshots": [],
+  "assignments": []
+}
+```
+
+`NAMAZ_PAIRING_RATE_KEY` is standard Base64 for exactly 32 random bytes. Zero
+backend-timeout seconds selects the five-second default; an explicit value is
+bounded to 30 seconds. Every pairing/authentication database call inherits this
+request deadline, and rollback cleanup has its own bounded deadline.
+
+Remote TCP database endpoints must use server-authenticated TLS (for example,
+`sslmode=verify-full` with the deployment CA/root configuration). Startup
+rejects plaintext, `prefer`, and encryption without certificate verification
+for a remote host. `sslmode=disable` is accepted only for an explicit Unix
+socket, `localhost`, or loopback development endpoint. The repository does not
+provide a production password or TLS terminator.
+Startup pings PostgreSQL and applies embedded migrations under a transaction-
+scoped advisory lock. If any step fails, the API does not start.
+
+Run the restart/concurrency/migration suite in a disposable local PostgreSQL 18
+container:
+
+```bash
+make test-postgres
+```
+
+The server deliberately ignores forwarded-address headers. Configure the
+trusted reverse proxy/network so the direct peer address has useful rate-limit
+cardinality; otherwise all clients safely share the stricter source bucket.
+
 ## Device support bundle
 
 Structured JSON/text only:

@@ -1,4 +1,4 @@
-.PHONY: docs-check format format-check lint lint-go lint-android test test-go test-contracts test-android-unit
+.PHONY: docs-check format format-check lint lint-go lint-android test test-go test-contracts test-android-unit test-postgres
 
 GO_FILES := $(shell find cmd internal -type f -name '*.go' 2>/dev/null)
 GRADLE_FLAGS ?= --no-daemon
@@ -24,6 +24,9 @@ test: docs-check test-go test-android-unit
 
 test-go:
 	go test ./...
+
+test-postgres:
+	bash ./scripts/test-postgres.sh
 
 test-contracts:
 	go test ./internal/domain -run 'Test(SyntheticSnapshotMatchesJSONSchemaAndDomain|InvalidSnapshotFixturesFailDeterministically|ProviderKindsMatchJSONSchemas|DomainAcceptsJSONSchemaDateTimeVariants|DomainRejectsJSONSchemaInvalidLeapSecond|ConditionalProvenanceRejectedBySchemaAndDomain)'

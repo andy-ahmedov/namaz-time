@@ -33,6 +33,20 @@ T009 stores the returned provisioning envelope with AES-256-GCM under an
 Android Keystore key. A normal local-only install has no fixture credential and
 does not schedule remote work.
 
+T011 adds the production pairing backend while preserving this response. It
+generates a 128-bit one-time code and a 256-bit device bearer credential,
+stores only SHA-256 verifiers, and consumes the code in the same PostgreSQL
+transaction that activates the device and appends audit evidence. Codes expire
+within 15 minutes and persistent HMAC buckets limit attempts independently by
+submitted code, device metadata/public key and direct network source. Invalid,
+expired, consumed and revoked codes share the same public error. Rate limiting
+uses the existing `429` response and never echoes a code or token.
+
+The server does not trust `X-Forwarded-For`; the TLS/reverse-proxy deployment
+must preserve a trustworthy direct peer address. T012 will add the authorized
+admin endpoint that issues these records. Until then, T011 exposes issuance as
+an internal service boundary and does not claim a production admin login.
+
 ## Manifest
 
 `GET /v1/devices/{deviceId}/manifest`
@@ -151,3 +165,18 @@ fixture. It rejects duplicate code/token values but does not claim durable
 expiry, attempt accounting or restart-safe consumption. A production pairing
 issuer must implement those controls in persistent storage; codes and tokens
 are never committed as defaults.
+
+## T011 production pairing runtime
+
+Set `pairing_backend` to `postgres` and provide only the *names* of environment
+variables containing the PostgreSQL URL and Base64-encoded 32-byte HMAC key.
+`pairing_backend_timeout_seconds` bounds each persistent pair/auth call (five
+seconds when omitted, maximum 30), so a database partition or lock wait returns
+a retryable `500` instead of exhausting the connection pool indefinitely.
+The private JSON config never accepts a literal `database_url`. Startup opens a
+bounded pgx pool, takes an advisory migration lock, applies the embedded schema
+transactionally and fails closed if the database or key is unavailable.
+
+Static T009 assignments are rejected in this mode. A newly authenticated but
+unassigned device receives `404 manifest_not_found` and keeps its local display;
+T012 owns persistent assignment administration and mosque-scoped authorization.

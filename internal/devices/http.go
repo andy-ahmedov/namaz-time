@@ -2,7 +2,9 @@
 package devices
 
 import (
+	"context"
 	"crypto/ed25519"
+	"crypto/rand"
 	"crypto/sha256"
 	"crypto/subtle"
 	"encoding/base64"
@@ -12,6 +14,7 @@ import (
 	"fmt"
 	"io"
 	"mime"
+	"net"
 	"net/http"
 	"net/url"
 	"strings"
@@ -23,8 +26,10 @@ import (
 )
 
 const (
-	maxPairRequestBytes = 16 * 1024
-	maxSnapshotBytes    = 5 * 1024 * 1024
+	maxPairRequestBytes   = 16 * 1024
+	maxSnapshotBytes      = 5 * 1024 * 1024
+	defaultBackendTimeout = 5 * time.Second
+	maximumBackendTimeout = 30 * time.Second
 )
 
 type MosqueIdentity struct {
@@ -63,6 +68,8 @@ type ServiceConfig struct {
 	Assignments       []DeviceAssignment
 	Snapshots         []SnapshotArtifact
 	TrustedPublicKeys map[string]ed25519.PublicKey
+	PairingBackend    PairingBackend
+	BackendTimeout    time.Duration
 }
 
 type DeviceManifest struct {
@@ -93,22 +100,41 @@ type snapshotRecord struct {
 }
 
 type Service struct {
-	mu          sync.Mutex
-	pairings    []*pairingRecord
-	assignments map[string]DeviceAssignment
-	snapshots   map[string]snapshotRecord
-	tokens      map[string]string
-	mosques     map[string]MosqueIdentity
-	publicBase  *url.URL
-	handler     http.Handler
+	mu             sync.Mutex
+	pairings       []*pairingRecord
+	assignments    map[string]DeviceAssignment
+	snapshots      map[string]snapshotRecord
+	tokens         map[string]string
+	mosques        map[string]MosqueIdentity
+	publicBase     *url.URL
+	handler        http.Handler
+	pairingBackend PairingBackend
+	backendTimeout time.Duration
 }
 
 func NewService(config ServiceConfig) (*Service, error) {
 	service := &Service{
-		assignments: make(map[string]DeviceAssignment, len(config.Assignments)),
-		snapshots:   make(map[string]snapshotRecord, len(config.Snapshots)),
-		tokens:      make(map[string]string, len(config.PairingFixtures)),
-		mosques:     make(map[string]MosqueIdentity, len(config.PairingFixtures)),
+		assignments:    make(map[string]DeviceAssignment, len(config.Assignments)),
+		snapshots:      make(map[string]snapshotRecord, len(config.Snapshots)),
+		tokens:         make(map[string]string, len(config.PairingFixtures)),
+		mosques:        make(map[string]MosqueIdentity, len(config.PairingFixtures)),
+		pairingBackend: config.PairingBackend,
+	}
+	if config.BackendTimeout < 0 || config.BackendTimeout > maximumBackendTimeout {
+		return nil, errors.New("configure pairing: backend timeout is invalid")
+	}
+	service.backendTimeout = config.BackendTimeout
+	if service.backendTimeout == 0 {
+		service.backendTimeout = defaultBackendTimeout
+	}
+	if config.PairingBackend == nil && config.BackendTimeout != 0 {
+		return nil, errors.New("configure pairing: backend timeout requires a persistent backend")
+	}
+	if config.PairingBackend != nil && len(config.PairingFixtures) > 0 {
+		return nil, errors.New("configure pairing: persistent backend and ephemeral fixtures are mutually exclusive")
+	}
+	if config.PairingBackend != nil && len(config.Assignments) > 0 {
+		return nil, errors.New("configure assignment: persistent assignments require the fleet administration store")
 	}
 	if config.PublicBaseURL != "" {
 		publicBase, err := parsePublicBaseURL(config.PublicBaseURL)
@@ -177,6 +203,12 @@ func NewService(config ServiceConfig) (*Service, error) {
 
 func (s *Service) Handler() http.Handler { return s.handler }
 
+func (s *Service) Close() {
+	if closer, ok := s.pairingBackend.(interface{ Close() }); ok {
+		closer.Close()
+	}
+}
+
 func (s *Service) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/devices/pair", s.handlePair)
@@ -188,14 +220,7 @@ func (s *Service) routes() http.Handler {
 type pairRequest struct {
 	PairingCode           string     `json:"pairing_code"`
 	InstallationPublicKey string     `json:"installation_public_key,omitempty"`
-	Device                deviceInfo `json:"device"`
-}
-
-type deviceInfo struct {
-	AppVersion   string   `json:"app_version"`
-	OSVersion    string   `json:"os_version"`
-	Model        string   `json:"model"`
-	Capabilities []string `json:"capabilities,omitempty"`
+	Device                DeviceInfo `json:"device"`
 }
 
 type pairResponse struct {
@@ -218,6 +243,36 @@ func (s *Service) handlePair(writer http.ResponseWriter, request *http.Request) 
 	var input pairRequest
 	if err := decoder.Decode(&input); err != nil || decodeEOF(decoder) != nil || !validPairRequest(input) {
 		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	if s.pairingBackend != nil {
+		requestID, err := newRequestID()
+		if err != nil {
+			writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+			return
+		}
+		backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+		defer cancel()
+		provisioning, err := s.pairingBackend.Pair(backendContext, PairingAttempt{
+			Code: input.PairingCode, InstallationPublicKey: input.InstallationPublicKey,
+			Device: cloneDeviceInfo(input.Device), SourceAddress: requestSourceAddress(request.RemoteAddr),
+			RequestID: requestID,
+		})
+		switch {
+		case err == nil:
+			writeJSON(writer, http.StatusOK, pairResponse{
+				DeviceID: provisioning.DeviceID, DeviceToken: provisioning.Token, Mosque: provisioning.Mosque,
+				ManifestURL: "/v1/devices/" + url.PathEscape(provisioning.DeviceID) + "/manifest",
+			})
+		case errors.Is(err, ErrPairingInvalid):
+			writeAPIError(writer, http.StatusBadRequest, "pairing_code_invalid", false)
+		case errors.Is(err, ErrPairingRateLimited):
+			writeAPIError(writer, http.StatusTooManyRequests, "pairing_rate_limited", true)
+		case errors.Is(err, ErrInvalidPairingRequest):
+			writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		default:
+			writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+		}
 		return
 	}
 	providedHash := sha256.Sum256([]byte(input.PairingCode))
@@ -244,7 +299,12 @@ func (s *Service) handlePair(writer http.ResponseWriter, request *http.Request) 
 
 func (s *Service) handleManifest(writer http.ResponseWriter, request *http.Request) {
 	deviceID := request.PathValue("deviceId")
-	if !s.authenticated(request, deviceID) {
+	principal, authErr := s.authenticatedDevice(request)
+	if authErr != nil {
+		writeDeviceAuthenticationError(writer, authErr)
+		return
+	}
+	if subtle.ConstantTimeCompare([]byte(principal.DeviceID), []byte(deviceID)) != 1 {
 		writeAPIError(writer, http.StatusUnauthorized, "device_unauthorized", false)
 		return
 	}
@@ -253,7 +313,11 @@ func (s *Service) handleManifest(writer http.ResponseWriter, request *http.Reque
 		writeAPIError(writer, http.StatusNotFound, "manifest_not_found", false)
 		return
 	}
-	artifact := s.snapshots[assignment.SnapshotID]
+	artifact, exists := s.snapshots[assignment.SnapshotID]
+	if !exists || artifact.mosqueID != principal.Mosque.ID || artifact.timezone != principal.Mosque.Timezone {
+		writeAPIError(writer, http.StatusNotFound, "manifest_not_found", false)
+		return
+	}
 	manifest := DeviceManifest{
 		ManifestVersion: assignment.ManifestVersion, SnapshotID: assignment.SnapshotID,
 		SnapshotURL: assignment.SnapshotURL, SnapshotSHA256: assignment.SnapshotSHA256,
@@ -278,18 +342,18 @@ func (s *Service) handleManifest(writer http.ResponseWriter, request *http.Reque
 
 func (s *Service) handleSnapshot(writer http.ResponseWriter, request *http.Request) {
 	snapshotID := request.PathValue("snapshotId")
-	deviceID, authenticated := s.authenticatedDevice(request)
-	if !authenticated {
-		writeAPIError(writer, http.StatusUnauthorized, "device_unauthorized", false)
+	principal, authErr := s.authenticatedDevice(request)
+	if authErr != nil {
+		writeDeviceAuthenticationError(writer, authErr)
 		return
 	}
-	assignment, assigned := s.assignments[deviceID]
+	assignment, assigned := s.assignments[principal.DeviceID]
 	if !assigned || assignment.SnapshotID != snapshotID {
 		writeAPIError(writer, http.StatusNotFound, "snapshot_not_found", false)
 		return
 	}
 	artifact, exists := s.snapshots[snapshotID]
-	if !exists {
+	if !exists || artifact.mosqueID != principal.Mosque.ID || artifact.timezone != principal.Mosque.Timezone {
 		writeAPIError(writer, http.StatusNotFound, "snapshot_not_found", false)
 		return
 	}
@@ -308,23 +372,31 @@ func (s *Service) handleSnapshot(writer http.ResponseWriter, request *http.Reque
 	_, _ = writer.Write(artifact.bytes)
 }
 
-func (s *Service) authenticated(request *http.Request, expectedDeviceID string) bool {
-	deviceID, ok := s.authenticatedDevice(request)
-	return ok && subtle.ConstantTimeCompare([]byte(deviceID), []byte(expectedDeviceID)) == 1
-}
-
-func (s *Service) authenticatedDevice(request *http.Request) (string, bool) {
+func (s *Service) authenticatedDevice(request *http.Request) (DevicePrincipal, error) {
 	header := request.Header.Get("Authorization")
 	if !strings.HasPrefix(header, "Bearer ") || len(header) == len("Bearer ") {
-		return "", false
+		return DevicePrincipal{}, ErrDeviceUnauthorized
 	}
 	provided := header[len("Bearer "):]
+	if s.pairingBackend != nil {
+		backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+		defer cancel()
+		return s.pairingBackend.Authenticate(backendContext, provided)
+	}
 	for deviceID, token := range s.tokens {
 		if len(provided) == len(token) && subtle.ConstantTimeCompare([]byte(provided), []byte(token)) == 1 {
-			return deviceID, true
+			return DevicePrincipal{DeviceID: deviceID, Mosque: s.mosques[deviceID]}, nil
 		}
 	}
-	return "", false
+	return DevicePrincipal{}, ErrDeviceUnauthorized
+}
+
+func writeDeviceAuthenticationError(writer http.ResponseWriter, err error) {
+	if errors.Is(err, ErrDeviceUnauthorized) {
+		writeAPIError(writer, http.StatusUnauthorized, "device_unauthorized", false)
+		return
+	}
+	writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
 }
 
 func (s *Service) validateAssignment(assignment DeviceAssignment) error {
@@ -411,20 +483,29 @@ func effectivePort(value *url.URL) string {
 }
 
 func validPairRequest(input pairRequest) bool {
-	if len(input.PairingCode) < 6 || len(input.PairingCode) > 32 || input.Device.AppVersion == "" || len(input.Device.AppVersion) > 64 || input.Device.OSVersion == "" || len(input.Device.OSVersion) > 128 || input.Device.Model == "" || len(input.Device.Model) > 240 || len(input.InstallationPublicKey) > 4096 {
+	if len(input.PairingCode) < 6 || len(input.PairingCode) > 32 || len(input.InstallationPublicKey) > 4096 || !validDeviceInfo(input.Device) {
 		return false
 	}
-	seen := make(map[string]struct{}, len(input.Device.Capabilities))
-	for _, capability := range input.Device.Capabilities {
-		if capability == "" || len(capability) > 128 {
-			return false
-		}
-		if _, duplicate := seen[capability]; duplicate {
-			return false
-		}
-		seen[capability] = struct{}{}
-	}
 	return true
+}
+
+func newRequestID() (string, error) {
+	value := make([]byte, 16)
+	if _, err := io.ReadFull(rand.Reader, value); err != nil {
+		return "", err
+	}
+	return "request-" + hex.EncodeToString(value), nil
+}
+
+func requestSourceAddress(remoteAddress string) string {
+	host, _, err := net.SplitHostPort(remoteAddress)
+	if err == nil && net.ParseIP(host) != nil {
+		return host
+	}
+	if parsed := net.ParseIP(remoteAddress); parsed != nil {
+		return parsed.String()
+	}
+	return "unresolved-source"
 }
 
 func validIdentifier(value string) bool { return len(value) >= 8 && len(value) <= 128 }

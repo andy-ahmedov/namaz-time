@@ -3,7 +3,9 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/ed25519"
+	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
@@ -44,6 +46,7 @@ func run(args []string, stderr io.Writer) error {
 	if err != nil {
 		return err
 	}
+	defer service.Close()
 	server := &http.Server{
 		Addr:              *listenAddress,
 		Handler:           service.Handler(),
@@ -60,12 +63,24 @@ func run(args []string, stderr io.Writer) error {
 }
 
 type runtimeConfig struct {
-	PublicBaseURL         string                     `json:"public_base_url"`
-	PairingFixtureMode    string                     `json:"pairing_fixture_mode"`
-	TrustedPublicKeyFiles []string                   `json:"trusted_public_key_files"`
-	PairingFixtures       []runtimePairingFixture    `json:"pairing_fixtures"`
-	Snapshots             []runtimeSnapshot          `json:"snapshots"`
-	Assignments           []devices.DeviceAssignment `json:"assignments"`
+	PublicBaseURL                string                     `json:"public_base_url"`
+	PairingFixtureMode           string                     `json:"pairing_fixture_mode"`
+	PairingBackend               string                     `json:"pairing_backend"`
+	DatabaseURLEnv               string                     `json:"database_url_env"`
+	PairingRateLimitKeyEnv       string                     `json:"pairing_rate_limit_key_env"`
+	PairingRateLimits            runtimePairingRateLimits   `json:"pairing_rate_limits"`
+	PairingBackendTimeoutSeconds int64                      `json:"pairing_backend_timeout_seconds"`
+	TrustedPublicKeyFiles        []string                   `json:"trusted_public_key_files"`
+	PairingFixtures              []runtimePairingFixture    `json:"pairing_fixtures"`
+	Snapshots                    []runtimeSnapshot          `json:"snapshots"`
+	Assignments                  []devices.DeviceAssignment `json:"assignments"`
+}
+
+type runtimePairingRateLimits struct {
+	WindowSeconds  int64 `json:"window_seconds"`
+	SourceAttempts int   `json:"source_attempts"`
+	DeviceAttempts int   `json:"device_attempts"`
+	CodeAttempts   int   `json:"code_attempts"`
 }
 
 type runtimePairingFixture struct {
@@ -121,6 +136,9 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 	if len(config.PairingFixtures) == 0 && config.PairingFixtureMode != "" {
 		return nil, errors.New("pairing fixture mode is set without fixtures")
 	}
+	if len(config.PairingFixtures) > 0 && config.PairingBackend != "" {
+		return nil, errors.New("pairing fixtures and production backend are mutually exclusive")
+	}
 	baseDirectory := filepath.Dir(absoluteConfig)
 	trustedKeys := make(map[string]ed25519.PublicKey, len(config.TrustedPublicKeyFiles))
 	for _, relativePath := range config.TrustedPublicKeyFiles {
@@ -160,17 +178,86 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 			Code: fixture.Code, DeviceID: fixture.DeviceID, Token: fixture.Token, Mosque: fixture.Mosque,
 		}
 	}
+	var pairingBackend devices.PairingBackend
+	if config.PairingBackend == "postgres" {
+		if len(config.PairingFixtures) > 0 || config.PairingFixtureMode != "" || len(config.Assignments) > 0 {
+			return nil, errors.New("PostgreSQL pairing cannot use ephemeral fixtures or static device assignments")
+		}
+		if !validEnvironmentName(config.DatabaseURLEnv) || !validEnvironmentName(config.PairingRateLimitKeyEnv) {
+			return nil, errors.New("PostgreSQL pairing environment variable names are invalid")
+		}
+		databaseURL, exists := os.LookupEnv(config.DatabaseURLEnv)
+		if !exists || strings.TrimSpace(databaseURL) == "" {
+			return nil, errors.New("PostgreSQL pairing database environment variable is not set")
+		}
+		encodedRateKey, exists := os.LookupEnv(config.PairingRateLimitKeyEnv)
+		if !exists {
+			return nil, errors.New("PostgreSQL pairing rate-limit key environment variable is not set")
+		}
+		rateKey, err := base64.StdEncoding.DecodeString(encodedRateKey)
+		if err != nil || len(rateKey) != sha256.Size {
+			return nil, errors.New("PostgreSQL pairing rate-limit key must be base64 for exactly 32 bytes")
+		}
+		limits := devices.PairingRateLimits{
+			Window:         time.Duration(config.PairingRateLimits.WindowSeconds) * time.Second,
+			SourceAttempts: config.PairingRateLimits.SourceAttempts,
+			DeviceAttempts: config.PairingRateLimits.DeviceAttempts,
+			CodeAttempts:   config.PairingRateLimits.CodeAttempts,
+		}
+		if config.PairingBackendTimeoutSeconds < 0 || config.PairingBackendTimeoutSeconds > 30 {
+			return nil, errors.New("PostgreSQL pairing backend timeout must be zero for the default or at most 30 seconds")
+		}
+		openContext, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		repository, err := devices.OpenPostgresPairingRepository(openContext, databaseURL)
+		if err != nil {
+			return nil, err
+		}
+		if err := repository.MigrateUp(openContext); err != nil {
+			repository.Close()
+			return nil, err
+		}
+		manager, err := devices.NewPairingManager(devices.PairingManagerConfig{
+			Repository: repository, RateLimitKey: rateKey, RateLimits: limits,
+		})
+		if err != nil {
+			repository.Close()
+			return nil, err
+		}
+		pairingBackend = manager
+	} else if config.PairingBackend != "" {
+		return nil, errors.New("unsupported pairing backend")
+	} else if config.DatabaseURLEnv != "" || config.PairingRateLimitKeyEnv != "" || config.PairingRateLimits != (runtimePairingRateLimits{}) || config.PairingBackendTimeoutSeconds != 0 {
+		return nil, errors.New("PostgreSQL pairing settings require pairing_backend postgres")
+	}
 	service, err := devices.NewService(devices.ServiceConfig{
 		PublicBaseURL:     config.PublicBaseURL,
 		PairingFixtures:   pairings,
+		PairingBackend:    pairingBackend,
+		BackendTimeout:    time.Duration(config.PairingBackendTimeoutSeconds) * time.Second,
 		Assignments:       config.Assignments,
 		Snapshots:         snapshots,
 		TrustedPublicKeys: trustedKeys,
 	})
 	if err != nil {
+		if closer, ok := pairingBackend.(interface{ Close() }); ok {
+			closer.Close()
+		}
 		return nil, fmt.Errorf("configure device service: %w", err)
 	}
 	return service, nil
+}
+
+func validEnvironmentName(value string) bool {
+	if len(value) < 1 || len(value) > 128 || value[0] < 'A' || value[0] > 'Z' {
+		return false
+	}
+	for _, character := range value[1:] {
+		if (character < 'A' || character > 'Z') && (character < '0' || character > '9') && character != '_' {
+			return false
+		}
+	}
+	return true
 }
 
 func readContainedRegularFile(baseDirectory, relativePath string, maximumSize int64) ([]byte, error) {

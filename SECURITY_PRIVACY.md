@@ -64,6 +64,26 @@ cannot reference symlinks or files outside its directory. Its T009 pairing
 issuer is explicitly process-local and test-only, not the persistent expiring/
 rate-limited production issuer required by this section.
 
+T011's production issuer uses 128 bits of CSPRNG entropy for the short-lived
+Base32 code and 256 bits for the Base64url bearer token. PostgreSQL retains only
+32-byte SHA-256 verifiers. Code redemption, device activation and audit append
+are one row-locked transaction; invalid, expired, used and revoked states share
+one public response. HMAC-SHA-256 attempt buckets cover code, normalized device
+metadata/public key and the direct peer address without storing those raw
+values. The HMAC key and database URL are injected through named environment
+variables and are never accepted as literal JSON config fields.
+
+Remote PostgreSQL connections fail closed unless TLS authenticates the server;
+plaintext is limited to loopback/Unix-socket development. Pair/auth database
+work is request-deadline bounded. Audit triggers reject update, delete and
+truncate, while deployment must additionally keep the runtime database role
+from owning or altering the schema.
+
+The composite device/mosque database key and service-layer scoped revocation
+provide defense in depth. T011 has no admin HTTP issuer, so it does not imply
+an authenticated operator model; T012 must add role/membership checks before
+these internal issuance/revocation commands become remotely callable.
+
 ## Admin authorization
 
 Roles:

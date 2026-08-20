@@ -33,6 +33,7 @@ make docs-check
 make test-go
 make test-contracts
 make test-android-unit
+make test-postgres
 make lint
 ```
 
@@ -46,6 +47,11 @@ binding, last-known-good preservation and at least one durable interruption
 boundary. WorkManager is pinned to stable `2.11.2`; dependency/permission
 changes require an updated threat review. Never add a fixture token, private
 signing key or production trust anchor to Gradle resources, APK assets or Git.
+
+Fleet/pairing changes also run `make test-postgres`. It starts a disposable
+local PostgreSQL 18 container, runs migration/restart/concurrency/isolation
+tests and removes the container. Never replace this evidence with a SQL mock
+when changing credential consumption or mosque scoping.
 
 `make test-android-unit` includes the Robolectric Compose focus test. Commit
 Room schema exports under `apps/tv-android/schemas/` whenever the schema changes;

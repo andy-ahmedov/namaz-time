@@ -205,6 +205,30 @@ reduced-motion default, use a single Preferences DataStore instance. Schedule
 data never moves into DataStore, and the Compose shell contains no network
 client.
 
+### Production pairing foundation (T011)
+
+T011 introduces the independent production pairing foundation without
+unblocking T010. PostgreSQL owns mosque, pending/active/revoked device,
+one-time-code, rate-bucket and append-only audit state. The Go pairing manager
+generates high-entropy code/token material but repository commands carry only
+SHA-256/HMAC values. Redemption locks one code/device row and atomically commits
+rate accounting, single use, device metadata/token verifier and audit evidence;
+concurrent requests therefore have one winner even across API processes.
+
+The database enforces `(device_id, mosque_id)` as a composite foreign-key
+boundary, while service commands scope revocation by the same pair. Runtime
+configuration contains environment-variable names rather than database/HMAC
+secrets. Persistent snapshot assignments and role-authorized code issuance are
+deliberately deferred to T012, so a paired but unassigned device fails stale-
+but-correct with a manifest `404`.
+
+Handler-to-database calls have a bounded context deadline; PostgreSQL lock waits
+are cancelled without consuming the code or activating the device. Transaction
+cleanup also uses a bounded rollback context. Migration triggers reject audit
+row update/delete and table truncation under the runtime database principal;
+production deployment should still separate the migration owner from a
+least-privileged runtime role because an owner can alter its own triggers.
+
 ## Source ingestion pipeline
 
 1. **Retrieve or import.** Store raw bytes unchanged when terms permit, otherwise store immutable metadata plus an approved fixture.

@@ -153,6 +153,23 @@ These are proposals until accepted by the product owner:
 - `CONFIRMED_RUNTIME` is not claimed for WorkManager/OEM process behavior or a
   physical TV; evidence is local Go/JVM/Robolectric plus file-backed DB reopen.
 
+## T011 production-pairing record
+
+- `PROPOSAL` — production pairing state uses PostgreSQL migration v1 with
+  pending/active/revoked devices, one-use code records, persistent HMAC rate
+  buckets and append-only audit events.
+- `PROPOSAL` — code/token plaintext exists only at issuance/redemption output;
+  repository commands and rows carry SHA-256 verifiers. Code, device and direct
+  peer rate identities use HMAC-SHA-256 under a runtime-only key.
+- `PROPOSAL` — `(device_id, mosque_id)` is a composite database foreign key and
+  revocation requires the same pair at the service/store boundary.
+- `PROPOSAL` — T011 does not expose an unauthenticated admin shortcut. T012 must
+  define actors/roles/memberships and authorized issue/revoke/read endpoints.
+- `CONFIRMED_RUNTIME` — restart, migration, concurrent single-winner, expiry,
+  independent rate buckets, revocation and audit immutability were reproduced
+  locally against a disposable PostgreSQL 18 container. This label applies to
+  the controlled backend test only, not a deployed service or physical TV.
+
 ## Decision template
 
 ```text

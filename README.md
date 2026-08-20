@@ -116,5 +116,11 @@ activate/rollback с file-backed process-interruption тестами. Ни test 
 private/production signing key в APK/Git не встроены; T010 заблокирован на
 D-002, полном годовом источнике, D-013 и
 физическом canary/rollback drill.
+T011 добавляет независимое PostgreSQL-хранилище production pairing: случайные
+одноразовые коды и device tokens, только hash/HMAC at rest, expiry/rate limits,
+атомарный single-use redeem, revocation, mosque-scoped composite constraints и
+append-only audit. Реальные container tests проверяют concurrency и restart.
+Авторизованная выдача кодов и persistent assignment API остаются отдельным
+T012; наличие T011 не снимает блокировку T010.
 Runtime-проверка на физическом Android TV/box ещё не выполнена и не
 подменяется Robolectric-тестом.

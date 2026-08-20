@@ -65,8 +65,14 @@ Exit condition: a source change cannot reach a TV without validation, approval, 
 
 ## Phase 3 — remote administration and fleet operations
 
-- pairing code flow;
-- role-based admin and mosque isolation;
+| Task | Status | Acceptance / evidence |
+|---|---|---|
+| T011 production pairing persistence | DONE | PostgreSQL-backed, restart-safe pairing lifecycle with hashed one-time secrets, expiry/attempt/rate controls, revocation, mosque suspension/isolation, verified remote TLS, bounded backend/rollback contexts, future-migration fail-close, update/delete/truncate-resistant audit and real database concurrency/restart/lock-cancellation tests; independent of blocked T010 |
+| T012 role-based fleet administration and mosque isolation | TODO | authenticated actors, roles/memberships, scoped issue/revoke/read/assignment API, idempotency and audit binding on the T011 durable store |
+| T012 role-based fleet administration and mosque isolation | TODO | authenticated admin actors/memberships, scoped issue/revoke/read API, idempotency/audit and cross-mosque denial tests |
+
+Following fleet work after T012:
+
 - device heartbeat and diagnostics;
 - remote iqamah/Jumu'ah rules;
 - QR and announcement campaigns;

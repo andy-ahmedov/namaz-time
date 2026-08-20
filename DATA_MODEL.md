@@ -273,6 +273,10 @@ last_seen_at
 status
 ```
 
+T011 persists the pairing subset first. Device lifecycle is `pending` →
+`active` → `revoked`; only an active row may contain a 32-byte `token_hash`,
+and the plaintext bearer credential is returned once and never stored.
+
 ### TV sync checkpoint (local file)
 
 Transport state is not schedule authority and therefore stays outside Room:
@@ -297,11 +301,33 @@ Hash short-lived codes; never store plaintext after issue.
 
 ```text
 id
+device_id
 code_hash
 expires_at
 max_uses
-used_at
-target_mosque_id
+uses_count
+consumed_at
+revoked_at
+mosque_id
+issued_by_actor_id
+created_at
+```
+
+`(device_id, mosque_id)` is a composite foreign key to the device scope.
+T011 fixes `max_uses` to one and bounds issuance lifetime to 1–15 minutes.
+
+### `pairing_rate_bucket`
+
+Persistent privacy-safe rate state. Bucket values are HMAC-SHA-256 under a
+runtime-only 32-byte key; raw network addresses, submitted codes and device
+fingerprints are not stored.
+
+```text
+bucket_kind (code / device / source)
+bucket_hash
+window_started_at
+attempts
+updated_at
 ```
 
 ### `audit_event`
@@ -321,6 +347,12 @@ after_hash
 reason
 request_id
 ```
+
+T011 database triggers reject row update/delete and table truncate. Issue, successful
+redeem and revoke records bind actor, mosque, entity, request/reason and
+before/after hashes where applicable. The deployment must use a least-privileged
+runtime role distinct from the migration owner; a table owner can otherwise
+alter the enforcement trigger.
 
 ## Publication transaction
 

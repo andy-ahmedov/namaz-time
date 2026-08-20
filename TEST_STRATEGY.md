@@ -182,6 +182,16 @@ close/reopen after interruption inside import and after activation commit but
 before checkpoint finalization; both preserve last-known-good and resume the
 durable stage without a second download.
 
+T011 adds a Docker-backed PostgreSQL 18 gate. It applies the real up/down
+migration, rejects a cross-mosque device/code relation, proves digest-only
+secret storage, expiry and independent code/device/source buckets, observes one
+winner under concurrent redemption, restarts the API/pool, rejects reuse,
+authenticates the durable token, scopes revocation and verifies the audit table
+rejects update/delete/truncate. It also holds a real row lock past the request
+deadline and proves cancellation leaves the code/device unchanged. Normal
+`go test ./...` remains container-independent;
+`make test-postgres` is the explicit integration gate.
+
 ## Release evidence
 
 Each release records:
