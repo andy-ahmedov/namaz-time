@@ -83,6 +83,12 @@ platform/        boot, keep-screen-on, clock/network diagnostics
 
 Composables only observe local state. A network response never directly mutates what is visible; it first passes signature/schema/domain validation and an atomic activation transaction.
 
+The T018 display route owns a Compose `DisposableEffect` that sets the host
+view's `keepScreenOn` flag and restores its prior value when that route leaves
+composition. The unavailable/recovery projection is still display mode;
+settings and background sync do not hold this flag. This uses the platform view
+hint, not a wake lock, and adds no permission.
+
 ### Android local baseline (T003–T004)
 
 Room schema version 1 stores immutable snapshot provenance/integrity metadata,
@@ -459,7 +465,10 @@ The TV downloads an asset to staging, validates type/dimensions/hash, then activ
 
 ## Autostart and kiosk modes
 
-- **Consumer/best-effort mode:** boot receiver, vendor setting guidance, keep-screen-on and process recovery. Behavior varies by OEM.
+- **Consumer/best-effort mode:** boot receiver, vendor setting guidance,
+  display-route-only `keepScreenOn` and process recovery. Behavior varies by
+  OEM; local lifecycle coverage is not proof that a particular television will
+  ignore its own power policy.
 - **Managed mode:** device owner/DPC or compatible EMM, app allowlisted for lock task and optionally configured as Home. This is the reliable digital-signage path.
 
 Treat the modes as separate capabilities and test matrices.

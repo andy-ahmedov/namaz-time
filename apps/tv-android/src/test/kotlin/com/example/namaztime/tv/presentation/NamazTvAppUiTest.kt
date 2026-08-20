@@ -1,7 +1,9 @@
 package com.example.namaztime.tv.presentation
 
+import android.view.View
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
@@ -36,6 +38,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
 import org.junit.Rule
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -67,6 +71,30 @@ class NamazTvAppUiTest {
         }
 
         compose.onNodeWithText("Настройки").assertIsFocused()
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun screenOnFlagFollowsDisplayNavigationLifecycle() {
+        lateinit var hostView: View
+        compose.setContent {
+            hostView = LocalView.current
+            NamazTvApp(FakeOperatorPreferencesRepository())
+        }
+
+        compose.runOnIdle { assertTrue(hostView.keepScreenOn) }
+        compose.onNodeWithText("Настройки").performKeyInput { pressKey(Key.Enter) }
+        compose.onNodeWithTag(SETTINGS_SHELL_TAG).assertIsDisplayed()
+        compose.runOnIdle { assertFalse(hostView.keepScreenOn) }
+
+        compose.onNodeWithTag(SettingsDestination.initial.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+        }
+        compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG).performKeyInput {
+            pressKey(Key.Enter)
+        }
+        compose.onNodeWithTag(DISPLAY_UNAVAILABLE_TAG).assertIsDisplayed()
+        compose.runOnIdle { assertTrue(hostView.keepScreenOn) }
     }
 
     @Test

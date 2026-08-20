@@ -119,6 +119,12 @@ environment under both default and native graphics, so no pixel-level
 screenshot evidence is claimed at this checkpoint. Physical-TV and any future
 instrumented screenshot review remain separate release evidence.
 
+T018 adds a Compose navigation lifecycle regression: the host view is marked
+screen-on in display mode, released in settings and marked again after D-pad
+return. A disposal regression also preserves a pre-existing host flag. This is
+local lifecycle evidence only; OEM power-management behavior remains in the
+physical device matrix.
+
 ## Physical device tests
 
 Required before pilot:

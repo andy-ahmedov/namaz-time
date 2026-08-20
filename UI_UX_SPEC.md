@@ -9,6 +9,8 @@
 - settings must not cover the main display with tiny desktop-style forms;
 - 720p, 1080p and 4K layouts must preserve hierarchy;
 - animations are subtle and optional; no distracting looping motion.
+- the screen-on hint is active only in public display mode (including its safe
+  unavailable state), and is released while settings are active.
 
 ## Main screen information hierarchy
 

@@ -253,3 +253,27 @@ explicit dark TV Material color/shape theme, an original code-drawn offline
 background, reusable panels and one responsive safe-frame component shared by
 display, settings and recovery UI. The reference file remains an untracked
 product-owner input and is not an Android or repository asset.
+
+## T018 — display-only screen-on lifecycle
+
+**Goal:** keep a dedicated prayer display awake while its public display route
+is active without making settings, background work or the whole process hold
+the screen on.
+
+**In scope:** a lifecycle-bound Compose effect on the display route (including
+its bounded unavailable/recovery state); restoration of the host view's prior
+`keepScreenOn` value on route disposal; D-pad navigation regression proving the
+flag is set on display, cleared in settings and restored on return; no Android
+permission or network dependency.
+
+**Non-goals:** wake locks, managed kiosk/device-owner behavior, OEM boot/relaunch
+promises, burn-in mitigation policy, D-011, physical-TV/ADB evidence or Phase 5.
+
+**Acceptance:** a deterministic local Compose test covers the complete
+display → settings → display transition, the manifest gains no permission, and
+Android unit/build plus repository-wide gates pass. Physical power-management
+behavior remains deferred to the Phase 4 device matrix.
+
+**Result:** completed locally on 2026-08-20. A display-route disposable effect
+preserves the host view's prior flag, and SDK 28/35 tests cover settings release,
+display return and pre-existing flag restoration. The manifest is unchanged.

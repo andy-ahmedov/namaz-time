@@ -157,6 +157,7 @@ private fun DisplayRoute(
     qrCodeGenerator: QrCodeGenerator,
     onOpenSettings: () -> Unit,
 ) {
+    DisplayKeepAwakeEffect()
     if (schedule != null) {
         val engine = remember { PrayerTimeEngine() }
         val timeInput = remember(schedule) { schedule.toTimeEngineInput() }

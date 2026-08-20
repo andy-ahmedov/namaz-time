@@ -281,6 +281,18 @@ These are proposals until accepted by the product owner:
   QR scan distance remain deferred acceptance evidence; local tests are not
   promoted to `CONFIRMED_RUNTIME`.
 
+## T018 display screen-on record
+
+- `PROPOSAL` — public display mode, including its safe unavailable projection,
+  sets only the host Compose view's `keepScreenOn` hint. Leaving the route
+  restores the prior flag, so settings and background work do not extend the
+  screen-on lifetime.
+- `PROPOSAL` — T018 adds no wake lock, Android permission, kiosk mode or boot
+  guarantee; those would require separate power/threat/deployment decisions.
+- `UNKNOWN` — whether a selected pilot television honors the view hint across
+  its vendor sleep, energy-saving and process policies remains part of the
+  deferred D-004/D-011 physical matrix.
+
 ## Decision template
 
 ```text
