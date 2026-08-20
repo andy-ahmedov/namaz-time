@@ -46,9 +46,11 @@ import androidx.tv.material3.Button
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.example.namaztime.tv.R
+import com.example.namaztime.tv.domain.PrayerTimeResolution
 import com.example.namaztime.tv.repository.LocalPrayerDay
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -57,6 +59,7 @@ const val MAIN_DISPLAY_SETTINGS_TAG = "main-display-settings"
 const val PRAYER_ROW_TEST_TAG_PREFIX = "prayer-row-"
 const val MOSQUE_NAME_TEST_TAG = "mosque-name"
 const val COUNTDOWN_TEST_TAG = "next-prayer-countdown"
+const val JUMUAH_SESSION_TEST_TAG_PREFIX = "jumuah-session-"
 
 internal enum class IqamahPresentation(val spokenValue: String) {
     MISSING("не указана"),
@@ -69,6 +72,7 @@ internal data class PrayerDisplayRow(
     val adhan: String,
     val iqamah: String? = null,
     val iqamahPresentation: IqamahPresentation = IqamahPresentation.MISSING,
+    val isNextEvent: Boolean = false,
 )
 
 internal data class PrayerDisplayUiState(
@@ -81,7 +85,13 @@ internal data class PrayerDisplayUiState(
     val sourceLabel: String,
     val sourceDescription: String,
     val supportCode: String? = null,
+    val jumuahSessions: List<JumuahDisplaySession> = emptyList(),
     val rows: List<PrayerDisplayRow>,
+)
+
+internal data class JumuahDisplaySession(
+    val id: String,
+    val text: String,
 )
 
 @Composable
@@ -130,6 +140,32 @@ internal fun MainPrayerDisplay(
             )
             Spacer(Modifier.height(metrics.sectionGap))
             DisplayStatusRow(state = state, metrics = metrics)
+            if (state.jumuahSessions.isNotEmpty()) {
+                Spacer(Modifier.height(metrics.sectionGap / 2))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(metrics.sectionGap / 2),
+                ) {
+                    state.jumuahSessions.forEach { session ->
+                        Text(
+                            text = session.text,
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag("$JUMUAH_SESSION_TEST_TAG_PREFIX${session.id}")
+                                .background(
+                                    Color(0xFFDBB96A).copy(alpha = 0.14f),
+                                    RoundedCornerShape(10.dp),
+                                )
+                                .padding(horizontal = metrics.cellPadding, vertical = 4.dp),
+                            color = Color(0xFFFFE3A0),
+                            fontSize = metrics.secondarySize,
+                            textAlign = TextAlign.Center,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+            }
             Spacer(Modifier.height(metrics.sectionGap))
             PrayerGrid(
                 rows = state.rows,
@@ -322,12 +358,17 @@ private fun PrayerGrid(
                     .fillMaxWidth()
                     .testTag("$PRAYER_ROW_TEST_TAG_PREFIX${row.id}")
                     .background(
-                        if (index % 2 == 0) Color.White.copy(alpha = 0.045f) else Color.Transparent,
+                        when {
+                            row.isNextEvent -> Color(0xFFDBB96A).copy(alpha = 0.20f)
+                            index % 2 == 0 -> Color.White.copy(alpha = 0.045f)
+                            else -> Color.Transparent
+                        },
                         RoundedCornerShape(10.dp),
                     )
                     .semantics(mergeDescendants = true) {
                         contentDescription =
-                            "${row.label}, азан ${row.adhan}, икамат $spokenIqamah"
+                            "${row.label}, азан ${row.adhan}, икамат $spokenIqamah" +
+                                if (row.isNextEvent) ", следующее событие" else ""
                     },
             )
         }
@@ -375,15 +416,14 @@ private fun RowScope.GridText(
 }
 
 internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
-    selectedLocalDate: String,
+    resolution: PrayerTimeResolution.Available,
 ): PrayerDisplayUiState {
-    val day = requireNotNull(days.firstOrNull { it.localDate == selectedLocalDate }) {
-        "selected date is outside the local snapshot"
+    val day = requireNotNull(days.firstOrNull { it.localDate == resolution.localDate.toString() }) {
+        "resolved date is outside the local snapshot"
     }
-    val date = runCatching { LocalDate.parse(day.localDate) }.getOrNull()
-    val dateLabel = date?.format(
+    val dateLabel = resolution.localDate.format(
         DateTimeFormatter.ofPattern("d MMMM yyyy", Locale.forLanguageTag("ru")),
-    ) ?: day.localDate
+    )
     val sourceLabel = when {
         diagnostics == null -> "ИСТОЧНИК НЕ ПРОВЕРЕН"
         diagnostics.approvalStatus != "approved" -> "НЕ ОДОБРЕНО"
@@ -395,29 +435,66 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
         mosqueName = mosqueName,
         location = locality,
         dateLabel = dateLabel,
-        mosqueLocalTime = "—:—",
-        nextPrayerLabel = "Ожидание расчёта",
-        countdown = "—:——:——",
+        mosqueLocalTime = resolution.localTime.format(CLOCK_FORMAT),
+        nextPrayerLabel = resolution.nextEvent?.let { event ->
+            event.label + if (event.localDate != resolution.localDate) " · завтра" else ""
+        } ?: "Нет будущего события",
+        countdown = resolution.countdownSeconds?.let(::formatCountdown) ?: "—:——:——",
         sourceLabel = sourceLabel,
         sourceDescription = authorityName,
         supportCode = null,
-        rows = day.toDisplayRows(),
+        jumuahSessions = resolution.jumuahSessions.map { session ->
+            JumuahDisplaySession(
+                id = session.id,
+                text = "${session.label} ${session.salahTime.format(PRAYER_TIME_FORMAT)}",
+            )
+        },
+        rows = day.toDisplayRows(resolution),
     )
 }
 
-private fun LocalPrayerDay.toDisplayRows(): List<PrayerDisplayRow> = listOf(
-    PrayerDisplayRow("fajr", "Фаджр", fajr),
+private fun LocalPrayerDay.toDisplayRows(
+    resolution: PrayerTimeResolution.Available,
+): List<PrayerDisplayRow> = listOf(
+    prayerRow("fajr", "Фаджр", fajr, resolution),
     PrayerDisplayRow(
         "sunrise",
         "Восход",
         sunrise,
         iqamahPresentation = IqamahPresentation.NOT_APPLICABLE,
+        isNextEvent = resolution.isCurrentDateNextPrayer("sunrise"),
     ),
-    PrayerDisplayRow("dhuhr", "Зухр", dhuhr),
-    PrayerDisplayRow("asr", "Аср", asr),
-    PrayerDisplayRow("maghrib", "Магриб", maghrib),
-    PrayerDisplayRow("isha", "Иша", isha),
+    prayerRow("dhuhr", "Зухр", dhuhr, resolution),
+    prayerRow("asr", "Аср", asr, resolution),
+    prayerRow("maghrib", "Магриб", maghrib, resolution),
+    prayerRow("isha", "Иша", isha, resolution),
 )
+
+private fun prayerRow(
+    id: String,
+    label: String,
+    adhan: String,
+    resolution: PrayerTimeResolution.Available,
+): PrayerDisplayRow = PrayerDisplayRow(
+    id = id,
+    label = label,
+    adhan = adhan,
+    iqamah = resolution.prayers[id]?.iqamah?.format(PRAYER_TIME_FORMAT),
+    isNextEvent = resolution.isCurrentDateNextPrayer(id),
+)
+
+private fun PrayerTimeResolution.Available.isCurrentDateNextPrayer(prayer: String): Boolean =
+    nextEvent?.prayer == prayer && nextEvent.localDate == localDate
+
+private fun formatCountdown(seconds: Long): String {
+    val hours = seconds / 3_600
+    val minutes = seconds % 3_600 / 60
+    val remainingSeconds = seconds % 60
+    return "%02d:%02d:%02d".format(Locale.ROOT, hours, minutes, remainingSeconds)
+}
+
+private val CLOCK_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ROOT)
+private val PRAYER_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
 
 private data class MainDisplayMetrics(
     val outerPadding: Dp,

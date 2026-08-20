@@ -95,6 +95,33 @@ interface SnapshotDao {
 
     @Query(
         """
+        SELECT * FROM iqamah_rules
+        WHERE snapshotId = :snapshotId
+        ORDER BY priority DESC, ruleId ASC
+        """,
+    )
+    fun observeIqamahRules(snapshotId: String): Flow<List<IqamahRuleEntity>>
+
+    @Query(
+        """
+        SELECT * FROM iqamah_date_overrides
+        WHERE snapshotId = :snapshotId
+        ORDER BY localDate ASC, prayer ASC
+        """,
+    )
+    fun observeIqamahOverrides(snapshotId: String): Flow<List<IqamahDateOverrideEntity>>
+
+    @Query(
+        """
+        SELECT * FROM jumuah_sessions
+        WHERE snapshotId = :snapshotId
+        ORDER BY validFrom ASC, salahTime ASC, sessionId ASC
+        """,
+    )
+    fun observeJumuahSessions(snapshotId: String): Flow<List<JumuahSessionEntity>>
+
+    @Query(
+        """
         SELECT * FROM prayer_days
         WHERE snapshotId = :snapshotId
         ORDER BY localDate ASC

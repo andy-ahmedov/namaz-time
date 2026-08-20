@@ -118,17 +118,28 @@ T005 replaces the launch placeholder with a responsive, built-in offline main
 display. It renders the six daily adhan rows from immutable Room-backed local
 state and keeps iqamah in its own column: sunrise is explicitly not applicable,
 while unresolved mosque-local iqamah remains unset. Synthetic classification
-is visible and never described as official. Schedule date, mosque clock and
-next-event fields are explicit presentation state; T005 leaves the clock and
-next-event values as placeholders until T006 supplies the timezone-aware time
-engine. The only focusable display action opens settings and has explicit
+is visible and never described as official. The only focusable display action
+opens settings and has explicit
 initial focus across the tested 720p, 1080p and 4K density profiles.
-Until T006 selects mosque-today, the integrated T005 preview explicitly selects
-`coverage_from`; the display mapper never silently chooses an arbitrary list
-element. Source state fails conservatively: synthetic, calculated, unapproved
+Source state fails conservatively: synthetic, calculated, unapproved
 and not-yet-authenticity-verified production data receive distinct labels.
 Countdown uses a fixed-width monospaced region so the T006 ticker cannot shift
 the status layout.
+
+T006 adds a source-independent time engine and an injected UTC clock. Each
+instant is converted at the domain boundary with the mosque's named IANA zone;
+device timezone and locale never select the displayed schedule date. The
+engine resolves exact-date iqamah overrides before the single highest-priority
+matching date-range/weekday rule, preserves an unset result, rejects ambiguous
+top-priority rules and rejects offsets that cross the mosque-local date.
+Sunrise is excluded from the main countdown by an explicit default policy.
+Adhan, resolved iqamah and active Friday Jumu'ah salah sessions participate as
+separate events, and the next day's Fajr is considered after the final event.
+Jumu'ah sessions are displayed separately and never mutate the Dhuhr row.
+Nonexistent or ambiguous DST wall times, invalid daily ordering/rule state and
+dates outside local coverage produce bounded diagnostics. The full time model is validated before Room activation
+and again when an immutable local snapshot reaches the display; per-second
+ticks then resolve only from that local state.
 
 Small operator UI preferences, including the last focused settings section and
 reduced-motion default, use a single Preferences DataStore instance. Schedule

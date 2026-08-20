@@ -80,6 +80,24 @@ These are proposals until accepted by the product owner:
   720p/1080p/4K evidence is Robolectric UI coverage, while physical-TV
   visibility and overscan remain D-004 acceptance work.
 
+## T006 time-engine record
+
+- `PROPOSAL` — the main countdown excludes sunrise by default and includes
+  adhan, explicitly resolved iqamah, Friday Jumu'ah salah and next-day Fajr.
+  This is a visible policy, not a change to stored source rows.
+- `PROPOSAL` — an equal highest-priority iqamah-rule match fails closed instead
+  of selecting by incidental storage order; an exact-date override remains
+  authoritative over every range/weekday rule.
+- `PROPOSAL` — nonexistent and ambiguous DST wall times both fail closed. The
+  snapshot contract has no fold/offset evidence, so the client does not guess
+  which occurrence a source intended during a fall-back overlap.
+- `UNKNOWN` — D-009 remains open for the pilot's actual iqamah and Jumu'ah
+  values. T006 supports explicit fixed/offset rules and sessions but creates no
+  mosque policy or missing value by inference.
+- `CONFIRMED_RUNTIME` is not claimed for wall-clock behavior on a television;
+  current evidence is deterministic JVM/Robolectric execution with injected
+  clocks and named timezone databases.
+
 ## Decision template
 
 ```text

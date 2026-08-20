@@ -2,6 +2,13 @@ package com.example.namaztime.tv.data.local
 
 import androidx.room.withTransaction
 import com.example.namaztime.tv.data.snapshot.SnapshotPayload
+import com.example.namaztime.tv.domain.IqamahDateOverrideInput
+import com.example.namaztime.tv.domain.IqamahRuleInput
+import com.example.namaztime.tv.domain.JumuahSessionInput
+import com.example.namaztime.tv.domain.PrayerDayInput
+import com.example.namaztime.tv.domain.PrayerScheduleInput
+import com.example.namaztime.tv.domain.PrayerTimeEngine
+import java.util.Locale
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
@@ -23,9 +30,13 @@ class SnapshotImportException(val code: String) : IllegalStateException(code)
 class SnapshotImporter(
     private val database: NamazDatabase,
     private val beforeActivation: BeforeSnapshotActivation = BeforeSnapshotActivation {},
+    private val timeEngine: PrayerTimeEngine = PrayerTimeEngine(),
 ) {
-    suspend fun importAndActivate(snapshot: SnapshotPayload): SnapshotImportResult =
-        database.withTransaction {
+    suspend fun importAndActivate(snapshot: SnapshotPayload): SnapshotImportResult {
+        timeEngine.validate(snapshot.toTimeEngineInput())?.let { code ->
+            throw SnapshotImportException("time_engine_${code.lowercase(Locale.ROOT)}")
+        }
+        return database.withTransaction {
             val dao = database.snapshotDao()
             val selection = dao.getSelection()
             if (dao.snapshotExists(snapshot.snapshotId)) {
@@ -117,7 +128,55 @@ class SnapshotImporter(
             )
             SnapshotImportResult.Activated(snapshot.snapshotId, previous)
         }
+    }
 }
+
+private fun SnapshotPayload.toTimeEngineInput() = PrayerScheduleInput(
+    timezoneId = mosque.timezone,
+    days = prayerDays.map { day ->
+        PrayerDayInput(
+            localDate = day.date,
+            fajr = day.fajr,
+            sunrise = day.sunrise,
+            dhuhr = day.dhuhr,
+            asr = day.asr,
+            maghrib = day.maghrib,
+            isha = day.isha,
+        )
+    },
+    iqamahRules = iqamahRules.map { rule ->
+        IqamahRuleInput(
+            id = rule.id,
+            prayer = rule.prayer,
+            validFrom = rule.validFrom,
+            validTo = rule.validTo,
+            weekdaysMask = rule.weekdays.fold(0) { mask, day -> mask or (1 shl (day - 1)) },
+            priority = rule.priority,
+            mode = rule.value.mode,
+            fixedTime = rule.value.fixedTime,
+            offsetMinutes = rule.value.offsetMinutes,
+        )
+    },
+    iqamahDateOverrides = iqamahDateOverrides.map { override ->
+        IqamahDateOverrideInput(
+            localDate = override.date,
+            prayer = override.prayer,
+            mode = override.value.mode,
+            fixedTime = override.value.fixedTime,
+            offsetMinutes = override.value.offsetMinutes,
+        )
+    },
+    jumuahSessions = jumuahSessions.map { session ->
+        JumuahSessionInput(
+            id = session.id,
+            label = session.label,
+            khutbahTime = session.khutbahTime,
+            salahTime = session.salahTime,
+            validFrom = session.validFrom,
+            validTo = session.validTo,
+        )
+    },
+)
 
 private fun SnapshotPayload.toEntity() = SnapshotEntity(
     snapshotId = snapshotId,

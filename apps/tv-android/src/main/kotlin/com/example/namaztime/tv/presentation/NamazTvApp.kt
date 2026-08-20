@@ -10,6 +10,8 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -29,19 +31,24 @@ import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.example.namaztime.tv.R
 import com.example.namaztime.tv.data.snapshot.SnapshotBootstrapState
+import com.example.namaztime.tv.domain.PrayerTimeEngine
+import com.example.namaztime.tv.domain.PrayerTimeResolution
 import com.example.namaztime.tv.repository.CorruptLocalSnapshotException
 import com.example.namaztime.tv.repository.EmptyPrayerScheduleRepository
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
 import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorPreferencesRepository
 import com.example.namaztime.tv.repository.PrayerScheduleRepository
+import com.example.namaztime.tv.repository.toTimeEngineInput
 import java.io.IOException
+import java.time.Clock
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 private const val DISPLAY_ROUTE = "display"
 private const val SETTINGS_ROUTE = "settings"
@@ -53,6 +60,8 @@ fun NamazTvApp(
     bootstrapState: Flow<SnapshotBootstrapState> = flowOf(
         SnapshotBootstrapState.Diagnostic("NO_LOCAL_SNAPSHOT"),
     ),
+    clock: Clock = Clock.systemUTC(),
+    tickIntervalMillis: Long? = 1_000L,
 ) {
     val preferences by operatorPreferencesRepository.preferences.collectAsStateWithLifecycle(
         initialValue = OperatorPreferences(),
@@ -79,6 +88,8 @@ fun NamazTvApp(
                     localDiagnostic =
                         (observedSchedule as? DisplayScheduleState.Diagnostic)?.supportCode,
                     bootstrapState = bootstrap,
+                    clock = clock,
+                    tickIntervalMillis = tickIntervalMillis,
                     onOpenSettings = { navController.navigate(SETTINGS_ROUTE) },
                 )
             }
@@ -110,13 +121,48 @@ private fun DisplayRoute(
     schedule: LocalPrayerSchedule?,
     localDiagnostic: String?,
     bootstrapState: SnapshotBootstrapState,
+    clock: Clock,
+    tickIntervalMillis: Long?,
     onOpenSettings: () -> Unit,
 ) {
     if (schedule != null) {
+        val engine = remember { PrayerTimeEngine() }
+        val timeInput = remember(schedule) { schedule.toTimeEngineInput() }
+        val validationCode = remember(timeInput) { engine.validate(timeInput) }
+        var currentInstant by remember(schedule.snapshotId, clock) {
+            mutableStateOf(clock.instant())
+        }
+        LaunchedEffect(schedule.snapshotId, clock, tickIntervalMillis) {
+            if (tickIntervalMillis != null) {
+                while (true) {
+                    delay(tickIntervalMillis)
+                    currentInstant = clock.instant()
+                }
+            }
+        }
+        if (validationCode != null) {
+            DisplayUnavailableScreen(
+                localDiagnostic = validationCode,
+                bootstrapState = bootstrapState,
+                onOpenSettings = onOpenSettings,
+            )
+            return
+        }
+        val resolution = remember(timeInput, currentInstant) {
+            engine.resolve(timeInput, currentInstant)
+        }
+        if (resolution is PrayerTimeResolution.Unavailable) {
+            DisplayUnavailableScreen(
+                localDiagnostic = resolution.supportCode,
+                bootstrapState = bootstrapState,
+                onOpenSettings = onOpenSettings,
+            )
+            return
+        }
         val recoveryCode = (bootstrapState as? SnapshotBootstrapState.Ready)?.recoveryCode
         MainPrayerDisplay(
             state = schedule.toPrayerDisplayUiState(
-                selectedLocalDate = schedule.coverageFrom,
+                resolution = resolution as PrayerTimeResolution.Available,
             ).copy(supportCode = recoveryCode),
             onOpenSettings = onOpenSettings,
         )

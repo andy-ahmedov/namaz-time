@@ -2,8 +2,14 @@ package com.example.namaztime.tv.repository
 
 import com.example.namaztime.tv.data.local.SnapshotDao
 import com.example.namaztime.tv.data.snapshot.SnapshotFormatValidation
+import com.example.namaztime.tv.domain.IqamahDateOverrideInput
+import com.example.namaztime.tv.domain.IqamahRuleInput
+import com.example.namaztime.tv.domain.JumuahSessionInput
+import com.example.namaztime.tv.domain.PrayerDayInput
+import com.example.namaztime.tv.domain.PrayerScheduleInput
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
@@ -32,7 +38,41 @@ data class LocalPrayerSchedule(
     val coverageFrom: String,
     val coverageTo: String,
     val days: List<LocalPrayerDay>,
+    val iqamahRules: List<LocalIqamahRule> = emptyList(),
+    val iqamahDateOverrides: List<LocalIqamahDateOverride> = emptyList(),
+    val jumuahSessions: List<LocalJumuahSession> = emptyList(),
     val diagnostics: LocalSnapshotDiagnostics? = null,
+)
+
+data class LocalIqamahRule(
+    val id: String,
+    val prayer: String,
+    val validFrom: String,
+    val validTo: String,
+    val weekdaysMask: Int,
+    val priority: Int,
+    val mode: String,
+    val fixedTime: String?,
+    val offsetMinutes: Int?,
+    val reason: String?,
+)
+
+data class LocalIqamahDateOverride(
+    val localDate: String,
+    val prayer: String,
+    val mode: String,
+    val fixedTime: String?,
+    val offsetMinutes: Int?,
+    val reason: String?,
+)
+
+data class LocalJumuahSession(
+    val id: String,
+    val label: String,
+    val khutbahTime: String?,
+    val salahTime: String,
+    val validFrom: String,
+    val validTo: String,
 )
 
 data class LocalSnapshotDiagnostics(
@@ -45,6 +85,53 @@ data class LocalSnapshotDiagnostics(
 )
 
 class CorruptLocalSnapshotException(val code: String) : IllegalStateException(code)
+
+fun LocalPrayerSchedule.toTimeEngineInput() = PrayerScheduleInput(
+    timezoneId = timezoneId,
+    days = days.map { day ->
+        PrayerDayInput(
+            localDate = day.localDate,
+            fajr = day.fajr,
+            sunrise = day.sunrise,
+            dhuhr = day.dhuhr,
+            asr = day.asr,
+            maghrib = day.maghrib,
+            isha = day.isha,
+        )
+    },
+    iqamahRules = iqamahRules.map { rule ->
+        IqamahRuleInput(
+            id = rule.id,
+            prayer = rule.prayer,
+            validFrom = rule.validFrom,
+            validTo = rule.validTo,
+            weekdaysMask = rule.weekdaysMask,
+            priority = rule.priority,
+            mode = rule.mode,
+            fixedTime = rule.fixedTime,
+            offsetMinutes = rule.offsetMinutes,
+        )
+    },
+    iqamahDateOverrides = iqamahDateOverrides.map { override ->
+        IqamahDateOverrideInput(
+            localDate = override.localDate,
+            prayer = override.prayer,
+            mode = override.mode,
+            fixedTime = override.fixedTime,
+            offsetMinutes = override.offsetMinutes,
+        )
+    },
+    jumuahSessions = jumuahSessions.map { session ->
+        JumuahSessionInput(
+            id = session.id,
+            label = session.label,
+            khutbahTime = session.khutbahTime,
+            salahTime = session.salahTime,
+            validFrom = session.validFrom,
+            validTo = session.validTo,
+        )
+    },
+)
 
 interface PrayerScheduleRepository {
     fun observeActiveSchedule(): Flow<LocalPrayerSchedule?>
@@ -63,7 +150,12 @@ class RoomPrayerScheduleRepository(
             if (snapshot == null) {
                 flowOf(null)
             } else {
-                dao.observePrayerDays(snapshot.snapshotId).map { days ->
+                combine(
+                    dao.observePrayerDays(snapshot.snapshotId),
+                    dao.observeIqamahRules(snapshot.snapshotId),
+                    dao.observeIqamahOverrides(snapshot.snapshotId),
+                    dao.observeJumuahSessions(snapshot.snapshotId),
+                ) { days, rules, overrides, sessions ->
                     LocalPrayerSchedule(
                         snapshotId = snapshot.snapshotId,
                         mosqueId = snapshot.mosqueId,
@@ -92,6 +184,40 @@ class RoomPrayerScheduleRepository(
                                 maghrib = day.maghrib,
                                 isha = day.isha,
                                 flags = decodePrayerDayFlags(day.flagsJson),
+                            )
+                        },
+                        iqamahRules = rules.map { rule ->
+                            LocalIqamahRule(
+                                id = rule.ruleId,
+                                prayer = rule.prayer,
+                                validFrom = rule.validFrom,
+                                validTo = rule.validTo,
+                                weekdaysMask = rule.weekdaysMask,
+                                priority = rule.priority,
+                                mode = rule.mode,
+                                fixedTime = rule.fixedTime,
+                                offsetMinutes = rule.offsetMinutes,
+                                reason = rule.reason,
+                            )
+                        },
+                        iqamahDateOverrides = overrides.map { override ->
+                            LocalIqamahDateOverride(
+                                localDate = override.localDate,
+                                prayer = override.prayer,
+                                mode = override.mode,
+                                fixedTime = override.fixedTime,
+                                offsetMinutes = override.offsetMinutes,
+                                reason = override.reason,
+                            )
+                        },
+                        jumuahSessions = sessions.map { session ->
+                            LocalJumuahSession(
+                                id = session.sessionId,
+                                label = session.label,
+                                khutbahTime = session.khutbahTime,
+                                salahTime = session.salahTime,
+                                validFrom = session.validFrom,
+                                validTo = session.validTo,
                             )
                         },
                     )

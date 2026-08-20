@@ -56,6 +56,14 @@ class RoomPrayerScheduleRepositoryTest {
         assertEquals("synthetic/1", schedule?.diagnostics?.parserVersion)
         assertEquals("approval-synthetic-v1", schedule?.diagnostics?.approvalId)
         assertEquals("test-placeholder-key", schedule?.diagnostics?.signingKeyId)
+        assertEquals(
+            listOf("iqamah-dhuhr-demo", "iqamah-fajr-demo"),
+            schedule?.iqamahRules?.map { it.id },
+        )
+        assertEquals("fixed_time", schedule?.iqamahRules?.first()?.mode)
+        assertEquals(127, schedule?.iqamahRules?.first()?.weekdaysMask)
+        assertEquals(emptyList<LocalIqamahDateOverride>(), schedule?.iqamahDateOverrides)
+        assertEquals(listOf("jumuah-demo-1"), schedule?.jumuahSessions?.map { it.id })
     }
 
     @Test

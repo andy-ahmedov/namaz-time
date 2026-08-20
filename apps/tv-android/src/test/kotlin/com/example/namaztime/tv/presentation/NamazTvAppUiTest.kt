@@ -18,11 +18,18 @@ import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorPreferencesRepository
 import com.example.namaztime.tv.repository.LocalPrayerDay
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
+import com.example.namaztime.tv.repository.LocalJumuahSession
 import com.example.namaztime.tv.repository.LocalSnapshotDiagnostics
 import com.example.namaztime.tv.repository.CorruptLocalSnapshotException
 import com.example.namaztime.tv.repository.PrayerScheduleRepository
+import com.example.namaztime.tv.repository.toTimeEngineInput
 import com.example.namaztime.tv.data.snapshot.SnapshotBootstrapState
+import com.example.namaztime.tv.domain.PrayerTimeEngine
+import com.example.namaztime.tv.domain.PrayerTimeResolution
 import java.io.IOException
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneOffset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
@@ -80,25 +87,25 @@ class NamazTvAppUiTest {
                 bootstrapState = MutableStateFlow(
                     SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
                 ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
             )
         }
 
         compose.onNodeWithText("Синтетическая демонстрационная мечеть").assertExists()
         compose.onNodeWithText("Азан").assertExists()
         compose.onNodeWithText("Икамат").assertExists()
-        compose.onNodeWithText("Фаджр").assertExists()
-        compose.onNodeWithText("Восход").assertExists()
-        compose.onNodeWithText("Зухр").assertExists()
-        compose.onNodeWithText("Аср").assertExists()
-        compose.onNodeWithText("Магриб").assertExists()
-        compose.onNodeWithText("Иша").assertExists()
+        listOf("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha").forEach { prayer ->
+            compose.onNodeWithTag("$PRAYER_ROW_TEST_TAG_PREFIX$prayer").assertExists()
+        }
         compose.onNodeWithText("Следующий намаз").assertExists()
+        compose.onNodeWithText("03:20:00").assertExists()
         compose.onNodeWithText("ТЕСТОВЫЕ ДАННЫЕ").assertExists()
         compose.onNodeWithContentDescription(
-            "Фаджр, азан 03:12, икамат не указана",
+            "Фаджр, азан 03:14, икамат не указана",
         ).assertExists()
         compose.onNodeWithContentDescription(
-            "Восход, азан 05:21, икамат не предусмотрена",
+            "Восход, азан 05:23, икамат не предусмотрена",
         ).assertExists()
         compose.onNodeWithText("Prayer schedule unavailable").assertDoesNotExist()
     }
@@ -122,6 +129,45 @@ class NamazTvAppUiTest {
     }
 
     @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun fridayJumuahSummaryKeepsAllPrayerRowsInBounds() {
+        assertResponsiveDisplayIsVisible(
+            localSchedule = schedule().copy(
+                jumuahSessions = listOf(
+                    LocalJumuahSession(
+                        id = "first",
+                        label = "Первая",
+                        khutbahTime = "12:40",
+                        salahTime = "13:00",
+                        validFrom = "2026-08-01",
+                        validTo = "2026-08-31",
+                    ),
+                    LocalJumuahSession(
+                        id = "second",
+                        label = "Вторая",
+                        khutbahTime = "13:40",
+                        salahTime = "14:00",
+                        validFrom = "2026-08-01",
+                        validTo = "2026-08-31",
+                    ),
+                ),
+            ),
+            displayClock = Clock.fixed(
+                Instant.parse("2026-08-21T08:30:00Z"),
+                ZoneOffset.UTC,
+            ),
+        )
+        val root = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG).getUnclippedBoundsInRoot()
+        listOf("first", "second").forEach { id ->
+            val bounds = compose.onNodeWithTag("$JUMUAH_SESSION_TEST_TAG_PREFIX$id")
+                .assertIsDisplayed()
+                .getUnclippedBoundsInRoot()
+            assert(bounds.left >= root.left && bounds.right <= root.right)
+            assert(bounds.top >= root.top && bounds.bottom <= root.bottom)
+        }
+    }
+
+    @Test
     fun longMixedArabicRussianMosqueNameDoesNotHidePrimaryAction() {
         val mixedName = "المسجد الجامع الثاني — Вторая Соборная мечеть Ульяновска"
         compose.setContent {
@@ -133,6 +179,8 @@ class NamazTvAppUiTest {
                 bootstrapState = MutableStateFlow(
                     SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
                 ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
             )
         }
 
@@ -146,8 +194,13 @@ class NamazTvAppUiTest {
 
     @Test
     fun countdownRegionKeepsStableWidthAcrossRepresentativeValues() {
+        val schedule = schedule()
+        val resolution = PrayerTimeEngine().resolve(
+            schedule.toTimeEngineInput(),
+            fixedClock.instant(),
+        ) as PrayerTimeResolution.Available
         val state = mutableStateOf(
-            schedule().toPrayerDisplayUiState("2026-08-19").copy(countdown = "—:——:——"),
+            schedule.toPrayerDisplayUiState(resolution).copy(countdown = "—:——:——"),
         )
         compose.setContent {
             MaterialTheme {
@@ -190,6 +243,28 @@ class NamazTvAppUiTest {
     }
 
     @Test
+    fun mosqueLocalDateOutsideCoverageShowsSafeDiagnosticAndSettings() {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(schedule()),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = Clock.fixed(
+                    Instant.parse("2026-08-22T00:00:00Z"),
+                    ZoneOffset.UTC,
+                ),
+                tickIntervalMillis = null,
+            )
+        }
+
+        compose.onNodeWithText("Prayer schedule unavailable").assertExists()
+        compose.onNodeWithText("Support code: SCHEDULE_DATE_OUTSIDE_COVERAGE").assertExists()
+        compose.onNodeWithText("Настройки").assertIsFocused()
+    }
+
+    @Test
     fun previousSnapshotRecoveryIsVisibleWithoutHidingLocalSchedule() {
         compose.setContent {
             NamazTvApp(
@@ -201,6 +276,8 @@ class NamazTvAppUiTest {
                         recoveryCode = "SNAPSHOT_PREVIOUS_RESTORED",
                     ),
                 ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
             )
         }
 
@@ -223,6 +300,8 @@ class NamazTvAppUiTest {
                 bootstrapState = MutableStateFlow(
                     SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
                 ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
             )
         }
 
@@ -233,14 +312,19 @@ class NamazTvAppUiTest {
         compose.onNodeWithText("Настройки").assertIsFocused()
     }
 
-    private fun assertResponsiveDisplayIsVisible() {
+    private fun assertResponsiveDisplayIsVisible(
+        localSchedule: LocalPrayerSchedule = schedule(),
+        displayClock: Clock = fixedClock,
+    ) {
         compose.setContent {
             NamazTvApp(
                 operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
-                prayerScheduleRepository = FakePrayerScheduleRepository(schedule()),
+                prayerScheduleRepository = FakePrayerScheduleRepository(localSchedule),
                 bootstrapState = MutableStateFlow(
                     SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
                 ),
+                clock = displayClock,
+                tickIntervalMillis = null,
             )
         }
 
@@ -286,7 +370,14 @@ class NamazTvAppUiTest {
         ),
         days = listOf(
             LocalPrayerDay("2026-08-19", "03:12", "05:21", "12:08", "16:47", "18:53", "21:01"),
+            LocalPrayerDay("2026-08-20", "03:14", "05:23", "12:08", "16:45", "18:51", "20:58"),
+            LocalPrayerDay("2026-08-21", "03:16", "05:25", "12:08", "16:43", "18:48", "20:55"),
         ),
+    )
+
+    private val fixedClock: Clock = Clock.fixed(
+        Instant.parse("2026-08-19T23:20:00Z"),
+        ZoneOffset.UTC,
     )
 }
 

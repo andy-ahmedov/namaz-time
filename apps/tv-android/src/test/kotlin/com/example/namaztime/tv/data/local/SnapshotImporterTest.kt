@@ -6,12 +6,14 @@ import androidx.test.core.app.ApplicationProvider
 import com.example.namaztime.tv.data.snapshot.SnapshotDecoder
 import com.example.namaztime.tv.data.snapshot.SnapshotAssetReference
 import com.example.namaztime.tv.data.snapshot.SnapshotIqamahOverride
+import com.example.namaztime.tv.data.snapshot.SnapshotIqamahRule
 import com.example.namaztime.tv.data.snapshot.SnapshotIqamahValue
 import java.io.File
 import kotlinx.coroutines.test.runTest
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.fail
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -73,6 +75,61 @@ class SnapshotImporterTest {
         assertEquals(SnapshotImportResult.AlreadyActive(snapshot.snapshotId), result)
         assertEquals(1, dao.countSnapshots())
         assertEquals(3, dao.countPrayerDays(snapshot.snapshotId))
+    }
+
+    @Test
+    fun timeEngineFailureCannotReplaceOrPersistAnInvalidSnapshot() = runTest {
+        val active = SnapshotDecoder.decode(syntheticFixture())
+        val importer = SnapshotImporter(database)
+        importer.importAndActivate(active)
+        val invalid = active.copy(
+            snapshotId = "synthetic-invalid-time-engine",
+            iqamahRules = active.iqamahRules + SnapshotIqamahRule(
+                id = "iqamah-isha-crosses-midnight",
+                prayer = "isha",
+                validFrom = "2026-08-19",
+                validTo = "2026-08-21",
+                weekdays = listOf(1, 2, 3, 4, 5, 6, 7),
+                priority = 200,
+                value = SnapshotIqamahValue(
+                    mode = "offset_after_adhan",
+                    offsetMinutes = 240,
+                ),
+                reason = "Synthetic invalid rule",
+            ),
+        )
+
+        try {
+            importer.importAndActivate(invalid)
+            fail("expected time-engine import rejection")
+        } catch (error: SnapshotImportException) {
+            assertEquals("time_engine_iqamah_crosses_local_date", error.code)
+        }
+
+        assertEquals(active.snapshotId, dao.getSelection()?.activeSnapshotId)
+        assertEquals(1, dao.countSnapshots())
+        assertFalse(dao.snapshotExists(invalid.snapshotId))
+    }
+
+    @Test
+    fun invalidDailyPrayerOrderingIsRejectedBeforePersistence() = runTest {
+        val valid = SnapshotDecoder.decode(syntheticFixture())
+        val invalid = valid.copy(
+            snapshotId = "synthetic-invalid-prayer-order",
+            prayerDays = valid.prayerDays.mapIndexed { index, day ->
+                if (index == 1) day.copy(fajr = "06:00", sunrise = "05:00") else day
+            },
+        )
+
+        try {
+            SnapshotImporter(database).importAndActivate(invalid)
+            fail("expected prayer-order import rejection")
+        } catch (error: SnapshotImportException) {
+            assertEquals("time_engine_schedule_prayer_order_invalid", error.code)
+        }
+
+        assertEquals(0, dao.countSnapshots())
+        assertEquals(null, dao.getSelection())
     }
 
     @Test

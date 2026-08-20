@@ -1,18 +1,33 @@
 package com.example.namaztime.tv.presentation
 
+import com.example.namaztime.tv.domain.PrayerTimeEngine
+import com.example.namaztime.tv.domain.PrayerTimeResolution
+import com.example.namaztime.tv.repository.LocalIqamahRule
+import com.example.namaztime.tv.repository.LocalJumuahSession
 import com.example.namaztime.tv.repository.LocalPrayerDay
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
 import com.example.namaztime.tv.repository.LocalSnapshotDiagnostics
+import com.example.namaztime.tv.repository.toTimeEngineInput
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import java.time.Instant
 
 class MainPrayerDisplayStateTest {
     @Test
     fun explicitlySelectedDateControlsDisplayedPrayerRow() {
-        val state = schedule().toPrayerDisplayUiState(selectedLocalDate = "2026-08-20")
+        val schedule = schedule()
+        val resolution = PrayerTimeEngine().resolve(
+            schedule.toTimeEngineInput(),
+            Instant.parse("2026-08-19T23:20:00Z"),
+        ) as PrayerTimeResolution.Available
+        val state = schedule.toPrayerDisplayUiState(resolution)
 
         assertEquals("20 августа 2026", state.dateLabel)
+        assertEquals("03:20:00", state.mosqueLocalTime)
+        assertEquals("Фаджр · икамат", state.nextPrayerLabel)
+        assertEquals("00:19:00", state.countdown)
         assertEquals("03:14", state.rows.first().adhan)
+        assertEquals("03:39", state.rows.first().iqamah)
     }
 
     @Test
@@ -35,9 +50,55 @@ class MainPrayerDisplayStateTest {
         cases.forEach { (schedule, expectedLabel) ->
             assertEquals(
                 expectedLabel,
-                schedule.toPrayerDisplayUiState("2026-08-20").sourceLabel,
+                schedule.toPrayerDisplayUiState(
+                    PrayerTimeEngine().resolve(
+                        schedule.toTimeEngineInput(),
+                        Instant.parse("2026-08-19T23:20:00Z"),
+                    ) as PrayerTimeResolution.Available,
+                ).sourceLabel,
             )
         }
+    }
+
+    @Test
+    fun fridaySessionsStaySeparateFromTheDhuhrRow() {
+        val schedule = schedule().copy(
+            jumuahSessions = listOf(
+                LocalJumuahSession(
+                    id = "first",
+                    label = "Первая",
+                    khutbahTime = "12:40",
+                    salahTime = "13:00",
+                    validFrom = "2026-08-01",
+                    validTo = "2026-08-31",
+                ),
+            ),
+        )
+        val resolution = PrayerTimeEngine().resolve(
+            schedule.toTimeEngineInput(),
+            Instant.parse("2026-08-21T08:30:00Z"),
+        ) as PrayerTimeResolution.Available
+
+        val state = schedule.toPrayerDisplayUiState(resolution)
+
+        assertEquals(listOf("Первая 13:00"), state.jumuahSessions.map { it.text })
+        assertEquals("12:08", state.rows.first { it.id == "dhuhr" }.adhan)
+        assertEquals("Джума · Первая", state.nextPrayerLabel)
+    }
+
+    @Test
+    fun nextDayFajrIsLabeledTomorrowAndDoesNotHighlightTodaysFajrRow() {
+        val schedule = schedule()
+        val resolution = PrayerTimeEngine().resolve(
+            schedule.toTimeEngineInput(),
+            Instant.parse("2026-08-20T17:00:00Z"),
+        ) as PrayerTimeResolution.Available
+
+        val state = schedule.toPrayerDisplayUiState(resolution)
+
+        assertEquals("Фаджр · завтра", state.nextPrayerLabel)
+        assertEquals("03:14", state.rows.first { it.id == "fajr" }.adhan)
+        assertEquals(false, state.rows.any { it.isNextEvent })
     }
 
     private fun schedule() = LocalPrayerSchedule(
@@ -48,7 +109,7 @@ class MainPrayerDisplayStateTest {
         sourceKind = "manual_import",
         authorityName = "Synthetic test fixture",
         coverageFrom = "2026-08-19",
-        coverageTo = "2026-08-20",
+        coverageTo = "2026-08-21",
         diagnostics = LocalSnapshotDiagnostics(
             dataClassification = "synthetic",
             rawSha256 = "1".repeat(64),
@@ -60,6 +121,21 @@ class MainPrayerDisplayStateTest {
         days = listOf(
             LocalPrayerDay("2026-08-19", "03:12", "05:21", "12:08", "16:47", "18:53", "21:01"),
             LocalPrayerDay("2026-08-20", "03:14", "05:23", "12:08", "16:45", "18:51", "20:58"),
+            LocalPrayerDay("2026-08-21", "03:16", "05:25", "12:08", "16:43", "18:48", "20:55"),
+        ),
+        iqamahRules = listOf(
+            LocalIqamahRule(
+                id = "fajr-offset",
+                prayer = "fajr",
+                validFrom = "2026-08-19",
+                validTo = "2026-08-21",
+                weekdaysMask = 0b1111111,
+                priority = 1,
+                mode = "offset_after_adhan",
+                fixedTime = null,
+                offsetMinutes = 25,
+                reason = "synthetic",
+            ),
         ),
     )
 }
