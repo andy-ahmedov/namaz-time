@@ -410,11 +410,17 @@ trust; every settings section reports real local state and only exposes real
 actions; RU/EN selection persists with Russian default and no mixed-language
 user-visible literals; Android unit/build and repository gates pass.
 
-**Progress (checkpoint 1, 2026-08-20):** an ephemeral, disjoint pilot-local
+**Result:** completed locally on 2026-08-20. An ephemeral, disjoint pilot-local
 Ed25519 key signed the exact approval-bound publication request and was then
 discarded. Only the immutable snapshot, public trust bundles and local audit
 evidence remain. The debug pilot-local source set authenticates the asset with
 the existing lifecycle-aware verifier, imports it through the existing Room
 transaction and reuses trust-aware startup selection. Tampering fails before
-activation. Release has no bundled schedule path. Settings and localization
-remain in progress.
+activation; release has no bundled schedule path. Room exposes mosque,
+provenance, approval, iqamah/Jumu'ah, campaigns and bounded diagnostics to the
+settings UI. Appearance protection and whole-app RU/EN are real persisted local
+actions; kiosk truthfully reports inactive state and opens Android's actual app
+settings instead of pretending to enable device-owner/autostart. D-pad tests
+cover every section/action and 720p/1080p/4K safe frames. The product owner will
+perform emulator runtime acceptance separately, so that evidence remains
+`UNKNOWN` rather than being promoted from local tests.

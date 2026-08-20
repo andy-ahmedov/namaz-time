@@ -281,10 +281,15 @@ possibly corrupt old local copy. File-backed tests reopen after interruption
 inside import and after Room commit/before checkpoint finalization. WorkManager
 runs only for provisioned remote mode; 304 or failure never clears Room.
 
-Small operator UI preferences, including the last focused settings section and
-reduced-motion default, use a single Preferences DataStore instance. Schedule
-data never moves into DataStore, and the Compose shell contains no network
-client.
+Small operator UI preferences, including the last focused settings section,
+reduced-motion default, Russian-by-default whole-app language and bounded
+screen-retention shift toggle, use a single Preferences DataStore instance.
+Schedule data never moves into DataStore: mosque/source/approval/iqamah,
+Jumu'ah/campaign and diagnostics settings project the active Room snapshot.
+Only locally effective actions are interactive; the Compose shell contains no
+network client. Localized resources cover display, settings, safe errors, QR
+and accessibility text, while mosque/source-provided names remain provenance
+data rather than translated UI copy.
 
 ### Production pairing foundation (T011)
 

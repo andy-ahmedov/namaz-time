@@ -1,12 +1,15 @@
 package com.example.namaztime.tv.presentation
 
+import android.content.Context
 import android.view.View
+import androidx.test.core.app.ApplicationProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
@@ -74,6 +77,50 @@ class NamazTvAppUiTest {
         }
 
         compose.onNodeWithText("Настройки").assertIsFocused()
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun languageActionAppliesEnglishAcrossSettingsAndDisplayState() {
+        val preferences = FakeOperatorPreferencesRepository()
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = preferences,
+                prayerScheduleRepository = FakePrayerScheduleRepository(schedule()),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        compose.onNodeWithText("Настройки").performKeyInput { pressKey(Key.Enter) }
+        repeat(SettingsDestination.LANGUAGE.ordinal) { index ->
+            compose.onNodeWithTag(SettingsDestination.entries[index].navigationTestTag)
+                .performKeyInput { pressKey(Key.DirectionDown) }
+        }
+        compose.onNodeWithTag(SettingsDestination.LANGUAGE.navigationTestTag)
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag(SETTINGS_LOCAL_ACTION_TEST_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+
+        compose.onNodeWithTag(SettingsDestination.LANGUAGE.navigationTestTag)
+            .assertTextEquals("Language")
+        compose.onNodeWithText("Current language").assertIsDisplayed()
+        compose.onNodeWithText("English").assertIsDisplayed()
+
+        compose.onNodeWithTag(SETTINGS_LOCAL_ACTION_TEST_TAG).performKeyInput {
+            pressKey(Key.DirectionDown)
+        }
+        compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.onNodeWithText("Next prayer").assertIsDisplayed()
+        compose.onNodeWithText("Until the next event").assertIsDisplayed()
+        compose.onNodeWithText("Settings").assertIsFocused()
     }
 
     @Test
@@ -146,13 +193,34 @@ class NamazTvAppUiTest {
         compose.onNodeWithText("Не указан").assertExists()
         compose.onNodeWithText("ТЕСТОВЫЕ ДАННЫЕ").assertExists()
         compose.onNodeWithContentDescription(
-            "Фаджр, азан 03:14, икамат не указана",
+            "Фаджр, азан 03:14, икамат не указан",
         ).assertExists()
         compose.onNodeWithContentDescription(
-            "Восход, азан 05:23, икамат не предусмотрена",
+            "Восход, азан 05:23, икамат не предусмотрен",
         ).assertExists()
-        compose.onNodeWithText("Prayer schedule unavailable").assertDoesNotExist()
+        compose.onNodeWithText("Расписание недоступно").assertDoesNotExist()
         compose.onNodeWithTag(QR_CAMPAIGN_PANEL_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    fun approvedProductionScheduleHasNoSyntheticOrTestMarker() {
+        val approved = schedule().copy(
+            mosqueName = "Вторая Соборная мечеть Ульяновска",
+            diagnostics = schedule().diagnostics?.copy(dataClassification = "production"),
+        )
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(approved),
+                bootstrapState = MutableStateFlow(SnapshotBootstrapState.Ready(approved.snapshotId)),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        compose.onNodeWithText("Вторая Соборная мечеть Ульяновска").assertIsDisplayed()
+        compose.onNodeWithText("УТВЕРЖДЁННЫЕ ДАННЫЕ").assertIsDisplayed()
+        compose.onNodeWithText("ТЕСТОВЫЕ ДАННЫЕ").assertDoesNotExist()
     }
 
     @Test
@@ -388,9 +456,9 @@ class NamazTvAppUiTest {
         compose.runOnIdle {
             currentInstant.value = Instant.parse("2026-08-27T08:00:00Z")
         }
-        compose.onNodeWithText("Prayer schedule unavailable").assertIsDisplayed()
+        compose.onNodeWithText("Расписание недоступно").assertIsDisplayed()
         compose.onNodeWithText(
-            "Support code: SCHEDULE_DATE_OUTSIDE_COVERAGE",
+            "Код поддержки: SCHEDULE_DATE_OUTSIDE_COVERAGE",
         ).assertIsDisplayed()
         compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG).assertDoesNotExist()
     }
@@ -467,7 +535,10 @@ class NamazTvAppUiTest {
             fixedClock.instant(),
         ) as PrayerTimeResolution.Available
         val state = mutableStateOf(
-            schedule.toPrayerDisplayUiState(resolution).copy(countdown = "—:——:——"),
+            schedule.toPrayerDisplayUiState(
+                resolution,
+                appStringsFor(ApplicationProvider.getApplicationContext<Context>(), AppLanguage.RUSSIAN),
+            ).copy(countdown = "—:——:——"),
         )
         compose.setContent {
             MaterialTheme {
@@ -504,8 +575,8 @@ class NamazTvAppUiTest {
             )
         }
 
-        compose.onNodeWithText("Prayer schedule unavailable").assertExists()
-        compose.onNodeWithText("Support code: SNAPSHOT_INVALID_TIMEZONE").assertExists()
+        compose.onNodeWithText("Расписание недоступно").assertExists()
+        compose.onNodeWithText("Код поддержки: SNAPSHOT_INVALID_TIMEZONE").assertExists()
         compose.onNodeWithTag(DISPLAY_UNAVAILABLE_TAG).assertIsDisplayed()
         compose.onNodeWithTag(UNAVAILABLE_PANEL_TAG).assertIsDisplayed()
         compose.onNodeWithText("Настройки").assertIsFocused()
@@ -540,8 +611,8 @@ class NamazTvAppUiTest {
             )
         }
 
-        compose.onNodeWithText("Prayer schedule unavailable").assertExists()
-        compose.onNodeWithText("Support code: SCHEDULE_DATE_OUTSIDE_COVERAGE").assertExists()
+        compose.onNodeWithText("Расписание недоступно").assertExists()
+        compose.onNodeWithText("Код поддержки: SCHEDULE_DATE_OUTSIDE_COVERAGE").assertExists()
         compose.onNodeWithText("Настройки").assertIsFocused()
     }
 
@@ -563,7 +634,7 @@ class NamazTvAppUiTest {
         }
 
         compose.onNodeWithText("Синтетическая демонстрационная мечеть").assertExists()
-        compose.onNodeWithText("Support code: SNAPSHOT_PREVIOUS_RESTORED").assertExists()
+        compose.onNodeWithText("Код поддержки: SNAPSHOT_PREVIOUS_RESTORED").assertExists()
     }
 
     @Test
@@ -586,9 +657,9 @@ class NamazTvAppUiTest {
             )
         }
 
-        compose.onNodeWithText("Prayer schedule unavailable").assertExists()
+        compose.onNodeWithText("Расписание недоступно").assertExists()
         compose.onNodeWithText(
-            "Support code: SNAPSHOT_LOCAL_INVALID_PRAYER_DAY_FLAGS",
+            "Код поддержки: SNAPSHOT_LOCAL_INVALID_PRAYER_DAY_FLAGS",
         ).assertExists()
         compose.onNodeWithText("Настройки").assertIsFocused()
     }
@@ -794,6 +865,16 @@ private class FakeOperatorPreferencesRepository(
     override suspend fun setReducedMotion(enabled: Boolean) {
         if (failWrites) throw IOException("synthetic preference storage failure")
         state.value = state.value.copy(reducedMotion = enabled)
+    }
+
+    override suspend fun setLanguageTag(languageTag: String) {
+        if (failWrites) throw IOException("synthetic preference storage failure")
+        state.value = state.value.copy(languageTag = languageTag)
+    }
+
+    override suspend fun setScreenRetentionShiftEnabled(enabled: Boolean) {
+        if (failWrites) throw IOException("synthetic preference storage failure")
+        state.value = state.value.copy(screenRetentionShiftEnabled = enabled)
     }
 }
 

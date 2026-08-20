@@ -1,49 +1,52 @@
 package com.example.namaztime.tv.presentation
 
+import androidx.annotation.StringRes
+import com.example.namaztime.tv.R
+
 enum class SettingsDestination(
     val route: String,
-    val title: String,
-    val description: String,
+    @StringRes val titleRes: Int,
+    @StringRes val descriptionRes: Int,
 ) {
     MOSQUE(
         route = "mosque",
-        title = "Mosque and location",
-        description = "Mosque identity and timezone will be configured from approved local data.",
+        titleRes = R.string.settings_mosque_title,
+        descriptionRes = R.string.settings_mosque_description,
     ),
     SOURCE(
         route = "source",
-        title = "Prayer source",
-        description = "Source provenance is read-only on the display device.",
+        titleRes = R.string.settings_source_title,
+        descriptionRes = R.string.settings_source_description,
     ),
     IQAMAH(
         route = "iqamah",
-        title = "Iqamah and Jumu'ah",
-        description = "Adhan and mosque-local iqamah remain separate.",
+        titleRes = R.string.settings_iqamah_title,
+        descriptionRes = R.string.settings_iqamah_description,
     ),
     APPEARANCE(
         route = "appearance",
-        title = "Appearance",
-        description = "Built-in offline presentation settings will appear here.",
+        titleRes = R.string.settings_appearance_title,
+        descriptionRes = R.string.settings_appearance_description,
     ),
     CAMPAIGNS(
         route = "campaigns",
-        title = "QR and announcements",
-        description = "Preview locally stored campaign content before its active window.",
+        titleRes = R.string.settings_campaigns_title,
+        descriptionRes = R.string.settings_campaigns_description,
     ),
     LANGUAGE(
         route = "language",
-        title = "Language",
-        description = "Pilot languages are awaiting a product decision.",
+        titleRes = R.string.settings_language_title,
+        descriptionRes = R.string.settings_language_description,
     ),
     KIOSK(
         route = "kiosk",
-        title = "Autostart and kiosk",
-        description = "Consumer and managed-device modes will be configured separately.",
+        titleRes = R.string.settings_kiosk_title,
+        descriptionRes = R.string.settings_kiosk_description,
     ),
     DIAGNOSTICS(
         route = "diagnostics",
-        title = "Diagnostics",
-        description = "No prayer snapshot has been activated yet.",
+        titleRes = R.string.settings_diagnostics_title,
+        descriptionRes = R.string.settings_diagnostics_description,
     ),
     ;
 

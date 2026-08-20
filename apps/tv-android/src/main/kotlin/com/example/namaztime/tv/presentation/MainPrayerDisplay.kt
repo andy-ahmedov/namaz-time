@@ -30,7 +30,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.testTag
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -65,9 +64,9 @@ const val MOSQUE_NAME_TEST_TAG = "mosque-name"
 const val COUNTDOWN_TEST_TAG = "next-prayer-countdown"
 const val JUMUAH_SESSION_TEST_TAG_PREFIX = "jumuah-session-"
 
-internal enum class IqamahPresentation(val spokenValue: String) {
-    MISSING("не указана"),
-    NOT_APPLICABLE("не предусмотрена"),
+internal enum class IqamahPresentation {
+    MISSING,
+    NOT_APPLICABLE,
 }
 
 internal data class PrayerDisplayRow(
@@ -235,7 +234,7 @@ private fun DisplayHeader(
                     shape = RoundedCornerShape(metrics.controlRadius),
                 ),
         ) {
-            Text(stringResource(R.string.open_settings), fontSize = metrics.actionSize)
+            Text(appString(R.string.open_settings), fontSize = metrics.actionSize)
         }
     }
 }
@@ -247,6 +246,7 @@ private fun NextEventCard(
     modifier: Modifier,
 ) {
     val colors = NamazTvTheme.colors
+    val countdownDescription = appString(R.string.countdown_accessibility, state.countdown)
     TvGlassPanel(
         modifier = modifier.testTag(NEXT_EVENT_CARD_TAG),
         radius = metrics.cardRadius,
@@ -258,7 +258,7 @@ private fun NextEventCard(
             verticalArrangement = Arrangement.Center,
         ) {
             Text(
-                "Следующий намаз",
+                appString(R.string.next_prayer),
                 color = colors.accent,
                 fontSize = metrics.labelSize,
                 fontWeight = FontWeight.SemiBold,
@@ -291,7 +291,7 @@ private fun NextEventCard(
                 )
             }
             Text(
-                "До следующего события",
+                appString(R.string.until_next_event),
                 modifier = Modifier.padding(top = metrics.inlineGap),
                 color = colors.textSecondary,
                 fontSize = metrics.captionSize,
@@ -302,7 +302,7 @@ private fun NextEventCard(
                     .width(metrics.countdownWidth)
                     .testTag(COUNTDOWN_TEST_TAG)
                     .semantics {
-                        contentDescription = "До следующего события ${state.countdown}"
+                        contentDescription = countdownDescription
                     },
                 color = colors.accent,
                 fontSize = metrics.countdownSize,
@@ -374,7 +374,13 @@ private fun PrayerListCard(
                 vertical = metrics.gridVerticalPadding,
             ),
         ) {
-            GridColumns("Намаз", "Азан", "Икамат", metrics, header = true)
+            GridColumns(
+                appString(R.string.prayer_column),
+                appString(R.string.adhan_column),
+                appString(R.string.iqamah_column),
+                metrics,
+                header = true,
+            )
             state.rows.forEach { row ->
                 PrayerGridRow(row, metrics, Modifier.weight(1f))
             }
@@ -414,7 +420,24 @@ private fun PrayerGridRow(
 ) {
     val colors = NamazTvTheme.colors
     val iqamahText = row.iqamah ?: "—"
-    val spokenIqamah = row.iqamah ?: row.iqamahPresentation.spokenValue
+    val spokenIqamah = row.iqamah ?: appString(
+        when (row.iqamahPresentation) {
+            IqamahPresentation.MISSING -> R.string.iqamah_missing_spoken
+            IqamahPresentation.NOT_APPLICABLE -> R.string.iqamah_not_applicable_spoken
+        },
+    )
+    val accessibilitySuffix = if (row.isNextEvent) {
+        appString(R.string.next_event_accessibility_suffix)
+    } else {
+        ""
+    }
+    val rowDescription = appString(
+        R.string.prayer_row_accessibility,
+        row.label,
+        row.adhan,
+        spokenIqamah,
+        accessibilitySuffix,
+    )
     Box(
         modifier = modifier
             .fillMaxWidth()
@@ -435,9 +458,7 @@ private fun PrayerGridRow(
                 },
             )
             .semantics(mergeDescendants = true) {
-                contentDescription =
-                    "${row.label}, азан ${row.adhan}, икамат $spokenIqamah" +
-                        if (row.isNextEvent) ", следующее событие" else ""
+                contentDescription = rowDescription
             },
     ) {
         if (row.isNextEvent) {
@@ -525,7 +546,7 @@ private fun IqamahStatusStrip(
         ) {
             Column(Modifier.weight(1f)) {
                 Text(
-                    state.iqamahSummary?.label ?: "Икамат · ближайший",
+                    state.iqamahSummary?.label ?: appString(R.string.iqamah_nearest),
                     color = colors.textSecondary,
                     fontSize = metrics.captionSize,
                 )
@@ -534,7 +555,7 @@ private fun IqamahStatusStrip(
                     horizontalArrangement = Arrangement.spacedBy(metrics.inlineGap),
                 ) {
                     Text(
-                        state.iqamahSummary?.time ?: "Не указан",
+                        state.iqamahSummary?.time ?: appString(R.string.iqamah_not_specified),
                         color = if (state.iqamahSummary == null) {
                             colors.textPrimary
                         } else {
@@ -568,7 +589,7 @@ private fun IqamahStatusStrip(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    state.supportCode?.let { "Support code: $it" }
+                    state.supportCode?.let { appString(R.string.support_code, it) }
                         ?: state.sourceDescription,
                     color = colors.textSecondary,
                     fontSize = metrics.sourceDescriptionSize,
@@ -582,22 +603,24 @@ private fun IqamahStatusStrip(
 
 internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
     resolution: PrayerTimeResolution.Available,
+    strings: AppStrings,
 ): PrayerDisplayUiState {
     val day = requireNotNull(days.firstOrNull { it.localDate == resolution.localDate.toString() }) {
         "resolved date is outside the local snapshot"
     }
     val dateLabel = resolution.localDate.format(
-        DateTimeFormatter.ofPattern("d MMMM yyyy", RUSSIAN_LOCALE),
+        DateTimeFormatter.ofPattern("d MMMM yyyy", strings.locale),
     )
     val weekdayLabel = resolution.localDate
-        .format(DateTimeFormatter.ofPattern("EEEE", RUSSIAN_LOCALE))
-        .replaceFirstChar { character -> character.titlecase(RUSSIAN_LOCALE) }
+        .format(DateTimeFormatter.ofPattern("EEEE", strings.locale))
+        .replaceFirstChar { character -> character.titlecase(strings.locale) }
     val sourceLabel = when {
-        diagnostics == null -> "ИСТОЧНИК НЕ ПРОВЕРЕН"
-        diagnostics.approvalStatus != "approved" -> "НЕ ОДОБРЕНО"
-        diagnostics.dataClassification == "synthetic" -> "ТЕСТОВЫЕ ДАННЫЕ"
-        sourceKind == "calculation_profile" -> "РАСЧЁТНОЕ — НЕ ОФИЦИАЛЬНО"
-        else -> "ИСТОЧНИК НЕ ПРОВЕРЕН"
+        diagnostics == null -> strings.get(R.string.source_unverified)
+        diagnostics.approvalStatus != "approved" -> strings.get(R.string.source_not_approved)
+        diagnostics.dataClassification == "synthetic" -> strings.get(R.string.source_test_data)
+        sourceKind == "calculation_profile" -> strings.get(R.string.source_calculated_unofficial)
+        diagnostics.dataClassification == "production" -> strings.get(R.string.source_approved)
+        else -> strings.get(R.string.source_unverified)
     }
     val nextEvent = resolution.nextEvent
     return PrayerDisplayUiState(
@@ -607,23 +630,28 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
         weekdayLabel = weekdayLabel,
         mosqueLocalTime = resolution.localTime.format(CLOCK_FORMAT),
         nextPrayerLabel = nextEvent?.let { event ->
-            event.label + if (event.localDate != resolution.localDate) " · завтра" else ""
-        } ?: "Нет будущего события",
+            val label = resolution.eventLabel(event, strings)
+            if (event.localDate != resolution.localDate) {
+                strings.get(R.string.event_tomorrow_label, label)
+            } else {
+                label
+            }
+        } ?: strings.get(R.string.no_future_event),
         nextEventKindLabel = when (nextEvent?.kind) {
             PrayerEventKind.ADHAN -> if (nextEvent.localDate == resolution.localDate) {
-                "До азана"
+                strings.get(R.string.until_adhan)
             } else {
-                "До азана завтра"
+                strings.get(R.string.until_adhan_tomorrow)
             }
-            PrayerEventKind.IQAMAH -> "До икамата"
-            PrayerEventKind.JUMUAH -> "До джума-намаза"
-            null -> "События завершены"
+            PrayerEventKind.IQAMAH -> strings.get(R.string.until_iqamah)
+            PrayerEventKind.JUMUAH -> strings.get(R.string.until_jumuah)
+            null -> strings.get(R.string.events_completed)
         },
         nextEventTime = nextEvent?.localTime?.format(PRAYER_TIME_FORMAT) ?: "—:——",
         countdown = resolution.countdownSeconds?.let(::formatCountdown) ?: "—:——:——",
-        iqamahSummary = resolution.nextIqamahSummary(),
+        iqamahSummary = resolution.nextIqamahSummary(strings),
         sourceLabel = sourceLabel,
-        sourceDescription = authorityName,
+        sourceDescription = attribution ?: authorityName,
         supportCode = null,
         jumuahSessions = resolution.jumuahSessions.map { session ->
             JumuahDisplaySession(
@@ -631,11 +659,11 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
                 text = "${session.label} ${session.salahTime.format(PRAYER_TIME_FORMAT)}",
             )
         },
-        rows = day.toDisplayRows(resolution),
+        rows = day.toDisplayRows(resolution, strings),
     )
 }
 
-private fun PrayerTimeResolution.Available.nextIqamahSummary(): IqamahSummaryUiState? {
+private fun PrayerTimeResolution.Available.nextIqamahSummary(strings: AppStrings): IqamahSummaryUiState? {
     if (nextEvent?.localDate != localDate) return null
     val preferred = nextEvent.prayer
         ?.let(prayers::get)
@@ -649,10 +677,10 @@ private fun PrayerTimeResolution.Available.nextIqamahSummary(): IqamahSummaryUiS
     val isCountdownTarget = nextEvent.kind == PrayerEventKind.IQAMAH &&
         nextEvent.prayer == preferred.id && nextEvent.localTime == time
     return IqamahSummaryUiState(
-        label = "Икамат · ${prayerLabel(preferred.id)}",
+        label = strings.get(R.string.iqamah_for_prayer, prayerLabel(preferred.id, strings)),
         time = time.format(PRAYER_TIME_FORMAT),
         countdownLabel = if (isCountdownTarget) {
-            countdownSeconds?.let { "через ${formatCountdown(it)}" }
+            countdownSeconds?.let { strings.get(R.string.iqamah_countdown, formatCountdown(it)) }
         } else {
             null
         },
@@ -661,19 +689,20 @@ private fun PrayerTimeResolution.Available.nextIqamahSummary(): IqamahSummaryUiS
 
 private fun LocalPrayerDay.toDisplayRows(
     resolution: PrayerTimeResolution.Available,
+    strings: AppStrings,
 ): List<PrayerDisplayRow> = listOf(
-    prayerRow("fajr", "Фаджр", fajr, resolution),
+    prayerRow("fajr", prayerLabel("fajr", strings), fajr, resolution),
     PrayerDisplayRow(
         "sunrise",
-        "Восход",
+        prayerLabel("sunrise", strings),
         sunrise,
         iqamahPresentation = IqamahPresentation.NOT_APPLICABLE,
         isNextEvent = resolution.isCurrentDateNextPrayer("sunrise"),
     ),
-    prayerRow("dhuhr", "Зухр", dhuhr, resolution),
-    prayerRow("asr", "Аср", asr, resolution),
-    prayerRow("maghrib", "Магриб", maghrib, resolution),
-    prayerRow("isha", "Иша", isha, resolution),
+    prayerRow("dhuhr", prayerLabel("dhuhr", strings), dhuhr, resolution),
+    prayerRow("asr", prayerLabel("asr", strings), asr, resolution),
+    prayerRow("maghrib", prayerLabel("maghrib", strings), maghrib, resolution),
+    prayerRow("isha", prayerLabel("isha", strings), isha, resolution),
 )
 
 private fun prayerRow(
@@ -692,13 +721,32 @@ private fun prayerRow(
 private fun PrayerTimeResolution.Available.isCurrentDateNextPrayer(prayer: String): Boolean =
     nextEvent?.prayer == prayer && nextEvent.localDate == localDate
 
-private fun prayerLabel(id: String): String = when (id) {
-    "fajr" -> "Фаджр"
-    "dhuhr" -> "Зухр"
-    "asr" -> "Аср"
-    "maghrib" -> "Магриб"
-    "isha" -> "Иша"
-    else -> id
+private fun prayerLabel(id: String, strings: AppStrings): String {
+    val resource = when (id) {
+        "fajr" -> R.string.prayer_fajr
+        "sunrise" -> R.string.prayer_sunrise
+        "dhuhr" -> R.string.prayer_dhuhr
+        "asr" -> R.string.prayer_asr
+        "maghrib" -> R.string.prayer_maghrib
+        "isha" -> R.string.prayer_isha
+        else -> return id
+    }
+    return strings.get(resource)
+}
+
+private fun PrayerTimeResolution.Available.eventLabel(
+    event: com.example.namaztime.tv.domain.PrayerEvent,
+    strings: AppStrings,
+): String = when (event.kind) {
+    PrayerEventKind.ADHAN -> prayerLabel(requireNotNull(event.prayer), strings)
+    PrayerEventKind.IQAMAH -> strings.get(
+        R.string.event_iqamah_label,
+        prayerLabel(requireNotNull(event.prayer), strings),
+    )
+    PrayerEventKind.JUMUAH -> strings.get(
+        R.string.event_jumuah_label,
+        jumuahSessions.firstOrNull { it.id == event.jumuahSessionId }?.label.orEmpty(),
+    )
 }
 
 private fun formatCountdown(seconds: Long): String {
@@ -708,7 +756,6 @@ private fun formatCountdown(seconds: Long): String {
     return "%02d:%02d:%02d".format(Locale.ROOT, hours, minutes, remainingSeconds)
 }
 
-private val RUSSIAN_LOCALE = Locale.forLanguageTag("ru")
 private val CLOCK_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ROOT)
 private val PRAYER_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
 

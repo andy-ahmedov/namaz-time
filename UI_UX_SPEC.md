@@ -133,12 +133,12 @@ Each page:
 
 ### Local pilot mode
 
-1. choose language;
-2. choose/import preconfigured mosque fixture;
-3. confirm timezone and source;
-4. review today's schedule;
-5. configure iqamah;
-6. preview main screen.
+1. start in Russian with the authenticated preconfigured mosque snapshot;
+2. review mosque, timezone, source approval and coverage in settings;
+3. review approved iqamah/Jumu'ah policy without editing snapshot data on TV;
+4. optionally switch the whole UI to English; persist the choice locally;
+5. preview an approved QR campaign only when one exists in the snapshot;
+6. return to the main screen with D-pad focus restored.
 
 ### Remote mode
 

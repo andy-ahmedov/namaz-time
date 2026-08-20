@@ -49,6 +49,16 @@ class RoomPrayerScheduleRepositoryTest {
 
         assertEquals("Синтетическая демонстрационная мечеть", schedule?.mosqueName)
         assertEquals("Europe/Ulyanovsk", schedule?.timezoneId)
+        assertEquals("RU", schedule?.countryCode)
+        assertEquals("Ульяновская область", schedule?.region)
+        assertEquals("synthetic-fixture-v1", schedule?.sourceId)
+        assertEquals(
+            "Synthetic fixture scoped only to mosque-demo-ulsk",
+            schedule?.geographicScope,
+        )
+        assertEquals("2026-08-19T09:55:00Z", schedule?.retrievedAt)
+        assertEquals("Synthetic fixture created for tests", schedule?.licenseReference)
+        assertEquals("Not real prayer times; do not display in a mosque", schedule?.attribution)
         assertEquals(listOf("2026-08-19", "2026-08-20", "2026-08-21"), schedule?.days?.map { it.localDate })
         assertEquals(listOf("synthetic"), schedule?.days?.first()?.flags)
         assertEquals("synthetic", schedule?.diagnostics?.dataClassification)
@@ -56,6 +66,9 @@ class RoomPrayerScheduleRepositoryTest {
         assertEquals("synthetic/1", schedule?.diagnostics?.parserVersion)
         assertEquals("approval-synthetic-v1", schedule?.diagnostics?.approvalId)
         assertEquals("test-placeholder-key", schedule?.diagnostics?.signingKeyId)
+        assertEquals("2026-08-19T10:00:00Z", schedule?.diagnostics?.generatedAt)
+        assertEquals("test-suite", schedule?.diagnostics?.approvedBy)
+        assertEquals("2026-08-19T09:59:00Z", schedule?.diagnostics?.approvedAt)
         assertEquals(
             listOf("iqamah-dhuhr-demo", "iqamah-fajr-demo"),
             schedule?.iqamahRules?.map { it.id },

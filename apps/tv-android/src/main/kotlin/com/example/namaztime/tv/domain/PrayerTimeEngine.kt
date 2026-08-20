@@ -158,7 +158,7 @@ class PrayerTimeEngine(
                 time = tomorrowFajr,
                 zone = zone,
                 prayer = "fajr",
-                label = "Фаджр",
+                label = "fajr",
             )
         }
 
@@ -372,7 +372,7 @@ class PrayerTimeEngine(
                     time = prayer.adhan,
                     zone = zone,
                     prayer = prayer.id,
-                    label = prayerLabel(prayer.id),
+                    label = prayer.id,
                 )
             }
             if (countdownPolicy.includeIqamah && prayer.iqamah != null) {
@@ -382,7 +382,7 @@ class PrayerTimeEngine(
                     time = prayer.iqamah,
                     zone = zone,
                     prayer = prayer.id,
-                    label = "${prayerLabel(prayer.id)} · икамат",
+                    label = prayer.id,
                 )
             }
         }
@@ -394,7 +394,7 @@ class PrayerTimeEngine(
                     time = session.salahTime,
                     zone = zone,
                     jumuahSessionId = session.id,
-                    label = "Джума · ${session.label}",
+                    label = session.id,
                 )
             }
         }
@@ -453,15 +453,6 @@ class PrayerTimeEngine(
         PrayerEventKind.JUMUAH -> 2
     }
 
-    private fun prayerLabel(prayer: String): String = when (prayer) {
-        "fajr" -> "Фаджр"
-        "sunrise" -> "Восход"
-        "dhuhr" -> "Зухр"
-        "asr" -> "Аср"
-        "maghrib" -> "Магриб"
-        "isha" -> "Иша"
-        else -> prayer
-    }
 
     private fun fail(code: String, localDate: LocalDate? = null): Nothing =
         throw ResolutionFailure(code, localDate)

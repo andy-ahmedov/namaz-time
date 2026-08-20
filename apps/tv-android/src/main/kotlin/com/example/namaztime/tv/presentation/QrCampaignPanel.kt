@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Text
+import com.example.namaztime.tv.R
 import com.example.namaztime.tv.domain.QrCodeMatrix
 import com.example.namaztime.tv.domain.ResolvedCampaign
 
@@ -37,7 +38,7 @@ const val QR_CAMPAIGN_SUBTITLE_TAG = "qr-campaign-subtitle"
 
 data class QrCampaignUiState(
     val id: String,
-    val kindLabel: String,
+    val kind: String,
     val title: String,
     val subtitle: String?,
     val qrCode: QrCodeMatrix,
@@ -51,6 +52,7 @@ internal fun QrCampaignPanel(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
+    val kindLabel = appString(campaignKindResource(state.kind))
     TvGlassPanel(
         modifier = modifier
             .fillMaxHeight()
@@ -66,9 +68,9 @@ internal fun QrCampaignPanel(
         ) {
             Text(
                 text = if (state.preview) {
-                    "ПРЕДПРОСМОТР · ${state.kindLabel}"
+                    appString(R.string.qr_preview_label, kindLabel)
                 } else {
-                    state.kindLabel
+                    kindLabel
                 },
                 color = NamazTvTheme.colors.accent,
                 fontSize = 14.sp,
@@ -81,7 +83,7 @@ internal fun QrCampaignPanel(
                     matrix = state.qrCode,
                     outputSize = with(LocalDensity.current) { qrSize.roundToPx() },
                 ),
-                contentDescription = "QR-код: ${state.title}",
+                contentDescription = appString(R.string.qr_content_description, state.title),
                 modifier = Modifier
                     .padding(vertical = 8.dp)
                     .size(qrSize)
@@ -151,19 +153,21 @@ internal fun ResolvedCampaign.toQrCampaignUiState(
     preview: Boolean,
 ) = QrCampaignUiState(
     id = id,
-    kindLabel = when (kind) {
-        "donation" -> "ПОЖЕРТВОВАНИЕ"
-        "telegram" -> "TELEGRAM"
-        "schedule" -> "РАСПИСАНИЕ"
-        "contacts" -> "КОНТАКТЫ"
-        "website" -> "САЙТ"
-        else -> "ИНФОРМАЦИЯ"
-    },
+    kind = kind,
     title = title,
     subtitle = subtitle,
     qrCode = qrCode,
     preview = preview,
 )
+
+private fun campaignKindResource(kind: String): Int = when (kind) {
+    "donation" -> R.string.campaign_kind_donation
+    "telegram" -> R.string.campaign_kind_telegram
+    "schedule" -> R.string.campaign_kind_schedule
+    "contacts" -> R.string.campaign_kind_contacts
+    "website" -> R.string.campaign_kind_website
+    else -> R.string.campaign_kind_information
+}
 
 private const val BLACK: Int = -0x1000000
 private const val WHITE: Int = -0x1

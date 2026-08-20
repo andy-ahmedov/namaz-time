@@ -1,5 +1,7 @@
 package com.example.namaztime.tv.presentation
 
+import android.content.Context
+import androidx.test.core.app.ApplicationProvider
 import com.example.namaztime.tv.domain.PrayerTimeEngine
 import com.example.namaztime.tv.domain.PrayerTimeResolution
 import com.example.namaztime.tv.repository.LocalIqamahRule
@@ -10,8 +12,11 @@ import com.example.namaztime.tv.repository.LocalSnapshotDiagnostics
 import com.example.namaztime.tv.repository.toTimeEngineInput
 import org.junit.Assert.assertEquals
 import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 import java.time.Instant
 
+@RunWith(RobolectricTestRunner::class)
 class MainPrayerDisplayStateTest {
     @Test
     fun explicitlySelectedDateControlsDisplayedPrayerRow() {
@@ -20,7 +25,7 @@ class MainPrayerDisplayStateTest {
             schedule.toTimeEngineInput(),
             Instant.parse("2026-08-19T23:20:00Z"),
         ) as PrayerTimeResolution.Available
-        val state = schedule.toPrayerDisplayUiState(resolution)
+        val state = schedule.toPrayerDisplayUiState(resolution, strings())
 
         assertEquals("20 августа 2026", state.dateLabel)
         assertEquals("Четверг", state.weekdayLabel)
@@ -47,7 +52,7 @@ class MainPrayerDisplayStateTest {
             ) to "РАСЧЁТНОЕ — НЕ ОФИЦИАЛЬНО",
             base.copy(
                 diagnostics = base.diagnostics?.copy(dataClassification = "production"),
-            ) to "ИСТОЧНИК НЕ ПРОВЕРЕН",
+            ) to "УТВЕРЖДЁННЫЕ ДАННЫЕ",
             base.copy(
                 diagnostics = base.diagnostics?.copy(approvalStatus = "pending"),
             ) to "НЕ ОДОБРЕНО",
@@ -61,6 +66,7 @@ class MainPrayerDisplayStateTest {
                         schedule.toTimeEngineInput(),
                         Instant.parse("2026-08-19T23:20:00Z"),
                     ) as PrayerTimeResolution.Available,
+                    strings(),
                 ).sourceLabel,
             )
         }
@@ -85,7 +91,7 @@ class MainPrayerDisplayStateTest {
             Instant.parse("2026-08-21T08:30:00Z"),
         ) as PrayerTimeResolution.Available
 
-        val state = schedule.toPrayerDisplayUiState(resolution)
+        val state = schedule.toPrayerDisplayUiState(resolution, strings())
 
         assertEquals(listOf("Первая 13:00"), state.jumuahSessions.map { it.text })
         assertEquals("12:08", state.rows.first { it.id == "dhuhr" }.adhan)
@@ -100,7 +106,7 @@ class MainPrayerDisplayStateTest {
             Instant.parse("2026-08-20T17:00:00Z"),
         ) as PrayerTimeResolution.Available
 
-        val state = schedule.toPrayerDisplayUiState(resolution)
+        val state = schedule.toPrayerDisplayUiState(resolution, strings())
 
         assertEquals("Фаджр · завтра", state.nextPrayerLabel)
         assertEquals("03:14", state.rows.first { it.id == "fajr" }.adhan)
@@ -118,12 +124,35 @@ class MainPrayerDisplayStateTest {
             Instant.parse("2026-08-19T23:20:00Z"),
         ) as PrayerTimeResolution.Available
 
-        val state = schedule.toPrayerDisplayUiState(resolution)
+        val state = schedule.toPrayerDisplayUiState(resolution, strings())
 
         assertEquals("До азана", state.nextEventKindLabel)
         assertEquals("12:08", state.nextEventTime)
         assertEquals(null, state.iqamahSummary)
     }
+
+    @Test
+    fun englishLanguageLocalizesTheWholeDerivedDisplayState() {
+        val schedule = schedule()
+        val resolution = PrayerTimeEngine().resolve(
+            schedule.toTimeEngineInput(),
+            Instant.parse("2026-08-19T23:20:00Z"),
+        ) as PrayerTimeResolution.Available
+
+        val state = schedule.toPrayerDisplayUiState(resolution, strings(AppLanguage.ENGLISH))
+
+        assertEquals("20 August 2026", state.dateLabel)
+        assertEquals("Thursday", state.weekdayLabel)
+        assertEquals("Fajr · iqamah", state.nextPrayerLabel)
+        assertEquals("Until iqamah", state.nextEventKindLabel)
+        assertEquals("Iqamah · Fajr", state.iqamahSummary?.label)
+        assertEquals("in 00:19:00", state.iqamahSummary?.countdownLabel)
+        assertEquals("Fajr", state.rows.first().label)
+        assertEquals("TEST DATA", state.sourceLabel)
+    }
+
+    private fun strings(language: AppLanguage = AppLanguage.RUSSIAN): AppStrings =
+        appStringsFor(ApplicationProvider.getApplicationContext<Context>(), language)
 
     private fun schedule() = LocalPrayerSchedule(
         snapshotId = "synthetic-ulsk-demo-2026-08-v1",

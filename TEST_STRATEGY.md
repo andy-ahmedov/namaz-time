@@ -160,7 +160,11 @@ and one Friday 13:15 Jumu'ah session. The same test path performs real Android
 canonical/signature/trust validation before Room activation, rejects tampering
 without changing selection, and proves D-014 returns
 `SCHEDULE_DATE_OUTSIDE_COVERAGE` on 2027-01-01. These are local
-JVM/Robolectric/build facts; the product owner owns emulator acceptance.
+JVM/Robolectric/build facts. Settings tests traverse every section and real
+local action with D-pad input, verify Room-projected provenance/policy state,
+Russian safe defaults, persisted English selection and localized main/error/QR
+semantics. Responsive settings bounds remain pinned at 720p, 1080p-density and
+4K-density. The product owner owns emulator acceptance.
 
 ## Physical device tests
 

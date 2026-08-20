@@ -17,8 +17,8 @@ android {
         applicationId = "com.example.namaztime.tv"
         minSdk = 28
         targetSdk = 35
-        versionCode = 2
-        versionName = "0.3.0-pilot-local"
+        versionCode = 3
+        versionName = "0.4.0-pilot-local"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }

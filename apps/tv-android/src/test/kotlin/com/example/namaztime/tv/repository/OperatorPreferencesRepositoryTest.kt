@@ -26,6 +26,33 @@ class OperatorPreferencesRepositoryTest {
         assertEquals("diagnostics", repository.preferences.first().lastSettingsDestination)
     }
 
+    @Test
+    fun russianAndScreenRetentionProtectionAreSafeDefaults() = runTest {
+        val repository = repositoryFor(this)
+
+        val preferences = repository.preferences.first()
+
+        assertEquals("ru", preferences.languageTag)
+        assertEquals(true, preferences.screenRetentionShiftEnabled)
+    }
+
+    @Test
+    fun languageAndScreenRetentionChoicePersist() = runTest {
+        val repository = repositoryFor(this)
+
+        repository.setLanguageTag("en")
+        repository.setScreenRetentionShiftEnabled(false)
+
+        val preferences = repository.preferences.first()
+        assertEquals("en", preferences.languageTag)
+        assertEquals(false, preferences.screenRetentionShiftEnabled)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun unsupportedLanguageCannotBeStored() = runTest {
+        repositoryFor(this).setLanguageTag("unexpected")
+    }
+
     private fun repositoryFor(scope: TestScope): OperatorPreferencesRepository {
         val dataStore = PreferenceDataStoreFactory.create(
             scope = TestScope(UnconfinedTestDispatcher(scope.testScheduler)),

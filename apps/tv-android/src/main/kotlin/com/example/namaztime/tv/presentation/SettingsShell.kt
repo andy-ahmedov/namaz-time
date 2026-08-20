@@ -20,7 +20,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
@@ -32,13 +31,19 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Button
 import androidx.tv.material3.Text
+import com.example.namaztime.tv.R
+import com.example.namaztime.tv.repository.LocalPrayerSchedule
+import com.example.namaztime.tv.repository.OperatorPreferences
 
 const val SETTINGS_PAGE_ACTION_TEST_TAG = "settings-page-primary-action"
+const val SETTINGS_LOCAL_ACTION_TEST_TAG = "settings-page-local-action"
 const val SETTINGS_SHELL_TAG = "settings-shell"
 const val SETTINGS_NAVIGATION_PANEL_TAG = "settings-navigation-panel"
 const val SETTINGS_CONTENT_PANEL_TAG = "settings-content-panel"
@@ -50,11 +55,19 @@ fun SettingsShell(
     onExit: () -> Unit,
     modifier: Modifier = Modifier,
     campaignPreview: QrCampaignUiState? = null,
+    schedule: LocalPrayerSchedule? = null,
+    preferences: OperatorPreferences = OperatorPreferences(),
+    appVersion: String = "",
+    pilotLocalRuntime: Boolean = false,
+    onScreenRetentionShiftChanged: ((Boolean) -> Unit)? = null,
+    onLanguageChanged: ((String) -> Unit)? = null,
+    onOpenSystemSettings: (() -> Unit)? = null,
 ) {
     val navigationRequesters = remember {
         SettingsDestination.entries.associateWith { FocusRequester() }
     }
     val pageActionRequester = remember { FocusRequester() }
+    val returnActionRequester = remember { FocusRequester() }
     var selectedRoute by rememberSaveable { mutableStateOf(initialDestination.route) }
     var initialFocusRequested by remember(initialDestination) { mutableStateOf(false) }
     val selectedDestination = SettingsDestination.fromRoute(selectedRoute)
@@ -63,10 +76,7 @@ fun SettingsShell(
         selectedRoute = initialDestination.route
     }
 
-    TvSafeFrame(
-        testTag = SETTINGS_SHELL_TAG,
-        modifier = modifier,
-    ) {
+    TvSafeFrame(testTag = SETTINGS_SHELL_TAG, modifier = modifier) {
         Row(modifier = Modifier.fillMaxSize()) {
             TvGlassPanel(
                 modifier = Modifier
@@ -83,7 +93,7 @@ fun SettingsShell(
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     Text(
-                        text = "Настройки",
+                        text = appString(R.string.settings_title),
                         modifier = Modifier
                             .semantics { heading() }
                             .padding(bottom = 12.dp),
@@ -96,6 +106,7 @@ fun SettingsShell(
                         val isSelected = selectedRoute == destination.route
                         Button(
                             onClick = {
+                                navigationRequesters.getValue(destination).requestFocus()
                                 selectedRoute = destination.route
                                 onDestinationChanged(destination)
                             },
@@ -105,26 +116,20 @@ fun SettingsShell(
                                 .semantics { selected = isSelected }
                                 .focusRequester(navigationRequesters.getValue(destination))
                                 .onGloballyPositioned {
-                                    if (
-                                        destination == initialDestination &&
-                                        !initialFocusRequested
-                                    ) {
+                                    if (destination == initialDestination && !initialFocusRequested) {
                                         initialFocusRequested = true
                                         navigationRequesters.getValue(destination).requestFocus()
                                     }
                                 }
                                 .focusProperties {
-                                    destination.previous?.let { previous ->
-                                        up = navigationRequesters.getValue(previous)
-                                    }
-                                    destination.next?.let { next ->
-                                        down = navigationRequesters.getValue(next)
-                                    }
+                                    destination.previous?.let { up = navigationRequesters.getValue(it) }
+                                    destination.next?.let { down = navigationRequesters.getValue(it) }
                                     right = pageActionRequester
                                 }
                                 .onFocusChanged { focusState ->
+                                    val gainedFocus = focusState.isFocused && !focused
                                     focused = focusState.isFocused
-                                    if (focusState.isFocused && selectedRoute != destination.route) {
+                                    if (gainedFocus && selectedRoute != destination.route) {
                                         selectedRoute = destination.route
                                         onDestinationChanged(destination)
                                     }
@@ -143,7 +148,7 @@ fun SettingsShell(
                                     shape = RoundedCornerShape(12.dp),
                                 ),
                         ) {
-                            Text(destination.title)
+                            Text(appString(destination.titleRes))
                         }
                     }
                 }
@@ -162,8 +167,16 @@ fun SettingsShell(
                     destination = selectedDestination,
                     navigationRequester = navigationRequesters.getValue(selectedDestination),
                     pageActionRequester = pageActionRequester,
+                    returnActionRequester = returnActionRequester,
                     onExit = onExit,
                     campaignPreview = campaignPreview,
+                    schedule = schedule,
+                    preferences = preferences,
+                    appVersion = appVersion,
+                    pilotLocalRuntime = pilotLocalRuntime,
+                    onScreenRetentionShiftChanged = onScreenRetentionShiftChanged,
+                    onLanguageChanged = onLanguageChanged,
+                    onOpenSystemSettings = onOpenSystemSettings,
                     modifier = Modifier.padding(28.dp),
                 )
             }
@@ -171,62 +184,275 @@ fun SettingsShell(
     }
 }
 
+private data class LocalSettingsAction(
+    val label: String,
+    val invoke: () -> Unit,
+)
+
 @Composable
 private fun SettingsPage(
     destination: SettingsDestination,
     navigationRequester: FocusRequester,
     pageActionRequester: FocusRequester,
+    returnActionRequester: FocusRequester,
     onExit: () -> Unit,
     campaignPreview: QrCampaignUiState?,
+    schedule: LocalPrayerSchedule?,
+    preferences: OperatorPreferences,
+    appVersion: String,
+    pilotLocalRuntime: Boolean,
+    onScreenRetentionShiftChanged: ((Boolean) -> Unit)?,
+    onLanguageChanged: ((String) -> Unit)?,
+    onOpenSystemSettings: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
-    BoxWithConstraints(
-        modifier = modifier.fillMaxHeight(),
-    ) {
+    val language = AppLanguage.fromTag(preferences.languageTag)
+    val localAction = when (destination) {
+        SettingsDestination.APPEARANCE -> onScreenRetentionShiftChanged?.let { change ->
+            LocalSettingsAction(
+                label = appString(
+                    if (preferences.screenRetentionShiftEnabled) {
+                        R.string.action_disable_screen_shift
+                    } else {
+                        R.string.action_enable_screen_shift
+                    },
+                ),
+                invoke = { change(!preferences.screenRetentionShiftEnabled) },
+            )
+        }
+        SettingsDestination.LANGUAGE -> onLanguageChanged?.let { change ->
+            LocalSettingsAction(
+                label = appString(
+                    R.string.action_switch_language,
+                    appString(language.next.displayNameRes),
+                ),
+                invoke = { change(language.next.tag) },
+            )
+        }
+        SettingsDestination.KIOSK -> onOpenSystemSettings?.let { open ->
+            LocalSettingsAction(appString(R.string.action_open_system_settings), open)
+        }
+        else -> null
+    }
+
+    BoxWithConstraints(modifier = modifier.fillMaxHeight()) {
         val compactPreview = maxHeight < 600.dp
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            verticalArrangement = Arrangement.spacedBy(if (compactPreview) 10.dp else 16.dp),
         ) {
             Text(
-                text = destination.title,
+                text = appString(destination.titleRes),
                 modifier = Modifier.semantics { heading() },
                 color = NamazTvTheme.colors.textPrimary,
-                fontSize = 42.sp,
+                fontSize = if (compactPreview) 34.sp else 42.sp,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = destination.description,
+                text = appString(destination.descriptionRes),
                 color = NamazTvTheme.colors.textSecondary,
-                fontSize = 24.sp,
-                lineHeight = 32.sp,
+                fontSize = if (compactPreview) 19.sp else 24.sp,
+                lineHeight = if (compactPreview) 24.sp else 32.sp,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
             )
-            if (destination == SettingsDestination.CAMPAIGNS && campaignPreview != null) {
-                QrCampaignPanel(
-                    state = campaignPreview,
-                    qrSize = if (compactPreview) 96.dp else 160.dp,
-                    compact = compactPreview,
+            SettingsContent(
+                destination = destination,
+                schedule = schedule,
+                preferences = preferences,
+                appVersion = appVersion,
+                pilotLocalRuntime = pilotLocalRuntime,
+                campaignPreview = campaignPreview,
+                compact = compactPreview,
+                modifier = Modifier.weight(1f),
+            )
+            localAction?.let { action ->
+                Button(
+                    onClick = action.invoke,
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                )
-            } else {
-                Text(
-                    text = "Technical shell — no production schedule loaded",
-                    color = NamazTvTheme.colors.accent,
-                    fontSize = 20.sp,
-                )
-                Spacer(Modifier.weight(1f))
+                        .testTag(SETTINGS_LOCAL_ACTION_TEST_TAG)
+                        .focusRequester(pageActionRequester)
+                        .focusProperties {
+                            left = navigationRequester
+                            down = returnActionRequester
+                        },
+                ) {
+                    Text(action.label)
+                }
             }
             Button(
                 onClick = onExit,
                 modifier = Modifier
                     .testTag(SETTINGS_PAGE_ACTION_TEST_TAG)
-                    .focusRequester(pageActionRequester)
-                    .focusProperties { left = navigationRequester },
+                    .focusRequester(if (localAction == null) pageActionRequester else returnActionRequester)
+                    .focusProperties {
+                        left = navigationRequester
+                        if (localAction != null) up = pageActionRequester
+                    },
             ) {
-                Text("Return to display")
+                Text(appString(R.string.return_to_display))
             }
         }
+    }
+}
+
+@Composable
+private fun SettingsContent(
+    destination: SettingsDestination,
+    schedule: LocalPrayerSchedule?,
+    preferences: OperatorPreferences,
+    appVersion: String,
+    pilotLocalRuntime: Boolean,
+    campaignPreview: QrCampaignUiState?,
+    compact: Boolean,
+    modifier: Modifier,
+) {
+    if (schedule == null) {
+        Text(
+            text = appString(R.string.no_active_schedule),
+            modifier = modifier,
+            color = NamazTvTheme.colors.warning,
+            fontSize = 22.sp,
+        )
+        return
+    }
+    if (destination == SettingsDestination.CAMPAIGNS && campaignPreview != null) {
+        QrCampaignPanel(
+            state = campaignPreview,
+            qrSize = if (compact) 96.dp else 160.dp,
+            compact = compact,
+            modifier = modifier.fillMaxWidth(),
+        )
+        return
+    }
+    val diagnostics = schedule.diagnostics
+    val jumuahLabels = mutableListOf<String>()
+    for (session in schedule.jumuahSessions) {
+        jumuahLabels += appString(
+            R.string.value_jumuah_session,
+            session.label,
+            session.salahTime,
+        )
+    }
+    val details = when (destination) {
+        SettingsDestination.MOSQUE -> listOf(
+            R.string.field_mosque to schedule.mosqueName,
+            R.string.field_location to (schedule.locality ?: appString(R.string.value_not_available)),
+            R.string.field_timezone to schedule.timezoneId,
+            R.string.field_coverage to "${schedule.coverageFrom} — ${schedule.coverageTo}",
+        )
+        SettingsDestination.SOURCE -> listOf(
+            R.string.field_authority to (schedule.attribution ?: schedule.authorityName),
+            R.string.field_source_type to sourceKindLabel(schedule.sourceKind),
+            R.string.field_approval to appString(
+                if (diagnostics?.approvalStatus == "approved") R.string.value_approved else R.string.value_not_approved,
+            ),
+            R.string.field_source_id to schedule.sourceId,
+            R.string.field_raw_hash to (diagnostics?.rawSha256 ?: appString(R.string.value_not_available)),
+        )
+        SettingsDestination.IQAMAH -> listOf(
+            R.string.field_iqamah_rule to iqamahRuleLabel(schedule),
+            R.string.field_jumuah to jumuahLabels.joinToString("; ")
+                .ifEmpty { appString(R.string.value_not_configured) },
+            R.string.field_friday_dhuhr to if (schedule.jumuahSessions.isNotEmpty()) {
+                appString(R.string.value_friday_dhuhr_replaced)
+            } else {
+                appString(R.string.value_not_configured)
+            },
+        )
+        SettingsDestination.APPEARANCE -> listOf(
+            R.string.field_theme to appString(R.string.value_dark_theme),
+            R.string.field_screen_shift to appString(
+                if (preferences.screenRetentionShiftEnabled) R.string.value_screen_shift_on else R.string.value_screen_shift_off,
+            ),
+        )
+        SettingsDestination.CAMPAIGNS -> listOf(
+            R.string.settings_campaigns_title to if (schedule.campaigns.isEmpty()) {
+                appString(R.string.campaigns_not_configured)
+            } else {
+                appString(R.string.campaigns_configured_count, schedule.campaigns.size)
+            },
+        )
+        SettingsDestination.LANGUAGE -> {
+            val language = AppLanguage.fromTag(preferences.languageTag)
+            listOf(
+                R.string.field_language to appString(language.displayNameRes),
+                R.string.field_supported_languages to appString(R.string.supported_languages),
+            )
+        }
+        SettingsDestination.KIOSK -> listOf(
+            R.string.field_autostart to appString(R.string.autostart_not_configured),
+            R.string.field_kiosk to appString(R.string.kiosk_not_active),
+            R.string.field_installation_mode to appString(
+                if (pilotLocalRuntime) R.string.pilot_local_build else R.string.release_build,
+            ),
+        )
+        SettingsDestination.DIAGNOSTICS -> listOf(
+            R.string.field_snapshot_id to schedule.snapshotId,
+            R.string.field_app_version to appVersion,
+            R.string.field_parser to (diagnostics?.parserVersion ?: appString(R.string.value_not_available)),
+            R.string.field_approval_id to (diagnostics?.approvalId ?: appString(R.string.value_not_available)),
+            R.string.field_signing_key to (diagnostics?.signingKeyId ?: appString(R.string.value_not_available)),
+            R.string.field_data_state to appString(
+                if (diagnostics?.dataClassification == "production" && diagnostics.approvalStatus == "approved") {
+                    R.string.data_state_approved_real
+                } else {
+                    R.string.data_state_synthetic
+                },
+            ),
+        )
+    }
+    Column(modifier = modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        details.forEach { (label, value) -> SettingsDetail(appString(label), value, compact) }
+    }
+}
+
+@Composable
+private fun SettingsDetail(label: String, value: String, compact: Boolean) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            text = label,
+            modifier = Modifier.weight(0.36f),
+            color = NamazTvTheme.colors.textSecondary,
+            fontSize = if (compact) 16.sp else 19.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = value,
+            modifier = Modifier.weight(0.64f),
+            color = NamazTvTheme.colors.textPrimary,
+            fontSize = if (compact) 17.sp else 21.sp,
+            fontFamily = if (value.matches(Regex("[0-9a-f]{32,}"))) FontFamily.Monospace else null,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
+@Composable
+private fun sourceKindLabel(kind: String): String = appString(
+    when (kind) {
+        "official_file" -> R.string.value_official_file
+        "manual_import" -> R.string.value_manual_import
+        "calculation_profile" -> R.string.value_calculation
+        else -> R.string.value_other_source
+    },
+)
+
+@Composable
+private fun iqamahRuleLabel(schedule: LocalPrayerSchedule): String {
+    val offsets = schedule.iqamahRules
+        .filter { it.mode == "offset_after_adhan" }
+        .mapNotNull { it.offsetMinutes }
+        .distinct()
+    return when {
+        schedule.iqamahRules.isEmpty() -> appString(R.string.value_no_iqamah_rules)
+        offsets.size == 1 && schedule.iqamahRules.all { it.mode == "offset_after_adhan" } ->
+            appString(R.string.value_iqamah_offset, offsets.single())
+        else -> appString(R.string.value_multiple_iqamah_rules)
     }
 }

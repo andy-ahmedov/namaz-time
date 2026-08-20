@@ -12,7 +12,7 @@ Record product decisions here before converting stable architecture choices into
 | D-004 | Pilot TV/box model and Android version | OPEN | Installer | before performance/autostart promises | Android Studio TV Emulator API 36 / 1920×1080 is the current controlled runtime; physical TV/box remains unselected and emulator evidence is not an OEM support promise |
 | D-005 | Product name and Android application ID | OPEN | Product owner | before distributable build | product name accepted as `NamazTime` on 2026-08-20; `com.example.namaztime.tv` remains a non-production placeholder until a final application ID is selected |
 | D-006 | Repository software license | OPEN | Product owner | before public release | do not assume competitor/data licenses |
-| D-007 | Required languages for pilot | OPEN | Mosque | T005 | Russian + ? |
+| D-007 | Required languages for pilot | ACCEPTED | Product owner / mosque | T022 | Russian is the default; Russian and English are selectable for the whole TV UI and the choice persists locally. Confirmed 2026-08-20. |
 | D-008 | Local-only vs remote admin in MVP | OPEN | Product owner | before remote administration | T003 implements only the reversible local-first settings shell; it does not choose the final administration mode |
 | D-009 | Iqamah/Jumu'ah rule policy | ACCEPTED | Mosque approver | T006/T010 | all iqamah values are adhan +5 minutes; Friday Dhuhr congregation is replaced by one Jumuah at 13:15; no separate Ramadan/holiday exceptions yet; collective-Dhuhr source column is the mosque Dhuhr adhan |
 | D-010 | QR campaign domains and approval | OPEN | Mosque | T007 | HTTPS and official destination |

@@ -63,11 +63,11 @@ accepts only an isolated signer interface/two-signature response, Go/API
 and Android consume the same `scheduled`/`active`/`retired`/`revoked` public
 trust model with direct-predecessor transition checks, and finalization emits a
 signer-attested hash-chained receipt required by production API admission.
-The `0.3.0-pilot-local` debug APK was rebuilt, installed and D-pad checked on
-the selected API 36 Android TV emulator; SHA-256 is
-`1308f1e65622335ab988ca481a508613d80ab882540929e56c40541e76f98539`.
-It intentionally retains the visibly synthetic bootstrap until a KMS-signed
-production snapshot is delivered through D-015/T009 pairing and sync.
+The earlier `0.3.0-pilot-local` emulator evidence is historical and has been
+superseded by T022. Runtime acceptance of the new APK belongs to the product
+owner; repository claims remain local build/Robolectric evidence until that
+run is recorded. Production delivery still requires D-015/T009 pairing and a
+KMS-signed publication.
 
 T009 completes the locally testable delivery half of the Phase 2 invariant. The
 runtime command refuses to embed fixture credentials or trust keys, requires
@@ -126,11 +126,9 @@ backend or current Robolectric evidence labels.
 | T019 accelerated offline rollover hardening | DONE | deterministic seven-day matrix over one materialized local schedule preserves mosque-local date/time and safe frame at 4K density, then fails closed on the first uncovered date; Android/repository gates and independent review pass; this is not a Room-reopen or physical seven-day soak |
 | T020 bounded device-clock health | DONE | HTTPS manifest `Date` compared with injected response receipt at ±5-minute tolerance plus rollback detection; durable nullable health never blocks sync/display; heartbeat tri-state contract/wiring and physical bad-RTC/TLS/power evidence remain deferred |
 | T021 bounded display-retention shift | DONE | public display foreground follows a deterministic six-position, ten-minute, ±2 dp cycle inside the shared safe frame; unavailable display participates while settings/background/focus order remain unchanged; pure policy plus 720p/1080p/4K safe-frame and D-pad regressions pass locally; panel-specific efficacy remains physical evidence |
-| T022 pilot-local real runtime and settings | IN_PROGRESS | checkpoint 1: debug/pilot-local APK packages an approval-bound, locally signed 365-day Ulyanovsk snapshot plus disjoint public trust bundles; cold bootstrap authenticates and activates it through Room, exact August precedence/D-009 values and D-014 post-coverage failure are regression-tested; release embeds no schedule/trust asset. Settings/localization checkpoints remain in progress. |
+| T022 pilot-local real runtime and settings | DONE | debug/pilot-local packages an approval-bound 365-day Ulyanovsk snapshot plus disjoint public trust, authenticates and atomically activates it through Room, pins August precedence/D-009 and fails safely after D-014 coverage; release embeds no schedule/trust. Every settings section reports Room/local state, local appearance/language actions persist, Russian is default, RU/EN covers display/settings/error/QR/accessibility, and D-pad plus 720p/1080p/4K regressions pass locally. Emulator acceptance is product-owner-owned and remains `UNKNOWN`. |
 
-The original independent local Phase 4 queue is complete through T021. T022 is
-the product-owner-requested pilot-local integration task and is now in progress.
-After T022, the
+The independent local Phase 4 queue is complete through T022. After T022, the
 remaining matrix below requires physical hardware, OEM behavior or an open
 deployment decision, so it is not replaced with an invented local task and
 Phase 5 has not started.
