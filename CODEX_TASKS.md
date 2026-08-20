@@ -432,3 +432,38 @@ snapshot becomes active and the synthetic row is deleted instead of becoming
 last-known-good. A concurrent/unexpected active ID makes replacement abort
 without persistence, so this debug migration cannot overwrite a paired real or
 remote snapshot.
+
+## T023 — Android TV visual redesign and offline image backgrounds
+
+**Goal:** redesign the complete Android TV visual language from the post-T022
+local state, using `design.png` only as a clean-room composition/mood reference
+and preserving the real data-driven display behavior.
+
+**In scope:** an app-wide dark navy/gold Material 3 token system; translucent
+glass surfaces; centered NamazTime pill and mosque identity; responsive left
+next-event/countdown plus clock stack; right prayer table with six original
+prayer glyphs, a separate iqamah glyph, non-color active-row treatment and
+Sunrise centered across the combined time area; bottom iqamah/provenance strip;
+two original offline image backgrounds with a validated persisted Appearance
+choice; D-pad/focus, RU/EN and 720p/1080p/4K regressions; controlled emulator
+build/install/screenshot comparison.
+
+**Non-goals:** copying third-party branding, screenshot pixels, background,
+icons or ornament; changing T022 prayer/source/domain values; custom/remote
+asset upload; network access from display composition; physical-TV/OEM claims;
+portrait/video backgrounds; push or PR.
+
+**Acceptance:** packaged background tests, preference validation/persistence,
+visual semantic anchors and Sunrise geometry pass; existing prayer, D-pad,
+localization, safe-frame and offline tests remain green; debug APK builds and
+installs on the API 36 Android TV emulator; main, Settings and Appearance are
+recorded and visually inspected; repository checks pass.
+
+**Result:** completed locally on 2026-08-20. The main display now follows the
+requested visual hierarchy with original project imagery and glyphs while
+continuing to project the unchanged Room/T006 state. Appearance persists only
+allowlisted bundled image IDs and safely defaults unknown values. Settings and
+recovery reuse the same glass surfaces, typography, gold focus language and
+full-bleed background. Emulator evidence is `CONFIRMED_RUNTIME` for the bounded
+1920×1080/API 36 observations only; physical-TV readability and panel behavior
+remain `UNKNOWN`.

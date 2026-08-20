@@ -134,6 +134,16 @@ return. A disposal regression also preserves a pre-existing host flag. This is
 local lifecycle evidence only; OEM power-management behavior remains in the
 physical device matrix.
 
+T023 adds semantic anchors for the NamazTime brand pill, six distinct prayer
+glyph slots and the iqamah glyph; it also verifies Sunrise centers one time
+across the combined adhan/iqamah area. DataStore tests pin the allowlisted image
+background default, persistence and invalid-ID rejection, while a D-pad Compose
+test changes the background from Appearance. Existing root-relative 720p,
+1080p-density and 4K-density bounds remain the adaptive regression matrix.
+Controlled API 36 emulator screenshots provide bounded `CONFIRMED_RUNTIME`
+visual evidence; they do not establish physical-TV overscan, scan distance or
+panel behavior.
+
 T019 reuses the connected display resolver with one immutable synthetic local
 schedule and advances an injected instant over seven consecutive mosque-local
 dates at the 4K-density profile. Every covered day retains its date, local

@@ -26,6 +26,11 @@ glass panels, radii and a static built-in atmospheric background. The
 background is drawn by project code and remains available offline; no reference
 image, competitor brand, icon, ornament or extracted resource is packaged.
 
+ADR 0012 supersedes only the background implementation: the app now packages
+original offline image assets and a validated local Appearance choice. The
+single-system, clean-room and offline-state decisions in this ADR remain in
+force.
+
 All public-display content stays a projection of immutable local state. Room
 supplies mosque, snapshot and daily values; the T006 engine supplies the
 mosque-local date/time, event kind/time, resolved iqamah/Jumu'ah and countdown.

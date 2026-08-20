@@ -49,3 +49,33 @@ private application data.
 - physical overscan/readability, OEM boot, panel retention or power-loss;
 - pairing/API sync, rollback or key revocation on this emulator session;
 - performance soak or seven-day offline runtime.
+
+## T023 visual redesign loop
+
+Evidence label: `CONFIRMED_RUNTIME` for the following bounded observations on
+the same controlled API 36 / 1920×1080 emulator. This does not promote the
+observations to physical-TV evidence.
+
+- version `0.4.0-pilot-local` / versionCode 3 built, installed with `adb
+  install -r`, launched and remained the focused `MainActivity`;
+- the final main screen rendered the original Golden dusk image full bleed,
+  centered NamazTime pill and mosque identity, left next-prayer/countdown and
+  clock cards, the six-row prayer table with distinct gold glyphs, centered
+  Sunrise time, highlighted next row and bottom iqamah/provenance strip;
+- D-pad entered Appearance, exposed the persisted current background and
+  switched between Golden dusk and Blue hour without changing the displayed
+  schedule; Settings retained visible focus and the shared glass/token system;
+- main and Settings screenshots were visually inspected after the final APK
+  install against the supplied hierarchy/mood reference. No reference pixels,
+  background, logo or competitor asset were packaged.
+
+The final debug APK SHA-256 is
+`c0fd08c172219641eeefc5905e845224899cb5508f580f87f20675aaf1758610`.
+The final main and Appearance/Settings screencap SHA-256 values are
+`bf21629145d61c8088f01a6727425f55ed90798da4cf468c7a69a07ab59353c0`
+and
+`8477d2c053be5a97396d9f8a76185b4e5ef8824c5f3e5c75a6558c22d5e1791a`.
+The raw screenshots remain outside Git.
+
+Evidence label: `UNKNOWN` for physical overscan/readability, panel retention,
+OEM focus differences and long-running 4K memory behavior.

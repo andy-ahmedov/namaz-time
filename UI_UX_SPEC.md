@@ -97,9 +97,20 @@ Requirements:
 - avoid detailed imagery behind small text;
 - no video background in MVP.
 
-The Phase 4 built-in background is an original static Compose drawing. The
-product-owner-supplied `design.png` is a hierarchy/mood reference only and is
-not packaged, cropped or copied as an application asset.
+The Phase 4 built-in backgrounds are original static landscape WebP images.
+Golden dusk is the safe default and Blue hour is selectable from Appearance;
+both remain offline and use the same bounded dark scrim. Unknown persisted IDs
+fall back to Golden dusk. The product-owner-supplied `design.png` is a
+hierarchy/mood reference only and is not packaged, cropped or copied as an
+application asset. Custom/remote media remains outside this local allowlist and
+requires its separately approved signed asset pipeline.
+
+The main display uses a centered NamazTime pill, mosque identity, a left
+next-event/countdown and local-clock stack, a right six-row prayer table and a
+bottom iqamah/provenance strip. Every prayer has a distinct original gold line
+glyph. Sunrise displays its single adhan value centered across the shared
+adhan/iqamah time area. The next row uses a side marker, border and translucent
+accent surface so its meaning does not depend only on color.
 
 In public display mode, the foreground safe-frame content uses a deterministic
 six-position cycle every ten minutes, bounded to ±2 dp per axis. The full-bleed
