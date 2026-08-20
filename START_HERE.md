@@ -81,9 +81,9 @@ code .
 codex
 ```
 
-Локальный Phase 1 и T009 завершены. T011 развивает независимую от T010
-production pairing основу на PostgreSQL; авторизованный admin API остаётся
-следующим T012. T009 использует только инъецируемый
+Локальный Phase 1 и T009 завершены. T011 добавил независимую от T010
+production pairing основу на PostgreSQL; T012 строит поверх неё verifier-only
+admin auth, mosque-scoped RBAC и idempotent fleet API. T009 использует только инъецируемый
 public-key trust store и test fixture: production key/credentials в APK и Git
 не добавлены. T010 остаётся заблокирован на D-002, полном годовом источнике,
 D-013 и отдельной физической TV/ADB canary/rollback-приёмке.

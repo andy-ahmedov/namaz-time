@@ -382,6 +382,174 @@ func TestProductionPairingBackendCallsHaveBoundedDeadlines(t *testing.T) {
 	}
 }
 
+func TestAdminFleetHTTPRequiresAuthScopeAndIdempotency(t *testing.T) {
+	t.Parallel()
+
+	admin := &recordingHTTPAdminBackend{
+		principal: AdminPrincipal{
+			ActorID:     "actor-mosque-admin-0001",
+			Memberships: []AdminMembership{{MosqueID: "synthetic-verification-mosque", Role: AdminRoleMosqueAdmin}},
+		},
+		issued: IssuedPairing{
+			DeviceID: "device-production-0001", Code: "ABCDEFGHIJKLMNOPQRSTUVWX26",
+			ExpiresAt: time.Date(2026, 8, 20, 12, 10, 0, 0, time.UTC),
+		},
+		devices: []FleetDevice{{DeviceID: "device-production-0001", MosqueID: "synthetic-verification-mosque", Status: "pending"}},
+	}
+	config := validServiceConfig(t)
+	config.PairingFixtures = nil
+	config.Assignments = nil
+	config.AdminBackend = admin
+	service, err := NewService(config)
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+	server := httptest.NewServer(service.Handler())
+	t.Cleanup(server.Close)
+
+	unauthorized := request(t, http.MethodGet, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices", nil, "", "")
+	if unauthorized.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("unauthorized admin status = %d", unauthorized.StatusCode)
+	}
+
+	issued := adminRequest(
+		t, http.MethodPost, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/pairing-codes",
+		[]byte(`{"expires_in_seconds":600,"reason":"install lobby display"}`),
+		"admin-bearer-token-valid-0001", "idem-admin-issue-0001",
+	)
+	if issued.StatusCode != http.StatusCreated || !strings.Contains(issued.Body, admin.issued.Code) {
+		t.Fatalf("admin issue response = %d %s", issued.StatusCode, issued.Body)
+	}
+	if admin.issueCommand.MosqueID != "synthetic-verification-mosque" ||
+		admin.issueCommand.IdempotencyKey != "idem-admin-issue-0001" || !validIdentifier(admin.issueCommand.RequestID) {
+		t.Fatalf("admin issue command = %#v", admin.issueCommand)
+	}
+
+	missingIdempotency := adminRequest(
+		t, http.MethodPost, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/pairing-codes",
+		[]byte(`{"expires_in_seconds":600,"reason":"install lobby display"}`),
+		"admin-bearer-token-valid-0001", "",
+	)
+	if missingIdempotency.StatusCode != http.StatusBadRequest {
+		t.Fatalf("missing idempotency status = %d", missingIdempotency.StatusCode)
+	}
+
+	listed := adminRequest(
+		t, http.MethodGet, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices",
+		nil, "admin-bearer-token-valid-0001", "",
+	)
+	if listed.StatusCode != http.StatusOK || !strings.Contains(listed.Body, "device-production-0001") {
+		t.Fatalf("admin list response = %d %s", listed.StatusCode, listed.Body)
+	}
+
+	revoked := adminRequest(
+		t, http.MethodPost, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices/device-production-0001/revoke",
+		[]byte(`{"reason":"device replaced"}`), "admin-bearer-token-valid-0001", "idem-admin-revoke-0001",
+	)
+	if revoked.StatusCode != http.StatusNoContent || admin.revokeCommand.DeviceID != "device-production-0001" {
+		t.Fatalf("admin revoke response = %d %s, command=%#v", revoked.StatusCode, revoked.Body, admin.revokeCommand)
+	}
+
+	assigned := adminRequest(
+		t, http.MethodPut, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices/device-production-0001/assignment",
+		[]byte(`{"snapshot_id":"synthetic-android-verification-v1","minimum_app_version":"0.2.0-shell","reason":"approved test assignment"}`),
+		"admin-bearer-token-valid-0001", "idem-admin-assign-0001",
+	)
+	if assigned.StatusCode != http.StatusOK || admin.assignCommand.SnapshotSHA256 != config.Snapshots[0].SHA256 ||
+		admin.assignCommand.SnapshotMosqueID != "synthetic-verification-mosque" {
+		t.Fatalf("admin assignment response = %d %s, command=%#v", assigned.StatusCode, assigned.Body, admin.assignCommand)
+	}
+	admin.retryAssignment = DeviceAssignment{
+		DeviceID: "device-production-0001", ManifestVersion: 1,
+		SnapshotID: "removed-snapshot-0001", SnapshotURL: "https://api.example.invalid/v1/snapshots/removed-snapshot-0001",
+		SnapshotSHA256: strings.Repeat("a", 64), SigningKeyID: "removed-key",
+	}
+	admin.retryFound = true
+	historicalRetry := adminRequest(
+		t, http.MethodPut, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices/device-production-0001/assignment",
+		[]byte(`{"snapshot_id":"removed-snapshot-0001","reason":"historical retry"}`),
+		"admin-bearer-token-valid-0001", "idem-admin-historical-01",
+	)
+	if historicalRetry.StatusCode != http.StatusOK || !strings.Contains(historicalRetry.Body, "removed-snapshot-0001") {
+		t.Fatalf("removed-artifact retry response = %d %s", historicalRetry.StatusCode, historicalRetry.Body)
+	}
+	admin.retryFound = false
+	admin.authorizeErr = ErrAdminResourceNotFound
+	beforeAuthorizationCalls := admin.authorizeCalls
+	for _, snapshotID := range []string{"synthetic-android-verification-v1", "unknown-snapshot-0001"} {
+		denied := adminRequest(
+			t, http.MethodPut, server.URL+"/v1/admin/mosques/other-mosque-000001/devices/device-production-0001/assignment",
+			[]byte(`{"snapshot_id":"`+snapshotID+`","reason":"cross scope probe"}`),
+			"admin-bearer-token-valid-0001", "idem-admin-probe-0001",
+		)
+		if denied.StatusCode != http.StatusNotFound {
+			t.Fatalf("cross-scope assignment %s status = %d", snapshotID, denied.StatusCode)
+		}
+	}
+	if admin.authorizeCalls != beforeAuthorizationCalls+2 {
+		t.Fatalf("assignment registry lookup bypassed scope preauthorization: calls=%d", admin.authorizeCalls)
+	}
+	admin.authorizeErr = nil
+
+	admin.issueErr = ErrAdminIdempotencyConflict
+	conflict := adminRequest(
+		t, http.MethodPost, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/pairing-codes",
+		[]byte(`{"expires_in_seconds":600,"reason":"conflicting retry"}`),
+		"admin-bearer-token-valid-0001", "idem-admin-issue-0001",
+	)
+	if conflict.StatusCode != http.StatusConflict {
+		t.Fatalf("idempotency conflict status = %d", conflict.StatusCode)
+	}
+	admin.issueErr = nil
+	admin.authErr = errors.New("database unavailable")
+	infrastructure := adminRequest(
+		t, http.MethodGet, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices",
+		nil, "admin-bearer-token-valid-0001", "",
+	)
+	if infrastructure.StatusCode != http.StatusInternalServerError || !strings.Contains(infrastructure.Body, `"retryable":true`) {
+		t.Fatalf("admin auth infrastructure response = %d %s", infrastructure.StatusCode, infrastructure.Body)
+	}
+}
+
+func TestPersistentAssignmentFeedsExistingDeviceReadContract(t *testing.T) {
+	t.Parallel()
+
+	config := validServiceConfig(t)
+	assignment := config.Assignments[0]
+	config.PairingFixtures = nil
+	config.Assignments = nil
+	pairing := &recordingHTTPPairingBackend{principal: DevicePrincipal{
+		DeviceID: assignment.DeviceID,
+		Mosque:   MosqueIdentity{ID: "synthetic-verification-mosque", Name: "Synthetic verification fixture", Timezone: "Europe/Ulyanovsk"},
+	}}
+	admin := &recordingHTTPAdminBackend{assignment: assignment}
+	config.PairingBackend = pairing
+	config.AdminBackend = admin
+	service, err := NewService(config)
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+	server := httptest.NewServer(service.Handler())
+	t.Cleanup(server.Close)
+
+	manifest := request(t, http.MethodGet, server.URL+"/v1/devices/"+assignment.DeviceID+"/manifest", nil, "valid-device-token-0001", "")
+	if manifest.StatusCode != http.StatusOK || !strings.Contains(manifest.Body, assignment.SnapshotID) {
+		t.Fatalf("persistent manifest response = %d %s", manifest.StatusCode, manifest.Body)
+	}
+	snapshot := request(t, http.MethodGet, server.URL+"/v1/snapshots/"+assignment.SnapshotID, nil, "valid-device-token-0001", "")
+	if snapshot.StatusCode != http.StatusOK {
+		t.Fatalf("persistent snapshot response = %d %s", snapshot.StatusCode, snapshot.Body)
+	}
+	if admin.assignmentDeviceID != assignment.DeviceID || admin.assignmentMosqueID != "synthetic-verification-mosque" {
+		t.Fatalf("assignment scope = %s/%s", admin.assignmentMosqueID, admin.assignmentDeviceID)
+	}
+	admin.assignment.SnapshotSHA256 = strings.Repeat("0", 64)
+	corrupt := request(t, http.MethodGet, server.URL+"/v1/devices/"+assignment.DeviceID+"/manifest", nil, "valid-device-token-0001", "")
+	if corrupt.StatusCode != http.StatusInternalServerError || !strings.Contains(corrupt.Body, `"retryable":true`) {
+		t.Fatalf("corrupt persistent assignment response = %d %s", corrupt.StatusCode, corrupt.Body)
+	}
+}
+
 type capturedResponse struct {
 	StatusCode int
 	Header     http.Header
@@ -499,6 +667,100 @@ func (*deadlineHTTPPairingBackend) Pair(ctx context.Context, _ PairingAttempt) (
 func (*deadlineHTTPPairingBackend) Authenticate(ctx context.Context, _ string) (DevicePrincipal, error) {
 	<-ctx.Done()
 	return DevicePrincipal{}, ctx.Err()
+}
+
+type recordingHTTPAdminBackend struct {
+	principal          AdminPrincipal
+	authErr            error
+	authorizeErr       error
+	authorizeCalls     int
+	issued             IssuedPairing
+	issueErr           error
+	issueCommand       AdminIssuePairingCommand
+	devices            []FleetDevice
+	revokeCommand      AdminRevokeDeviceCommand
+	assignCommand      AdminAssignDeviceCommand
+	assignment         DeviceAssignment
+	retryAssignment    DeviceAssignment
+	retryFound         bool
+	retryErr           error
+	assignmentDeviceID string
+	assignmentMosqueID string
+}
+
+func (backend *recordingHTTPAdminBackend) AuthorizeAdminScope(_ AdminPrincipal, _ string, _ bool) error {
+	backend.authorizeCalls++
+	return backend.authorizeErr
+}
+
+func (backend *recordingHTTPAdminBackend) AuthenticateAdmin(_ context.Context, _ string) (AdminPrincipal, error) {
+	return backend.principal, backend.authErr
+}
+
+func (backend *recordingHTTPAdminBackend) IssuePairing(_ context.Context, _ AdminPrincipal, command AdminIssuePairingCommand) (IssuedPairing, error) {
+	backend.issueCommand = command
+	return backend.issued, backend.issueErr
+}
+
+func (backend *recordingHTTPAdminBackend) ListDevices(_ context.Context, _ AdminPrincipal, _ string) ([]FleetDevice, error) {
+	return append([]FleetDevice(nil), backend.devices...), nil
+}
+
+func (backend *recordingHTTPAdminBackend) RevokeDevice(_ context.Context, _ AdminPrincipal, command AdminRevokeDeviceCommand) error {
+	backend.revokeCommand = command
+	return nil
+}
+
+func (backend *recordingHTTPAdminBackend) RetryAssignment(_ context.Context, _ AdminPrincipal, _ AdminAssignmentRetryQuery) (DeviceAssignment, bool, error) {
+	return backend.retryAssignment, backend.retryFound, backend.retryErr
+}
+
+func (backend *recordingHTTPAdminBackend) AssignDevice(_ context.Context, _ AdminPrincipal, command AdminAssignDeviceCommand) (DeviceAssignment, error) {
+	backend.assignCommand = command
+	if backend.assignment.DeviceID != "" {
+		return backend.assignment, nil
+	}
+	return DeviceAssignment{
+		DeviceID: command.DeviceID, ManifestVersion: 1, SnapshotID: command.SnapshotID,
+		SnapshotURL: command.SnapshotURL, SnapshotSHA256: command.SnapshotSHA256,
+		SigningKeyID: command.SigningKeyID, MinimumAppVersion: command.MinimumAppVersion,
+	}, nil
+}
+
+func (backend *recordingHTTPAdminBackend) GetDeviceAssignment(_ context.Context, deviceID, mosqueID string) (DeviceAssignment, error) {
+	backend.assignmentDeviceID = deviceID
+	backend.assignmentMosqueID = mosqueID
+	if backend.assignment.DeviceID == "" {
+		return DeviceAssignment{}, ErrDeviceAssignmentNotFound
+	}
+	return backend.assignment, nil
+}
+
+func adminRequest(t *testing.T, method, url string, body []byte, token, idempotencyKey string) capturedResponse {
+	t.Helper()
+	req, err := http.NewRequest(method, url, bytes.NewReader(body))
+	if err != nil {
+		t.Fatalf("NewRequest(admin) error = %v", err)
+	}
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+	if idempotencyKey != "" {
+		req.Header.Set("Idempotency-Key", idempotencyKey)
+	}
+	response, err := http.DefaultClient.Do(req)
+	if err != nil {
+		t.Fatalf("Do(admin) error = %v", err)
+	}
+	defer response.Body.Close()
+	data, err := io.ReadAll(response.Body)
+	if err != nil {
+		t.Fatalf("ReadAll(admin) error = %v", err)
+	}
+	return capturedResponse{StatusCode: response.StatusCode, Header: response.Header, Body: string(data)}
 }
 
 func (backend *recordingHTTPPairingBackend) Pair(_ context.Context, attempt PairingAttempt) (PairingProvisioning, error) {

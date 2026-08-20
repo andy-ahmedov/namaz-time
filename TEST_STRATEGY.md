@@ -192,6 +192,22 @@ deadline and proves cancellation leaves the code/device unchanged. Normal
 `go test ./...` remains container-independent;
 `make test-postgres` is the explicit integration gate.
 
+T012 extends the same real PostgreSQL gate through migration v2. It authenticates
+verifier-only admin tokens, exercises global `service_admin`, local
+`mosque_admin` and read-only support, denies cross-mosque reads/writes with the
+same not-found outcome, and verifies issue/revoke/assignment audit evidence.
+Retries prove one pairing/device row, one revocation event and the exact
+historical assignment response even after a newer manifest version. Unit/HTTP
+tests cover admin 401/404/409/500 boundaries, bidirectional mixed-replica HMAC
+rotation and fail-closed persistent assignment registry mismatch. An assignment
+retry also succeeds from stored evidence after its artifact leaves the current
+registry; expired evidence returns `409` without creating a resource.
+The database suite also rejects update/delete/truncate against idempotency rows
+It proves a targeted v2-to-v1 rollback preserves T011 pairing state and that API
+schema verification rejects v1. The runtime restart path connects as a separate
+least-privileged role and proves it cannot provision admin actors or disable an
+audit trigger while normal pairing/admin operations still succeed.
+
 ## Release evidence
 
 Each release records:

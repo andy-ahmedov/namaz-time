@@ -46,15 +46,19 @@
 - `docs/adr/0002-tv-offline-first.md`
 - `docs/adr/0003-canonical-snapshot-signatures.md`
 - `docs/adr/0004-production-pairing-and-fleet-scope.md`
+- `docs/adr/0005-admin-rbac-idempotency-and-assignments.md`
 
 ## Technical scaffold
 
 - `go.mod` — Go module identity and language baseline.
-- `cmd/api/` — private-configured device pairing/manifest/snapshot HTTP runtime,
-  including explicit PostgreSQL production-pairing wiring.
-- `internal/devices/` — strict pairing fixture, production pairing manager and
-  PostgreSQL migrations/repository, bearer-scoped manifest/snapshot service and
-  signed immutable registry validation.
+- `cmd/api/` — private-configured device/admin HTTP runtime with explicit
+  PostgreSQL pairing, RBAC and idempotency-key-ring wiring.
+- `cmd/migrate/` — short-lived explicit-target PostgreSQL schema migration
+  command; schema-owner credentials never enter the API process.
+- `internal/devices/` — strict pairing fixture, production pairing/admin
+  managers, PostgreSQL v1/v2 migrations/repositories, mosque-scoped fleet
+  administration, bearer-scoped manifest/snapshot service and signed immutable
+  registry validation.
 - `cmd/ingestor/` — local manual-fixture inspection CLI; it cannot approve or publish.
 - `internal/domain/` — source-independent snapshot types, validation and contract fixtures.
 - `internal/providers/manual/` — strict raw-artifact + manual CSV candidate provider.
@@ -81,7 +85,7 @@
 - `CONTRIBUTING.md`
 - `scripts/docs-check.sh`
 - `scripts/android-tv-evidence.sh` — read-only ADB evidence helper for owned test hardware.
-- `scripts/test-postgres.sh` — disposable PostgreSQL pairing integration gate.
+- `scripts/test-postgres.sh` — disposable PostgreSQL pairing/RBAC/admin integration gate.
 - `Makefile`
 - `SHA256SUMS.txt`
 

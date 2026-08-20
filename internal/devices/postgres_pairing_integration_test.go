@@ -14,8 +14,90 @@ import (
 	"testing"
 	"time"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
+
+func TestPostgresPairingMigrationUpgradesVersionOneToTwo(t *testing.T) {
+	databaseURL := os.Getenv("NAMAZ_TEST_POSTGRES_URL")
+	if databaseURL == "" {
+		t.Skip("NAMAZ_TEST_POSTGRES_URL is not set")
+	}
+	pool, err := pgxpool.New(t.Context(), databaseURL)
+	if err != nil {
+		t.Fatalf("connect PostgreSQL: %v", err)
+	}
+	t.Cleanup(pool.Close)
+	repository := NewPostgresPairingRepository(pool)
+	if err := repository.MigrateTo(t.Context(), 0); err != nil {
+		t.Fatalf("reset migrations: %v", err)
+	}
+	tx, err := pool.Begin(t.Context())
+	if err != nil {
+		t.Fatalf("begin v1 seed: %v", err)
+	}
+	defer func() { _ = tx.Rollback(t.Context()) }()
+	if _, err := tx.Exec(t.Context(), `
+		CREATE TABLE IF NOT EXISTS schema_migrations (
+			version bigint PRIMARY KEY,
+			applied_at timestamptz NOT NULL
+		)`); err != nil {
+		t.Fatalf("create v1 ledger: %v", err)
+	}
+	if _, err := tx.Exec(t.Context(), `DELETE FROM schema_migrations`); err != nil {
+		t.Fatalf("clear v1 ledger: %v", err)
+	}
+	v1, err := pairingMigrations.ReadFile("migrations/000001_fleet_pairing.up.sql")
+	if err != nil {
+		t.Fatalf("read v1 migration: %v", err)
+	}
+	if _, err := tx.Exec(t.Context(), string(v1), pgx.QueryExecModeSimpleProtocol); err != nil {
+		t.Fatalf("apply v1 fixture: %v", err)
+	}
+	if _, err := tx.Exec(t.Context(), `INSERT INTO schema_migrations (version, applied_at) VALUES (1, clock_timestamp())`); err != nil {
+		t.Fatalf("record v1 fixture: %v", err)
+	}
+	if err := tx.Commit(t.Context()); err != nil {
+		t.Fatalf("commit v1 fixture: %v", err)
+	}
+	if err := repository.MigrateUp(t.Context()); err != nil {
+		t.Fatalf("upgrade v1 to v2: %v", err)
+	}
+	var versions int
+	var adminTable bool
+	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM schema_migrations`).Scan(&versions); err != nil {
+		t.Fatalf("count upgraded versions: %v", err)
+	}
+	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('admin_actors') IS NOT NULL`).Scan(&adminTable); err != nil {
+		t.Fatalf("inspect v2 table: %v", err)
+	}
+	if versions != 2 || !adminTable {
+		t.Fatalf("upgraded schema: versions=%d admin_table=%v", versions, adminTable)
+	}
+	if err := repository.VerifySchema(t.Context()); err != nil {
+		t.Fatalf("VerifySchema(v2) error = %v", err)
+	}
+	if err := repository.MigrateTo(t.Context(), 1); err != nil {
+		t.Fatalf("rollback upgraded schema to v1: %v", err)
+	}
+	var remainingVersions int
+	var pairingTable, removedAdminTable bool
+	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM schema_migrations`).Scan(&remainingVersions); err != nil {
+		t.Fatalf("count rolled-back versions: %v", err)
+	}
+	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('pairing_codes') IS NOT NULL, to_regclass('admin_actors') IS NULL`).Scan(&pairingTable, &removedAdminTable); err != nil {
+		t.Fatalf("inspect v2 to v1 rollback: %v", err)
+	}
+	if remainingVersions != 1 || !pairingTable || !removedAdminTable {
+		t.Fatalf("targeted rollback: versions=%d pairing=%v admin_removed=%v", remainingVersions, pairingTable, removedAdminTable)
+	}
+	if err := repository.VerifySchema(t.Context()); err == nil {
+		t.Fatal("VerifySchema(v1) accepted an outdated schema")
+	}
+	if err := repository.MigrateTo(t.Context(), 0); err != nil {
+		t.Fatalf("cleanup upgraded schema: %v", err)
+	}
+}
 
 func TestPostgresPairingMigrationRefusesFutureSchema(t *testing.T) {
 	databaseURL := os.Getenv("NAMAZ_TEST_POSTGRES_URL")
@@ -28,7 +110,7 @@ func TestPostgresPairingMigrationRefusesFutureSchema(t *testing.T) {
 	}
 	t.Cleanup(pool.Close)
 	repository := NewPostgresPairingRepository(pool)
-	if err := repository.MigrateDown(t.Context()); err != nil {
+	if err := repository.MigrateTo(t.Context(), 0); err != nil {
 		t.Fatalf("reset migrations: %v", err)
 	}
 	if err := repository.MigrateUp(t.Context()); err != nil {
@@ -37,17 +119,17 @@ func TestPostgresPairingMigrationRefusesFutureSchema(t *testing.T) {
 	t.Cleanup(func() {
 		cleanupCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		_, _ = pool.Exec(cleanupCtx, `DELETE FROM schema_migrations WHERE version > 1`)
-		_ = repository.MigrateDown(cleanupCtx)
+		_, _ = pool.Exec(cleanupCtx, `DELETE FROM schema_migrations WHERE version > 2`)
+		_ = repository.MigrateTo(cleanupCtx, 0)
 	})
-	if _, err := pool.Exec(t.Context(), `INSERT INTO schema_migrations (version, applied_at) VALUES (2, clock_timestamp())`); err != nil {
+	if _, err := pool.Exec(t.Context(), `INSERT INTO schema_migrations (version, applied_at) VALUES (3, clock_timestamp())`); err != nil {
 		t.Fatalf("seed future migration: %v", err)
 	}
 	if err := repository.MigrateUp(t.Context()); err == nil {
 		t.Fatal("MigrateUp() accepted a future schema version")
 	}
-	if err := repository.MigrateDown(t.Context()); err == nil {
-		t.Fatal("MigrateDown() attempted rollback while a future schema version existed")
+	if err := repository.MigrateTo(t.Context(), 1); err == nil {
+		t.Fatal("MigrateTo() attempted rollback while a future schema version existed")
 	}
 	var mosqueTableExists bool
 	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('mosques') IS NOT NULL`).Scan(&mosqueTableExists); err != nil {
@@ -74,7 +156,7 @@ func TestPostgresPairingLifecycle(t *testing.T) {
 		t.Fatalf("ping PostgreSQL: %v", err)
 	}
 	repository := NewPostgresPairingRepository(pool)
-	if err := repository.MigrateDown(ctx); err != nil {
+	if err := repository.MigrateTo(ctx, 0); err != nil {
 		t.Fatalf("reset migrations: %v", err)
 	}
 	if err := repository.MigrateUp(ctx); err != nil {
@@ -86,7 +168,7 @@ func TestPostgresPairingLifecycle(t *testing.T) {
 	t.Cleanup(func() {
 		cleanupCtx, cleanupCancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cleanupCancel()
-		_ = repository.MigrateDown(cleanupCtx)
+		_ = repository.MigrateTo(cleanupCtx, 0)
 	})
 
 	now := newMutableClock(time.Date(2026, 8, 20, 12, 0, 0, 0, time.UTC))

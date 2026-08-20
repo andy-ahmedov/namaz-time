@@ -170,6 +170,30 @@ These are proposals until accepted by the product owner:
   locally against a disposable PostgreSQL 18 container. This label applies to
   the controlled backend test only, not a deployed service or physical TV.
 
+## T012 fleet-administration record
+
+- `PROPOSAL` — PostgreSQL migration v2 separates admin actors, credential
+  verifiers and role/mosque memberships; there is no unauthenticated bootstrap
+  route.
+- `PROPOSAL` — `service_admin` is global fleet read/write, `mosque_admin` is
+  local read/write, and `approver`/`viewer_support` are local read-only for T012
+  fleet operations. Service checks and transaction-level database rechecks both
+  apply; the runtime role cannot update authorization rows.
+- `PROPOSAL` — stable request hashes plus domain-separated current/compatibility
+  HMAC keys reproduce pairing responses without plaintext code storage;
+  non-secret assignment responses preserve historical idempotency for 24 hours,
+  including across registry/config changes.
+- `PROPOSAL` — schema-owner credentials are confined to the short-lived
+  migration command; the API process only verifies exact schema v2 with its
+  runtime role.
+- `PROPOSAL` — admin assignment can reference only a signed immutable artifact
+  already verified in the device API registry. It cannot approve, sign or
+  inject a snapshot and does not change T010's blocked status.
+- `CONFIRMED_RUNTIME` — migration v2, role/mosque isolation, idempotent
+  issue/revoke/assignment, historical response retention and actor/reason/
+  request audit evidence were reproduced locally in disposable PostgreSQL 18.
+  This is controlled backend evidence, not a deployed identity provider or TV.
+
 ## Decision template
 
 ```text

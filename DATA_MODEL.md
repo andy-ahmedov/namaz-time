@@ -330,6 +330,69 @@ attempts
 updated_at
 ```
 
+### `admin_actor`, `admin_credential`, `admin_membership`
+
+T012 separates operator identity, bearer verification and authority. Bearer
+plaintext is never persisted; credentials contain a unique SHA-256 verifier and
+optional expiry/revocation timestamps. An active actor has one or more
+memberships:
+
+```text
+service_admin  -> mosque_id NULL, global fleet read/write
+mosque_admin   -> mosque_id required, local fleet read/write
+approver       -> mosque_id required, local fleet read-only in T012
+viewer_support -> mosque_id required, local fleet read-only
+```
+
+The database constraint forbids a global scope on local roles and a mosque
+scope on `service_admin`. Service authorization is repeated under row locks in
+each write transaction.
+
+### `admin_request`
+
+Durable write idempotency:
+
+```text
+idempotency_hash
+request_hash
+actor_id
+mosque_id
+operation
+resource_id
+response (non-secret JSON only, optional)
+created_at
+expires_at
+```
+
+Pairing responses are regenerated with protected HMAC keys, so the plaintext
+code is not stored. Assignment responses are non-secret and retained for the
+24-hour retry guarantee so an old retry returns its historical manifest version
+rather than a later assignment. Expired evidence remains append-only and causes
+`409`; its key is never reused for a second mutation.
+Update, delete and truncate triggers make these idempotency records append-only
+under the runtime role.
+
+### `device_assignment`
+
+One current durable assignment per device, bound by composite
+`(device_id, mosque_id)` foreign key:
+
+```text
+device_id
+mosque_id
+manifest_version
+snapshot_id
+snapshot_url
+snapshot_sha256
+signing_key_id
+minimum_app_version
+assigned_by_actor_id
+assigned_at
+```
+
+Each non-idempotent change increments `manifest_version`. Registry hash/key and
+snapshot mosque/timezone are checked before write and again before serving.
+
 ### `audit_event`
 
 Append-only:
@@ -353,6 +416,10 @@ redeem and revoke records bind actor, mosque, entity, request/reason and
 before/after hashes where applicable. The deployment must use a least-privileged
 runtime role distinct from the migration owner; a table owner can otherwise
 alter the enforcement trigger.
+
+T012 adds actor-bound `device.pairing_issued`, `device.assigned` and
+`device.revoked` events. An identical idempotent retry reuses the stored result
+without appending another event.
 
 ## Publication transaction
 

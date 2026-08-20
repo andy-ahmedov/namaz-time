@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Mosque Prayer TV Synchronization API
-  version: 0.2.0
+  version: 0.3.0
   description: >-
     Draft contract for pairing a television, retrieving a small manifest,
     downloading an immutable signed prayer-time snapshot, and reporting
@@ -125,13 +125,147 @@ paths:
           description: Accepted
         '401':
           $ref: '#/components/responses/ErrorResponse'
+  /v1/admin/mosques/{mosqueId}/devices:
+    get:
+      operationId: listFleetDevices
+      security:
+        - adminBearer: []
+      summary: List devices visible to an authorized mosque-scoped actor
+      parameters:
+        - $ref: '#/components/parameters/MosqueId'
+      responses:
+        '200':
+          description: Scoped device list without credentials or pairing codes
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: false
+                required: [devices]
+                properties:
+                  devices:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FleetDevice'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/admin/mosques/{mosqueId}/pairing-codes:
+    post:
+      operationId: issueFleetPairingCode
+      security:
+        - adminBearer: []
+      summary: Issue an expiring one-use pairing code in an authorized mosque
+      parameters:
+        - $ref: '#/components/parameters/MosqueId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminIssuePairingRequest'
+      responses:
+        '201':
+          description: Pairing code created or the identical idempotent result reproduced
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminIssuePairingResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/admin/mosques/{mosqueId}/devices/{deviceId}/revoke:
+    post:
+      operationId: revokeFleetDevice
+      security:
+        - adminBearer: []
+      summary: Revoke a device credential in an authorized mosque
+      parameters:
+        - $ref: '#/components/parameters/MosqueId'
+        - $ref: '#/components/parameters/DeviceId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminReasonRequest'
+      responses:
+        '204':
+          description: Device revoked; an identical retry is a no-op
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/admin/mosques/{mosqueId}/devices/{deviceId}/assignment:
+    put:
+      operationId: assignFleetDeviceSnapshot
+      security:
+        - adminBearer: []
+      summary: Assign a pre-verified immutable snapshot to an authorized device
+      parameters:
+        - $ref: '#/components/parameters/MosqueId'
+        - $ref: '#/components/parameters/DeviceId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AdminAssignmentRequest'
+      responses:
+        '200':
+          description: Durable assignment and manifest version
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceAssignment'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
 components:
   securitySchemes:
     deviceBearer:
       type: http
       scheme: bearer
       bearerFormat: opaque-device-token
+    adminBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque-admin-token
   parameters:
+    MosqueId:
+      name: mosqueId
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
     DeviceId:
       name: deviceId
       in: path
@@ -140,6 +274,17 @@ components:
         type: string
         minLength: 8
         maxLength: 128
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 8
+        maxLength: 128
+      description: >-
+        Random non-secret retry key. Identical results are guaranteed for 24
+        hours; reuse with changed input or after expiry returns 409.
   responses:
     ErrorResponse:
       description: Stable machine-readable error
@@ -148,6 +293,130 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorEnvelope'
   schemas:
+    AdminIssuePairingRequest:
+      type: object
+      additionalProperties: false
+      required: [expires_in_seconds, reason]
+      properties:
+        expires_in_seconds:
+          type: integer
+          minimum: 60
+          maximum: 900
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 512
+    AdminIssuePairingResponse:
+      type: object
+      additionalProperties: false
+      required: [device_id, pairing_code, expires_at]
+      properties:
+        device_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        pairing_code:
+          type: string
+          minLength: 26
+          maxLength: 26
+          readOnly: true
+        expires_at:
+          type: string
+          format: date-time
+    AdminReasonRequest:
+      type: object
+      additionalProperties: false
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 512
+    AdminAssignmentRequest:
+      type: object
+      additionalProperties: false
+      required: [snapshot_id, reason]
+      properties:
+        snapshot_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        minimum_app_version:
+          type: string
+          minLength: 1
+          maxLength: 64
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 512
+    FleetDevice:
+      type: object
+      additionalProperties: false
+      required: [device_id, mosque_id, status, created_at]
+      properties:
+        device_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        mosque_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        status:
+          type: string
+          enum: [pending, active, revoked]
+        app_version:
+          type: string
+        os_version:
+          type: string
+        model:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        paired_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+        snapshot_id:
+          type: string
+        manifest_version:
+          type: integer
+          format: int64
+          minimum: 1
+    DeviceAssignment:
+      type: object
+      additionalProperties: false
+      required: [device_id, manifest_version, snapshot_id, snapshot_url, snapshot_sha256, signing_key_id]
+      properties:
+        device_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        manifest_version:
+          type: integer
+          format: int64
+          minimum: 1
+        snapshot_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        snapshot_url:
+          type: string
+          format: uri
+        snapshot_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+        signing_key_id:
+          type: string
+          minLength: 1
+          maxLength: 128
+        minimum_app_version:
+          type: string
+          minLength: 1
+          maxLength: 64
     PairRequest:
       type: object
       additionalProperties: false

@@ -132,6 +132,8 @@ names, not credential values:
   "pairing_backend": "postgres",
   "database_url_env": "NAMAZ_DATABASE_URL",
   "pairing_rate_limit_key_env": "NAMAZ_PAIRING_RATE_KEY",
+  "admin_idempotency_key_env": "NAMAZ_ADMIN_IDEMPOTENCY_KEY_CURRENT",
+  "admin_compatibility_idempotency_key_envs": ["NAMAZ_ADMIN_IDEMPOTENCY_KEY_COMPAT"],
   "pairing_backend_timeout_seconds": 5,
   "pairing_rate_limits": {
     "window_seconds": 600,
@@ -150,14 +152,65 @@ backend-timeout seconds selects the five-second default; an explicit value is
 bounded to 30 seconds. Every pairing/authentication database call inherits this
 request deadline, and rollback cleanup has its own bounded deadline.
 
+The current admin idempotency key and every compatibility key are also standard
+Base64 for exactly 32 random bytes. The current key derives new pairing-code
+responses; compatibility keys reproduce an existing response without storing
+its plaintext. Exact retries are guaranteed for 24 hours; expired evidence
+returns `409` rather than creating a duplicate.
+
+Use a two-phase rotation across all API replicas:
+
+1. stage the future key in `admin_compatibility_idempotency_key_envs` everywhere
+   while the old key remains current;
+2. after all old replicas can read both keys, make the future key current and
+   keep the old key in the compatibility list;
+3. wait at least 24 hours after the last response created under the old key,
+   then remove it from the compatibility list.
+
+This makes mixed old/new replicas reproduce responses created by either key.
+Environment-variable names must be unique; at most eight compatibility keys
+are accepted to keep retry work bounded.
+
 Remote TCP database endpoints must use server-authenticated TLS (for example,
 `sslmode=verify-full` with the deployment CA/root configuration). Startup
 rejects plaintext, `prefer`, and encryption without certificate verification
 for a remote host. `sslmode=disable` is accepted only for an explicit Unix
 socket, `localhost`, or loopback development endpoint. The repository does not
 provide a production password or TLS terminator.
-Startup pings PostgreSQL and applies embedded migrations under a transaction-
-scoped advisory lock. If any step fails, the API does not start.
+
+Run migrations as a separate short-lived deployment/init job. Its environment
+contains the schema-owner DSN; the API deployment must not contain that variable
+or credential:
+
+```bash
+go run ./cmd/migrate \
+  -database-url-env NAMAZ_MIGRATION_DATABASE_URL \
+  -target-version 2
+```
+
+The command applies embedded migrations under a transaction-scoped advisory
+lock and exits. Only then start the API with `NAMAZ_DATABASE_URL` for the
+least-privileged runtime role. API startup performs a read-only exact-v2 ledger
+check and refuses missing, v1, gapped or future schemas. The runtime role must
+not own schema/functions/triggers.
+
+Minimum runtime privileges are deployment-managed: `SELECT` on mosque/device/
+pairing/admin identity/membership/assignment/idempotency tables; required
+`INSERT`/`UPDATE` on devices, pairing codes, rate buckets and assignments;
+bounded `DELETE` only on expired rate buckets; and `INSERT`-only on audit and
+admin idempotency tables. It needs no DDL, trigger/function ownership,
+`schema_migrations` mutation, admin actor/credential/membership writes, or
+audit/idempotency update/delete/truncate. It requires `SELECT` on
+`schema_migrations` solely for startup verification. Verify the grants in
+staging rather than granting broad schema ownership.
+
+For a controlled T012-to-T011 binary rollback, stop T012 write traffic and take
+a verified database backup, then run the short-lived migration command with
+`-target-version 1` before deploying the T011 binary. Migration `000002` down
+drops only T012 admin identities, idempotency evidence and assignments; v1
+mosque/device/pairing/rate/audit state remains. The deployment command rejects
+target `0`; complete schema removal exists only as a repository test helper. A
+v2 binary will refuse to start after the targeted rollback until v2 is reapplied.
 
 Run the restart/concurrency/migration suite in a disposable local PostgreSQL 18
 container:
@@ -169,6 +222,32 @@ make test-postgres
 The server deliberately ignores forwarded-address headers. Configure the
 trusted reverse proxy/network so the direct peer address has useful rate-limit
 cardinality; otherwise all clients safely share the stricter source bucket.
+
+## T012 admin credential bootstrap
+
+There is deliberately no first-admin HTTP endpoint. Provisioning is a
+privileged database/secret-manager operation:
+
+1. generate an opaque 256-bit random bearer token outside the API process;
+2. write the plaintext once to the operator secret manager;
+3. insert an `active` `admin_actor` and only the token's raw SHA-256 bytes into
+   `admin_credentials`;
+4. insert either one global `service_admin` membership with `mosque_id = NULL`,
+   or explicit mosque-local memberships;
+5. grant the runtime role only required DML/sequence privileges, then verify it
+   cannot create actors/credentials, alter
+   schema, disable audit triggers or read unrelated secret-manager material.
+
+Never place the token or database URL in runtime JSON, command arguments,
+shell history, logs or Git. Suspending the actor, revoking the credential, or
+removing a membership takes effect on the next transaction recheck. The runtime
+role reads authorization rows but cannot update them; write locks cover only
+device/code state that the operation is permitted to mutate.
+
+Admin writes require a fresh random `Idempotency-Key` containing no PII or
+secret. An identical retry within 24 hours returns the original result. Reuse
+with changed reason, expiry, device or assignment, or reuse after expiry,
+returns `409` and cannot create another side effect.
 
 ## Device support bundle
 

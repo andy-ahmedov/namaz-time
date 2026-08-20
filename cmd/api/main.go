@@ -63,17 +63,19 @@ func run(args []string, stderr io.Writer) error {
 }
 
 type runtimeConfig struct {
-	PublicBaseURL                string                     `json:"public_base_url"`
-	PairingFixtureMode           string                     `json:"pairing_fixture_mode"`
-	PairingBackend               string                     `json:"pairing_backend"`
-	DatabaseURLEnv               string                     `json:"database_url_env"`
-	PairingRateLimitKeyEnv       string                     `json:"pairing_rate_limit_key_env"`
-	PairingRateLimits            runtimePairingRateLimits   `json:"pairing_rate_limits"`
-	PairingBackendTimeoutSeconds int64                      `json:"pairing_backend_timeout_seconds"`
-	TrustedPublicKeyFiles        []string                   `json:"trusted_public_key_files"`
-	PairingFixtures              []runtimePairingFixture    `json:"pairing_fixtures"`
-	Snapshots                    []runtimeSnapshot          `json:"snapshots"`
-	Assignments                  []devices.DeviceAssignment `json:"assignments"`
+	PublicBaseURL                        string                     `json:"public_base_url"`
+	PairingFixtureMode                   string                     `json:"pairing_fixture_mode"`
+	PairingBackend                       string                     `json:"pairing_backend"`
+	DatabaseURLEnv                       string                     `json:"database_url_env"`
+	PairingRateLimitKeyEnv               string                     `json:"pairing_rate_limit_key_env"`
+	AdminIdempotencyKeyEnv               string                     `json:"admin_idempotency_key_env"`
+	AdminCompatibilityIdempotencyKeyEnvs []string                   `json:"admin_compatibility_idempotency_key_envs"`
+	PairingRateLimits                    runtimePairingRateLimits   `json:"pairing_rate_limits"`
+	PairingBackendTimeoutSeconds         int64                      `json:"pairing_backend_timeout_seconds"`
+	TrustedPublicKeyFiles                []string                   `json:"trusted_public_key_files"`
+	PairingFixtures                      []runtimePairingFixture    `json:"pairing_fixtures"`
+	Snapshots                            []runtimeSnapshot          `json:"snapshots"`
+	Assignments                          []devices.DeviceAssignment `json:"assignments"`
 }
 
 type runtimePairingRateLimits struct {
@@ -179,11 +181,13 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		}
 	}
 	var pairingBackend devices.PairingBackend
+	var adminBackend devices.AdminFleetBackend
 	if config.PairingBackend == "postgres" {
 		if len(config.PairingFixtures) > 0 || config.PairingFixtureMode != "" || len(config.Assignments) > 0 {
 			return nil, errors.New("PostgreSQL pairing cannot use ephemeral fixtures or static device assignments")
 		}
-		if !validEnvironmentName(config.DatabaseURLEnv) || !validEnvironmentName(config.PairingRateLimitKeyEnv) {
+		if !validEnvironmentName(config.DatabaseURLEnv) || !validEnvironmentName(config.PairingRateLimitKeyEnv) ||
+			!validEnvironmentName(config.AdminIdempotencyKeyEnv) {
 			return nil, errors.New("PostgreSQL pairing environment variable names are invalid")
 		}
 		databaseURL, exists := os.LookupEnv(config.DatabaseURLEnv)
@@ -197,6 +201,37 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		rateKey, err := base64.StdEncoding.DecodeString(encodedRateKey)
 		if err != nil || len(rateKey) != sha256.Size {
 			return nil, errors.New("PostgreSQL pairing rate-limit key must be base64 for exactly 32 bytes")
+		}
+		encodedAdminKey, exists := os.LookupEnv(config.AdminIdempotencyKeyEnv)
+		if !exists {
+			return nil, errors.New("PostgreSQL admin idempotency key environment variable is not set")
+		}
+		adminKey, err := base64.StdEncoding.DecodeString(encodedAdminKey)
+		if err != nil || len(adminKey) != sha256.Size {
+			return nil, errors.New("PostgreSQL admin idempotency key must be base64 for exactly 32 bytes")
+		}
+		compatibilityAdminKeys := make([][]byte, 0, len(config.AdminCompatibilityIdempotencyKeyEnvs))
+		if len(config.AdminCompatibilityIdempotencyKeyEnvs) > 8 {
+			return nil, errors.New("PostgreSQL admin idempotency key ring allows at most eight compatibility keys")
+		}
+		seenAdminKeyEnvs := map[string]struct{}{config.AdminIdempotencyKeyEnv: {}}
+		for _, environmentName := range config.AdminCompatibilityIdempotencyKeyEnvs {
+			if !validEnvironmentName(environmentName) {
+				return nil, errors.New("PostgreSQL compatibility admin idempotency key environment variable name is invalid")
+			}
+			if _, duplicate := seenAdminKeyEnvs[environmentName]; duplicate {
+				return nil, errors.New("PostgreSQL admin idempotency key environment variable names must be unique")
+			}
+			seenAdminKeyEnvs[environmentName] = struct{}{}
+			encodedCompatibilityKey, exists := os.LookupEnv(environmentName)
+			if !exists {
+				return nil, errors.New("PostgreSQL compatibility admin idempotency key environment variable is not set")
+			}
+			compatibilityKey, err := base64.StdEncoding.DecodeString(encodedCompatibilityKey)
+			if err != nil || len(compatibilityKey) != sha256.Size {
+				return nil, errors.New("PostgreSQL compatibility admin idempotency key must be base64 for exactly 32 bytes")
+			}
+			compatibilityAdminKeys = append(compatibilityAdminKeys, compatibilityKey)
 		}
 		limits := devices.PairingRateLimits{
 			Window:         time.Duration(config.PairingRateLimits.WindowSeconds) * time.Second,
@@ -213,7 +248,7 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		if err != nil {
 			return nil, err
 		}
-		if err := repository.MigrateUp(openContext); err != nil {
+		if err := repository.VerifySchema(openContext); err != nil {
 			repository.Close()
 			return nil, err
 		}
@@ -225,15 +260,24 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 			return nil, err
 		}
 		pairingBackend = manager
+		adminManager, err := devices.NewAdminFleetManager(devices.AdminFleetManagerConfig{
+			Repository: repository, IdempotencyKey: adminKey, CompatibilityIdempotencyKeys: compatibilityAdminKeys,
+		})
+		if err != nil {
+			repository.Close()
+			return nil, err
+		}
+		adminBackend = adminManager
 	} else if config.PairingBackend != "" {
 		return nil, errors.New("unsupported pairing backend")
-	} else if config.DatabaseURLEnv != "" || config.PairingRateLimitKeyEnv != "" || config.PairingRateLimits != (runtimePairingRateLimits{}) || config.PairingBackendTimeoutSeconds != 0 {
+	} else if config.DatabaseURLEnv != "" || config.PairingRateLimitKeyEnv != "" || config.AdminIdempotencyKeyEnv != "" || len(config.AdminCompatibilityIdempotencyKeyEnvs) > 0 || config.PairingRateLimits != (runtimePairingRateLimits{}) || config.PairingBackendTimeoutSeconds != 0 {
 		return nil, errors.New("PostgreSQL pairing settings require pairing_backend postgres")
 	}
 	service, err := devices.NewService(devices.ServiceConfig{
 		PublicBaseURL:     config.PublicBaseURL,
 		PairingFixtures:   pairings,
 		PairingBackend:    pairingBackend,
+		AdminBackend:      adminBackend,
 		BackendTimeout:    time.Duration(config.PairingBackendTimeoutSeconds) * time.Second,
 		Assignments:       config.Assignments,
 		Snapshots:         snapshots,

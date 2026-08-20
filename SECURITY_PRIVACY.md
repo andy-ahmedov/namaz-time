@@ -79,10 +79,33 @@ work is request-deadline bounded. Audit triggers reject update, delete and
 truncate, while deployment must additionally keep the runtime database role
 from owning or altering the schema.
 
+The schema-owner DSN is available only to the short-lived out-of-band migration
+job and never enters the API process environment. The API runtime role performs
+only a read-only exact-version check and must not own tables/functions/triggers
+or have actor/credential provisioning rights.
+
 The composite device/mosque database key and service-layer scoped revocation
 provide defense in depth. T011 has no admin HTTP issuer, so it does not imply
 an authenticated operator model; T012 must add role/membership checks before
 these internal issuance/revocation commands become remotely callable.
+
+T012 stores admin bearer credentials only as 32-byte SHA-256 verifiers and has
+no network bootstrap route. Initial 256-bit tokens, actor rows and memberships
+must be provisioned out of band by a privileged operator; token plaintext is
+shown once and must enter a secret manager. `service_admin` is global,
+`mosque_admin` is local read/write, and `viewer_support`/`approver` are local
+read-only for fleet operations. Active actor/membership checks are repeated
+inside each PostgreSQL transaction. The runtime role has SELECT-only access to
+those security rows; row locks are reserved for device/code state it may mutate.
+
+Idempotency headers must be random and contain no PII or secrets. PostgreSQL
+stores only stable request/idempotency hashes plus non-secret assignment
+responses. Pairing code reproduction uses domain-separated HMAC and an ordered
+current/compatibility key ring. Rotation is staged in two phases across all
+replicas; an old key is removed only after the 24-hour retry guarantee has
+elapsed. The long-running API receives no schema-owner DSN: a short-lived
+migration process owns DDL, while the API role only verifies the exact ledger
+version. Cross-mosque denial uses the same `404` as an unknown resource.
 
 ## Admin authorization
 

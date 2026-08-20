@@ -229,6 +229,36 @@ row update/delete and table truncation under the runtime database principal;
 production deployment should still separate the migration owner from a
 least-privileged runtime role because an owner can alter its own triggers.
 
+### Role-scoped fleet administration (T012)
+
+Migration v2 adds admin actors, SHA-256 bearer verifiers, global/local
+memberships, durable idempotency evidence and device assignments. The Go admin
+manager owns the role matrix and deterministic response derivation; PostgreSQL
+rechecks the active actor/membership inside every scoped transaction. This
+double boundary prevents a handler or query filter from becoming the only
+tenant-isolation control.
+
+The schema-owner DSN exists only in a short-lived `cmd/migrate` deployment
+process. It moves the ledger to an explicit version under an advisory lock,
+including a targeted v2-to-v1 rollback. The API process receives only the
+least-privileged runtime DSN and read-only verifies exact v2 at startup; v1,
+gaps and future versions fail closed.
+
+Pairing issue uses domain-separated HMAC derivation so a retry can reproduce
+the same 128-bit code while storage remains verifier-only. Current and staged
+compatibility keys form an explicit two-phase rotation ring. Assignment
+idempotency stores its non-secret historical response for a 24-hour guarantee,
+avoiding a retry being silently upgraded to a later manifest version. Its
+client-semantic request hash and stored response are checked before current
+artifact-registry lookup, so deploy-time URL or registry changes cannot alter
+an exact retry; expired evidence returns `409` without a duplicate mutation.
+
+The device API keeps immutable snapshot bytes and trust keys in its verified
+registry. Admin assignment can reference that registry but cannot inject raw
+URL/hash/signing-key fields. Durable assignment reads are rebound to the
+authenticated device mosque and registry mosque/timezone/hash/key before a
+manifest or snapshot is served.
+
 ## Source ingestion pipeline
 
 1. **Retrieve or import.** Store raw bytes unchanged when terms permit, otherwise store immutable metadata plus an approved fixture.

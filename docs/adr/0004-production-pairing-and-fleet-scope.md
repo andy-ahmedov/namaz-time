@@ -37,21 +37,22 @@ mosque boundary. Revocation is scoped by both identifiers and removes the token
 verifier atomically. Audit rows reject update/delete.
 
 Runtime JSON contains only environment-variable names for the PostgreSQL URL
-and 32-byte rate HMAC key. Startup migrates under a transaction advisory lock
-and fails closed. Remote endpoints require verified TLS, while loopback/Unix
-development endpoints may explicitly disable it. Pair/auth calls and rollback
-cleanup have bounded contexts. The service does not trust forwarded-address
-headers by default.
+and 32-byte rate HMAC key. As refined by ADR 0005, schema changes run in a
+short-lived migration process under a transaction advisory lock; the API
+process carries only the runtime DSN and fails closed unless its read-only
+ledger check finds the exact schema version. Remote endpoints require verified
+TLS, while loopback/Unix development endpoints may explicitly disable it.
+Pair/auth calls and rollback cleanup have bounded contexts. The service does
+not trust forwarded-address headers by default.
 
 Audit triggers reject update, delete and truncate under the runtime principal.
 A production deployment must still separate the schema/migration owner from a
 least-privileged runtime role; trigger enforcement cannot defend against its
 own table owner changing schema.
 
-T011 exposes issue/revoke as internal service commands only. T012 must add
+T011 exposes issue/revoke as internal service commands only. T012 adds the
 authenticated actors, role/membership authorization, idempotent admin HTTP
-endpoints and persistent snapshot assignments before remote administration is
-operational.
+endpoints and persistent snapshot assignments described by ADR 0005.
 
 ## Consequences
 
@@ -69,7 +70,8 @@ Costs:
 - deployment must protect and rotate the database credential and HMAC key;
 - a reverse proxy must preserve a trustworthy direct peer address or accept a
   deliberately shared source-rate bucket;
-- authenticated admin issuance and manifest assignment remain a separate task.
+- authenticated admin issuance and manifest assignment are the separate T012
+  decision in ADR 0005.
 
 ## Rejected alternatives
 

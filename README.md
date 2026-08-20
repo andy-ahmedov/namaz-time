@@ -120,7 +120,12 @@ T011 добавляет независимое PostgreSQL-хранилище pro
 одноразовые коды и device tokens, только hash/HMAC at rest, expiry/rate limits,
 атомарный single-use redeem, revocation, mosque-scoped composite constraints и
 append-only audit. Реальные container tests проверяют concurrency и restart.
-Авторизованная выдача кодов и persistent assignment API остаются отдельным
-T012; наличие T011 не снимает блокировку T010.
+T012 добавляет migration v2, verifier-only admin tokens, global/local RBAC,
+mosque-scoped list/issue/revoke/assignment API, durable idempotency с ротацией
+HMAC key ring и повторную registry-проверку assignment на device read path.
+Schema-owner DSN используется только отдельной короткоживущей migration-командой;
+API запускается с runtime role и read-only проверяет точную версию v2.
+Первичный admin bootstrap остаётся привилегированной out-of-band операцией без
+сетевого shortcut. Наличие T011/T012 не снимает блокировку T010.
 Runtime-проверка на физическом Android TV/box ещё не выполнена и не
 подменяется Robolectric-тестом.

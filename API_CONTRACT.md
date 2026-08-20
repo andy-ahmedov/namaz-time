@@ -173,10 +173,39 @@ variables containing the PostgreSQL URL and Base64-encoded 32-byte HMAC key.
 `pairing_backend_timeout_seconds` bounds each persistent pair/auth call (five
 seconds when omitted, maximum 30), so a database partition or lock wait returns
 a retryable `500` instead of exhausting the connection pool indefinitely.
-The private JSON config never accepts a literal `database_url`. Startup opens a
-bounded pgx pool, takes an advisory migration lock, applies the embedded schema
-transactionally and fails closed if the database or key is unavailable.
+The private JSON config never accepts a literal `database_url`. Migrations run
+out of band through the short-lived `cmd/migrate` process with a schema-owner
+credential. API startup carries only the least-privileged runtime DSN, opens a
+bounded pgx pool, verifies migration ledger v2 without changing it, and fails
+closed if the database, exact schema or key is unavailable.
 
 Static T009 assignments are rejected in this mode. A newly authenticated but
 unassigned device receives `404 manifest_not_found` and keeps its local display;
 T012 owns persistent assignment administration and mosque-scoped authorization.
+
+## T012 fleet administration
+
+The minimum admin surface uses a distinct opaque bearer principal and is
+available only with the PostgreSQL backend:
+
+- `GET /v1/admin/mosques/{mosqueId}/devices`;
+- `POST /v1/admin/mosques/{mosqueId}/pairing-codes`;
+- `POST /v1/admin/mosques/{mosqueId}/devices/{deviceId}/revoke`;
+- `PUT /v1/admin/mosques/{mosqueId}/devices/{deviceId}/assignment`.
+
+Every write requires `Idempotency-Key` and a bounded audit reason. During the
+24-hour retry guarantee, an identical retry returns the original result and
+does not append a second audit row. Reusing a key with different semantic input,
+or retrying after its evidence expires, returns non-retryable `409` without a
+new side effect. Assignment retry identity binds only client-semantic input;
+the stored historical response is checked before the mutable artifact registry,
+so URL/config changes cannot change an exact retry. Admin
+authentication failure is `401`. A missing resource, an out-of-scope mosque,
+and a cross-mosque device all return the same `404`, so authorization does not
+act as an existence oracle. Database/backend failure remains retryable `500`.
+
+The assignment request accepts a snapshot ID rather than URL/hash/key. Those
+fields are resolved from the server's verified immutable registry, persisted
+with a monotonically increasing manifest version, and checked again on every
+device manifest/snapshot read. This does not approve, sign or publish a new
+snapshot and therefore does not unblock T010.

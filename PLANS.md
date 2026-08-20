@@ -68,8 +68,7 @@ Exit condition: a source change cannot reach a TV without validation, approval, 
 | Task | Status | Acceptance / evidence |
 |---|---|---|
 | T011 production pairing persistence | DONE | PostgreSQL-backed, restart-safe pairing lifecycle with hashed one-time secrets, expiry/attempt/rate controls, revocation, mosque suspension/isolation, verified remote TLS, bounded backend/rollback contexts, future-migration fail-close, update/delete/truncate-resistant audit and real database concurrency/restart/lock-cancellation tests; independent of blocked T010 |
-| T012 role-based fleet administration and mosque isolation | TODO | authenticated actors, roles/memberships, scoped issue/revoke/read/assignment API, idempotency and audit binding on the T011 durable store |
-| T012 role-based fleet administration and mosque isolation | TODO | authenticated admin actors/memberships, scoped issue/revoke/read API, idempotency/audit and cross-mosque denial tests |
+| T012 role-based fleet administration and mosque isolation | DONE | verifier-only actors and global/local RBAC; uniform cross-mosque/missing-resource denial; scoped list/issue/revoke/verified-registry assignment; append-only 24-hour idempotency with two-phase HMAC rotation and historical responses; canonical assignment audit chain; out-of-band explicit-target migrations and API exact-v2 verification under a tested least-privileged runtime role; full/race/PostgreSQL gates and independent review pass |
 
 Following fleet work after T012:
 

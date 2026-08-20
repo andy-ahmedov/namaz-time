@@ -27,6 +27,7 @@ import (
 
 const (
 	maxPairRequestBytes   = 16 * 1024
+	maxAdminRequestBytes  = 16 * 1024
 	maxSnapshotBytes      = 5 * 1024 * 1024
 	defaultBackendTimeout = 5 * time.Second
 	maximumBackendTimeout = 30 * time.Second
@@ -69,6 +70,7 @@ type ServiceConfig struct {
 	Snapshots         []SnapshotArtifact
 	TrustedPublicKeys map[string]ed25519.PublicKey
 	PairingBackend    PairingBackend
+	AdminBackend      AdminFleetBackend
 	BackendTimeout    time.Duration
 }
 
@@ -109,6 +111,7 @@ type Service struct {
 	publicBase     *url.URL
 	handler        http.Handler
 	pairingBackend PairingBackend
+	adminBackend   AdminFleetBackend
 	backendTimeout time.Duration
 }
 
@@ -119,6 +122,7 @@ func NewService(config ServiceConfig) (*Service, error) {
 		tokens:         make(map[string]string, len(config.PairingFixtures)),
 		mosques:        make(map[string]MosqueIdentity, len(config.PairingFixtures)),
 		pairingBackend: config.PairingBackend,
+		adminBackend:   config.AdminBackend,
 	}
 	if config.BackendTimeout < 0 || config.BackendTimeout > maximumBackendTimeout {
 		return nil, errors.New("configure pairing: backend timeout is invalid")
@@ -135,6 +139,9 @@ func NewService(config ServiceConfig) (*Service, error) {
 	}
 	if config.PairingBackend != nil && len(config.Assignments) > 0 {
 		return nil, errors.New("configure assignment: persistent assignments require the fleet administration store")
+	}
+	if config.AdminBackend != nil && len(config.Assignments) > 0 {
+		return nil, errors.New("configure assignment: admin backend and static assignments are mutually exclusive")
 	}
 	if config.PublicBaseURL != "" {
 		publicBase, err := parsePublicBaseURL(config.PublicBaseURL)
@@ -214,6 +221,10 @@ func (s *Service) routes() http.Handler {
 	mux.HandleFunc("POST /v1/devices/pair", s.handlePair)
 	mux.HandleFunc("GET /v1/devices/{deviceId}/manifest", s.handleManifest)
 	mux.HandleFunc("GET /v1/snapshots/{snapshotId}", s.handleSnapshot)
+	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/devices", s.handleAdminListDevices)
+	mux.HandleFunc("POST /v1/admin/mosques/{mosqueId}/pairing-codes", s.handleAdminIssuePairing)
+	mux.HandleFunc("POST /v1/admin/mosques/{mosqueId}/devices/{deviceId}/revoke", s.handleAdminRevokeDevice)
+	mux.HandleFunc("PUT /v1/admin/mosques/{mosqueId}/devices/{deviceId}/assignment", s.handleAdminAssignDevice)
 	return securityHeaders(mux)
 }
 
@@ -308,7 +319,11 @@ func (s *Service) handleManifest(writer http.ResponseWriter, request *http.Reque
 		writeAPIError(writer, http.StatusUnauthorized, "device_unauthorized", false)
 		return
 	}
-	assignment, exists := s.assignments[deviceID]
+	assignment, exists, assignmentErr := s.assignmentForDevice(request, principal)
+	if assignmentErr != nil {
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+		return
+	}
 	if !exists {
 		writeAPIError(writer, http.StatusNotFound, "manifest_not_found", false)
 		return
@@ -347,7 +362,11 @@ func (s *Service) handleSnapshot(writer http.ResponseWriter, request *http.Reque
 		writeDeviceAuthenticationError(writer, authErr)
 		return
 	}
-	assignment, assigned := s.assignments[principal.DeviceID]
+	assignment, assigned, assignmentErr := s.assignmentForDevice(request, principal)
+	if assignmentErr != nil {
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+		return
+	}
 	if !assigned || assignment.SnapshotID != snapshotID {
 		writeAPIError(writer, http.StatusNotFound, "snapshot_not_found", false)
 		return
@@ -370,6 +389,251 @@ func (s *Service) handleSnapshot(writer http.ResponseWriter, request *http.Reque
 	writer.Header().Set("Digest", "sha-256="+base64.StdEncoding.EncodeToString(hashBytes))
 	writer.WriteHeader(http.StatusOK)
 	_, _ = writer.Write(artifact.bytes)
+}
+
+type adminIssuePairingRequest struct {
+	ExpiresInSeconds int64  `json:"expires_in_seconds"`
+	Reason           string `json:"reason"`
+}
+
+type adminIssuePairingResponse struct {
+	DeviceID  string    `json:"device_id"`
+	Code      string    `json:"pairing_code"`
+	ExpiresAt time.Time `json:"expires_at"`
+}
+
+type adminReasonRequest struct {
+	Reason string `json:"reason"`
+}
+
+type adminAssignmentRequest struct {
+	SnapshotID        string `json:"snapshot_id"`
+	MinimumAppVersion string `json:"minimum_app_version,omitempty"`
+	Reason            string `json:"reason"`
+}
+
+func (s *Service) handleAdminIssuePairing(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	var input adminIssuePairingRequest
+	if !decodeAdminJSON(writer, request, &input) {
+		return
+	}
+	if !validIdempotencyKey(request.Header.Get("Idempotency-Key")) ||
+		!validAuditText(input.Reason, 512) || input.ExpiresInSeconds < 60 || input.ExpiresInSeconds > 900 {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	requestID, err := newRequestID()
+	if err != nil {
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	issued, err := s.adminBackend.IssuePairing(backendContext, principal, AdminIssuePairingCommand{
+		MosqueID: request.PathValue("mosqueId"), Reason: input.Reason, RequestID: requestID,
+		IdempotencyKey: request.Header.Get("Idempotency-Key"),
+		ExpiresIn:      time.Duration(input.ExpiresInSeconds) * time.Second,
+	})
+	if err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	writeJSON(writer, http.StatusCreated, adminIssuePairingResponse{
+		DeviceID: issued.DeviceID, Code: issued.Code, ExpiresAt: issued.ExpiresAt,
+	})
+}
+
+func (s *Service) handleAdminListDevices(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	devices, err := s.adminBackend.ListDevices(backendContext, principal, request.PathValue("mosqueId"))
+	if err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	if devices == nil {
+		devices = []FleetDevice{}
+	}
+	writeJSON(writer, http.StatusOK, struct {
+		Devices []FleetDevice `json:"devices"`
+	}{Devices: devices})
+}
+
+func (s *Service) handleAdminRevokeDevice(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	var input adminReasonRequest
+	if !decodeAdminJSON(writer, request, &input) {
+		return
+	}
+	if !validIdempotencyKey(request.Header.Get("Idempotency-Key")) || !validAuditText(input.Reason, 512) {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	requestID, err := newRequestID()
+	if err != nil {
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	err = s.adminBackend.RevokeDevice(backendContext, principal, AdminRevokeDeviceCommand{
+		MosqueID: request.PathValue("mosqueId"), DeviceID: request.PathValue("deviceId"),
+		Reason: input.Reason, RequestID: requestID, IdempotencyKey: request.Header.Get("Idempotency-Key"),
+	})
+	if err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Service) handleAdminAssignDevice(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	var input adminAssignmentRequest
+	if !decodeAdminJSON(writer, request, &input) {
+		return
+	}
+	if !validIdempotencyKey(request.Header.Get("Idempotency-Key")) || !validAuditText(input.Reason, 512) {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	if err := s.adminBackend.AuthorizeAdminScope(principal, request.PathValue("mosqueId"), true); err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	retried, found, err := s.adminBackend.RetryAssignment(backendContext, principal, AdminAssignmentRetryQuery{
+		MosqueID: request.PathValue("mosqueId"), DeviceID: request.PathValue("deviceId"),
+		SnapshotID: input.SnapshotID, MinimumAppVersion: input.MinimumAppVersion,
+		Reason: input.Reason, IdempotencyKey: request.Header.Get("Idempotency-Key"),
+	})
+	cancel()
+	if err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	if found {
+		writeJSON(writer, http.StatusOK, retried)
+		return
+	}
+	artifact, exists := s.snapshots[input.SnapshotID]
+	if !exists || artifact.mosqueID != request.PathValue("mosqueId") || s.publicBase == nil {
+		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
+		return
+	}
+	requestID, err := newRequestID()
+	if err != nil {
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+		return
+	}
+	snapshotURL := s.publicBase.ResolveReference(&url.URL{Path: "/v1/snapshots/" + url.PathEscape(artifact.id)}).String()
+	backendContext, cancel = context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	assignment, err := s.adminBackend.AssignDevice(backendContext, principal, AdminAssignDeviceCommand{
+		MosqueID: request.PathValue("mosqueId"), DeviceID: request.PathValue("deviceId"),
+		SnapshotID: artifact.id, SnapshotURL: snapshotURL, SnapshotSHA256: artifact.sha256,
+		SigningKeyID: artifact.signingKeyID, SnapshotMosqueID: artifact.mosqueID,
+		SnapshotTimezone: artifact.timezone, MinimumAppVersion: input.MinimumAppVersion,
+		Reason: input.Reason, RequestID: requestID, IdempotencyKey: request.Header.Get("Idempotency-Key"),
+	})
+	if err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	writeJSON(writer, http.StatusOK, assignment)
+}
+
+func (s *Service) authenticateAdminRequest(writer http.ResponseWriter, request *http.Request) (AdminPrincipal, bool) {
+	if s.adminBackend == nil {
+		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
+		return AdminPrincipal{}, false
+	}
+	header := request.Header.Get("Authorization")
+	if !strings.HasPrefix(header, "Bearer ") || len(header) == len("Bearer ") {
+		writeAPIError(writer, http.StatusUnauthorized, "admin_unauthorized", false)
+		return AdminPrincipal{}, false
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	principal, err := s.adminBackend.AuthenticateAdmin(backendContext, header[len("Bearer "):])
+	if err == nil {
+		return principal, true
+	}
+	if errors.Is(err, ErrAdminUnauthorized) {
+		writeAPIError(writer, http.StatusUnauthorized, "admin_unauthorized", false)
+		return AdminPrincipal{}, false
+	}
+	writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+	return AdminPrincipal{}, false
+}
+
+func decodeAdminJSON(writer http.ResponseWriter, request *http.Request, target any) bool {
+	mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
+	if err != nil || mediaType != "application/json" {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return false
+	}
+	request.Body = http.MaxBytesReader(writer, request.Body, maxAdminRequestBytes)
+	decoder := json.NewDecoder(request.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(target); err != nil || decodeEOF(decoder) != nil {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return false
+	}
+	return true
+}
+
+func writeAdminOperationError(writer http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, ErrInvalidAdminRequest):
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+	case errors.Is(err, ErrAdminIdempotencyConflict):
+		writeAPIError(writer, http.StatusConflict, "idempotency_conflict", false)
+	case errors.Is(err, ErrAdminResourceNotFound):
+		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
+	default:
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+	}
+}
+
+func (s *Service) assignmentForDevice(request *http.Request, principal DevicePrincipal) (DeviceAssignment, bool, error) {
+	if s.adminBackend == nil {
+		assignment, exists := s.assignments[principal.DeviceID]
+		return assignment, exists, nil
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	assignment, err := s.adminBackend.GetDeviceAssignment(backendContext, principal.DeviceID, principal.Mosque.ID)
+	if errors.Is(err, ErrDeviceAssignmentNotFound) {
+		return DeviceAssignment{}, false, nil
+	}
+	if err != nil {
+		return DeviceAssignment{}, false, err
+	}
+	artifact, exists := s.snapshots[assignment.SnapshotID]
+	if !exists || assignment.DeviceID != principal.DeviceID || artifact.mosqueID != principal.Mosque.ID ||
+		artifact.timezone != principal.Mosque.Timezone || s.validateAssignmentMetadata(assignment, artifact) != nil {
+		return DeviceAssignment{}, false, errors.New("persistent assignment is invalid")
+	}
+	return assignment, true, nil
 }
 
 func (s *Service) authenticatedDevice(request *http.Request) (DevicePrincipal, error) {
@@ -400,9 +664,6 @@ func writeDeviceAuthenticationError(writer http.ResponseWriter, err error) {
 }
 
 func (s *Service) validateAssignment(assignment DeviceAssignment) error {
-	if !validIdentifier(assignment.DeviceID) || assignment.ManifestVersion < 1 || !validIdentifier(assignment.SnapshotID) || !validSHA256(assignment.SnapshotSHA256) || len(assignment.SigningKeyID) < 1 || len(assignment.SigningKeyID) > 128 || len(assignment.MinimumAppVersion) > 64 {
-		return errors.New("required assignment metadata is invalid")
-	}
 	if _, exists := s.tokens[assignment.DeviceID]; !exists {
 		return errors.New("device has no pairing credential")
 	}
@@ -413,6 +674,13 @@ func (s *Service) validateAssignment(assignment DeviceAssignment) error {
 	pairedMosque := s.mosques[assignment.DeviceID]
 	if artifact.mosqueID != pairedMosque.ID || artifact.timezone != pairedMosque.Timezone {
 		return errors.New("snapshot mosque identity does not match paired device mosque")
+	}
+	return s.validateAssignmentMetadata(assignment, artifact)
+}
+
+func (s *Service) validateAssignmentMetadata(assignment DeviceAssignment, artifact snapshotRecord) error {
+	if !validIdentifier(assignment.DeviceID) || assignment.ManifestVersion < 1 || !validIdentifier(assignment.SnapshotID) || !validSHA256(assignment.SnapshotSHA256) || len(assignment.SigningKeyID) < 1 || len(assignment.SigningKeyID) > 128 || len(assignment.MinimumAppVersion) > 64 {
+		return errors.New("required assignment metadata is invalid")
 	}
 	if s.publicBase == nil {
 		return errors.New("public base URL is required when assignments exist")

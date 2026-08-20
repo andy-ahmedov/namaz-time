@@ -20,7 +20,9 @@ import (
 //go:embed migrations/*.sql
 var pairingMigrations embed.FS
 
-const pairingMigrationVersion = 1
+// PairingSchemaVersion is the exact PostgreSQL schema version required by the
+// current API binary.
+const PairingSchemaVersion = 2
 
 const postgresRollbackTimeout = 2 * time.Second
 
@@ -103,8 +105,17 @@ func (repository *PostgresPairingRepository) Close() {
 }
 
 func (repository *PostgresPairingRepository) MigrateUp(ctx context.Context) error {
+	return repository.MigrateTo(ctx, PairingSchemaVersion)
+}
+
+// MigrateTo moves the schema to an explicit known version. Production callers
+// use this from the short-lived migration command, never from the API process.
+func (repository *PostgresPairingRepository) MigrateTo(ctx context.Context, targetVersion int) error {
 	if repository == nil || repository.pool == nil {
 		return errors.New("migrate pairing schema: repository is not configured")
+	}
+	if targetVersion < 0 || targetVersion > PairingSchemaVersion {
+		return fmt.Errorf("migrate pairing schema: target version %d is unknown", targetVersion)
 	}
 	tx, err := repository.pool.BeginTx(ctx, pgx.TxOptions{})
 	if err != nil {
@@ -124,20 +135,46 @@ func (repository *PostgresPairingRepository) MigrateUp(ctx context.Context) erro
 	if err := requireKnownPairingSchemaVersions(ctx, tx, "migrate pairing schema"); err != nil {
 		return err
 	}
-	var applied bool
-	if err := tx.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = $1)`, pairingMigrationVersion).Scan(&applied); err != nil {
-		return fmt.Errorf("migrate pairing schema: inspect version: %w", err)
+	currentVersion, err := currentPairingSchemaVersion(ctx, tx, "migrate pairing schema")
+	if err != nil {
+		return err
 	}
-	if !applied {
-		migration, err := pairingMigrations.ReadFile("migrations/000001_fleet_pairing.up.sql")
+	for version := currentVersion + 1; version <= targetVersion; version++ {
+		var applied bool
+		if err := tx.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = $1)`, version).Scan(&applied); err != nil {
+			return fmt.Errorf("migrate pairing schema: inspect version %d: %w", version, err)
+		}
+		if applied {
+			continue
+		}
+		migration, err := pairingMigrations.ReadFile(pairingMigrationPath(version, "up"))
 		if err != nil {
-			return fmt.Errorf("migrate pairing schema: read embedded migration: %w", err)
+			return fmt.Errorf("migrate pairing schema: read embedded migration %d: %w", version, err)
 		}
 		if _, err := tx.Exec(ctx, string(migration), pgx.QueryExecModeSimpleProtocol); err != nil {
-			return fmt.Errorf("migrate pairing schema: apply version 1: %w", err)
+			return fmt.Errorf("migrate pairing schema: apply version %d: %w", version, err)
 		}
-		if _, err := tx.Exec(ctx, `INSERT INTO schema_migrations (version, applied_at) VALUES ($1, clock_timestamp())`, pairingMigrationVersion); err != nil {
-			return fmt.Errorf("migrate pairing schema: record version 1: %w", err)
+		if _, err := tx.Exec(ctx, `INSERT INTO schema_migrations (version, applied_at) VALUES ($1, clock_timestamp())`, version); err != nil {
+			return fmt.Errorf("migrate pairing schema: record version %d: %w", version, err)
+		}
+	}
+	for version := currentVersion; version > targetVersion; version-- {
+		var applied bool
+		if err := tx.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = $1)`, version).Scan(&applied); err != nil {
+			return fmt.Errorf("migrate pairing schema: inspect version %d for rollback: %w", version, err)
+		}
+		if !applied {
+			continue
+		}
+		migration, err := pairingMigrations.ReadFile(pairingMigrationPath(version, "down"))
+		if err != nil {
+			return fmt.Errorf("migrate pairing schema: read embedded migration %d down: %w", version, err)
+		}
+		if _, err := tx.Exec(ctx, string(migration), pgx.QueryExecModeSimpleProtocol); err != nil {
+			return fmt.Errorf("migrate pairing schema: apply version %d down: %w", version, err)
+		}
+		if _, err := tx.Exec(ctx, `DELETE FROM schema_migrations WHERE version = $1`, version); err != nil {
+			return fmt.Errorf("migrate pairing schema: clear version %d: %w", version, err)
 		}
 	}
 	if err := tx.Commit(ctx); err != nil {
@@ -146,46 +183,34 @@ func (repository *PostgresPairingRepository) MigrateUp(ctx context.Context) erro
 	return nil
 }
 
-func (repository *PostgresPairingRepository) MigrateDown(ctx context.Context) error {
+// VerifySchema checks the migration ledger without acquiring DDL privileges or
+// changing database state. The long-running API calls this through its runtime
+// role and fails closed unless the exact current schema is present.
+func (repository *PostgresPairingRepository) VerifySchema(ctx context.Context) error {
 	if repository == nil || repository.pool == nil {
-		return errors.New("rollback pairing schema: repository is not configured")
+		return errors.New("verify pairing schema: repository is not configured")
 	}
-	tx, err := repository.pool.BeginTx(ctx, pgx.TxOptions{})
+	rows, err := repository.pool.Query(ctx, `SELECT version FROM schema_migrations ORDER BY version`)
 	if err != nil {
-		return fmt.Errorf("rollback pairing schema: begin transaction: %w", err)
+		return fmt.Errorf("verify pairing schema: read migration ledger: %w", err)
 	}
-	defer rollbackTransaction(tx)
-	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock(70149822411011)`); err != nil {
-		return fmt.Errorf("rollback pairing schema: acquire lock: %w", err)
-	}
-	if _, err := tx.Exec(ctx, `
-		CREATE TABLE IF NOT EXISTS schema_migrations (
-			version bigint PRIMARY KEY,
-			applied_at timestamptz NOT NULL
-		)`); err != nil {
-		return fmt.Errorf("rollback pairing schema: create migration ledger: %w", err)
-	}
-	if err := requireKnownPairingSchemaVersions(ctx, tx, "rollback pairing schema"); err != nil {
-		return err
-	}
-	var applied bool
-	if err := tx.QueryRow(ctx, `SELECT EXISTS (SELECT 1 FROM schema_migrations WHERE version = $1)`, pairingMigrationVersion).Scan(&applied); err != nil {
-		return fmt.Errorf("rollback pairing schema: inspect version: %w", err)
-	}
-	if applied {
-		migration, err := pairingMigrations.ReadFile("migrations/000001_fleet_pairing.down.sql")
-		if err != nil {
-			return fmt.Errorf("rollback pairing schema: read embedded migration: %w", err)
+	defer rows.Close()
+	expected := int64(1)
+	for rows.Next() {
+		var version int64
+		if err := rows.Scan(&version); err != nil {
+			return fmt.Errorf("verify pairing schema: scan migration ledger: %w", err)
 		}
-		if _, err := tx.Exec(ctx, string(migration), pgx.QueryExecModeSimpleProtocol); err != nil {
-			return fmt.Errorf("rollback pairing schema: apply version 1 down: %w", err)
+		if version != expected || version > PairingSchemaVersion {
+			return errors.New("verify pairing schema: database schema version is newer or unknown")
 		}
-		if _, err := tx.Exec(ctx, `DELETE FROM schema_migrations WHERE version = $1`, pairingMigrationVersion); err != nil {
-			return fmt.Errorf("rollback pairing schema: clear version 1: %w", err)
-		}
+		expected++
 	}
-	if err := tx.Commit(ctx); err != nil {
-		return fmt.Errorf("rollback pairing schema: commit: %w", err)
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("verify pairing schema: read migration ledger: %w", err)
+	}
+	if expected-1 != PairingSchemaVersion {
+		return fmt.Errorf("verify pairing schema: database schema is version %d, require %d", expected-1, PairingSchemaVersion)
 	}
 	return nil
 }
@@ -200,7 +225,7 @@ func (repository *PostgresPairingRepository) CreatePairing(ctx context.Context, 
 	var mosqueIdentity MosqueIdentity
 	if err := tx.QueryRow(ctx, `
 		SELECT id, name, timezone_id, status
-		FROM mosques WHERE id = $1 FOR KEY SHARE`, record.MosqueID).Scan(
+		FROM mosques WHERE id = $1`, record.MosqueID).Scan(
 		&mosqueIdentity.ID, &mosqueIdentity.Name, &mosqueIdentity.Timezone, &mosqueStatus,
 	); err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
@@ -292,8 +317,7 @@ func (repository *PostgresPairingRepository) RedeemPairing(ctx context.Context, 
 		JOIN devices d ON d.id = pc.device_id AND d.mosque_id = pc.mosque_id
 		JOIN mosques m ON m.id = pc.mosque_id
 		WHERE pc.code_hash = $1
-		FOR UPDATE OF pc, d
-		FOR SHARE OF m`, redemption.CodeHash[:]).Scan(
+		FOR UPDATE OF pc, d`, redemption.CodeHash[:]).Scan(
 		&pairingID, &deviceID, &mosqueID, &mosqueName, &timezoneID, &mosqueStatus, &deviceStatus,
 		&expiresAt, &usesCount, &maxUses, &consumedAt, &codeRevokedAt,
 	)
@@ -488,14 +512,55 @@ func mapCredentialWriteError(operation string, err error) error {
 }
 
 func requireKnownPairingSchemaVersions(ctx context.Context, tx pgx.Tx, operation string) error {
-	var count, minimum, maximum int64
-	if err := tx.QueryRow(ctx, `
-		SELECT count(*), COALESCE(min(version), 0), COALESCE(max(version), 0)
-		FROM schema_migrations`).Scan(&count, &minimum, &maximum); err != nil {
+	rows, err := tx.Query(ctx, `SELECT version FROM schema_migrations ORDER BY version`)
+	if err != nil {
 		return fmt.Errorf("%s: inspect migration ledger: %w", operation, err)
 	}
-	if count > 0 && (count != 1 || minimum != pairingMigrationVersion || maximum != pairingMigrationVersion) {
-		return fmt.Errorf("%s: database schema version is newer or unknown", operation)
+	defer rows.Close()
+	expected := int64(1)
+	for rows.Next() {
+		var version int64
+		if err := rows.Scan(&version); err != nil {
+			return fmt.Errorf("%s: inspect migration version: %w", operation, err)
+		}
+		if version != expected || version > PairingSchemaVersion {
+			return fmt.Errorf("%s: database schema version is newer or unknown", operation)
+		}
+		expected++
+	}
+	if err := rows.Err(); err != nil {
+		return fmt.Errorf("%s: inspect migration ledger: %w", operation, err)
 	}
 	return nil
+}
+
+func currentPairingSchemaVersion(ctx context.Context, tx pgx.Tx, operation string) (int, error) {
+	rows, err := tx.Query(ctx, `SELECT version FROM schema_migrations ORDER BY version`)
+	if err != nil {
+		return 0, fmt.Errorf("%s: inspect migration ledger: %w", operation, err)
+	}
+	defer rows.Close()
+	expected := int64(1)
+	for rows.Next() {
+		var version int64
+		if err := rows.Scan(&version); err != nil {
+			return 0, fmt.Errorf("%s: inspect migration version: %w", operation, err)
+		}
+		if version != expected || version > PairingSchemaVersion {
+			return 0, fmt.Errorf("%s: database schema version is newer or unknown", operation)
+		}
+		expected++
+	}
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("%s: inspect migration ledger: %w", operation, err)
+	}
+	return int(expected - 1), nil
+}
+
+func pairingMigrationPath(version int, direction string) string {
+	name := "fleet_pairing"
+	if version == 2 {
+		name = "fleet_admin"
+	}
+	return fmt.Sprintf("migrations/%06d_%s.%s.sql", version, name, direction)
 }
