@@ -5,8 +5,8 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.example.namaztime.tv.data.local.NamazDatabase
 import com.example.namaztime.tv.data.local.SnapshotImporter
-import com.example.namaztime.tv.data.snapshot.AndroidSnapshotAssetSource
 import com.example.namaztime.tv.data.snapshot.SnapshotDecoder
+import com.example.namaztime.tv.data.snapshot.syntheticSnapshotBytes
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -40,7 +40,7 @@ class RoomPrayerScheduleRepositoryTest {
     @Test
     fun activeScheduleIsMappedOnlyFromRoomState() = runTest {
         SnapshotImporter(database).importAndActivate(
-            SnapshotDecoder.decode(AndroidSnapshotAssetSource(context).read()),
+            SnapshotDecoder.decode(syntheticSnapshotBytes()),
         )
 
         val schedule = RoomPrayerScheduleRepository(database.snapshotDao())
@@ -70,7 +70,7 @@ class RoomPrayerScheduleRepositoryTest {
 
     @Test
     fun malformedStoredFlagsDoNotSilentlyDisappear() = runTest {
-        val snapshot = SnapshotDecoder.decode(AndroidSnapshotAssetSource(context).read())
+        val snapshot = SnapshotDecoder.decode(syntheticSnapshotBytes())
         SnapshotImporter(database).importAndActivate(snapshot)
         database.openHelper.writableDatabase.execSQL(
             "UPDATE prayer_days SET flagsJson = '{' WHERE snapshotId = ? AND localDate = ?",

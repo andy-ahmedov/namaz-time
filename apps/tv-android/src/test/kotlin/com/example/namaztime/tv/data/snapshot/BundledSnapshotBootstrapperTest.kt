@@ -46,7 +46,7 @@ class BundledSnapshotBootstrapperTest {
         val bootstrapper = BundledSnapshotBootstrapper(
             selectionGuard = SnapshotSelectionGuard(database),
             importer = SnapshotImporter(database),
-            assetSource = AndroidSnapshotAssetSource(context),
+            assetSource = syntheticSnapshotAssetSource(),
         )
 
         bootstrapper.bootstrapIfNeeded()
@@ -63,7 +63,7 @@ class BundledSnapshotBootstrapperTest {
 
     @Test
     fun corruptFixtureLeavesDatabaseEmptyAndExposesStableDiagnostic() = runTest {
-        val corrupt = AndroidSnapshotAssetSource(context).read().decodeToString()
+        val corrupt = syntheticSnapshotBytes().decodeToString()
             .replaceFirst("Europe/Ulyanovsk", "Mars/Olympus_Mons")
             .encodeToByteArray()
         val bootstrapper = BundledSnapshotBootstrapper(
@@ -83,7 +83,7 @@ class BundledSnapshotBootstrapperTest {
 
     @Test
     fun bundledBootstrapRejectsProductionClassificationUntilSignatureVerificationExists() = runTest {
-        val production = AndroidSnapshotAssetSource(context).read().decodeToString()
+        val production = syntheticSnapshotBytes().decodeToString()
             .replaceFirst("\"data_classification\": \"synthetic\"", "\"data_classification\": \"production\"")
             .encodeToByteArray()
         val bootstrapper = BundledSnapshotBootstrapper(
@@ -106,7 +106,7 @@ class BundledSnapshotBootstrapperTest {
         val first = BundledSnapshotBootstrapper(
             selectionGuard = SnapshotSelectionGuard(database),
             importer = SnapshotImporter(database),
-            assetSource = AndroidSnapshotAssetSource(context),
+            assetSource = syntheticSnapshotAssetSource(),
         )
         first.bootstrapIfNeeded()
         var reads = 0
@@ -130,7 +130,7 @@ class BundledSnapshotBootstrapperTest {
 
     @Test
     fun corruptActiveSnapshotRestoresCompletePreviousWithoutReadingAsset() = runTest {
-        val first = SnapshotDecoder.decode(AndroidSnapshotAssetSource(context).read())
+        val first = SnapshotDecoder.decode(syntheticSnapshotBytes())
         val second = first.copy(snapshotId = "synthetic-ulsk-demo-2026-08-v2")
         SnapshotImporter(database).apply {
             importAndActivate(first)
@@ -159,7 +159,7 @@ class BundledSnapshotBootstrapperTest {
 
     @Test
     fun corruptActiveTimezoneRestoresMetadataValidPreviousSnapshot() = runTest {
-        val first = SnapshotDecoder.decode(AndroidSnapshotAssetSource(context).read())
+        val first = SnapshotDecoder.decode(syntheticSnapshotBytes())
         val second = first.copy(snapshotId = "synthetic-ulsk-demo-2026-08-v2")
         SnapshotImporter(database).apply {
             importAndActivate(first)
@@ -186,7 +186,7 @@ class BundledSnapshotBootstrapperTest {
 
     @Test
     fun corruptActiveProvenanceWithoutPreviousShowsBoundedDiagnostic() = runTest {
-        val snapshot = SnapshotDecoder.decode(AndroidSnapshotAssetSource(context).read())
+        val snapshot = SnapshotDecoder.decode(syntheticSnapshotBytes())
         SnapshotImporter(database).importAndActivate(snapshot)
         database.openHelper.writableDatabase.execSQL(
             "UPDATE snapshots SET rawSha256 = 'corrupt' WHERE snapshotId = ?",
@@ -214,7 +214,7 @@ class BundledSnapshotBootstrapperTest {
                 throw IllegalStateException("synthetic database read failure")
             },
             importer = SnapshotImporter(database),
-            assetSource = AndroidSnapshotAssetSource(context),
+            assetSource = syntheticSnapshotAssetSource(),
         )
 
         bootstrapper.bootstrapIfNeeded()

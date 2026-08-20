@@ -40,7 +40,7 @@ Detailed prompts: [CODEX_TASKS.md](CODEX_TASKS.md).
 | Task | Status | Acceptance / evidence |
 |---|---|---|
 | T009 manifest/snapshot sync | DONE | explicit ephemeral one-use pairing fixture and scoped bearer API; duplicate credential rejection; signed registry and paired-mosque binding; same-origin canonical snapshot URLs; manifest/raw snapshot ETag/304 and Digest; Android AES-GCM/Keystore provisioning, provisioning-scoped durable stage/quarantine/checkpoint, signature/schema/domain/manifest/mosque binding, atomic activation and authenticated rollback; 401/404/500/timeout/tamper/re-pair plus file-backed import/post-commit interruption recovery tests pass |
-| T010 first real source onboarding | BLOCKED | local source/effective, named approval, D-009 and D-013 publication slices DONE: immutable PDF baseline + August override, deterministic 365-day candidate/diff, signed approver receipt, Dhuhr/iqamah/Jumuah policy, protected-signer protocol, emulator runtime and rollback evidence model; first production publication remains blocked on D-014, a concrete KMS Ed25519 key, distinct security operator and authenticated signing-trust deployment; paired emulator canary follows those inputs, physical OEM acceptance is deferred/non-blocking |
+| T010 first real source onboarding | BLOCKED | local source/effective, named approval, D-009, D-013 and D-014 slices DONE: immutable PDF baseline + August override, deterministic 365-day candidate/diff, signed approver receipt, Dhuhr/iqamah/Jumuah policy, no-fallback expiry, protected-signer protocol and rollback evidence model; first production publication remains blocked on a concrete KMS Ed25519 key, distinct security operator and authenticated signing-trust deployment; paired emulator canary follows those inputs, physical OEM acceptance is deferred/non-blocking |
 
 T010's locally executable source slice is complete. The retained PDF SHA-256 is
 `82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21`;
@@ -57,7 +57,7 @@ exact candidate/diff/warnings and policy SHA-256. D-009 maps the approved
 collective-Dhuhr source value to Dhuhr adhan, applies iqamah +5 minutes, omits
 Friday Dhuhr iqamah and publishes one Jumuah at 13:15. This does not manufacture
 a provisioned production KMS key/signature, distinct signer operator,
-authenticated signing-trust deployment or D-014 stale/fallback decision, so T010
+authenticated signing-trust deployment, so T010
 remains `BLOCKED` rather than DONE. D-013 is accepted and locally implemented: production code
 accepts only an isolated signer interface/two-signature response, Go/API
 and Android consume the same `scheduled`/`active`/`retired`/`revoked` public
@@ -126,8 +126,11 @@ backend or current Robolectric evidence labels.
 | T019 accelerated offline rollover hardening | DONE | deterministic seven-day matrix over one materialized local schedule preserves mosque-local date/time and safe frame at 4K density, then fails closed on the first uncovered date; Android/repository gates and independent review pass; this is not a Room-reopen or physical seven-day soak |
 | T020 bounded device-clock health | DONE | HTTPS manifest `Date` compared with injected response receipt at ±5-minute tolerance plus rollback detection; durable nullable health never blocks sync/display; heartbeat tri-state contract/wiring and physical bad-RTC/TLS/power evidence remain deferred |
 | T021 bounded display-retention shift | DONE | public display foreground follows a deterministic six-position, ten-minute, ±2 dp cycle inside the shared safe frame; unavailable display participates while settings/background/focus order remain unchanged; pure policy plus 720p/1080p/4K safe-frame and D-pad regressions pass locally; panel-specific efficacy remains physical evidence |
+| T022 pilot-local real runtime and settings | IN_PROGRESS | checkpoint 1: debug/pilot-local APK packages an approval-bound, locally signed 365-day Ulyanovsk snapshot plus disjoint public trust bundles; cold bootstrap authenticates and activates it through Room, exact August precedence/D-009 values and D-014 post-coverage failure are regression-tested; release embeds no schedule/trust asset. Settings/localization checkpoints remain in progress. |
 
-The defined, independent local Phase 4 queue is complete through T021. The
+The original independent local Phase 4 queue is complete through T021. T022 is
+the product-owner-requested pilot-local integration task and is now in progress.
+After T022, the
 remaining matrix below requires physical hardware, OEM behavior or an open
 deployment decision, so it is not replaced with an invented local task and
 Phase 5 has not started.
@@ -186,7 +189,7 @@ Do not begin until the first pilot is stable.
   candidate/diff/warnings; D-009 separately treats collective Dhuhr as adhan
   and derives iqamah +5. A real pilot publication remains intentionally
   impossible until protected production KMS key/trust deployment and a distinct
-  signer operator are provisioned and D-014 is accepted. The resulting signed
+  signer operator are provisioned. D-014 is accepted; the resulting signed
   snapshot will use the already selected paired emulator for canary/rollback;
   physical OEM acceptance remains a separate future validation.
 - T009 intentionally rejects non-empty remote asset manifests; custom asset

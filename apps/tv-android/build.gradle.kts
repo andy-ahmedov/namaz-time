@@ -24,8 +24,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            buildConfigField("boolean", "PILOT_LOCAL_RUNTIME", "true")
+        }
         release {
             isMinifyEnabled = false
+            buildConfigField("boolean", "PILOT_LOCAL_RUNTIME", "false")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -36,10 +40,6 @@ android {
     buildFeatures {
         buildConfig = true
         compose = true
-    }
-
-    sourceSets {
-        getByName("main").assets.srcDir(rootProject.file("examples"))
     }
 
     testOptions {

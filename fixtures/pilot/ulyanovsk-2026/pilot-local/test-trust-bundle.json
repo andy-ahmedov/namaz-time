@@ -1,0 +1,15 @@
+{
+  "schema_version": "1.0",
+  "revision": 1,
+  "environment": "test",
+  "generated_at": "2026-08-20T14:50:00Z",
+  "keys": [
+    {
+      "key_id": "pilot-local-test-schedule-2026-01",
+      "algorithm": "ed25519",
+      "public_key_ed25519_base64": "r6xPSgk9O/mkiP3AGn2UudBvqCaB+06tRD/2LqeeFUo=",
+      "status": "active",
+      "not_before": "2026-08-20T14:50:00Z"
+    }
+  ]
+}

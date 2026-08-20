@@ -5,9 +5,9 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.example.namaztime.tv.data.local.NamazDatabase
 import com.example.namaztime.tv.data.local.SnapshotImporter
-import com.example.namaztime.tv.data.snapshot.AndroidSnapshotAssetSource
 import com.example.namaztime.tv.data.snapshot.SnapshotActivationGate
 import com.example.namaztime.tv.data.snapshot.SnapshotAuthenticityVerifier
+import com.example.namaztime.tv.data.snapshot.syntheticSnapshotBytes
 import java.io.File
 import java.security.MessageDigest
 import java.util.Base64
@@ -65,7 +65,7 @@ class AuthenticatedRoomSnapshotActivatorTest {
     @Test
     fun signedManifestBoundPayloadActivatesThroughRoomAndPreservesPrevious() = runTest {
         val bundled = SnapshotActivationGate.bundledSynthetic(
-            AndroidSnapshotAssetSource(ApplicationProvider.getApplicationContext()).read(),
+            syntheticSnapshotBytes(),
         )
         SnapshotImporter(database).importAndActivate(bundled)
         val manifest = matchingManifest()
@@ -80,7 +80,7 @@ class AuthenticatedRoomSnapshotActivatorTest {
     @Test
     fun manifestSnapshotOrKeySubstitutionFailsBeforeRoomMutation() = runTest {
         val bundled = SnapshotActivationGate.bundledSynthetic(
-            AndroidSnapshotAssetSource(ApplicationProvider.getApplicationContext()).read(),
+            syntheticSnapshotBytes(),
         )
         SnapshotImporter(database).importAndActivate(bundled)
         listOf(
@@ -120,7 +120,7 @@ class AuthenticatedRoomSnapshotActivatorTest {
     @Test
     fun signatureTamperMapsToBoundedRejectionAndKeepsLastKnownGood() = runTest {
         val bundled = SnapshotActivationGate.bundledSynthetic(
-            AndroidSnapshotAssetSource(ApplicationProvider.getApplicationContext()).read(),
+            syntheticSnapshotBytes(),
         )
         SnapshotImporter(database).importAndActivate(bundled)
         val tampered = snapshot.copyOf().also { bytes ->

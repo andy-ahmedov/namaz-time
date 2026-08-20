@@ -37,7 +37,9 @@ sealed interface SnapshotBootstrapState {
 class BundledSnapshotBootstrapper(
     private val selectionGuard: SnapshotSelectionResolver,
     private val importer: SnapshotImporter,
-    private val assetSource: SnapshotAssetSource,
+    private val assetSource: SnapshotAssetSource?,
+    private val activationGate: (ByteArray) -> ActivatableSnapshot =
+        SnapshotActivationGate::bundledSynthetic,
 ) {
     private val mutableState = MutableStateFlow<SnapshotBootstrapState>(
         SnapshotBootstrapState.Pending,
@@ -72,8 +74,13 @@ class BundledSnapshotBootstrapper(
             SnapshotSelectionResolution.Missing -> Unit
         }
 
+        if (assetSource == null) {
+            mutableState.value = SnapshotBootstrapState.Diagnostic("NO_LOCAL_SNAPSHOT")
+            return
+        }
+
         mutableState.value = try {
-            val snapshot = SnapshotActivationGate.bundledSynthetic(assetSource.read())
+            val snapshot = activationGate(assetSource.read())
             importer.importAndActivate(snapshot)
             SnapshotBootstrapState.Ready(snapshot.payload.snapshotId)
         } catch (error: SnapshotValidationException) {

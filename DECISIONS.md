@@ -19,8 +19,8 @@ Record product decisions here before converting stable architecture choices into
 | D-011 | Best-effort boot vs managed kiosk | OPEN | Installer/product | before pilot deployment | separate support promises |
 | D-012 | Analytics/crash reporting policy | OPEN | Product/privacy | before store release | recommended privacy-minimal default |
 | D-013 | Snapshot signer/KMS strategy | ACCEPTED | Product owner / security owner | before production publication | KMS selected; exact vendor/service, production Ed25519 key and distinct security operator remain deployment inputs. Separate approver/signer, versioned trust, rotation/revocation and no production private material in Git/APK/API/ordinary CI remain mandatory. |
-| D-014 | Source stale/expiry/fallback behavior | OPEN | Mosque approver | before real source | default: no silent fallback |
-| D-015 | Pilot schedule delivery channel | ACCEPTED | Product owner | pilot rollout | Pair the Android TV client with the API and deliver signed immutable snapshots through the existing T009 manifest/sync path; no APK-embedded production schedule. |
+| D-014 | Source stale/expiry/fallback behavior | ACCEPTED | Product owner / mosque approver | before real source | No silent calculation/provider fallback. Last-known-good is displayable only while the current mosque-local date is inside its signed coverage; after coverage the TV shows the safe “schedule unavailable” state. Confirmed 2026-08-20. |
+| D-015 | Pilot schedule delivery channel | ACCEPTED | Product owner | pilot rollout | Production pilot delivery remains pairing + T009 signed immutable snapshots. T022 may embed the exact approved schedule and a disjoint public-only local trust anchor only in the non-release pilot-local QA build; it is not API-admissible production publication or a delivery shortcut. |
 
 ## Confirmed repository proposals
 
@@ -169,7 +169,7 @@ These are proposals until accepted by the product owner:
   the mosque Dhuhr adhan, not iqamah. Publication therefore selects that value
   as Dhuhr adhan and derives iqamah only from the separately approved +5 rule.
 - `UNKNOWN` — the selected KMS vendor/key, a distinct named security operator,
-  authenticated production signing-trust deployment and D-014 still block the
+  authenticated production signing-trust deployment still blocks the
   first production activation. The paired Android TV emulator is the accepted
   canary target; physical OEM evidence remains a separate future check.
 

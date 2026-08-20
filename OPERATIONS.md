@@ -115,7 +115,9 @@ For the pilot, the approved operational transform is source-aware: candidate
 in candidate provenance; iqamah is +5 minutes; Friday Dhuhr iqamah is replaced
 by one Jumuah at 13:15. Any change creates a new policy hash and requires a new
 signed approval. Correction actions are assigned to the admin workflow, but
-D-014 still must decide expiry/fallback behavior after coverage ends.
+D-014 is accepted: last-known-good is displayed only while the current
+mosque-local date is covered. After coverage ends the client shows the bounded
+schedule-unavailable state and never silently calculates or changes provider.
 
 ## Snapshot rollback runbook
 

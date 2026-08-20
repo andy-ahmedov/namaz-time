@@ -112,10 +112,13 @@ D-013 принята и локально реализована как isolated 
 snapshot/provenance attestation, versioned monotonic public trust bundle и
 обязательный production audit receipt; production secret отсутствует. Первая
 production-публикация уже имеет подписанное named approval и D-009 policy, но
-остаётся заблокирована на D-014, выборе конкретного KMS, создании production
+остаётся заблокирована на выборе конкретного KMS, создании production
 signing key, назначении отличного от approver'а security-оператора и trust
 deployment. Canary/rollback выполняется на выбранном Android TV Emulator после
-подписи; физическая OEM-приёмка отложена и не блокирует локальную разработку.
+подписи; D-014 принят без silent fallback, а физическая OEM-приёмка отложена и
+не блокирует локальную разработку. T022 отдельно использует утверждённый
+snapshot только в debug pilot-local APK; release продолжает получать данные
+через pairing/T009.
 
 ## 5. Запрет на гигантскую первую задачу
 

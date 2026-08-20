@@ -129,8 +129,11 @@ pointer while retaining v1 as the rollback baseline. Prayer-day reads always sor
 mosque-local date; SQLite's unspecified row order is never treated as schedule
 order.
 
-On first launch, the app reads the explicitly synthetic example from its APK
-assets, validates it before persistence, imports all supported child records in
+The original T004 synthetic example is now test-only. In the explicitly
+non-release T022 pilot-local build, first launch reads an immutable approved
+Ulyanovsk 2026 snapshot plus public-only, disjoint local trust bundles from the
+debug source set. It verifies the canonical hash/Ed25519 signature and exact
+trust environment separation before persistence, imports all supported child records in
 one transaction and only then changes the display pointer. A corrupt asset
 leaves Room without an active schedule and exposes a bounded support code.
 When an active selection already exists, startup verifies its local coverage;
@@ -140,9 +143,10 @@ Local schedule-flow corruption is also mapped to a bounded UI support code
 instead of escaping the Compose collector. Startup recovery revalidates the
 persisted timezone, provenance/integrity envelope and complete ordered prayer
 coverage before trusting either active or previous selection.
-Cryptographic signature verification is intentionally added at T008; T004 does
-not treat the synthetic placeholder integrity envelope as authentic production
-data.
+The ephemeral pilot-local private key is discarded after fixture generation;
+it is not a production key, KMS substitute or API registry credential. Release
+builds package neither this schedule nor its local trust assets and continue to
+depend on pairing/T009 plus the ADR 0011 production trust deployment.
 
 T005 replaces the launch placeholder with a responsive, built-in offline main
 display. It renders the six daily adhan rows from immutable Room-backed local
@@ -170,6 +174,11 @@ Nonexistent or ambiguous DST wall times, invalid daily ordering/rule state and
 dates outside local coverage produce bounded diagnostics. The full time model is validated before Room activation
 and again when an immutable local snapshot reaches the display; per-second
 ticks then resolve only from that local state.
+
+D-014 makes the coverage boundary normative: last-known-good is not permission
+to extrapolate. It remains visible only while the current mosque-local date is
+covered by its signed daily rows. The first uncovered date produces the safe
+unavailable screen; the TV never swaps to calculation or another provider.
 
 T007 reads campaign rows from the same immutable active Room snapshot. A pure
 domain boundary accepts only bounded, exact lowercase `https://` targets with

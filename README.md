@@ -132,6 +132,13 @@ publication остаётся `BLOCKED` только на конкретном pr
 ключе, отдельном security/signer операторе, authenticated snapshot-trust
 deployment и canary/rollback drill. Named approval, D-009 и отдельная
 approval-квитанция уже зафиксированы и проверяются локально.
+T022 переводит именно debug `pilot-local` сборку на реальный утверждённый
+effective schedule Ульяновска 2026. Snapshot проходит canonical Ed25519
+проверку и атомарный Room import; одноразовый локальный приватный ключ удалён,
+а его public trust и расписание не входят в release. Production-доставка
+по-прежнему требует pairing/T009 и KMS-подписанный publication. D-014 принят:
+после 31 декабря 2026 нет скрытого расчёта — показывается безопасное состояние
+«Расписание недоступно».
 T011 добавляет независимое PostgreSQL-хранилище production pairing: случайные
 одноразовые коды и device tokens, только hash/HMAC at rest, expiry/rate limits,
 атомарный single-use redeem, revocation, mosque-scoped composite constraints и

@@ -6,8 +6,8 @@ import androidx.test.core.app.ApplicationProvider
 import com.example.namaztime.tv.data.local.BeforeSnapshotActivation
 import com.example.namaztime.tv.data.local.NamazDatabase
 import com.example.namaztime.tv.data.local.SnapshotImporter
-import com.example.namaztime.tv.data.snapshot.AndroidSnapshotAssetSource
 import com.example.namaztime.tv.data.snapshot.SnapshotActivationGate
+import com.example.namaztime.tv.data.snapshot.syntheticSnapshotBytes
 import com.example.namaztime.tv.data.snapshot.SnapshotAuthenticityVerifier
 import java.io.File
 import java.nio.file.Files
@@ -43,7 +43,7 @@ class SnapshotSyncProcessRecoveryTest {
         val databaseName = databaseName()
         var database = openDatabase(databaseName)
         val bundled = SnapshotActivationGate.bundledSynthetic(
-            AndroidSnapshotAssetSource(context).read(),
+            syntheticSnapshotBytes(),
         )
         SnapshotImporter(database).importAndActivate(bundled)
         val fixture = fixture()
@@ -96,7 +96,7 @@ class SnapshotSyncProcessRecoveryTest {
         val databaseName = databaseName()
         var database = openDatabase(databaseName)
         val bundled = SnapshotActivationGate.bundledSynthetic(
-            AndroidSnapshotAssetSource(context).read(),
+            syntheticSnapshotBytes(),
         )
         SnapshotImporter(database).importAndActivate(bundled)
         val fixture = fixture()

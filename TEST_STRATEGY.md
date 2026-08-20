@@ -94,7 +94,9 @@ No live external site is required for normal CI. A separate scheduled canary may
 
 ## Android integration tests
 
-- first install imports bundled synthetic snapshot;
+- explicit synthetic tests import their fixture directly from `examples/`;
+- pilot-local first install authenticates and imports the approved 365-day
+  Ulyanovsk snapshot, while release packages no local schedule/trust assets;
 - cold launch offline;
 - Room migration preserves active snapshot;
 - WorkManager sync with 200/304/401/404/500/timeout;
@@ -151,6 +153,14 @@ the ±2 dp axis bound. Existing connected and unavailable UI matrices exercise
 the shifted shared safe frame at 720p, 1080p-density and 4K-density while the
 D-pad tests continue to pin initial focus and display/settings return. These
 tests prove deterministic layout bounds, not burn-in prevention on a panel.
+
+T022 pins the pilot-local asset SHA-256, snapshot/approval identity, 365-day
+coverage, exact August 20/24 Dhuhr selection, all five +5-minute iqamah rules
+and one Friday 13:15 Jumu'ah session. The same test path performs real Android
+canonical/signature/trust validation before Room activation, rejects tampering
+without changing selection, and proves D-014 returns
+`SCHEDULE_DATE_OUTSIDE_COVERAGE` on 2027-01-01. These are local
+JVM/Robolectric/build facts; the product owner owns emulator acceptance.
 
 ## Physical device tests
 

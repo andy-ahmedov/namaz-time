@@ -11,6 +11,9 @@ import com.example.namaztime.tv.data.local.SnapshotImporter
 import com.example.namaztime.tv.data.local.SnapshotSelectionGuard
 import com.example.namaztime.tv.data.snapshot.AndroidSnapshotAssetSource
 import com.example.namaztime.tv.data.snapshot.BundledSnapshotBootstrapper
+import com.example.namaztime.tv.data.snapshot.PILOT_LOCAL_SNAPSHOT_ASSET
+import com.example.namaztime.tv.data.snapshot.PilotLocalSnapshotTrust
+import com.example.namaztime.tv.data.snapshot.SnapshotActivationGate
 import com.example.namaztime.tv.presentation.NamazTvApp
 import com.example.namaztime.tv.repository.DataStoreOperatorPreferencesRepository
 import com.example.namaztime.tv.repository.RoomPrayerScheduleRepository
@@ -29,11 +32,33 @@ class MainActivity : ComponentActivity() {
         )
         val database = NamazDatabase.open(applicationContext)
         val scheduleRepository = RoomPrayerScheduleRepository(database.snapshotDao())
-        val bootstrapper = BundledSnapshotBootstrapper(
-            selectionGuard = SnapshotSelectionGuard(database),
-            importer = SnapshotImporter(database),
-            assetSource = AndroidSnapshotAssetSource(applicationContext),
-        )
+        val pilotLocalVerifier = if (BuildConfig.PILOT_LOCAL_RUNTIME) {
+            PilotLocalSnapshotTrust.verifier(applicationContext)
+        } else {
+            null
+        }
+        val bootstrapper = if (pilotLocalVerifier != null) {
+            BundledSnapshotBootstrapper(
+                selectionGuard = SnapshotSelectionGuard(
+                    database,
+                    pilotLocalVerifier.selectionTrust(),
+                ),
+                importer = SnapshotImporter(database),
+                assetSource = AndroidSnapshotAssetSource(
+                    applicationContext,
+                    PILOT_LOCAL_SNAPSHOT_ASSET,
+                ),
+                activationGate = { bytes ->
+                    SnapshotActivationGate.authenticated(bytes, pilotLocalVerifier)
+                },
+            )
+        } else {
+            BundledSnapshotBootstrapper(
+                selectionGuard = SnapshotSelectionGuard(database),
+                importer = SnapshotImporter(database),
+                assetSource = null,
+            )
+        }
         setContent {
             NamazTvApp(
                 operatorPreferencesRepository = preferencesRepository,

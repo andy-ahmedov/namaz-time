@@ -123,7 +123,7 @@ A named religious approval and D-009 are now locally complete: a separate
 approver key signs the exact candidate/diff/warnings and mosque policy; Dhuhr
 adhan uses the approved collective column, iqamah is +5, and one Friday Jumuah
 is 13:15. A concrete production KMS Ed25519 key, distinct security operator,
-authenticated signing-trust deployment and D-014 stale/fallback policy remain
+authenticated signing-trust deployment remain
 `BLOCKED`, so T010 is not marked DONE. The selected paired Android TV emulator
 is sufficient for the future canary/rollback checkpoint; physical OEM testing
 is deferred and is not a local development blocker. D-013 itself is ACCEPTED and locally implemented: strict public trust
@@ -383,3 +383,38 @@ foreground offset from its existing injected clock and passes it through the
 shared safe frame for both available and unavailable projections. No new
 animation, permission, data dependency or visual style was introduced. Actual
 panel efficacy remains `UNKNOWN` until a physical soak.
+
+## T022 — pilot-local real runtime and settings
+
+**Goal:** replace the synthetic demonstration bootstrap in the explicitly
+local pilot build with the approved Ulyanovsk 2026 effective schedule and turn
+the settings shell into a truthful, localized TV operator surface.
+
+**In scope:** build-only pilot-local snapshot/trust assets derived from the
+retained PDF, August override, signed approval and D-009 policy; authenticated
+Room bootstrap and restart selection; D-014 no-fallback coverage behavior;
+Room-backed mosque/source/iqamah/Jumu'ah/QR/diagnostic settings; locally
+effective appearance/language actions; Russian default and persisted whole-app
+language; D-pad and multi-profile regression coverage.
+
+**Non-goals:** a production-signing shortcut, production KMS/private material,
+API registry admission of the local artifact, an invented QR destination,
+device-owner/kiosk or boot promises, physical TV, emulator/ADB evidence,
+production application ID/license, remote settings mutation or Phase 5.
+
+**Acceptance:** pilot-local cold start authenticates and atomically activates
+365 approved days; 20/24 August, +5-minute iqamah and Friday 13:15 Jumu'ah are
+pinned; 1 January 2027 renders safe unavailable without calculation fallback;
+synthetic data is test-only and release contains no embedded schedule/local
+trust; every settings section reports real local state and only exposes real
+actions; RU/EN selection persists with Russian default and no mixed-language
+user-visible literals; Android unit/build and repository gates pass.
+
+**Progress (checkpoint 1, 2026-08-20):** an ephemeral, disjoint pilot-local
+Ed25519 key signed the exact approval-bound publication request and was then
+discarded. Only the immutable snapshot, public trust bundles and local audit
+evidence remain. The debug pilot-local source set authenticates the asset with
+the existing lifecycle-aware verifier, imports it through the existing Room
+transaction and reuses trust-aware startup selection. Tampering fails before
+activation. Release has no bundled schedule path. Settings and localization
+remain in progress.
