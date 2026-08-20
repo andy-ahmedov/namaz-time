@@ -111,6 +111,14 @@ No live external site is required for normal CI. A separate scheduled canary may
 
 Golden images are reviewed for layout, not copied from a competitor.
 
+T017 adds semantic palette contrast floors, verifies that the actual TV
+Material theme receives the dark semantic palette, and checks component and
+root-relative safe-frame bounds for main, settings and recovery UI on the three
+local 16:9 profiles. Robolectric `captureToImage` times out in the current
+environment under both default and native graphics, so no pixel-level
+screenshot evidence is claimed at this checkpoint. Physical-TV and any future
+instrumented screenshot review remain separate release evidence.
+
 ## Physical device tests
 
 Required before pilot:

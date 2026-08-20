@@ -49,12 +49,17 @@ class NamazTvAppUiTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
+    @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
     fun dpadOpensSettingsAndRestoresDisplayFocusOnExit() {
         compose.setContent { NamazTvApp(FakeOperatorPreferencesRepository()) }
 
         compose.onNodeWithText("Настройки").assertIsFocused().performKeyInput {
             pressKey(Key.Enter)
         }
+        compose.onNodeWithTag(TV_ATMOSPHERIC_BACKGROUND_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_SHELL_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_NAVIGATION_PANEL_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_CONTENT_PANEL_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SettingsDestination.initial.navigationTestTag).assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionRight) }
         compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG).assertIsFocused().performKeyInput {
@@ -100,7 +105,14 @@ class NamazTvAppUiTest {
             compose.onNodeWithTag("$PRAYER_ROW_TEST_TAG_PREFIX$prayer").assertExists()
         }
         compose.onNodeWithText("Следующий намаз").assertExists()
+        compose.onNodeWithText("До следующего события").assertExists()
         compose.onNodeWithText("03:20:00").assertExists()
+        compose.onNodeWithTag(NEXT_EVENT_CARD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(LOCAL_CLOCK_CARD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(PRAYER_LIST_CARD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(IQAMAH_STRIP_TAG).assertIsDisplayed()
+        compose.onNodeWithText("Икамат · ближайший").assertExists()
+        compose.onNodeWithText("Не указан").assertExists()
         compose.onNodeWithText("ТЕСТОВЫЕ ДАННЫЕ").assertExists()
         compose.onNodeWithContentDescription(
             "Фаджр, азан 03:14, икамат не указана",
@@ -343,8 +355,22 @@ class NamazTvAppUiTest {
 
         compose.onNodeWithText("Prayer schedule unavailable").assertExists()
         compose.onNodeWithText("Support code: SNAPSHOT_INVALID_TIMEZONE").assertExists()
+        compose.onNodeWithTag(DISPLAY_UNAVAILABLE_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(UNAVAILABLE_PANEL_TAG).assertIsDisplayed()
         compose.onNodeWithText("Настройки").assertIsFocused()
     }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun unavailableScreenKeeps720pSafeFrame() = assertUnavailableScreenSafeFrame()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun unavailableScreenKeeps1080pDensitySafeFrame() = assertUnavailableScreenSafeFrame()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun unavailableScreenKeeps4kDensitySafeFrame() = assertUnavailableScreenSafeFrame()
 
     @Test
     fun mosqueLocalDateOutsideCoverageShowsSafeDiagnosticAndSettings() {
@@ -435,6 +461,25 @@ class NamazTvAppUiTest {
         val rootBounds = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG)
             .assertIsDisplayed()
             .getUnclippedBoundsInRoot()
+        val contentBounds = compose.onNodeWithTag(MAIN_DISPLAY_SAFE_CONTENT_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        val rootWidth = rootBounds.right - rootBounds.left
+        val rootHeight = rootBounds.bottom - rootBounds.top
+        assert(contentBounds.left - rootBounds.left >= rootWidth * 0.04f)
+        assert(rootBounds.right - contentBounds.right >= rootWidth * 0.04f)
+        assert(contentBounds.top - rootBounds.top >= rootHeight * 0.04f)
+        assert(rootBounds.bottom - contentBounds.bottom >= rootHeight * 0.04f)
+        listOf(
+            NEXT_EVENT_CARD_TAG,
+            LOCAL_CLOCK_CARD_TAG,
+            PRAYER_LIST_CARD_TAG,
+            IQAMAH_STRIP_TAG,
+        ).forEach { tag ->
+            val bounds = compose.onNodeWithTag(tag).assertIsDisplayed().getUnclippedBoundsInRoot()
+            assert(bounds.left >= contentBounds.left && bounds.right <= contentBounds.right)
+            assert(bounds.top >= contentBounds.top && bounds.bottom <= contentBounds.bottom)
+        }
         var previousBounds: DpRect? = null
         listOf("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha").forEach { prayer ->
             val rowBounds = compose.onNodeWithTag("$PRAYER_ROW_TEST_TAG_PREFIX$prayer")
@@ -453,6 +498,36 @@ class NamazTvAppUiTest {
             .getUnclippedBoundsInRoot()
         assert(settingsBounds.left >= rootBounds.left && settingsBounds.right <= rootBounds.right)
         assert(settingsBounds.top >= rootBounds.top && settingsBounds.bottom <= rootBounds.bottom)
+    }
+
+    private fun assertUnavailableScreenSafeFrame() {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(null),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Diagnostic("SNAPSHOT_INVALID_TIMEZONE"),
+                ),
+            )
+        }
+
+        val root = compose.onNodeWithTag(TV_ATMOSPHERIC_BACKGROUND_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        val safeContent = compose.onNodeWithTag(DISPLAY_UNAVAILABLE_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        val rootWidth = root.right - root.left
+        val rootHeight = root.bottom - root.top
+        assert(safeContent.left - root.left >= rootWidth * 0.04f)
+        assert(root.right - safeContent.right >= rootWidth * 0.04f)
+        assert(safeContent.top - root.top >= rootHeight * 0.04f)
+        assert(root.bottom - safeContent.bottom >= rootHeight * 0.04f)
+        val panel = compose.onNodeWithTag(UNAVAILABLE_PANEL_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        assert(panel.left >= safeContent.left && panel.right <= safeContent.right)
+        assert(panel.top >= safeContent.top && panel.bottom <= safeContent.bottom)
     }
 
     private fun schedule() = LocalPrayerSchedule(

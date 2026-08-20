@@ -3,14 +3,13 @@ package com.example.namaztime.tv.presentation
 import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -52,62 +51,70 @@ internal fun QrCampaignPanel(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    Column(
+    TvGlassPanel(
         modifier = modifier
             .fillMaxHeight()
-            .testTag(if (state.preview) QR_CAMPAIGN_PREVIEW_TAG else QR_CAMPAIGN_PANEL_TAG)
-            .background(Color(0xFF102326).copy(alpha = 0.94f), RoundedCornerShape(18.dp))
-            .border(1.dp, Color(0xFF56706D), RoundedCornerShape(18.dp))
-            .padding(if (compact) 8.dp else 12.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
+            .testTag(if (state.preview) QR_CAMPAIGN_PREVIEW_TAG else QR_CAMPAIGN_PANEL_TAG),
+        radius = 20.dp,
     ) {
-        Text(
-            text = if (state.preview) "ПРЕДПРОСМОТР · ${state.kindLabel}" else state.kindLabel,
-            color = Color(0xFFFFE3A0),
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Image(
-            bitmap = rememberQrBitmap(
-                matrix = state.qrCode,
-                outputSize = with(LocalDensity.current) { qrSize.roundToPx() },
-            ),
-            contentDescription = "QR-код: ${state.title}",
+        Column(
             modifier = Modifier
-                .padding(vertical = 8.dp)
-                .size(qrSize)
-                .testTag(QR_CODE_IMAGE_TAG)
-                .background(Color.White),
-            filterQuality = FilterQuality.None,
-        )
-        Text(
-            text = state.title,
-            modifier = Modifier
-                .fillMaxWidth()
-                .testTag(QR_CAMPAIGN_TITLE_TAG),
-            color = Color.White,
-            fontSize = if (compact) 16.sp else 18.sp,
-            fontWeight = FontWeight.Bold,
-            textAlign = TextAlign.Center,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        state.subtitle?.let { subtitle ->
+                .fillMaxSize()
+                .padding(if (compact) 8.dp else 12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
             Text(
-                text = subtitle,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .testTag(QR_CAMPAIGN_SUBTITLE_TAG)
-                    .padding(top = 4.dp),
-                color = Color(0xFFCFDCDA),
-                fontSize = if (compact) 12.sp else 14.sp,
-                textAlign = TextAlign.Center,
-                maxLines = if (compact) 2 else 3,
+                text = if (state.preview) {
+                    "ПРЕДПРОСМОТР · ${state.kindLabel}"
+                } else {
+                    state.kindLabel
+                },
+                color = NamazTvTheme.colors.accent,
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
+            Image(
+                bitmap = rememberQrBitmap(
+                    matrix = state.qrCode,
+                    outputSize = with(LocalDensity.current) { qrSize.roundToPx() },
+                ),
+                contentDescription = "QR-код: ${state.title}",
+                modifier = Modifier
+                    .padding(vertical = 8.dp)
+                    .size(qrSize)
+                    .testTag(QR_CODE_IMAGE_TAG)
+                    .background(Color.White),
+                filterQuality = FilterQuality.None,
+            )
+            Text(
+                text = state.title,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .testTag(QR_CAMPAIGN_TITLE_TAG),
+                color = NamazTvTheme.colors.textPrimary,
+                fontSize = if (compact) 16.sp else 18.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            state.subtitle?.let { subtitle ->
+                Text(
+                    text = subtitle,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .testTag(QR_CAMPAIGN_SUBTITLE_TAG)
+                        .padding(top = 4.dp),
+                    color = NamazTvTheme.colors.textSecondary,
+                    fontSize = if (compact) 12.sp else 14.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = if (compact) 2 else 3,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
         }
     }
 }

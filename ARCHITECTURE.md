@@ -154,6 +154,21 @@ and clearly labels it as preview. The audit model stores campaign ID plus a
 SHA-256 target fingerprint; durable publication audit and domain allowlisting
 remain later work pending D-010.
 
+T017 establishes a single Compose design system above the existing T005–T007
+behavior. Semantic dark-surface, text, amber state, warning, separator and
+focus tokens are shared by the main display, settings, QR and safe unavailable
+screen. A project-drawn static atmospheric background is the only new visual
+asset and is always available offline. The supplied reference image is not
+packaged because it contains third-party branding and imagery.
+
+The main display uses an overscan-safe content frame around a dominant local
+next-event card, mosque-local date/clock card, six-row adhan/iqamah table and
+iqamah/source strip. Optional QR gets an independent full-height column so it
+cannot shrink prayer rows or the local clock. Room remains the only content
+source, while the T006 result supplies event kind/time, countdown and resolved
+iqamah/Jumu'ah. Presentation code never guesses a missing iqamah or derives an
+iqamah countdown across a possibly ambiguous wall-clock transition.
+
 T008 implements the first provider as a strict, network-free `manual-csv/v1`
 adapter. Raw artifact capture is separate from the human transcription; the
 candidate binds both SHA-256 values, a normalized-candidate hash, parser

@@ -260,6 +260,27 @@ These are proposals until accepted by the product owner:
   PostgreSQL 18 custom archive; a truncated archive was rejected. This is not a
   production-data restore or disaster-recovery timing claim.
 
+## T017 connected-display design record
+
+- `CONFIRMED_PUBLIC` — the product-owner-supplied `design.png` is a 1672×941
+  visual reference with SHA-256
+  `afe3803c2fbedc6755bd49093a6854393c246bef547c7cad185b6f2502282ff6`.
+  It shows a dark card hierarchy around mosque identity, next prayer/countdown,
+  local date/time, prayer list and iqamah, but also visibly includes third-party
+  branding and imagery.
+- `PROPOSAL` — T017 derives only hierarchy and mood. The application uses an
+  original static Compose background and semantic slate/amber surface, text,
+  focus and warning tokens; the supplied image is not committed or packaged.
+- `PROPOSAL` — the iqamah summary is sourced only from T006 resolution. An
+  iqamah countdown is shown only when iqamah is the resolved next event;
+  missing values remain explicitly unset.
+- `PROPOSAL` — Room/T006/T007-connected state, D-pad focus, palette contrast
+  floors and safe component bounds pass local JVM/Robolectric tests for 720p,
+  1080p-density and 4K-density profiles.
+- `UNKNOWN` — physical-TV pixels, hall readability, OEM overscan behavior and
+  QR scan distance remain deferred acceptance evidence; local tests are not
+  promoted to `CONFIRMED_RUNTIME`.
+
 ## Decision template
 
 ```text

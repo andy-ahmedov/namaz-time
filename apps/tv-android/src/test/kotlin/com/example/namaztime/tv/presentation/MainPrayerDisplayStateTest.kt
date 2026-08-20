@@ -23,9 +23,15 @@ class MainPrayerDisplayStateTest {
         val state = schedule.toPrayerDisplayUiState(resolution)
 
         assertEquals("20 августа 2026", state.dateLabel)
+        assertEquals("Четверг", state.weekdayLabel)
         assertEquals("03:20:00", state.mosqueLocalTime)
         assertEquals("Фаджр · икамат", state.nextPrayerLabel)
+        assertEquals("До икамата", state.nextEventKindLabel)
+        assertEquals("03:39", state.nextEventTime)
         assertEquals("00:19:00", state.countdown)
+        assertEquals("Икамат · Фаджр", state.iqamahSummary?.label)
+        assertEquals("03:39", state.iqamahSummary?.time)
+        assertEquals("через 00:19:00", state.iqamahSummary?.countdownLabel)
         assertEquals("03:14", state.rows.first().adhan)
         assertEquals("03:39", state.rows.first().iqamah)
     }
@@ -99,6 +105,24 @@ class MainPrayerDisplayStateTest {
         assertEquals("Фаджр · завтра", state.nextPrayerLabel)
         assertEquals("03:14", state.rows.first { it.id == "fajr" }.adhan)
         assertEquals(false, state.rows.any { it.isNextEvent })
+        assertEquals("До азана завтра", state.nextEventKindLabel)
+        assertEquals("03:16", state.nextEventTime)
+        assertEquals(null, state.iqamahSummary)
+    }
+
+    @Test
+    fun absentResolvedIqamahStaysAbsentInSummary() {
+        val schedule = schedule().copy(iqamahRules = emptyList())
+        val resolution = PrayerTimeEngine().resolve(
+            schedule.toTimeEngineInput(),
+            Instant.parse("2026-08-19T23:20:00Z"),
+        ) as PrayerTimeResolution.Available
+
+        val state = schedule.toPrayerDisplayUiState(resolution)
+
+        assertEquals("До азана", state.nextEventKindLabel)
+        assertEquals("12:08", state.nextEventTime)
+        assertEquals(null, state.iqamahSummary)
     }
 
     private fun schedule() = LocalPrayerSchedule(

@@ -80,6 +80,13 @@ Requirements:
 
 ## Theme/background
 
+- all screens use the T017 semantic dark/amber Compose tokens and shared
+  translucent card/focus language; screen-local palettes are not allowed;
+- background media is full bleed, while text and controls remain inside the
+  overscan-safe content frame;
+- clock, countdown and prayer-time digits use stable-width treatment;
+- warm accent means current/next time-sensitive state, while warnings retain a
+  separate semantic role; neither state depends on color alone;
 - built-in themes available offline;
 - custom image cropped separately for landscape/portrait;
 - adjustable dark overlay;
@@ -87,6 +94,10 @@ Requirements:
 - built-in fallback if asset is missing/corrupt;
 - avoid detailed imagery behind small text;
 - no video background in MVP.
+
+The Phase 4 built-in background is an original static Compose drawing. The
+product-owner-supplied `design.png` is a hierarchy/mood reference only and is
+not packaged, cropped or copied as an application asset.
 
 ## Settings navigation
 

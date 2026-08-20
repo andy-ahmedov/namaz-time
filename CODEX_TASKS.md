@@ -219,3 +219,37 @@ through repository/service boundaries, and proves restored append-only triggers;
 as sensitive, separates database/schema ownership from runtime grants, records
 SHA-256 as integrity evidence rather than authenticity, and requires independent
 snapshot-artifact/signing-key recovery.
+
+## T017 — connected TV display design system
+
+**Goal:** turn the existing functional T005–T007 display into a cohesive,
+production-connected TV-first main screen and establish its visual language as
+the reusable Compose foundation for every application screen.
+
+**In scope:** clean-room visual derivation from the product-owner-supplied
+`design.png`; semantic dark/amber color, type, spacing, shape, surface and focus
+tokens; an original offline atmospheric background; Room-backed mosque/date/
+adhan data; T006 next-event/countdown/iqamah/Jumu'ah resolution; T007 optional
+QR; distinct adhan/iqamah labels; stable tabular clock digits; conservative
+source/recovery indicators; explicit D-pad settings focus; consistent safe
+error/settings surfaces; overscan-safe 16:9 layouts at 720p, 1080p and 4K
+density profiles.
+
+**Non-goals:** copying the reference's branding, background, icons, ornament or
+pixel geometry; remote/custom assets; invented prayer/iqamah values; T010;
+D-008/D-009/D-010/D-013; physical-TV/ADB evidence; portrait; video/motion
+backgrounds; or Phase 5.
+
+**Acceptance:** state tests prove event-kind/time and iqamah presentation come
+from `PrayerTimeResolution`; UI tests prove all six rows, separate adhan/iqamah,
+stable countdown width, source/recovery semantics, explicit initial D-pad focus
+and card bounds inside a five-percent-equivalent safe frame on all three local
+resolution profiles; available, campaign, long mixed-script, Jumu'ah and safe
+unavailable states remain renderable; Android unit/build plus repository-wide
+gates pass. Evidence is local JVM/Robolectric only, not physical-TV runtime.
+
+**Result:** completed locally on 2026-08-20. The implementation supplies one
+explicit dark TV Material color/shape theme, an original code-drawn offline
+background, reusable panels and one responsive safe-frame component shared by
+display, settings and recovery UI. The reference file remains an untracked
+product-owner input and is not an Android or repository asset.

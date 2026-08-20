@@ -1,10 +1,11 @@
 package com.example.namaztime.tv.presentation
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,7 +17,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -27,7 +29,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Button
-import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
 import com.example.namaztime.tv.R
 import com.example.namaztime.tv.data.snapshot.SnapshotBootstrapState
@@ -57,6 +58,8 @@ import kotlinx.coroutines.delay
 
 private const val DISPLAY_ROUTE = "display"
 private const val SETTINGS_ROUTE = "settings"
+const val DISPLAY_UNAVAILABLE_TAG = "display-unavailable"
+const val UNAVAILABLE_PANEL_TAG = "unavailable-panel"
 
 @Composable
 fun NamazTvApp(
@@ -97,14 +100,14 @@ fun NamazTvApp(
         }
     }
 
-    MaterialTheme {
-        NavHost(
-            navController = navController,
-            startDestination = DISPLAY_ROUTE,
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color(0xFF101A1D)),
-        ) {
+    NamazTvTheme {
+        Box(Modifier.fillMaxSize()) {
+            TvAtmosphericBackground()
+            NavHost(
+                navController = navController,
+                startDestination = DISPLAY_ROUTE,
+                modifier = Modifier.fillMaxSize(),
+            ) {
             composable(DISPLAY_ROUTE) {
                 DisplayRoute(
                     schedule = (observedSchedule as? DisplayScheduleState.Available)?.schedule,
@@ -137,6 +140,7 @@ fun NamazTvApp(
                     onExit = { navController.popBackStack() },
                     campaignPreview = campaignPreview,
                 )
+            }
             }
         }
     }
@@ -224,57 +228,78 @@ private fun DisplayUnavailableScreen(
     onOpenSettings: () -> Unit,
 ) {
     val settingsFocusRequester = remember { FocusRequester() }
+    var initialFocusRequested by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        settingsFocusRequester.requestFocus()
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(64.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally,
+    TvSafeFrame(
+        testTag = DISPLAY_UNAVAILABLE_TAG,
+        contentAlignment = Alignment.Center,
     ) {
-        Text(
-            text = when {
-                localDiagnostic != null -> "Prayer schedule unavailable"
-                else -> when (bootstrapState) {
-                    SnapshotBootstrapState.Pending -> "Loading local schedule"
-                    is SnapshotBootstrapState.Ready -> "Prayer schedule unavailable"
-                    is SnapshotBootstrapState.Diagnostic -> "Prayer schedule unavailable"
-                }
-            },
-            modifier = Modifier.semantics { heading() },
-            fontSize = 44.sp,
-        )
-        Text(
-            text = when {
-                localDiagnostic != null -> "Support code: $localDiagnostic"
-                else -> when (bootstrapState) {
-                    SnapshotBootstrapState.Pending -> "Validating bundled snapshot…"
-                    is SnapshotBootstrapState.Ready -> "No current local schedule is available."
-                    is SnapshotBootstrapState.Diagnostic ->
-                        "Support code: ${bootstrapState.supportCode}"
-                }
-            },
-            modifier = Modifier.padding(top = 16.dp, bottom = 32.dp),
-            fontSize = 24.sp,
-            color = Color(0xFFD7E0E2),
-        )
-        if (bootstrapState is SnapshotBootstrapState.Ready && bootstrapState.recoveryCode != null) {
-            Text(
-                text = "Support code: ${bootstrapState.recoveryCode}",
-                modifier = Modifier.padding(bottom = 24.dp),
-                fontSize = 20.sp,
-                color = Color(0xFFFFD166),
-            )
-        }
-        Button(
-            onClick = onOpenSettings,
-            modifier = Modifier.focusRequester(settingsFocusRequester),
+        TvGlassPanel(
+            modifier = Modifier
+                .widthIn(max = 760.dp)
+                .testTag(UNAVAILABLE_PANEL_TAG),
+            radius = 28.dp,
         ) {
-            Text(stringResource(R.string.open_settings))
+            Column(
+                modifier = Modifier.padding(horizontal = 56.dp, vertical = 48.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    text = when {
+                        localDiagnostic != null -> "Prayer schedule unavailable"
+                        else -> when (bootstrapState) {
+                            SnapshotBootstrapState.Pending -> "Loading local schedule"
+                            is SnapshotBootstrapState.Ready -> "Prayer schedule unavailable"
+                            is SnapshotBootstrapState.Diagnostic -> "Prayer schedule unavailable"
+                        }
+                    },
+                    modifier = Modifier.semantics { heading() },
+                    fontSize = 44.sp,
+                    color = NamazTvTheme.colors.textPrimary,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                )
+                Text(
+                    text = when {
+                        localDiagnostic != null -> "Support code: $localDiagnostic"
+                        else -> when (bootstrapState) {
+                            SnapshotBootstrapState.Pending -> "Validating bundled snapshot…"
+                            is SnapshotBootstrapState.Ready ->
+                                "No current local schedule is available."
+                            is SnapshotBootstrapState.Diagnostic ->
+                                "Support code: ${bootstrapState.supportCode}"
+                        }
+                    },
+                    modifier = Modifier.padding(top = 16.dp, bottom = 32.dp),
+                    fontSize = 24.sp,
+                    color = NamazTvTheme.colors.textSecondary,
+                    textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                )
+                if (
+                    bootstrapState is SnapshotBootstrapState.Ready &&
+                    bootstrapState.recoveryCode != null
+                ) {
+                    Text(
+                        text = "Support code: ${bootstrapState.recoveryCode}",
+                        modifier = Modifier.padding(bottom = 24.dp),
+                        fontSize = 20.sp,
+                        color = NamazTvTheme.colors.warning,
+                    )
+                }
+                Button(
+                    onClick = onOpenSettings,
+                    modifier = Modifier
+                        .focusRequester(settingsFocusRequester)
+                        .onGloballyPositioned {
+                            if (!initialFocusRequested) {
+                                initialFocusRequested = true
+                                settingsFocusRequester.requestFocus()
+                            }
+                        },
+                ) {
+                    Text(stringResource(R.string.open_settings))
+                }
+            }
         }
     }
 }

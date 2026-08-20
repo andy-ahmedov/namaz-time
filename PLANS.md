@@ -85,11 +85,15 @@ unsigned content paths:
 | QR and announcement campaigns | BLOCKED | destination/approval policy D-010 and the T010/D-013 approval/signature publication path |
 | custom background upload pipeline | BLOCKED | asset custody/type/size/CDN policy plus the T010/D-013 signed publication path |
 
-No Phase 4 work begins at this checkpoint. Physical-TV evidence remains a
-separate deferred acceptance item and does not weaken the completed local
-backend evidence labels.
+At the T016 checkpoint no Phase 4 work had begun. Physical-TV evidence remains
+a separate deferred acceptance item and does not weaken the completed local
+backend or current Robolectric evidence labels.
 
 ## Phase 4 — device reliability
+
+| Task | Status | Acceptance / evidence |
+|---|---|---|
+| T017 connected TV display design system | DONE | one explicit dark TV Material palette/shape system, original offline atmospheric background and shared responsive safe frame; Room/T006/T007-connected main display exposes mosque-local date/time, next event/countdown, separate adhan/iqamah, source/recovery and optional QR; D-pad focus plus 720p/1080p/4K main/settings/error bounds, long text, Jumu'ah, campaign and contrast regressions pass locally; reference art is not packaged and physical-TV readability/overscan remains deferred |
 
 - physical matrix: Google TV, common Android TV box, Sber/Salute if targeted;
 - boot/restart behavior per OEM;
