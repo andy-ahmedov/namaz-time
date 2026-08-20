@@ -467,3 +467,38 @@ recovery reuse the same glass surfaces, typography, gold focus language and
 full-bleed background. Emulator evidence is `CONFIRMED_RUNTIME` for the bounded
 1920×1080/API 36 observations only; physical-TV readability and panel behavior
 remain `UNKNOWN`.
+
+## T024 — pixel-accurate main-display refinement
+
+**Goal:** treat `design.png` as the measurable visual specification for one
+additional clean-room pass over the main display, rather than producing another
+free visual interpretation.
+
+**In scope:** normalized gap analysis against the T023 emulator screenshot;
+centered foreground width and equal-column geometry; next/date/prayer/strip
+proportions; thin line/diamond ornament rhythm; calendar and Settings glyphs;
+softer translucent surfaces, row dividers and active treatment; reduced public
+technical copy; existing original backgrounds, prayer glyphs, D-pad,
+localization and 720p/1080p/4K behavior; repeated API 36
+build/install/screenshot comparison.
+
+**Non-goals:** copying target pixels, imagery, branding, glyphs or proprietary
+ornament; changing T022/T023 prayer/source/domain behavior; redesigning
+Settings; backend work; new features; physical-TV claims; push or PR.
+
+**Acceptance:** the normal foreground is about 70–76 percent of the viewport,
+columns differ by at most four percent, next/clock cards stay within the pinned
+reference height ratios, Sunrise remains centered, all original prayer glyphs
+remain present, Settings remains a labeled 48 dp D-pad target, approved source
+technical labels do not dominate display mode, all three adaptive profiles and
+repository gates pass, and fresh emulator evidence is recorded.
+
+**Result:** completed locally on 2026-08-21. The normalized 960×540 comparison
+moved the body left edge from about 50 px to the target 138 px, made both
+columns equal, matched the target next/clock heights at about 187/128 px and
+placed the bottom strip within one pixel of the target y-position. The public
+screen now uses the requested concise next-card structure, original decorative
+anchors, softer table rhythm and a subordinate circular Settings action.
+Room/T006 data projection, T022 pilot values, background preference and
+Settings behavior are unchanged. Controlled emulator evidence is
+`CONFIRMED_RUNTIME`; physical overscan/readability remains `UNKNOWN`.

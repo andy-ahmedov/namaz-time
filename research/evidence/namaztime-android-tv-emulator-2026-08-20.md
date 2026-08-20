@@ -79,3 +79,35 @@ The raw screenshots remain outside Git.
 
 Evidence label: `UNKNOWN` for physical overscan/readability, panel retention,
 OEM focus differences and long-running 4K memory behavior.
+
+## T024 reference-accuracy loop — 2026-08-21
+
+Evidence label: `CONFIRMED_RUNTIME` for the bounded observations below on the
+same controlled API 36 / 1920×1080 emulator. This remains emulator evidence,
+not physical-TV/OEM evidence.
+
+- version `0.4.0-pilot-local` / versionCode 3 was rebuilt, installed with
+  `adb install -r` and launched as the focused `MainActivity`;
+- four visual passes were captured and compared with `design.png` after both
+  images were normalized to 960×540;
+- the final foreground composition occupies approximately 71% of the viewport,
+  uses equal-width columns, and aligns the two left cards and bottom strip with
+  the reference proportions recorded in the T024 gap analysis;
+- UIAutomator exposed the compact settings control as focusable, focused and
+  labelled `Настройки`; the app window retained `KEEP_SCREEN_ON`;
+- the screen continued to render real local display state, including the long
+  mosque identity, separate adhan/iqamah values, centered Sunrise time and the
+  Friday session, without changing T022/T023 schedule logic.
+
+The final debug APK SHA-256 is
+`24211cf8e227851f2048813d736dae5f1ec1df9b7ca0dfb680a1e51978ba154b`.
+The final 1920×1080 screencap SHA-256 is
+`56f3c3b989d1a4866df79fec0ca6ff071401454e28d6a88c66772f930254f89a`;
+its normalized 960×540 review image is
+`0e0b7e371a45d53732a4cd77a765940b5d1db0b395793afc6d09930f910ba4b3`.
+Raw screenshots and UIAutomator output remain outside Git.
+
+Evidence label: `UNKNOWN` for physical-device overscan/readability, OEM focus
+rendering and long-running 4K behavior. The emulator clock could not be changed
+by non-root ADB, so this run naturally exercised the Friday/Jumu'ah state rather
+than reproducing the reference screenshot's exact weekday and prayer.

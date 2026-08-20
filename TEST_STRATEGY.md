@@ -144,6 +144,17 @@ Controlled API 36 emulator screenshots provide bounded `CONFIRMED_RUNTIME`
 visual evidence; they do not establish physical-TV overscan, scan distance or
 panel behavior.
 
+T024 adds a controlled 960×540 reference-proportion contract: the centered
+composition must occupy 70–76 percent of the full viewport, left and right
+columns may differ by no more than four percent, next/clock cards must retain
+their measured height ratios, and the bottom strip must share the composition
+edges. It also asserts the location, next-card and clock-card ornament anchors,
+the original calendar glyph and the accessible focused circular Settings
+target. Existing Sunrise, six-glyph, D-pad, long-text, Jumu'ah and
+720p/1080p/4K tests remain the functional/adaptive guardrails. Emulator
+screencaps are compared at a normalized size; this is visual runtime evidence,
+not a claim of automated perceptual equivalence or physical-TV acceptance.
+
 T019 reuses the connected display resolver with one immutable synthetic local
 schedule and advances an injected instant over seven consecutive mosque-local
 dates at the 4K-density profile. Every covered day retains its date, local

@@ -100,17 +100,33 @@ Requirements:
 The Phase 4 built-in backgrounds are original static landscape WebP images.
 Golden dusk is the safe default and Blue hour is selectable from Appearance;
 both remain offline and use the same bounded dark scrim. Unknown persisted IDs
-fall back to Golden dusk. The product-owner-supplied `design.png` is a
-hierarchy/mood reference only and is not packaged, cropped or copied as an
-application asset. Custom/remote media remains outside this local allowlist and
-requires its separately approved signed asset pipeline.
+fall back to Golden dusk. For the T024 main-display pass, the
+product-owner-supplied `design.png` is the geometric visual specification for
+composition, proportion, hierarchy, spacing and decorative rhythm. It is not
+packaged, cropped, traced or copied as an application asset, and all project
+imagery, glyphs and ornament remain original. Custom/remote media remains
+outside this local allowlist and requires its separately approved signed asset
+pipeline.
 
 The main display uses a centered NamazTime pill, mosque identity, a left
 next-event/countdown and local-clock stack, a right six-row prayer table and a
-bottom iqamah/provenance strip. Every prayer has a distinct original gold line
+bottom iqamah/next-event strip with exceptional status only when required.
+Every prayer has a distinct original gold line
 glyph. Sunrise displays its single adhan value centered across the shared
 adhan/iqamah time area. The next row uses a side marker, border and translucent
 accent surface so its meaning does not depend only on color.
+
+The normal T024 display composition occupies about 71 percent of the complete
+16:9 viewport after its existing overscan-safe frame is applied. Its two main
+columns are equal. At the controlled 960×540 dp-profile comparison, the body
+starts at about y=120, the next/clock cards are about 185/128 high and the
+bottom strip starts at about y=453. The next card contains only the next-prayer
+label, event name, original line/diamond divider and fixed-width countdown.
+The clock card uses an original calendar glyph plus date, weekday, divider and
+local time. Location is flanked by original line/diamond ornaments. Normal
+approved provenance stays in Settings; only status requiring attention may add
+a compact public-display marker. The Settings action remains a 48 dp focusable
+target but is visually subordinate and icon-only with an accessible name.
 
 In public display mode, the foreground safe-frame content uses a deterministic
 six-position cycle every ten minutes, bounded to ±2 dp per axis. The full-bleed
