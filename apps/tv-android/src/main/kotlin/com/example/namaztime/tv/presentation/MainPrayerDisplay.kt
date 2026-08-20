@@ -86,6 +86,7 @@ internal data class PrayerDisplayUiState(
     val sourceDescription: String,
     val supportCode: String? = null,
     val jumuahSessions: List<JumuahDisplaySession> = emptyList(),
+    val campaign: QrCampaignUiState? = null,
     val rows: List<PrayerDisplayRow>,
 )
 
@@ -167,11 +168,25 @@ internal fun MainPrayerDisplay(
                 }
             }
             Spacer(Modifier.height(metrics.sectionGap))
-            PrayerGrid(
-                rows = state.rows,
-                metrics = metrics,
-                modifier = Modifier.weight(1f),
-            )
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(metrics.sectionGap),
+            ) {
+                PrayerGrid(
+                    rows = state.rows,
+                    metrics = metrics,
+                    modifier = Modifier.weight(1f),
+                )
+                state.campaign?.let { campaign ->
+                    QrCampaignPanel(
+                        state = campaign,
+                        qrSize = metrics.qrSize,
+                        modifier = Modifier.width(metrics.campaignPanelWidth),
+                    )
+                }
+            }
         }
     }
 }
@@ -506,6 +521,8 @@ private data class MainDisplayMetrics(
     val cellPadding: Dp,
     val statusHeight: Dp,
     val countdownWidth: Dp,
+    val campaignPanelWidth: Dp,
+    val qrSize: Dp,
     val gridHeaderHeight: Dp,
     val mosqueNameSize: TextUnit,
     val clockSize: TextUnit,
@@ -530,6 +547,8 @@ private data class MainDisplayMetrics(
                 cellPadding = 10.dp,
                 statusHeight = 88.dp,
                 countdownWidth = 142.dp,
+                campaignPanelWidth = 210.dp,
+                qrSize = 128.dp,
                 gridHeaderHeight = 32.dp,
                 mosqueNameSize = 28.sp,
                 clockSize = 30.sp,
@@ -553,6 +572,8 @@ private data class MainDisplayMetrics(
                 cellPadding = 14.dp,
                 statusHeight = 112.dp,
                 countdownWidth = 190.dp,
+                campaignPanelWidth = 280.dp,
+                qrSize = 180.dp,
                 gridHeaderHeight = 40.dp,
                 mosqueNameSize = 38.sp,
                 clockSize = 42.sp,

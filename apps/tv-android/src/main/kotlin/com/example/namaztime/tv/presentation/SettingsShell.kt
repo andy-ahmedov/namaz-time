@@ -2,7 +2,7 @@ package com.example.namaztime.tv.presentation
 
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -45,6 +45,7 @@ fun SettingsShell(
     onDestinationChanged: (SettingsDestination) -> Unit,
     onExit: () -> Unit,
     modifier: Modifier = Modifier,
+    campaignPreview: QrCampaignUiState? = null,
 ) {
     val navigationRequesters = remember {
         SettingsDestination.entries.associateWith { FocusRequester() }
@@ -133,6 +134,7 @@ fun SettingsShell(
             navigationRequester = navigationRequesters.getValue(selectedDestination),
             pageActionRequester = pageActionRequester,
             onExit = onExit,
+            campaignPreview = campaignPreview,
             modifier = Modifier.weight(1f),
         )
     }
@@ -144,12 +146,16 @@ private fun SettingsPage(
     navigationRequester: FocusRequester,
     pageActionRequester: FocusRequester,
     onExit: () -> Unit,
+    campaignPreview: QrCampaignUiState?,
     modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier.fillMaxHeight()) {
+    BoxWithConstraints(
+        modifier = modifier.fillMaxHeight(),
+    ) {
+        val compactPreview = maxHeight < 600.dp
         Column(
-            modifier = Modifier.align(Alignment.CenterStart),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             Text(
                 text = destination.title,
@@ -162,11 +168,23 @@ private fun SettingsPage(
                 fontSize = 24.sp,
                 lineHeight = 32.sp,
             )
-            Text(
-                text = "Technical shell — no production schedule loaded",
-                color = Color(0xFFFFD180),
-                fontSize = 20.sp,
-            )
+            if (destination == SettingsDestination.CAMPAIGNS && campaignPreview != null) {
+                QrCampaignPanel(
+                    state = campaignPreview,
+                    qrSize = if (compactPreview) 96.dp else 160.dp,
+                    compact = compactPreview,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f),
+                )
+            } else {
+                Text(
+                    text = "Technical shell — no production schedule loaded",
+                    color = Color(0xFFFFD180),
+                    fontSize = 20.sp,
+                )
+                Spacer(Modifier.weight(1f))
+            }
             Button(
                 onClick = onExit,
                 modifier = Modifier

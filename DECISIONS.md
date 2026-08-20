@@ -98,6 +98,21 @@ These are proposals until accepted by the product owner:
   current evidence is deterministic JVM/Robolectric execution with injected
   clocks and named timezone databases.
 
+## T007 QR-campaign record
+
+- `PROPOSAL` — campaign lifecycle is start-inclusive and end-exclusive. More
+  than one active valid campaign is ambiguous and fails closed because the
+  snapshot contract has no publication priority.
+- `PROPOSAL` — the TV accepts only bounded lowercase `https://` targets with a
+  host and no user information, creates the QR locally, displays no raw URL,
+  and retains only a SHA-256 target fingerprint in the current audit stub.
+- `UNKNOWN` — D-010 remains open, so T007 does not create an allowlist or live
+  pilot campaign. All automated campaign destinations are synthetic
+  `example.org` fixtures.
+- `CONFIRMED_RUNTIME` is not claimed for scan distance or television contrast;
+  the QR is software-decoded in a JVM test and Compose bounds are checked with
+  Robolectric at 720p, 1080p and 4K density profiles.
+
 ## Decision template
 
 ```text

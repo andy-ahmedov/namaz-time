@@ -161,6 +161,18 @@ class SnapshotDecoderTest {
     }
 
     @Test
+    fun campaignRangeMustContainAnActivatableInstant() {
+        val fixture = syntheticFixture().decodeToString()
+            .replaceFirst("2026-08-22T00:00:00Z", "2026-08-19T00:00:00Z")
+
+        val error = assertThrows(SnapshotValidationException::class.java) {
+            SnapshotDecoder.decode(fixture.encodeToByteArray())
+        }
+
+        assertEquals("invalid_range", error.code)
+    }
+
+    @Test
     fun jsonSchemaEnumsBoundsUrisUniquenessAndNullabilityFailClosed() {
         val fixture = syntheticFixture().decodeToString()
         val cases = listOf(

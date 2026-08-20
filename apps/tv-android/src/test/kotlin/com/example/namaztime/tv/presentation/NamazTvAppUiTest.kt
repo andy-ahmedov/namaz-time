@@ -19,6 +19,7 @@ import com.example.namaztime.tv.repository.OperatorPreferencesRepository
 import com.example.namaztime.tv.repository.LocalPrayerDay
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
 import com.example.namaztime.tv.repository.LocalJumuahSession
+import com.example.namaztime.tv.repository.LocalCampaign
 import com.example.namaztime.tv.repository.LocalSnapshotDiagnostics
 import com.example.namaztime.tv.repository.CorruptLocalSnapshotException
 import com.example.namaztime.tv.repository.PrayerScheduleRepository
@@ -108,6 +109,109 @@ class NamazTvAppUiTest {
             "Восход, азан 05:23, икамат не предусмотрена",
         ).assertExists()
         compose.onNodeWithText("Prayer schedule unavailable").assertDoesNotExist()
+        compose.onNodeWithTag(QR_CAMPAIGN_PANEL_TAG).assertDoesNotExist()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun activeCampaignFits1080pDensity() {
+        assertActiveCampaignFitsDisplay()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun activeCampaignFits720p() {
+        assertActiveCampaignFitsDisplay()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun activeCampaignFits4kDensity() {
+        assertActiveCampaignFitsDisplay()
+    }
+
+    private fun assertActiveCampaignFitsDisplay() {
+        val campaign = campaign()
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(
+                    schedule().copy(campaigns = listOf(campaign)),
+                ),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        val root = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG).getUnclippedBoundsInRoot()
+        val panel = compose.onNodeWithTag(QR_CAMPAIGN_PANEL_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        compose.onNodeWithTag(QR_CODE_IMAGE_TAG).assertIsDisplayed()
+        compose.onNodeWithText(campaign.title).assertIsDisplayed()
+        compose.onNodeWithText(campaign.subtitle!!).assertIsDisplayed()
+        compose.onNodeWithText(campaign.httpsUrl).assertDoesNotExist()
+        assert(panel.left >= root.left && panel.right <= root.right)
+        listOf("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha").forEach { prayer ->
+            compose.onNodeWithTag("$PRAYER_ROW_TEST_TAG_PREFIX$prayer").assertIsDisplayed()
+        }
+    }
+
+    @Test
+    fun expiredCampaignIsHiddenWithoutBreakingPrayerDisplay() {
+        assertCampaignIsSafelyHidden(campaign().copy(endsAt = "2026-08-19T23:00:00Z"))
+    }
+
+    @Test
+    fun invalidCampaignIsHiddenWithoutBreakingPrayerDisplay() {
+        assertCampaignIsSafelyHidden(campaign().copy(httpsUrl = "http://example.org/not-safe"))
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun futureCampaignCanBePreviewedFromDpadSettingsWithoutActivatingOnDisplay() {
+        val future = campaign().copy(
+            startsAt = "2026-08-21T00:00:00Z",
+            endsAt = "2026-08-22T00:00:00Z",
+        )
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(
+                    schedule().copy(campaigns = listOf(future)),
+                ),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        compose.onNodeWithTag(QR_CAMPAIGN_PANEL_TAG).assertDoesNotExist()
+        compose.onNodeWithText("Настройки").performKeyInput { pressKey(Key.Enter) }
+        repeat(SettingsDestination.CAMPAIGNS.ordinal) {
+            compose.onNodeWithTag(SettingsDestination.entries[it].navigationTestTag)
+                .performKeyInput { pressKey(Key.DirectionDown) }
+        }
+
+        compose.onNodeWithTag(SettingsDestination.CAMPAIGNS.navigationTestTag).assertIsFocused()
+        val panel = compose.onNodeWithTag(QR_CAMPAIGN_PREVIEW_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        val action = compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        listOf(QR_CODE_IMAGE_TAG, QR_CAMPAIGN_TITLE_TAG, QR_CAMPAIGN_SUBTITLE_TAG).forEach { tag ->
+            val child = compose.onNodeWithTag(tag).assertIsDisplayed().getUnclippedBoundsInRoot()
+            assert(child.left >= panel.left && child.right <= panel.right)
+            assert(child.top >= panel.top && child.bottom <= panel.bottom)
+        }
+        assert(panel.bottom <= action.top)
     }
 
     @Test
@@ -378,6 +482,36 @@ class NamazTvAppUiTest {
     private val fixedClock: Clock = Clock.fixed(
         Instant.parse("2026-08-19T23:20:00Z"),
         ZoneOffset.UTC,
+    )
+
+    private fun assertCampaignIsSafelyHidden(campaign: LocalCampaign) {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(
+                    schedule().copy(campaigns = listOf(campaign)),
+                ),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        compose.onNodeWithTag(QR_CAMPAIGN_PANEL_TAG).assertDoesNotExist()
+        compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG).assertIsDisplayed()
+    }
+
+    private fun campaign() = LocalCampaign(
+        id = "campaign",
+        kind = "website",
+        httpsUrl = "https://example.org/mosque",
+        title = "Расписание мечети",
+        subtitle = "Откройте на телефоне",
+        startsAt = "2026-08-19T00:00:00Z",
+        endsAt = "2026-08-21T00:00:00Z",
+        placement = "with_prayer_times",
     )
 }
 

@@ -28,7 +28,7 @@ enum class SettingsDestination(
     CAMPAIGNS(
         route = "campaigns",
         title = "QR and announcements",
-        description = "No campaign is active in the technical shell.",
+        description = "Preview locally stored campaign content before its active window.",
     ),
     LANGUAGE(
         route = "language",

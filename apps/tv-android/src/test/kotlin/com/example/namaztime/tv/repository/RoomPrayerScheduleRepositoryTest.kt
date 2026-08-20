@@ -64,6 +64,8 @@ class RoomPrayerScheduleRepositoryTest {
         assertEquals(127, schedule?.iqamahRules?.first()?.weekdaysMask)
         assertEquals(emptyList<LocalIqamahDateOverride>(), schedule?.iqamahDateOverrides)
         assertEquals(listOf("jumuah-demo-1"), schedule?.jumuahSessions?.map { it.id })
+        assertEquals(listOf("campaign-demo"), schedule?.campaigns?.map { it.id })
+        assertEquals("https://example.invalid/mosque-demo", schedule?.campaigns?.single()?.httpsUrl)
     }
 
     @Test

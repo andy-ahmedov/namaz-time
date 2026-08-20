@@ -141,6 +141,19 @@ dates outside local coverage produce bounded diagnostics. The full time model is
 and again when an immutable local snapshot reaches the display; per-second
 ticks then resolve only from that local state.
 
+T007 reads campaign rows from the same immutable active Room snapshot. A pure
+domain boundary accepts only bounded, exact lowercase `https://` targets with
+a host and without user information, validates start-inclusive/end-exclusive
+lifecycle instants, and fails closed when more than one campaign is active.
+The TV generates the QR bitmap locally with a four-module quiet zone and exact
+black/white contrast; it never renders the raw destination URL or requires a
+network permission. Invalid, future, expired, ambiguous or QR-generation
+failures hide only the optional panel and cannot replace the prayer display.
+Settings may preview one otherwise valid campaign independently of lifecycle
+and clearly labels it as preview. The audit model stores campaign ID plus a
+SHA-256 target fingerprint; durable publication audit and domain allowlisting
+remain later work pending D-010.
+
 Small operator UI preferences, including the last focused settings section and
 reduced-motion default, use a single Preferences DataStore instance. Schedule
 data never moves into DataStore, and the Compose shell contains no network

@@ -30,7 +30,7 @@ Goal: one TV shows a synthetic, then approved, offline schedule for one mosque.
 | T004 import bundled synthetic snapshot | DONE | strict Android contract validation; offline asset bootstrap; full Room transaction and atomic active/previous pointer; corrupt input/local-state diagnostics and previous restore; file-backed failure/reopen preserves active data; explicit Room v1→v2→v3 migrations |
 | T005 main prayer screen | DONE | responsive offline layout with six adhan rows, explicit missing/not-applicable iqamah, explicit preview-day/time/next-event placeholders, conservative source states, fixed-width countdown, recovery warning and D-pad settings path; measured bounds tested at 720p/1080p/4K profiles |
 | T006 time/next-event engine | DONE | mosque-IANA clock, exact boundaries, next-day Fajr, explicit sunrise policy, iqamah override/range/weekday/priority resolution, separate Friday sessions and fail-closed DST/config diagnostics; exhaustive local tests pass |
-| T007 QR campaign | TODO | local QR, preview and safe invalid-URL behavior |
+| T007 QR campaign | DONE | local ZXing QR; exact HTTPS/lifecycle validation; lifecycle-independent operator preview; hashed audit stub; invalid, expired or overlapping campaigns fail closed without affecting prayer display; 720p/1080p/4K Robolectric coverage |
 | T008 manual approved CSV/JSON provider | TODO | raw hash → diff → approval → signed snapshot |
 
 Detailed prompts: [CODEX_TASKS.md](CODEX_TASKS.md).
@@ -105,3 +105,6 @@ Do not begin until the first pilot is stable.
   acceptance case; T004 locally proves transactional rollback followed by a
   file-backed database close/reopen, not a physical-device process death;
 - product name, package ID and license remain undecided.
+- D-010 still requires an approved pilot QR destination/domain; T007 therefore
+  exercises only the authorized local mechanism with synthetic `example.org`
+  fixtures and does not invent a live campaign.

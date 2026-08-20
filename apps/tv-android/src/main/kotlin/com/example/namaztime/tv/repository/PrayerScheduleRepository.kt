@@ -3,6 +3,7 @@ package com.example.namaztime.tv.repository
 import com.example.namaztime.tv.data.local.SnapshotDao
 import com.example.namaztime.tv.data.snapshot.SnapshotFormatValidation
 import com.example.namaztime.tv.domain.IqamahDateOverrideInput
+import com.example.namaztime.tv.domain.CampaignInput
 import com.example.namaztime.tv.domain.IqamahRuleInput
 import com.example.namaztime.tv.domain.JumuahSessionInput
 import com.example.namaztime.tv.domain.PrayerDayInput
@@ -41,6 +42,7 @@ data class LocalPrayerSchedule(
     val iqamahRules: List<LocalIqamahRule> = emptyList(),
     val iqamahDateOverrides: List<LocalIqamahDateOverride> = emptyList(),
     val jumuahSessions: List<LocalJumuahSession> = emptyList(),
+    val campaigns: List<LocalCampaign> = emptyList(),
     val diagnostics: LocalSnapshotDiagnostics? = null,
 )
 
@@ -73,6 +75,17 @@ data class LocalJumuahSession(
     val salahTime: String,
     val validFrom: String,
     val validTo: String,
+)
+
+data class LocalCampaign(
+    val id: String,
+    val kind: String,
+    val httpsUrl: String,
+    val title: String,
+    val subtitle: String?,
+    val startsAt: String?,
+    val endsAt: String?,
+    val placement: String,
 )
 
 data class LocalSnapshotDiagnostics(
@@ -133,6 +146,21 @@ fun LocalPrayerSchedule.toTimeEngineInput() = PrayerScheduleInput(
     },
 )
 
+fun LocalPrayerSchedule.toCampaignInputs(): List<CampaignInput> = campaigns.mapNotNull { campaign ->
+    val startsAt = campaign.startsAt ?: return@mapNotNull null
+    val endsAt = campaign.endsAt ?: return@mapNotNull null
+    CampaignInput(
+        id = campaign.id,
+        kind = campaign.kind,
+        httpsUrl = campaign.httpsUrl,
+        title = campaign.title,
+        subtitle = campaign.subtitle,
+        startsAt = startsAt,
+        endsAt = endsAt,
+        placement = campaign.placement,
+    )
+}
+
 interface PrayerScheduleRepository {
     fun observeActiveSchedule(): Flow<LocalPrayerSchedule?>
 }
@@ -155,7 +183,8 @@ class RoomPrayerScheduleRepository(
                     dao.observeIqamahRules(snapshot.snapshotId),
                     dao.observeIqamahOverrides(snapshot.snapshotId),
                     dao.observeJumuahSessions(snapshot.snapshotId),
-                ) { days, rules, overrides, sessions ->
+                    dao.observeCampaigns(snapshot.snapshotId),
+                ) { days, rules, overrides, sessions, campaigns ->
                     LocalPrayerSchedule(
                         snapshotId = snapshot.snapshotId,
                         mosqueId = snapshot.mosqueId,
@@ -218,6 +247,18 @@ class RoomPrayerScheduleRepository(
                                 salahTime = session.salahTime,
                                 validFrom = session.validFrom,
                                 validTo = session.validTo,
+                            )
+                        },
+                        campaigns = campaigns.map { campaign ->
+                            LocalCampaign(
+                                id = campaign.campaignId,
+                                kind = campaign.kind,
+                                httpsUrl = campaign.httpsUrl,
+                                title = campaign.title,
+                                subtitle = campaign.subtitle,
+                                startsAt = campaign.startsAt,
+                                endsAt = campaign.endsAt,
+                                placement = campaign.placement,
                             )
                         },
                     )

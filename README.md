@@ -43,7 +43,7 @@
    make lint
    ```
 
-5. Продолжить с задачей `T007` из [CODEX_TASKS.md](CODEX_TASKS.md).
+5. Продолжить с задачей `T008` из [CODEX_TASKS.md](CODEX_TASKS.md).
 
 Gradle запускается через репозиторный wrapper. Android application ID
 `com.example.namaztime.tv` является временным значением T001 и должен быть
@@ -89,6 +89,8 @@ flags и полной provenance/theme metadata. T005 добавил адапт�
 экран с шестью строками азана/икамата, offline-фоном, source state и D-pad
 переходом к настройкам. T006 добавил mosque-timezone clock, разрешение правил
 икамата, отдельные пятничные сессии, точный countdown и безопасные состояния
-для отсутствующего покрытия/DST-конфликтов. Следующий этап — локальная
-QR-кампания T007. Runtime-проверка на физическом Android TV/box ещё не
-выполнена и не подменяется Robolectric-тестом.
+для отсутствующего покрытия/DST-конфликтов. T007 добавил локальную генерацию
+QR, строгую HTTPS/lifecycle-валидацию, безопасное скрытие невалидных и
+просроченных кампаний и operator preview без сетевого разрешения. Следующий
+этап — manual-import/publication prototype T008. Runtime-проверка на физическом
+Android TV/box ещё не выполнена и не подменяется Robolectric-тестом.

@@ -254,7 +254,7 @@ object SnapshotDecoder {
         )
         val startsAt = instant(campaign.startsAt, "campaigns[$index].starts_at")
         val endsAt = instant(campaign.endsAt, "campaigns[$index].ends_at")
-        requireValue(endsAt >= startsAt, "campaigns[$index]", "invalid_range")
+        requireValue(endsAt > startsAt, "campaigns[$index]", "invalid_range")
         requireValue(
             campaign.placement in setOf("always", "with_prayer_times", "rotation"),
             "campaigns[$index].placement",

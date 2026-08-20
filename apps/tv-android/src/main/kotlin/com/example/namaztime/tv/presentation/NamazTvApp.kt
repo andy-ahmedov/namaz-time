@@ -33,6 +33,10 @@ import com.example.namaztime.tv.R
 import com.example.namaztime.tv.data.snapshot.SnapshotBootstrapState
 import com.example.namaztime.tv.domain.PrayerTimeEngine
 import com.example.namaztime.tv.domain.PrayerTimeResolution
+import com.example.namaztime.tv.domain.CampaignEngine
+import com.example.namaztime.tv.domain.CampaignPreview
+import com.example.namaztime.tv.domain.CampaignResolution
+import com.example.namaztime.tv.domain.QrCodeGenerator
 import com.example.namaztime.tv.repository.CorruptLocalSnapshotException
 import com.example.namaztime.tv.repository.EmptyPrayerScheduleRepository
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
@@ -40,6 +44,7 @@ import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorPreferencesRepository
 import com.example.namaztime.tv.repository.PrayerScheduleRepository
 import com.example.namaztime.tv.repository.toTimeEngineInput
+import com.example.namaztime.tv.repository.toCampaignInputs
 import java.io.IOException
 import java.time.Clock
 import kotlinx.coroutines.CancellationException
@@ -68,11 +73,29 @@ fun NamazTvApp(
     )
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
+    val campaignEngine = remember { CampaignEngine() }
+    val qrCodeGenerator = remember { QrCodeGenerator() }
     val observedSchedule by prayerScheduleRepository.observeForDisplay()
         .collectAsStateWithLifecycle(initialValue = DisplayScheduleState.Unavailable)
     val bootstrap by bootstrapState.collectAsStateWithLifecycle(
         initialValue = SnapshotBootstrapState.Pending,
     )
+    val availableSchedule = (observedSchedule as? DisplayScheduleState.Available)?.schedule
+    val campaignPreview = remember(availableSchedule, campaignEngine, qrCodeGenerator) {
+        availableSchedule?.let { schedule ->
+            val validPreviews = schedule.toCampaignInputs().mapNotNull { campaign ->
+                (campaignEngine.preview(campaign) as? CampaignPreview.Valid)?.campaign
+            }
+            validPreviews.singleOrNull()?.let { campaign ->
+                runCatching {
+                    campaign.toQrCampaignUiState(
+                        qrCode = qrCodeGenerator.generate(campaign.httpsUrl),
+                        preview = true,
+                    )
+                }.getOrNull()
+            }
+        }
+    }
 
     MaterialTheme {
         NavHost(
@@ -90,6 +113,8 @@ fun NamazTvApp(
                     bootstrapState = bootstrap,
                     clock = clock,
                     tickIntervalMillis = tickIntervalMillis,
+                    campaignEngine = campaignEngine,
+                    qrCodeGenerator = qrCodeGenerator,
                     onOpenSettings = { navController.navigate(SETTINGS_ROUTE) },
                 )
             }
@@ -110,6 +135,7 @@ fun NamazTvApp(
                         }
                     },
                     onExit = { navController.popBackStack() },
+                    campaignPreview = campaignPreview,
                 )
             }
         }
@@ -123,6 +149,8 @@ private fun DisplayRoute(
     bootstrapState: SnapshotBootstrapState,
     clock: Clock,
     tickIntervalMillis: Long?,
+    campaignEngine: CampaignEngine,
+    qrCodeGenerator: QrCodeGenerator,
     onOpenSettings: () -> Unit,
 ) {
     if (schedule != null) {
@@ -159,11 +187,25 @@ private fun DisplayRoute(
             )
             return
         }
+        val resolvedCampaign = remember(schedule.campaigns, currentInstant, campaignEngine) {
+            (campaignEngine.resolve(schedule.toCampaignInputs(), currentInstant)
+                as? CampaignResolution.Active)?.campaign
+        }
+        val campaign = remember(resolvedCampaign, qrCodeGenerator) {
+            resolvedCampaign?.let { resolved ->
+                runCatching {
+                    resolved.toQrCampaignUiState(
+                        qrCode = qrCodeGenerator.generate(resolved.httpsUrl),
+                        preview = false,
+                    )
+                }.getOrNull()
+            }
+        }
         val recoveryCode = (bootstrapState as? SnapshotBootstrapState.Ready)?.recoveryCode
         MainPrayerDisplay(
             state = schedule.toPrayerDisplayUiState(
                 resolution = resolution as PrayerTimeResolution.Available,
-            ).copy(supportCode = recoveryCode),
+            ).copy(supportCode = recoveryCode, campaign = campaign),
             onOpenSettings = onOpenSettings,
         )
         return

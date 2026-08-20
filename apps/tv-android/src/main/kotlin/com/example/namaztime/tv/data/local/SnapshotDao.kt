@@ -122,6 +122,15 @@ interface SnapshotDao {
 
     @Query(
         """
+        SELECT * FROM campaigns
+        WHERE snapshotId = :snapshotId
+        ORDER BY startsAt ASC, campaignId ASC
+        """,
+    )
+    fun observeCampaigns(snapshotId: String): Flow<List<CampaignEntity>>
+
+    @Query(
+        """
         SELECT * FROM prayer_days
         WHERE snapshotId = :snapshotId
         ORDER BY localDate ASC
