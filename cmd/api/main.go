@@ -7,6 +7,7 @@ import (
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -20,6 +21,9 @@ import (
 	"time"
 
 	"github.com/andy-ahmedov/namaz-time/internal/devices"
+	"github.com/andy-ahmedov/namaz-time/internal/publication"
+	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
+	"github.com/andy-ahmedov/namaz-time/internal/trust"
 )
 
 const componentName = "api"
@@ -73,6 +77,12 @@ type runtimeConfig struct {
 	PairingRateLimits                    runtimePairingRateLimits   `json:"pairing_rate_limits"`
 	PairingBackendTimeoutSeconds         int64                      `json:"pairing_backend_timeout_seconds"`
 	TrustedPublicKeyFiles                []string                   `json:"trusted_public_key_files"`
+	TrustBundleFile                      string                     `json:"trust_bundle_file"`
+	PreviousTrustBundleFile              string                     `json:"previous_trust_bundle_file"`
+	TestTrustBundleFile                  string                     `json:"test_trust_bundle_file"`
+	StagingTrustBundleFile               string                     `json:"staging_trust_bundle_file"`
+	PublicationLedgerHeadFile            string                     `json:"publication_ledger_head_file"`
+	MinimumTrustBundleRevision           uint64                     `json:"minimum_trust_bundle_revision"`
 	PairingFixtures                      []runtimePairingFixture    `json:"pairing_fixtures"`
 	Snapshots                            []runtimeSnapshot          `json:"snapshots"`
 	Assignments                          []devices.DeviceAssignment `json:"assignments"`
@@ -93,10 +103,18 @@ type runtimePairingFixture struct {
 }
 
 type runtimeSnapshot struct {
-	SnapshotID   string `json:"snapshot_id"`
-	File         string `json:"file"`
-	SHA256       string `json:"sha256"`
-	SigningKeyID string `json:"signing_key_id"`
+	SnapshotID          string `json:"snapshot_id"`
+	File                string `json:"file"`
+	ReceiptFile         string `json:"receipt_file,omitempty"`
+	PreviousReceiptFile string `json:"previous_receipt_file,omitempty"`
+	SHA256              string `json:"sha256"`
+	SigningKeyID        string `json:"signing_key_id"`
+}
+
+type runtimePublicationLedgerHead struct {
+	SchemaVersion string `json:"schema_version"`
+	Environment   string `json:"environment"`
+	ReceiptSHA256 string `json:"receipt_sha256"`
 }
 
 type publicKeyFile struct {
@@ -142,6 +160,75 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		return nil, errors.New("pairing fixtures and production backend are mutually exclusive")
 	}
 	baseDirectory := filepath.Dir(absoluteConfig)
+	if config.TrustBundleFile != "" && len(config.TrustedPublicKeyFiles) > 0 {
+		return nil, errors.New("trust bundle and legacy public key files are mutually exclusive")
+	}
+	var trustPolicy *trust.Policy
+	if config.TrustBundleFile != "" {
+		bundleBytes, err := readContainedRegularFile(baseDirectory, config.TrustBundleFile, 256*1024)
+		if err != nil {
+			return nil, fmt.Errorf("read trust bundle: %w", err)
+		}
+		trustPolicy, err = trust.Decode(bundleBytes)
+		if err != nil {
+			return nil, fmt.Errorf("decode trust bundle: %w", err)
+		}
+		if trustPolicy.Environment() == "production" {
+			if config.MinimumTrustBundleRevision == 0 || trustPolicy.Revision() < config.MinimumTrustBundleRevision {
+				return nil, errors.New("production trust bundle is below the pinned minimum revision")
+			}
+			if config.TestTrustBundleFile == "" || config.StagingTrustBundleFile == "" {
+				return nil, errors.New("production trust requires test and staging comparison bundles")
+			}
+		} else if config.MinimumTrustBundleRevision != 0 {
+			return nil, errors.New("minimum trust bundle revision is production-only")
+		}
+		if trustPolicy.Revision() > 1 && config.PreviousTrustBundleFile == "" {
+			return nil, errors.New("non-genesis trust bundle requires its directly preceding bundle")
+		}
+		if config.PreviousTrustBundleFile != "" {
+			previousBytes, readErr := readContainedRegularFile(baseDirectory, config.PreviousTrustBundleFile, 256*1024)
+			if readErr != nil {
+				return nil, fmt.Errorf("read previous trust bundle: %w", readErr)
+			}
+			previousPolicy, decodeErr := trust.Decode(previousBytes)
+			if decodeErr != nil {
+				return nil, fmt.Errorf("decode previous trust bundle: %w", decodeErr)
+			}
+			if transitionErr := trust.ValidateTransition(previousPolicy, trustPolicy); transitionErr != nil {
+				return nil, fmt.Errorf("validate trust bundle transition: %w", transitionErr)
+			}
+		}
+		if trustPolicy.Environment() == "production" {
+			comparison := make([]*trust.Policy, 0, 3)
+			for _, item := range []struct {
+				path        string
+				environment string
+			}{{config.TestTrustBundleFile, "test"}, {config.StagingTrustBundleFile, "staging"}} {
+				comparisonBytes, readErr := readContainedRegularFile(baseDirectory, item.path, 256*1024)
+				if readErr != nil {
+					return nil, fmt.Errorf("read %s trust bundle: %w", item.environment, readErr)
+				}
+				comparisonPolicy, decodeErr := trust.Decode(comparisonBytes)
+				if decodeErr != nil || comparisonPolicy.Environment() != item.environment {
+					return nil, fmt.Errorf("decode %s trust bundle: invalid environment bundle", item.environment)
+				}
+				comparison = append(comparison, comparisonPolicy)
+			}
+			comparison = append(comparison, trustPolicy)
+			if separationErr := trust.ValidateEnvironmentSeparation(comparison...); separationErr != nil {
+				return nil, fmt.Errorf("validate trust environment separation: %w", separationErr)
+			}
+		} else if config.TestTrustBundleFile != "" || config.StagingTrustBundleFile != "" {
+			return nil, errors.New("trust comparison bundles are production-only")
+		}
+	} else if config.MinimumTrustBundleRevision != 0 {
+		return nil, errors.New("minimum trust bundle revision requires a trust bundle")
+	} else if config.PreviousTrustBundleFile != "" {
+		return nil, errors.New("previous trust bundle requires a current trust bundle")
+	} else if config.TestTrustBundleFile != "" || config.StagingTrustBundleFile != "" {
+		return nil, errors.New("trust comparison bundles require a current production bundle")
+	}
 	trustedKeys := make(map[string]ed25519.PublicKey, len(config.TrustedPublicKeyFiles))
 	for _, relativePath := range config.TrustedPublicKeyFiles {
 		keyBytes, err := readContainedRegularFile(baseDirectory, relativePath, 16*1024)
@@ -155,7 +242,7 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		decoded, err := base64.StdEncoding.DecodeString(keyFile.PublicKey)
 		if err != nil || len(decoded) != ed25519.PublicKeySize || keyFile.SigningKeyID == "" ||
 			keyFile.PrivateKeyRetained ||
-			(keyFile.Classification != "test-only-public-key" && keyFile.Classification != "production-public-key") {
+			keyFile.Classification != "test-only-public-key" {
 			return nil, errors.New("trusted public key file is invalid")
 		}
 		if _, duplicate := trustedKeys[keyFile.SigningKeyID]; duplicate {
@@ -163,15 +250,56 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		}
 		trustedKeys[keyFile.SigningKeyID] = ed25519.PublicKey(append([]byte(nil), decoded...))
 	}
+	publicationLedgerHeadSHA256 := ""
+	if config.PublicationLedgerHeadFile != "" {
+		if trustPolicy == nil || trustPolicy.Environment() != "production" {
+			return nil, errors.New("publication ledger head requires production trust")
+		}
+		headBytes, err := readContainedRegularFile(baseDirectory, config.PublicationLedgerHeadFile, 16*1024)
+		if err != nil {
+			return nil, fmt.Errorf("read publication ledger head: %w", err)
+		}
+		var head runtimePublicationLedgerHead
+		if err := decodeStrictJSON(headBytes, &head); err != nil {
+			return nil, fmt.Errorf("decode publication ledger head: %w", err)
+		}
+		decoded, decodeErr := hex.DecodeString(head.ReceiptSHA256)
+		if head.SchemaVersion != "1.0" || head.Environment != "production" || decodeErr != nil || len(decoded) != sha256.Size {
+			return nil, errors.New("publication ledger head is invalid")
+		}
+		publicationLedgerHeadSHA256 = head.ReceiptSHA256
+	}
 	snapshots := make([]devices.SnapshotArtifact, 0, len(config.Snapshots))
 	for _, snapshot := range config.Snapshots {
 		body, err := readContainedRegularFile(baseDirectory, snapshot.File, 5*1024*1024)
 		if err != nil {
 			return nil, fmt.Errorf("read snapshot %q: %w", snapshot.SnapshotID, err)
 		}
+		var receipt *publication.AuditReceipt
+		var previousReceipt *publication.AuditReceipt
+		if snapshot.ReceiptFile != "" {
+			receiptBytes, readErr := readContainedRegularFile(baseDirectory, snapshot.ReceiptFile, 256*1024)
+			if readErr != nil {
+				return nil, fmt.Errorf("read snapshot %q receipt: %w", snapshot.SnapshotID, readErr)
+			}
+			receipt = &publication.AuditReceipt{}
+			if decodeErr := decodeStrictJSON(receiptBytes, receipt); decodeErr != nil {
+				return nil, fmt.Errorf("decode snapshot %q receipt: %w", snapshot.SnapshotID, decodeErr)
+			}
+		}
+		if snapshot.PreviousReceiptFile != "" {
+			previousBytes, readErr := readContainedRegularFile(baseDirectory, snapshot.PreviousReceiptFile, 256*1024)
+			if readErr != nil {
+				return nil, fmt.Errorf("read snapshot %q previous receipt: %w", snapshot.SnapshotID, readErr)
+			}
+			previousReceipt = &publication.AuditReceipt{}
+			if decodeErr := decodeStrictJSON(previousBytes, previousReceipt); decodeErr != nil {
+				return nil, fmt.Errorf("decode snapshot %q previous receipt: %w", snapshot.SnapshotID, decodeErr)
+			}
+		}
 		snapshots = append(snapshots, devices.SnapshotArtifact{
 			ID: snapshot.SnapshotID, Bytes: body, SHA256: snapshot.SHA256,
-			SigningKeyID: snapshot.SigningKeyID,
+			SigningKeyID: snapshot.SigningKeyID, Receipt: receipt, PreviousReceipt: previousReceipt,
 		})
 	}
 	pairings := make([]devices.PairingFixture, len(config.PairingFixtures))
@@ -274,14 +402,16 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		return nil, errors.New("PostgreSQL pairing settings require pairing_backend postgres")
 	}
 	service, err := devices.NewService(devices.ServiceConfig{
-		PublicBaseURL:     config.PublicBaseURL,
-		PairingFixtures:   pairings,
-		PairingBackend:    pairingBackend,
-		AdminBackend:      adminBackend,
-		BackendTimeout:    time.Duration(config.PairingBackendTimeoutSeconds) * time.Second,
-		Assignments:       config.Assignments,
-		Snapshots:         snapshots,
-		TrustedPublicKeys: trustedKeys,
+		PublicBaseURL:               config.PublicBaseURL,
+		PairingFixtures:             pairings,
+		PairingBackend:              pairingBackend,
+		AdminBackend:                adminBackend,
+		BackendTimeout:              time.Duration(config.PairingBackendTimeoutSeconds) * time.Second,
+		Assignments:                 config.Assignments,
+		Snapshots:                   snapshots,
+		TrustedPublicKeys:           trustedKeys,
+		TrustPolicy:                 trustPolicy,
+		PublicationLedgerHeadSHA256: publicationLedgerHeadSHA256,
 	})
 	if err != nil {
 		if closer, ok := pairingBackend.(interface{ Close() }); ok {
@@ -327,6 +457,9 @@ func readContainedRegularFile(baseDirectory, relativePath string, maximumSize in
 }
 
 func decodeStrictJSON(data []byte, target any) error {
+	if err := strictjson.RejectDuplicateObjectMembers(data); err != nil {
+		return err
+	}
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(target); err != nil {

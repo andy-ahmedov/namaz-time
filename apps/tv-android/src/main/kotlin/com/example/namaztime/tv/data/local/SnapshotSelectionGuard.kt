@@ -2,6 +2,8 @@ package com.example.namaztime.tv.data.local
 
 import androidx.room.withTransaction
 import com.example.namaztime.tv.data.snapshot.SnapshotFormatValidation
+import com.example.namaztime.tv.data.snapshot.SnapshotSelectionTrust
+import java.time.Instant
 import java.time.LocalDate
 import java.time.temporal.ChronoUnit
 import kotlinx.serialization.decodeFromString
@@ -20,6 +22,7 @@ fun interface SnapshotSelectionResolver {
 
 class SnapshotSelectionGuard(
     private val database: NamazDatabase,
+    private val productionTrust: SnapshotSelectionTrust? = null,
 ) : SnapshotSelectionResolver {
     override suspend fun resolve(): SnapshotSelectionResolution = database.withTransaction {
         val dao = database.snapshotDao()
@@ -71,6 +74,9 @@ class SnapshotSelectionGuard(
             ?: return false
         val coverageTo = runCatching { LocalDate.parse(snapshot.coverageTo) }.getOrNull()
             ?: return false
+        val generatedAt = runCatching { Instant.parse(snapshot.generatedAt) }.getOrNull() ?: return false
+        val productionTrustValid = snapshot.dataClassification != "production" ||
+            productionTrust?.allows(snapshot.signingKeyId, generatedAt) == true
         return snapshot.schemaVersion == "1.0" &&
             SnapshotFormatValidation.codePointLength(snapshot.snapshotId) in 8..128 &&
             snapshot.dataClassification in setOf("production", "synthetic") &&
@@ -96,7 +102,8 @@ class SnapshotSelectionGuard(
             snapshot.approvalScope.isNotBlank() &&
             SnapshotFormatValidation.isSha256(snapshot.canonicalSha256) &&
             snapshot.signingKeyId.isNotBlank() &&
-            SnapshotFormatValidation.isEd25519SignatureEncoding(snapshot.signatureEd25519Base64)
+            SnapshotFormatValidation.isEd25519SignatureEncoding(snapshot.signatureEd25519Base64) &&
+            productionTrustValid
     }
 
     private fun validFlags(value: String): Boolean = runCatching {

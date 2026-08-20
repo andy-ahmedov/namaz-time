@@ -29,6 +29,11 @@ dist/
 .env.*
 !.env.example
 secrets/
+signer-secrets/
+*.private.pem
+*.private.key
+*.ed25519-private
+production-signing-seed*
 
 # Research: never commit third-party binaries/raw extraction
 *.apk

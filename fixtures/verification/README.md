@@ -1,7 +1,8 @@
 # Phase 1 signature verification fixture
 
 This directory contains one explicitly synthetic snapshot signed by the T008
-publication prototype and its raw 32-byte Ed25519 public key. The corresponding
+publication prototype, its raw 32-byte Ed25519 public key and a strict test
+trust bundle. The corresponding
 private key was generated only in memory for fixture creation and was not
 retained or committed.
 
@@ -12,4 +13,5 @@ retained or committed.
 - Purpose: cross-platform Go/Android valid, tampered and unknown-key tests.
 
 This is not a production trust anchor and must never be promoted or reused as
-one. D-013 remains open for the real signer/KMS and key-rotation policy.
+one. D-013 is accepted under ADR 0011, but a disjoint real KMS/HSM key and
+authenticated production trust-bundle deployment remain external inputs.

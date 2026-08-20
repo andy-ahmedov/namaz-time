@@ -32,8 +32,9 @@ type importManifest struct {
 }
 
 type inspection struct {
-	Candidate domain.CandidateSchedule `json:"candidate"`
-	Diff      publication.DiffReport   `json:"diff"`
+	Previous  *domain.CandidateSchedule `json:"previous_candidate,omitempty"`
+	Candidate domain.CandidateSchedule  `json:"candidate"`
+	Diff      publication.DiffReport    `json:"diff"`
 }
 
 func main() {
@@ -153,7 +154,7 @@ func inspectEffective(baselineDirectory, overrideDirectory, policyPath string) (
 	if err != nil {
 		return inspection{}, err
 	}
-	return inspection{Candidate: candidate, Diff: diff}, nil
+	return inspection{Previous: &baseline.Candidate, Candidate: candidate, Diff: diff}, nil
 }
 
 func inspectFixture(directory string) (inspection, error) {

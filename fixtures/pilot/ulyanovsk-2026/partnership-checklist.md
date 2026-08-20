@@ -46,6 +46,7 @@ Second Cathedral Mosque has approved the schedule.
 
 Production publication remains `BLOCKED`: no named religious approver/actor or
 approval binds the exact effective policy/component/transcription/normalized/
-diff hashes and warnings; D-009, correction/fallback policy, D-013 production
-signer/trust and the physical canary/rollback drill also remain. The CLI exposes
-raw and effective inspection only; every candidate remains `needs_review`.
+diff hashes and warnings; D-009, correction/fallback policy, real protected
+signer/trust deployment and the physical canary/rollback drill also remain.
+D-013 tooling can proceed only after such an approval and never changes the
+candidate's `needs_review` state by itself.

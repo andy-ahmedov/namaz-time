@@ -7,6 +7,8 @@ import (
 	"io"
 	"sort"
 	"unicode/utf8"
+
+	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
 )
 
 // canonicalPayload removes the root integrity envelope and recursively sorts
@@ -16,6 +18,9 @@ import (
 func canonicalPayload(data []byte) ([]byte, error) {
 	if !utf8.Valid(data) {
 		return nil, fmt.Errorf("snapshot JSON is not valid UTF-8")
+	}
+	if err := strictjson.RejectDuplicateObjectMembers(data); err != nil {
+		return nil, fmt.Errorf("ambiguous JSON: %w", err)
 	}
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.UseNumber()

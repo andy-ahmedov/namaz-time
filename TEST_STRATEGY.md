@@ -174,6 +174,17 @@ The competitor runtime plan is separate and non-invasive: [BLACK_BOX_VALIDATION_
 - path/content-type/image bomb validation;
 - snapshot downgrade/rollback authorization;
 - signature key rotation;
+- production/test trust separation; scheduled rejection; historical retired
+  verification; unconditional revoked-key rejection and pinned-revision
+  rollback rejection in Go and Android;
+- isolated signing-request recomputation, signer-response binding, snapshot/
+  receipt hash verification, rehashed attestation tamper rejection and
+  authenticated direct-predecessor receipt-chain enforcement;
+- direct trust-bundle transition parity, canonical timestamp/revision bounds,
+  rebinding/resurrection rejection, mandatory scheduled preflight, disjoint
+  environment material and revoked persisted-snapshot cold start;
+- retired-key rollback admission under a newer validated bundle; exclusive
+  ledger genesis/head CAS and API registry-head anchoring;
 - admin CSRF/session protections;
 - dependency and secret scans;
 - diagnostic bundle privacy review.

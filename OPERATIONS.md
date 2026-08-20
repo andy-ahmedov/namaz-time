@@ -168,11 +168,41 @@ names, not credential values:
     "device_attempts": 10,
     "code_attempts": 5
   },
-  "trusted_public_key_files": [],
-  "snapshots": [],
+  "trust_bundle_file": "production-trust-bundle.json",
+  "test_trust_bundle_file": "test-trust-bundle.json",
+  "staging_trust_bundle_file": "staging-trust-bundle.json",
+  "minimum_trust_bundle_revision": 1,
+  "publication_ledger_head_file": "publication-ledger-head.json",
+  "snapshots": [{
+    "snapshot_id": "ulyanovsk-second-cathedral-2026-v1",
+    "file": "snapshot.json",
+    "receipt_file": "publication-receipt.json",
+    "sha256": "<snapshot-sha256>",
+    "signing_key_id": "prod-schedule-2026-01"
+  }],
   "assignments": []
 }
 ```
+
+Production snapshot registries require the lifecycle-aware public trust bundle;
+`trusted_public_key_files` is retained only for synthetic test fixtures and
+cannot authenticate production data. The bundle is public but integrity-
+sensitive: deploy it through authenticated release configuration, monotonically
+raise the pinned minimum revision, keep it next
+to the runtime config as a bounded regular non-symlink file, and record its
+SHA-256. Revision 2 and later additionally set
+`previous_trust_bundle_file` to the directly preceding accepted bundle; startup
+rejects revision gaps, rebinding, live-key removal and revocation resurrection.
+Every production snapshot supplies its authenticated `receipt_file`; a
+non-genesis receipt also supplies its direct `previous_receipt_file`. The API
+also requires the public test and staging bundles and rejects reused key IDs or
+public material across all three environments. The API
+anchors the registry to `publication_ledger_head_file`: at least one configured
+production artifact must carry that exact authenticated receipt hash, so a
+standalone signed fork/genesis is not silently admitted. The API
+process receives no signing private key. Normal publication,
+rotation, revocation and rollback commands are in
+[PUBLICATION_SIGNING_RUNBOOK.md](PUBLICATION_SIGNING_RUNBOOK.md).
 
 `NAMAZ_PAIRING_RATE_KEY` is standard Base64 for exactly 32 random bytes. Zero
 backend-timeout seconds selects the five-second default; an explicit value is
@@ -376,7 +406,9 @@ TV:
 
 - migrations backward-compatible or rollback planned;
 - contract/schema compatibility tested;
-- signing key ID correct;
+- production trust-bundle hash deployed to API and canary TV;
+- signing key ID is active and publication receipt/snapshot verify together;
+- approver and signer identities are distinct;
 - canary group selected;
 - source coverage verified;
 - physical pilot smoke test;

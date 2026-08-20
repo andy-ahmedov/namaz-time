@@ -14,8 +14,9 @@ Evidence labels:
   disposable local PostgreSQL 18 container and its synthetic fixture.
 - `UNKNOWN` — production backup cadence, retention, point-in-time recovery,
   RPO and RTO until deployment owners configure and measure them.
-- `UNKNOWN` — production signing-key and immutable artifact recovery until
-  D-013 and the production storage design are accepted.
+- `UNKNOWN` — real production signing-key and immutable artifact recovery until
+  deployment owners provision/test protected custody and production storage.
+  D-013 policy itself is accepted under ADR 0011.
 
 ## Local repeatable drill
 

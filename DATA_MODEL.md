@@ -494,6 +494,18 @@ Use a documented deterministic JSON encoding or sign a canonical binary envelope
 Phase 1 canonical JSON and trust-boundary details are fixed in
 [ADR 0003](docs/adr/0003-canonical-snapshot-signatures.md).
 
+Production trust uses the public-only
+`publication-trust-bundle.schema.json`. The bundle has a positive monotonic
+revision; a key has a unique ID, Ed25519 public material, environment,
+lifecycle state and signed-generation validity window.
+`scheduled` is preflight-only, `active` may sign/verify, `retired` verifies only
+historical snapshots in its closed window, and `revoked` never verifies. The
+publication attestation and audit receipt bind source/candidate/diff/approval
+hashes, approver, signer, signing/publication times, the exact trust bundle,
+snapshot raw/canonical hashes and key ID. Every receipt has exactly one
+signer-attested direct predecessor hash or the explicitly approved one-time
+ledger genesis reason.
+
 ## Tenant isolation
 
 All operator queries are scoped by mosque/organization membership. Add composite indexes containing `mosque_id`. Authorization belongs in service methods and integration tests, not only UI routes.

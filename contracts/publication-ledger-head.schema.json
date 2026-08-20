@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/publication-ledger-head.schema.json",
+  "title": "Publication ledger head",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "environment", "receipt_sha256"],
+  "properties": {
+    "schema_version": { "const": "1.0" },
+    "environment": { "enum": ["test", "staging", "production"] },
+    "receipt_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

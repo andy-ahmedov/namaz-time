@@ -7,7 +7,12 @@ import com.example.namaztime.tv.data.local.NamazDatabase
 import com.example.namaztime.tv.data.local.SnapshotImporter
 import com.example.namaztime.tv.data.local.SnapshotSelectionGuard
 import com.example.namaztime.tv.data.local.SnapshotSelectionResolver
+import java.io.File
+import java.util.Base64
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
@@ -218,5 +223,59 @@ class BundledSnapshotBootstrapperTest {
             SnapshotBootstrapState.Diagnostic("SNAPSHOT_DATABASE_READ_FAILED"),
             bootstrapper.state.value,
         )
+    }
+
+    @Test
+    fun revokedProductionKeyInvalidatesPersistedActiveSelectionOnColdStart() = runTest {
+        val fixture = File("../../fixtures/verification/synthetic-signed-snapshot.json").readBytes()
+        val keyDocument = Json.parseToJsonElement(
+            File("../../fixtures/verification/phase1-public-key.json").readText(),
+        ).jsonObject
+        val keyId = keyDocument.getValue("signing_key_id").jsonPrimitive.content
+        val publicKey = Base64.getDecoder().decode(
+            keyDocument.getValue("public_key_ed25519_base64").jsonPrimitive.content,
+        )
+        SnapshotImporter(database).importAndActivate(
+            SnapshotActivationGate.authenticated(
+                fixture,
+                SnapshotAuthenticityVerifier(mapOf(keyId to publicKey)),
+            ),
+        )
+        database.openHelper.writableDatabase.execSQL(
+            "UPDATE snapshots SET dataClassification = 'production' WHERE snapshotId = ?",
+            arrayOf("synthetic-android-verification-v1"),
+        )
+        val revokedBundle = File("../../fixtures/verification/phase1-trust-bundle.json").readText()
+            .replace("\"environment\": \"test\"", "\"environment\": \"production\"")
+            .replace("\"status\": \"active\"", "\"status\": \"revoked\"")
+            .replace(
+                "\n      \"not_before\"",
+                "\n      \"revoked_at\": \"2026-08-20T00:00:00Z\",\n      \"revocation_reason\": \"compromise drill\",\n      \"not_before\"",
+            )
+            .encodeToByteArray()
+
+        val resolution = SnapshotSelectionGuard(
+            database,
+            SnapshotAuthenticityVerifier(
+                revokedBundle,
+                minimumTrustBundleRevision = 1,
+                environmentTrustBundles = listOf(
+                    comparisonBundle("test", "test-comparison-key", 0x61),
+                    comparisonBundle("staging", "staging-comparison-key", 0x62),
+                ),
+            ).selectionTrust(),
+        ).resolve()
+
+        assertEquals(
+            com.example.namaztime.tv.data.local.SnapshotSelectionResolution.Corrupt,
+            resolution,
+        )
+        assertNull(database.snapshotDao().getSelection()?.activeSnapshotId)
+    }
+
+    private fun comparisonBundle(environment: String, keyId: String, fill: Int): ByteArray {
+        val encoded = Base64.getEncoder().encodeToString(ByteArray(32) { fill.toByte() })
+        return """{"schema_version":"1.0","revision":1,"environment":"$environment","generated_at":"2026-08-20T00:00:00Z","keys":[{"key_id":"$keyId","algorithm":"ed25519","public_key_ed25519_base64":"$encoded","status":"active","not_before":"2026-08-20T00:00:00Z"}]}"""
+            .encodeToByteArray()
     }
 }

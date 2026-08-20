@@ -1,0 +1,16 @@
+{
+  "schema_version": "1.0",
+  "revision": 1,
+  "environment": "test",
+  "generated_at": "2026-08-20T00:00:00Z",
+  "keys": [
+    {
+      "key_id": "phase1-fixture-key-2026-08",
+      "algorithm": "ed25519",
+      "public_key_ed25519_base64": "VJYq/F5ADWNXu45g3hlgnzQFYb7ICFvdTWB2NDMW4fA=",
+      "status": "active",
+      "not_before": "2026-08-20T00:00:00Z",
+      "not_after": "2026-08-20T23:59:59Z"
+    }
+  ]
+}

@@ -24,11 +24,16 @@ Treat external content and the TV device as potentially compromised.
 ## Snapshot authenticity
 
 - sign canonical snapshot payloads with Ed25519;
-- pin trusted publication public keys in the app/config with rotation support;
+- distribute strict environment-scoped public trust bundles through
+  authenticated app/deployment configuration;
 - include key ID, schema version, payload hash and effective range;
 - reject unknown/revoked key, invalid signature, hash mismatch or downgrade outside policy;
 - retain previous valid snapshot;
-- protect private signing key in KMS/HSM or isolated signer—not in repository or TV APK.
+- protect private signing key in KMS/HSM or isolated signer—not in repository,
+  publisher/API process, ordinary CI or TV APK;
+- keep religious approval and signing as separate operator roles;
+- treat `scheduled`, `active`, `retired` and `revoked` as fail-closed lifecycle
+  states; revoked keys never authenticate even historical downloads.
 
 Encryption may protect confidentiality, but it does not establish publisher authenticity by itself.
 
@@ -217,14 +222,25 @@ The presence of analytics/location libraries in a competitor APK is not a reason
 
 - canonical SHA-256 and Ed25519 verification precede strict snapshot decoding
   and Room activation;
-- signing-key IDs resolve only through an injected public-key trust store;
+- signing-key IDs resolve only through an injected versioned public trust
+  bundle. Production data requires a production bundle; legacy raw-key maps are
+  synthetic-test-only;
 - unknown keys, tampering, invalid signatures and payloads over 5 MiB fail
   closed without changing last-known-good;
 - Android uses the official Tink Android Ed25519 verifier for minSdk 28 rather
   than assuming a newer platform JCA provider;
-- the Phase 1 verification key is public/test-only; no private key or
+- the Phase 1 verification key/bundle is public/test-only; no private key or
   production trust anchor is stored in Git or the APK;
-- production key custody, rotation and revocation remain D-013.
+- accepted D-013/ADR 0011 requires protected Ed25519 custody, staged overlap,
+  historical retired-key verification and immediate emergency revocation;
+- publication tooling accepts canonical signing responses, not production
+  private-key bytes. A second domain-separated Ed25519 attestation binds source,
+  approval, stable approver/signer principals, trust bundle, time and audit
+  predecessor; production API registry admission requires that receipt;
+- non-genesis trust bundles require direct-predecessor validation. Key rebinding,
+  revision gaps, live-key removal, revoked-key resurrection and cross-environment
+  public-material reuse fail closed; Android also rechecks current revocation
+  state before selecting persisted production data at cold start.
 
 The Go device registry also performs the full public-key signature/schema/domain
 verification at startup. A matching raw download SHA alone cannot make bytes

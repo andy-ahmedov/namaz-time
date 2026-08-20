@@ -12,3 +12,4 @@ Create an ADR for durable decisions affecting correctness, source authority, sec
 - [0008 — Support bundles are bounded current state](0008-support-bundles-are-bounded-current-state.md)
 - [0009 — Fleet backups restore into a clean database](0009-fleet-backups-restore-into-a-clean-database.md)
 - [0010 — TV UI uses one offline design system](0010-tv-ui-uses-one-offline-design-system.md)
+- [0011 — Production signing uses isolated Ed25519 keys and versioned public trust bundles](0011-production-signing-uses-isolated-ed25519-keys.md)

@@ -1,6 +1,6 @@
 # ADR 0003: Canonical snapshot signatures
 
-- Status: Proposed
+- Status: Accepted
 - Date: 2026-08-20
 
 ## Context
@@ -50,8 +50,8 @@ the APK trust configuration and is not a production trust anchor.
 - Payload, provenance, iqamah overrides and optional configuration are covered
   by one signature; the integrity envelope cannot authenticate itself.
 - Alternate number spellings are rejected even when numerically equivalent.
-- D-013 must select production key custody, distribution, rotation and
-  revocation before real publication.
+- Production key custody, distribution, rotation and revocation are fixed by
+  [ADR 0011](0011-production-signing-uses-isolated-ed25519-keys.md).
 - T009 must preserve downloaded raw bytes for diagnostics, but activation
   still depends on this verifier and the existing atomic Room transaction.
 - T009's Go serving registry also verifies this signature and strict snapshot

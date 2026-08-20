@@ -40,7 +40,7 @@ Detailed prompts: [CODEX_TASKS.md](CODEX_TASKS.md).
 | Task | Status | Acceptance / evidence |
 |---|---|---|
 | T009 manifest/snapshot sync | DONE | explicit ephemeral one-use pairing fixture and scoped bearer API; duplicate credential rejection; signed registry and paired-mosque binding; same-origin canonical snapshot URLs; manifest/raw snapshot ETag/304 and Digest; Android AES-GCM/Keystore provisioning, provisioning-scoped durable stage/quarantine/checkpoint, signature/schema/domain/manifest/mosque binding, atomic activation and authenticated rollback; 401/404/500/timeout/tamper/re-pair plus file-backed import/post-commit interruption recovery tests pass |
-| T010 first real source onboarding | BLOCKED | local source/effective slice DONE: immutable annual PDF baseline plus August photo override policy, both raw/component hash chains, deterministic 365-day effective candidate and 31-day diff; production publication remains blocked on named religious approval, D-009, D-013 signer/trust and physical canary/rollback |
+| T010 first real source onboarding | BLOCKED | local source/effective and D-013 publication slices DONE: immutable PDF baseline + August photo override, deterministic 365-day candidate/diff, protected-signer protocol, strict Go/Android lifecycle trust, staged rotation/revocation, exclusive snapshot/audit receipts and runbook; first production publication remains blocked on named religious approval, D-009, real protected key/trust deployment and physical canary/rollback |
 
 T010's locally executable source slice is complete. The retained PDF SHA-256 is
 `82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21`;
@@ -52,8 +52,14 @@ al-Isfar where the photo has no value, keeps collective Dhuhr separate and
 produces normalized SHA-256
 `e7bcc16ad55d00f136cbfc5629e2680babf3f71b331dd33ca4f6e1b1207dbf77`.
 All twelve numeric differences remain visible but policy-resolved. This does
-not manufacture the missing named approval, D-009 decision, production
-signature or TV canary evidence, so T010 remains `BLOCKED` rather than DONE.
+not manufacture the missing named approval, D-009 decision, provisioned
+production key/signature, authenticated religious-approval principal or TV
+canary evidence, so T010 remains `BLOCKED`
+rather than DONE. D-013 is accepted and locally implemented: production code
+accepts only an isolated signer interface/two-signature response, Go/API
+and Android consume the same `scheduled`/`active`/`retired`/`revoked` public
+trust model with direct-predecessor transition checks, and finalization emits a
+signer-attested hash-chained receipt required by production API admission.
 
 T009 completes the locally testable delivery half of the Phase 2 invariant. The
 runtime command refuses to embed fixture credentials or trust keys, requires
@@ -69,7 +75,8 @@ closed until asset staging is implemented.
 - Parser versioning and schema-drift circuit breaker.
 - Minute-level candidate diff UI.
 - Two-person or named-approver publication control.
-- Ed25519 signing and key rotation.
+- Ed25519 protected signing, public trust lifecycle and rotation. (D-013 local
+  implementation DONE; real KMS/HSM key and authenticated deployment remain.)
 - Device manifest, staged download and local/manifest rollback. (T009 local slice DONE; production rollout groups remain part of T010 operations.)
 - Coverage/staleness alerts.
 - First authority/mosque source adapter.
@@ -111,6 +118,11 @@ backend or current Robolectric evidence labels.
 | T019 accelerated offline rollover hardening | DONE | deterministic seven-day matrix over one materialized local schedule preserves mosque-local date/time and safe frame at 4K density, then fails closed on the first uncovered date; Android/repository gates and independent review pass; this is not a Room-reopen or physical seven-day soak |
 | T020 bounded device-clock health | DONE | HTTPS manifest `Date` compared with injected response receipt at ±5-minute tolerance plus rollback detection; durable nullable health never blocks sync/display; heartbeat tri-state contract/wiring and physical bad-RTC/TLS/power evidence remain deferred |
 | T021 bounded display-retention shift | DONE | public display foreground follows a deterministic six-position, ten-minute, ±2 dp cycle inside the shared safe frame; unavailable display participates while settings/background/focus order remain unchanged; pure policy plus 720p/1080p/4K safe-frame and D-pad regressions pass locally; panel-specific efficacy remains physical evidence |
+
+The defined, independent local Phase 4 queue is complete through T021. The
+remaining matrix below requires physical hardware, OEM behavior or an open
+deployment decision, so it is not replaced with an invented local task and
+Phase 5 has not started.
 
 - physical matrix: Google TV, common Android TV box, Sber/Salute if targeted;
 - boot/restart behavior per OEM;
@@ -156,15 +168,16 @@ Do not begin until the first pilot is stable.
 - D-010 still requires an approved pilot QR destination/domain; T007 therefore
   exercises only the authorized local mechanism with synthetic `example.org`
   fixtures and does not invent a live campaign.
-- D-013 still requires a production signer/KMS, public-key distribution,
-  rotation and revocation policy. T008 commits only a public test fixture; its
-  ephemeral private key was discarded.
+- D-013 policy and local implementation are complete under ADR 0011. A real
+  KMS/HSM key, named security operators, authenticated production trust-bundle
+  deployment and measured rotation/revocation drill remain external rollout
+  inputs. T008's public test key is never promoted; its private half was discarded.
 - local Phase 1/T009 and T010 source/effective onboarding are complete. D-002
   resolves August precedence through an exact hash-bound policy, but a real
   pilot publication remains intentionally impossible until a named religious
   approval binds the effective candidate/diff/warnings, D-009 decides whether
-  any printed collective value is pilot iqamah, D-013 provisions production
-  trust, and a physical canary/rollback drill is performed.
+  any printed collective value is pilot iqamah, protected production key/trust
+  deployment is provisioned, and a physical canary/rollback drill is performed.
 - T009 intentionally rejects non-empty remote asset manifests; custom asset
   staging/type/dimension activation requires a separately bounded task.
 - T020 preserves clock health as `unknown`/healthy/mismatch locally, while the

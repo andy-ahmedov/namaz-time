@@ -31,6 +31,20 @@ Official authority / mosque / approved calculation profile
                   TV UI
 ```
 
+Production publication is an explicit two-step boundary. The publisher
+recreates approval-bound canonical bytes, and an isolated KMS/HSM signer
+returns Ed25519 signatures over both the snapshot and a domain-separated
+provenance/approval/trust/actor/audit-chain attestation. Finalization verifies both against a
+versioned environment-scoped public trust bundle before emitting immutable
+snapshot and signer-attested hash-chained receipt. Go registry admission
+requires this receipt and anchors one registry artifact to the durable release
+ledger head. Publisher finalization advances that head under an exclusive
+compare-and-swap lock, rejecting repeated genesis and sibling forks. Go and
+Android share direct-predecessor trust transition
+and active/retired/revoked semantics; the device clock is
+not used to authorize a signing key. See ADR 0011 and
+[PUBLICATION_SIGNING_RUNBOOK.md](PUBLICATION_SIGNING_RUNBOOK.md).
+
 The TV is a display node, not a web scraper and not the authority that decides religious correctness.
 
 ## Repository layout
@@ -227,7 +241,7 @@ the monthly source.
 
 Composition cannot approve or publish. The effective candidate stays
 `needs_review`; a named mosque/authority approval, the pilot iqamah decision,
-production signing trust and physical rollout/rollback evidence remain outside
+protected production key provisioning and physical rollout/rollback evidence remain outside
 the source transform. Ordinary schedule publication never converts a
 candidate-only collective Dhuhr value into mosque iqamah.
 

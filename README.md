@@ -54,7 +54,10 @@ go run ./cmd/ingestor inspect \
   --fixture-dir fixtures/pilot/ulyanovsk-2026
 ```
 
-Команда не имеет approve/publish режима и возвращает `needs_review`.
+Команда не имеет approve/publish режима и возвращает `needs_review`. После
+реального approval D-013 workflow выполняется отдельной командой
+`cmd/publisher`; подробные prepare/finalize/verify шаги приведены в
+[PUBLICATION_SIGNING_RUNBOOK.md](PUBLICATION_SIGNING_RUNBOOK.md).
 
 Gradle запускается через репозиторный wrapper. Android application ID
 `com.example.namaztime.tv` является временным значением T001 и должен быть
@@ -119,9 +122,12 @@ validation, Android Keystore/AES-GCM provisioning, same-origin HTTPS,
 provisioning-scoped durable stage/quarantine, WorkManager и атомарный
 activate/rollback с file-backed process-interruption тестами. Ни test token, ни
 private/production signing key в APK/Git не встроены. Источниковая часть T010
-завершена локально; production publication остаётся `BLOCKED` на D-002,
-D-009 для mosque-local коллективного времени, D-013 и физическом
-canary/rollback drill.
+завершена локально. D-002 и D-013 приняты; protected-signer, двойная
+snapshot/provenance attestation, монотонный trust lifecycle и обязательный API
+receipt реализованы без production private key. Первая production
+publication остаётся `BLOCKED` на named religious approval, D-009 для
+mosque-local коллективного времени, реальном KMS/HSM/trust deployment и
+физическом canary/rollback drill.
 T011 добавляет независимое PostgreSQL-хранилище production pairing: случайные
 одноразовые коды и device tokens, только hash/HMAC at rest, expiry/rate limits,
 атомарный single-use redeem, revocation, mosque-scoped composite constraints и

@@ -23,6 +23,7 @@ import (
 
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
+	"github.com/andy-ahmedov/namaz-time/internal/trust"
 )
 
 const (
@@ -58,22 +59,26 @@ type DeviceAssignment struct {
 }
 
 type SnapshotArtifact struct {
-	ID           string
-	Bytes        []byte
-	SHA256       string
-	SigningKeyID string
+	ID              string
+	Bytes           []byte
+	SHA256          string
+	SigningKeyID    string
+	Receipt         *publication.AuditReceipt
+	PreviousReceipt *publication.AuditReceipt
 }
 
 type ServiceConfig struct {
-	PublicBaseURL     string
-	PairingFixtures   []PairingFixture
-	Assignments       []DeviceAssignment
-	Snapshots         []SnapshotArtifact
-	TrustedPublicKeys map[string]ed25519.PublicKey
-	PairingBackend    PairingBackend
-	AdminBackend      AdminFleetBackend
-	BackendTimeout    time.Duration
-	Now               func() time.Time
+	PublicBaseURL               string
+	PairingFixtures             []PairingFixture
+	Assignments                 []DeviceAssignment
+	Snapshots                   []SnapshotArtifact
+	TrustedPublicKeys           map[string]ed25519.PublicKey
+	TrustPolicy                 *trust.Policy
+	PublicationLedgerHeadSHA256 string
+	PairingBackend              PairingBackend
+	AdminBackend                AdminFleetBackend
+	BackendTimeout              time.Duration
+	Now                         func() time.Time
 }
 
 type DeviceManifest struct {
@@ -185,8 +190,9 @@ func NewService(config ServiceConfig) (*Service, error) {
 		service.tokens[fixture.DeviceID] = fixture.Token
 		service.mosques[fixture.DeviceID] = fixture.Mosque
 	}
+	productionReceiptPredecessors := make(map[string]string)
 	for _, artifact := range config.Snapshots {
-		snapshot, err := validateSnapshotArtifact(artifact, config.TrustedPublicKeys)
+		snapshot, err := validateSnapshotArtifact(artifact, config.TrustedPublicKeys, config.TrustPolicy)
 		if err != nil {
 			return nil, fmt.Errorf("configure snapshot %q: %w", artifact.ID, err)
 		}
@@ -201,6 +207,15 @@ func NewService(config ServiceConfig) (*Service, error) {
 			mosqueID:     snapshot.Mosque.ID,
 			timezone:     snapshot.Mosque.Timezone,
 		}
+		if snapshot.DataClassification == domain.DataClassificationProduction && artifact.Receipt != nil {
+			productionReceiptPredecessors[artifact.Receipt.ReceiptSHA256] = artifact.Receipt.PreviousReceiptSHA256
+			if artifact.PreviousReceipt != nil {
+				productionReceiptPredecessors[artifact.PreviousReceipt.ReceiptSHA256] = artifact.PreviousReceipt.PreviousReceiptSHA256
+			}
+		}
+	}
+	if err := validatePublicationLedgerAnchor(productionReceiptPredecessors, config.PublicationLedgerHeadSHA256); err != nil {
+		return nil, err
 	}
 	for _, assignment := range config.Assignments {
 		if err := service.validateAssignment(assignment); err != nil {
@@ -213,6 +228,35 @@ func NewService(config ServiceConfig) (*Service, error) {
 	}
 	service.handler = service.routes()
 	return service, nil
+}
+
+func validatePublicationLedgerAnchor(predecessors map[string]string, head string) error {
+	if len(predecessors) > 0 {
+		if !validSHA256(head) {
+			return errors.New("production snapshot registry requires a valid publication ledger head")
+		}
+		if _, exists := predecessors[head]; !exists {
+			return errors.New("production snapshot registry does not contain the anchored publication ledger head")
+		}
+		reachable := make(map[string]struct{}, len(predecessors))
+		for cursor := head; cursor != ""; cursor = predecessors[cursor] {
+			if _, loop := reachable[cursor]; loop {
+				return errors.New("production publication receipt ledger contains a cycle")
+			}
+			reachable[cursor] = struct{}{}
+			if _, known := predecessors[cursor]; !known {
+				break
+			}
+		}
+		for receiptSHA256 := range predecessors {
+			if _, exists := reachable[receiptSHA256]; !exists {
+				return errors.New("production snapshot registry contains a receipt outside the anchored ledger ancestry")
+			}
+		}
+	} else if head != "" {
+		return errors.New("publication ledger head is configured without production snapshots")
+	}
+	return nil
 }
 
 func (s *Service) Handler() http.Handler { return s.handler }
@@ -927,7 +971,7 @@ func validatePairingFixture(fixture PairingFixture) error {
 	return nil
 }
 
-func validateSnapshotArtifact(artifact SnapshotArtifact, trustedPublicKeys map[string]ed25519.PublicKey) (domain.Snapshot, error) {
+func validateSnapshotArtifact(artifact SnapshotArtifact, trustedPublicKeys map[string]ed25519.PublicKey, trustPolicy *trust.Policy) (domain.Snapshot, error) {
 	if !validIdentifier(artifact.ID) || len(artifact.Bytes) == 0 || len(artifact.Bytes) > maxSnapshotBytes || !validSHA256(artifact.SHA256) || len(artifact.SigningKeyID) < 1 || len(artifact.SigningKeyID) > 128 {
 		return domain.Snapshot{}, errors.New("snapshot metadata is invalid")
 	}
@@ -935,15 +979,42 @@ func validateSnapshotArtifact(artifact SnapshotArtifact, trustedPublicKeys map[s
 	if hex.EncodeToString(actual[:]) != artifact.SHA256 {
 		return domain.Snapshot{}, errors.New("snapshot SHA-256 does not match bytes")
 	}
-	if err := publication.Verify(artifact.Bytes, trustedPublicKeys); err != nil {
-		return domain.Snapshot{}, fmt.Errorf("snapshot authenticity validation failed: %w", err)
+	if len(trustedPublicKeys) > 0 && trustPolicy != nil {
+		return domain.Snapshot{}, errors.New("legacy public keys and trust policy are mutually exclusive")
 	}
 	snapshot, err := domain.DecodeSnapshot(artifact.Bytes)
 	if err != nil {
 		return domain.Snapshot{}, fmt.Errorf("snapshot contract decoding failed: %w", err)
 	}
+	if artifact.PreviousReceipt != nil && artifact.Receipt == nil {
+		return domain.Snapshot{}, errors.New("publication predecessor cannot be configured without its receipt")
+	}
+	if snapshot.DataClassification == domain.DataClassificationProduction && (trustPolicy == nil || artifact.Receipt == nil) {
+		return domain.Snapshot{}, errors.New("production snapshot requires a trust policy and authenticated publication receipt")
+	}
+	var authenticityError error
+	if trustPolicy != nil {
+		authenticityError = publication.VerifyWithTrust(artifact.Bytes, trustPolicy)
+	} else {
+		authenticityError = publication.Verify(artifact.Bytes, trustedPublicKeys)
+	}
+	if authenticityError != nil {
+		return domain.Snapshot{}, fmt.Errorf("snapshot authenticity validation failed: %w", authenticityError)
+	}
 	if snapshot.SnapshotID != artifact.ID || snapshot.Integrity.SigningKeyID != artifact.SigningKeyID {
 		return domain.Snapshot{}, errors.New("snapshot payload identity does not match artifact metadata")
+	}
+	if snapshot.DataClassification == domain.DataClassificationProduction {
+		if err := publication.VerifyPublicationEvidence(artifact.Bytes, *artifact.Receipt, trustPolicy, artifact.PreviousReceipt); err != nil {
+			return domain.Snapshot{}, fmt.Errorf("production publication evidence validation failed: %w", err)
+		}
+	} else if artifact.Receipt != nil {
+		if trustPolicy == nil {
+			return domain.Snapshot{}, errors.New("snapshot receipt requires a lifecycle-aware trust policy")
+		}
+		if err := publication.VerifyPublicationEvidence(artifact.Bytes, *artifact.Receipt, trustPolicy, artifact.PreviousReceipt); err != nil {
+			return domain.Snapshot{}, fmt.Errorf("publication evidence validation failed: %w", err)
+		}
 	}
 	return snapshot, nil
 }

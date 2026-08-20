@@ -832,6 +832,47 @@ func validServiceConfig(t *testing.T) ServiceConfig {
 	}
 }
 
+func TestSnapshotRegistryRejectsProductionArtifactWithoutPublicationReceipt(t *testing.T) {
+	t.Parallel()
+
+	fixture := mustReadSnapshot(t)
+	production := bytes.Replace(fixture, []byte(`"data_classification": "synthetic"`), []byte(`"data_classification": "production"`), 1)
+	if bytes.Equal(production, fixture) {
+		t.Fatal("snapshot fixture classification was not replaced")
+	}
+	hash := sha256.Sum256(production)
+	_, err := validateSnapshotArtifact(SnapshotArtifact{
+		ID: "synthetic-android-verification-v1", Bytes: production,
+		SHA256: hex.EncodeToString(hash[:]), SigningKeyID: testKeyID,
+	}, mustReadPublicKeys(t), nil)
+	if err == nil || !strings.Contains(err.Error(), "authenticated publication receipt") {
+		t.Fatalf("missing production receipt error = %v", err)
+	}
+}
+
+func TestProductionRegistryAnchorsOneAuthenticatedReceiptAsLedgerHead(t *testing.T) {
+	t.Parallel()
+	head := strings.Repeat("a", 64)
+	previous := strings.Repeat("c", 64)
+	receipts := map[string]string{head: previous, previous: ""}
+	if err := validatePublicationLedgerAnchor(receipts, head); err != nil {
+		t.Fatalf("valid ledger anchor rejected: %v", err)
+	}
+	for name, err := range map[string]error{
+		"missing head":      validatePublicationLedgerAnchor(receipts, ""),
+		"unknown head":      validatePublicationLedgerAnchor(receipts, strings.Repeat("b", 64)),
+		"head without data": validatePublicationLedgerAnchor(nil, head),
+		"signed fork": validatePublicationLedgerAnchor(
+			map[string]string{head: previous, previous: "", strings.Repeat("d", 64): previous},
+			head,
+		),
+	} {
+		if err == nil {
+			t.Errorf("%s unexpectedly succeeded", name)
+		}
+	}
+}
+
 type recordingHTTPPairingBackend struct {
 	attempt      PairingAttempt
 	provisioning PairingProvisioning

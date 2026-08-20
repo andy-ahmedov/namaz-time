@@ -44,7 +44,30 @@ if missing:
 
 for path in repository_files('*.json'):
     with path.open(encoding='utf-8') as handle:
-        json.load(handle)
+        document = json.load(handle)
+    pending = [document]
+    while pending:
+        value = pending.pop()
+        if isinstance(value, dict):
+            forbidden_secret_fields = {'private_key', 'private_key_ed25519_base64', 'secret_key', 'signing_seed'}
+            found = forbidden_secret_fields.intersection(key.lower() for key in value)
+            if found:
+                raise SystemExit(f'Prohibited private signing field in {path.relative_to(root)}: {sorted(found)}')
+            pending.extend(value.values())
+        elif isinstance(value, list):
+            pending.extend(value)
+
+private_key_markers = (
+    b'-----BEGIN ' + b'PRIVATE KEY-----',
+    b'-----BEGIN ' + b'OPENSSH PRIVATE KEY-----',
+    b'-----BEGIN ' + b'RSA PRIVATE KEY-----',
+    b'-----BEGIN ' + b'EC PRIVATE KEY-----',
+)
+for path in repository_files('*'):
+    if path.stat().st_size <= 1024 * 1024:
+        data = path.read_bytes()
+        if any(marker in data for marker in private_key_markers):
+            raise SystemExit(f'Prohibited private-key material: {path.relative_to(root)}')
 
 openapi = (root / 'contracts/openapi.yaml').read_text(encoding='utf-8')
 for token in (
@@ -67,10 +90,17 @@ except Exception:
 if jsonschema is not None:
     snapshot_schema = json.loads((root / 'contracts/prayer-snapshot.schema.json').read_text(encoding='utf-8'))
     source_schema = json.loads((root / 'contracts/source-record.schema.json').read_text(encoding='utf-8'))
-    jsonschema.Draft202012Validator.check_schema(snapshot_schema)
-    jsonschema.Draft202012Validator.check_schema(source_schema)
+    publication_schemas = [
+        json.loads(path.read_text(encoding='utf-8'))
+        for path in sorted((root / 'contracts').glob('publication-*.schema.json'))
+    ]
+    for schema in [snapshot_schema, source_schema, *publication_schemas]:
+        jsonschema.Draft202012Validator.check_schema(schema)
     example = json.loads((root / 'examples/synthetic-prayer-snapshot.json').read_text(encoding='utf-8'))
     jsonschema.Draft202012Validator(snapshot_schema).validate(example)
+    trust_bundle = json.loads((root / 'fixtures/verification/phase1-trust-bundle.json').read_text(encoding='utf-8'))
+    trust_schema = next(schema for schema in publication_schemas if schema['title'] == 'Snapshot publication public trust bundle')
+    jsonschema.Draft202012Validator(trust_schema).validate(trust_bundle)
 else:
     example = json.loads((root / 'examples/synthetic-prayer-snapshot.json').read_text(encoding='utf-8'))
 

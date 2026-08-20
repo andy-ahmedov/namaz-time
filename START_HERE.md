@@ -97,8 +97,12 @@ public-key trust store и test fixture: production key/credentials в APK и Git
 переходы проходят через candidate/diff pipeline. D-002 теперь явно использует
 PDF как baseline и фото как приоритетный источник полей августа; immutable
 effective policy сохраняет оба raw provenance/hash и не автоодобряет результат.
-Production-публикация остаётся заблокирована на named religious approval,
-D-009, D-013 и отдельной физической TV/ADB canary/rollback-приёмке.
+D-013 принята и локально реализована как isolated Ed25519 signer, отдельная
+snapshot/provenance attestation, versioned monotonic public trust bundle и
+обязательный production audit receipt; production secret отсутствует. Первая
+production-публикация остаётся заблокирована на named religious approval,
+D-009, реальном KMS/HSM/trust deployment и отдельной физической TV/ADB
+canary/rollback-приёмке.
 
 ## 5. Запрет на гигантскую первую задачу
 

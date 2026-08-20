@@ -18,7 +18,7 @@ Record product decisions here before converting stable architecture choices into
 | D-010 | QR campaign domains and approval | OPEN | Mosque | T007 | HTTPS and official destination |
 | D-011 | Best-effort boot vs managed kiosk | OPEN | Installer/product | before pilot deployment | separate support promises |
 | D-012 | Analytics/crash reporting policy | OPEN | Product/privacy | before store release | recommended privacy-minimal default |
-| D-013 | Snapshot signer/KMS strategy | OPEN | Security owner | before production publication | test key must never become production key |
+| D-013 | Snapshot signer/KMS strategy | ACCEPTED | Product owner / security owner | before production publication | Ed25519 in KMS/HSM or isolated signer; separate approver/signer; versioned public trust bundle with staged rotation, retirement and emergency revocation; no production private material in Git/APK/API/ordinary CI |
 | D-014 | Source stale/expiry/fallback behavior | OPEN | Mosque approver | before real source | default: no silent fallback |
 
 ## Confirmed repository proposals
@@ -129,8 +129,9 @@ These are proposals until accepted by the product owner:
   labeled approved/official. D-002 now selects it as the August override input;
   the `13:53` collective value, starred Fajr/Isha values and 31 August Dhuhr
   value remain verbatim source evidence rather than invented corrections.
-- `UNKNOWN` — D-013 remains open. The committed key is public and test-only;
-  its private half was discarded and no production trust anchor was selected.
+- `CONFIRMED_PUBLIC` — the product owner accepted D-013 on 2026-08-20. The
+  committed key remains public/test-only; production uses a disjoint protected
+  signer and lifecycle-aware public trust bundle under ADR 0011.
 
 ## T010 annual Ulyanovsk source record
 
@@ -161,8 +162,9 @@ These are proposals until accepted by the product owner:
   is the pilot mosque's iqamah. Publication deliberately omits candidate
   collective values from TV iqamah overrides without that distinct decision.
 - `UNKNOWN` — a named religious approval binding the effective candidate/diff
-  and warnings is still absent. D-013 and physical canary/rollback evidence
-  also block production publication and activation at this checkpoint.
+  and warnings is still absent. Protected production key provisioning,
+  authenticated trust-bundle deployment and physical canary/rollback evidence
+  also block the first production activation; the D-013 policy itself is accepted.
 
 ## T009 device-sync record
 
@@ -181,8 +183,9 @@ These are proposals until accepted by the product owner:
   the future production issuer and are not claimed here.
 - `PROPOSAL` — non-empty remote asset manifests fail closed in T009 rather than
   silently activating themes whose assets were not staged.
-- `UNKNOWN` — D-013 still blocks production trust-store provisioning. T009
-  proves the path with an injected public test key only and embeds no key/token.
+- `PROPOSAL` — D-013 trust bundles are injected through authenticated build or
+  deployment configuration. T009 proves the path with a public test bundle and
+  embeds no production key/token; remote unsigned trust replacement is forbidden.
 - `CONFIRMED_RUNTIME` is not claimed for WorkManager/OEM process behavior or a
   physical TV; evidence is local Go/JVM/Robolectric plus file-backed DB reopen.
 

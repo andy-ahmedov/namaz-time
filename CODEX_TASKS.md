@@ -119,8 +119,14 @@ photo priority for every field it supplies in August, exact component hash
 bindings and no raw edits. `effective-schedule/v1` produces a deterministic
 365-day `needs_review` candidate/diff and resolves only the recorded source
 conflicts. Ordinary publication cannot promote collective Dhuhr into iqamah.
-A named religious approval, D-009, D-013 production signing/trust and a physical
-canary/rollback drill remain `BLOCKED`, so T010 is not marked DONE.
+A named religious approval, D-009, protected production key/trust deployment
+and a physical canary/rollback drill remain `BLOCKED`, so T010 is not marked
+DONE. D-013 itself is ACCEPTED and locally implemented: strict public trust
+bundles share lifecycle semantics across Go/API/Android; production raw-key
+signing is forbidden; isolated prepare/finalize tooling verifies exact
+approval/candidate/diff/trust/actor/chain bindings with a second
+domain-separated Ed25519 attestation and emits receipts required by API admission;
+rotation/revocation/rollback operations are documented in the runbook.
 
 ## T011 — production pairing persistence
 
