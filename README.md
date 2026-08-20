@@ -43,7 +43,7 @@
    make lint
    ```
 
-5. Продолжить с задачей `T005` из [CODEX_TASKS.md](CODEX_TASKS.md).
+5. Продолжить с задачей `T006` из [CODEX_TASKS.md](CODEX_TASKS.md).
 
 Gradle запускается через репозиторный wrapper. Android application ID
 `com.example.namaztime.tv` является временным значением T001 и должен быть
@@ -86,5 +86,8 @@ T001 добавил компилируемые Go entry points, Android/Gradle s
 offline bootstrap встроенного синтетического примера, атомарный import/activate,
 безопасную диагностику/previous restore и миграции Room v1→v2→v3 для source
 flags и полной provenance/theme metadata. Следующий этап —
-главный экран T005. Runtime-проверка на физическом Android TV/box ещё не
+главный экран T005 с шестью строками азана/икамата, offline-фоном,
+source state и D-pad переходом к настройкам. Значения локального времени,
+следующего события и countdown остаются явными placeholders до T006.
+Runtime-проверка на физическом Android TV/box ещё не
 выполнена и не подменяется Robolectric-тестом.

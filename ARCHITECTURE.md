@@ -114,6 +114,22 @@ Cryptographic signature verification is intentionally added at T008; T004 does
 not treat the synthetic placeholder integrity envelope as authentic production
 data.
 
+T005 replaces the launch placeholder with a responsive, built-in offline main
+display. It renders the six daily adhan rows from immutable Room-backed local
+state and keeps iqamah in its own column: sunrise is explicitly not applicable,
+while unresolved mosque-local iqamah remains unset. Synthetic classification
+is visible and never described as official. Schedule date, mosque clock and
+next-event fields are explicit presentation state; T005 leaves the clock and
+next-event values as placeholders until T006 supplies the timezone-aware time
+engine. The only focusable display action opens settings and has explicit
+initial focus across the tested 720p, 1080p and 4K density profiles.
+Until T006 selects mosque-today, the integrated T005 preview explicitly selects
+`coverage_from`; the display mapper never silently chooses an arbitrary list
+element. Source state fails conservatively: synthetic, calculated, unapproved
+and not-yet-authenticity-verified production data receive distinct labels.
+Countdown uses a fixed-width monospaced region so the T006 ticker cannot shift
+the status layout.
+
 Small operator UI preferences, including the last focused settings section and
 reduced-motion default, use a single Preferences DataStore instance. Schedule
 data never moves into DataStore, and the Compose shell contains no network

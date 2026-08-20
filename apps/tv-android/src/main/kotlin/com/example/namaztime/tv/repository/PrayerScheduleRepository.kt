@@ -25,6 +25,7 @@ data class LocalPrayerSchedule(
     val snapshotId: String,
     val mosqueId: String,
     val mosqueName: String,
+    val locality: String? = null,
     val timezoneId: String,
     val sourceKind: String,
     val authorityName: String,
@@ -39,6 +40,7 @@ data class LocalSnapshotDiagnostics(
     val rawSha256: String,
     val parserVersion: String,
     val approvalId: String,
+    val approvalStatus: String = "approved",
     val signingKeyId: String,
 )
 
@@ -66,6 +68,7 @@ class RoomPrayerScheduleRepository(
                         snapshotId = snapshot.snapshotId,
                         mosqueId = snapshot.mosqueId,
                         mosqueName = snapshot.mosqueName,
+                        locality = snapshot.locality,
                         timezoneId = snapshot.timezoneId,
                         sourceKind = snapshot.sourceKind,
                         authorityName = snapshot.authorityName,
@@ -76,6 +79,7 @@ class RoomPrayerScheduleRepository(
                             rawSha256 = snapshot.rawSha256,
                             parserVersion = snapshot.parserVersion,
                             approvalId = snapshot.approvalId,
+                            approvalStatus = snapshot.approvalStatus,
                             signingKeyId = snapshot.signingKeyId,
                         ),
                         days = days.map { day ->

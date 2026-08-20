@@ -51,7 +51,8 @@
 - `settings.gradle.kts`, `build.gradle.kts`, `gradle/` — Android Gradle build and wrapper.
 - `apps/tv-android/` — Compose for TV shell, D-pad/UI tests, DataStore
   preferences, strict bundled-snapshot bootstrap, Room v1 baseline and tested
-  v1→v2→v3 source-flags/provenance migrations.
+  v1→v2→v3 source-flags/provenance migrations, and the responsive offline main
+  prayer display.
 - `.github/workflows/ci.yml` — documentation, Go and Android CI gates.
 
 ## Quality, security and operations

@@ -69,6 +69,17 @@ These are proposals until accepted by the product owner:
   authorized for this project. Its religious approval status remains distinct
   from permission to use the file.
 
+## T005 main-display record
+
+- `PROPOSAL` — the built-in dark gradient and overlay are independent offline
+  UI assets; no competitor visual resource or pixel layout is used.
+- `PROPOSAL` — T005 displays unresolved iqamah and time-engine output as
+  explicit placeholders. T006 replaces only those presentation values and does
+  not change the stored adhan rows.
+- `CONFIRMED_RUNTIME` is not claimed for the resolution profiles: the
+  720p/1080p/4K evidence is Robolectric UI coverage, while physical-TV
+  visibility and overscan remain D-004 acceptance work.
+
 ## Decision template
 
 ```text

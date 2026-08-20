@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Button
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Text
+import com.example.namaztime.tv.R
 import com.example.namaztime.tv.data.snapshot.SnapshotBootstrapState
 import com.example.namaztime.tv.repository.CorruptLocalSnapshotException
 import com.example.namaztime.tv.repository.EmptyPrayerScheduleRepository
@@ -72,7 +74,7 @@ fun NamazTvApp(
                 .background(Color(0xFF101A1D)),
         ) {
             composable(DISPLAY_ROUTE) {
-                DisplayPlaceholderScreen(
+                DisplayRoute(
                     schedule = (observedSchedule as? DisplayScheduleState.Available)?.schedule,
                     localDiagnostic =
                         (observedSchedule as? DisplayScheduleState.Diagnostic)?.supportCode,
@@ -104,8 +106,31 @@ fun NamazTvApp(
 }
 
 @Composable
-private fun DisplayPlaceholderScreen(
+private fun DisplayRoute(
     schedule: LocalPrayerSchedule?,
+    localDiagnostic: String?,
+    bootstrapState: SnapshotBootstrapState,
+    onOpenSettings: () -> Unit,
+) {
+    if (schedule != null) {
+        val recoveryCode = (bootstrapState as? SnapshotBootstrapState.Ready)?.recoveryCode
+        MainPrayerDisplay(
+            state = schedule.toPrayerDisplayUiState(
+                selectedLocalDate = schedule.coverageFrom,
+            ).copy(supportCode = recoveryCode),
+            onOpenSettings = onOpenSettings,
+        )
+        return
+    }
+    DisplayUnavailableScreen(
+        localDiagnostic = localDiagnostic,
+        bootstrapState = bootstrapState,
+        onOpenSettings = onOpenSettings,
+    )
+}
+
+@Composable
+private fun DisplayUnavailableScreen(
     localDiagnostic: String?,
     bootstrapState: SnapshotBootstrapState,
     onOpenSettings: () -> Unit,
@@ -124,7 +149,7 @@ private fun DisplayPlaceholderScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = schedule?.mosqueName ?: when {
+            text = when {
                 localDiagnostic != null -> "Prayer schedule unavailable"
                 else -> when (bootstrapState) {
                     SnapshotBootstrapState.Pending -> "Loading local schedule"
@@ -136,7 +161,7 @@ private fun DisplayPlaceholderScreen(
             fontSize = 44.sp,
         )
         Text(
-            text = schedule?.authorityName ?: when {
+            text = when {
                 localDiagnostic != null -> "Support code: $localDiagnostic"
                 else -> when (bootstrapState) {
                     SnapshotBootstrapState.Pending -> "Validating bundled snapshot…"
@@ -161,7 +186,7 @@ private fun DisplayPlaceholderScreen(
             onClick = onOpenSettings,
             modifier = Modifier.focusRequester(settingsFocusRequester),
         ) {
-            Text("Open settings")
+            Text(stringResource(R.string.open_settings))
         }
     }
 }
