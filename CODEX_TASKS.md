@@ -277,3 +277,29 @@ behavior remains deferred to the Phase 4 device matrix.
 **Result:** completed locally on 2026-08-20. A display-route disposable effect
 preserves the host view's prior flag, and SDK 28/35 tests cover settings release,
 display return and pre-existing flag restoration. The manifest is unchanged.
+
+## T019 — accelerated offline rollover hardening
+
+**Goal:** prove locally that a connected display can continue projecting one
+immutable local schedule across a full week of mosque-local date changes and
+fails closed when that schedule's coverage ends.
+
+**In scope:** a deterministic seven-day clock matrix reusing one already
+materialized local schedule projection, the named mosque timezone, the
+connected T006/T017 resolver/display and the 4K-density 16:9 profile; daily
+date/content/safe-frame assertions; an explicit post-coverage unavailable
+assertion; no network or source fallback.
+
+**Non-goals:** claiming seven days of wall-clock runtime, measuring memory or
+thermal behavior, OEM sleep/process behavior, changing the device clock,
+inventing pilot data, physical TV/ADB evidence or automated fallback.
+
+**Acceptance:** one accelerated test traverses seven consecutive local dates
+without reloading the snapshot or rendering unavailable state, then proves the
+first uncovered date produces the bounded support diagnostic. Android unit and
+repository-wide gates pass; the physical seven-day soak remains deferred.
+
+**Result:** completed locally on 2026-08-20. The connected resolver/projection
+was separated from its unchanged route ticker so one immutable synthetic local
+schedule could be advanced deterministically across seven named-timezone dates.
+The 4K-density matrix and post-coverage diagnostic pass independent review.

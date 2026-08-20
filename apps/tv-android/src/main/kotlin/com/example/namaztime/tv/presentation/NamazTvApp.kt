@@ -48,6 +48,7 @@ import com.example.namaztime.tv.repository.toTimeEngineInput
 import com.example.namaztime.tv.repository.toCampaignInputs
 import java.io.IOException
 import java.time.Clock
+import java.time.Instant
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -159,9 +160,6 @@ private fun DisplayRoute(
 ) {
     DisplayKeepAwakeEffect()
     if (schedule != null) {
-        val engine = remember { PrayerTimeEngine() }
-        val timeInput = remember(schedule) { schedule.toTimeEngineInput() }
-        val validationCode = remember(timeInput) { engine.validate(timeInput) }
         var currentInstant by remember(schedule.snapshotId, clock) {
             mutableStateOf(clock.instant())
         }
@@ -173,44 +171,12 @@ private fun DisplayRoute(
                 }
             }
         }
-        if (validationCode != null) {
-            DisplayUnavailableScreen(
-                localDiagnostic = validationCode,
-                bootstrapState = bootstrapState,
-                onOpenSettings = onOpenSettings,
-            )
-            return
-        }
-        val resolution = remember(timeInput, currentInstant) {
-            engine.resolve(timeInput, currentInstant)
-        }
-        if (resolution is PrayerTimeResolution.Unavailable) {
-            DisplayUnavailableScreen(
-                localDiagnostic = resolution.supportCode,
-                bootstrapState = bootstrapState,
-                onOpenSettings = onOpenSettings,
-            )
-            return
-        }
-        val resolvedCampaign = remember(schedule.campaigns, currentInstant, campaignEngine) {
-            (campaignEngine.resolve(schedule.toCampaignInputs(), currentInstant)
-                as? CampaignResolution.Active)?.campaign
-        }
-        val campaign = remember(resolvedCampaign, qrCodeGenerator) {
-            resolvedCampaign?.let { resolved ->
-                runCatching {
-                    resolved.toQrCampaignUiState(
-                        qrCode = qrCodeGenerator.generate(resolved.httpsUrl),
-                        preview = false,
-                    )
-                }.getOrNull()
-            }
-        }
-        val recoveryCode = (bootstrapState as? SnapshotBootstrapState.Ready)?.recoveryCode
-        MainPrayerDisplay(
-            state = schedule.toPrayerDisplayUiState(
-                resolution = resolution as PrayerTimeResolution.Available,
-            ).copy(supportCode = recoveryCode, campaign = campaign),
+        ConnectedDisplayContent(
+            schedule = schedule,
+            currentInstant = currentInstant,
+            bootstrapState = bootstrapState,
+            campaignEngine = campaignEngine,
+            qrCodeGenerator = qrCodeGenerator,
             onOpenSettings = onOpenSettings,
         )
         return
@@ -218,6 +184,60 @@ private fun DisplayRoute(
     DisplayUnavailableScreen(
         localDiagnostic = localDiagnostic,
         bootstrapState = bootstrapState,
+        onOpenSettings = onOpenSettings,
+    )
+}
+
+@Composable
+internal fun ConnectedDisplayContent(
+    schedule: LocalPrayerSchedule,
+    currentInstant: Instant,
+    bootstrapState: SnapshotBootstrapState,
+    campaignEngine: CampaignEngine,
+    qrCodeGenerator: QrCodeGenerator,
+    onOpenSettings: () -> Unit,
+) {
+    val engine = remember { PrayerTimeEngine() }
+    val timeInput = remember(schedule) { schedule.toTimeEngineInput() }
+    val validationCode = remember(timeInput) { engine.validate(timeInput) }
+    if (validationCode != null) {
+        DisplayUnavailableScreen(
+            localDiagnostic = validationCode,
+            bootstrapState = bootstrapState,
+            onOpenSettings = onOpenSettings,
+        )
+        return
+    }
+    val resolution = remember(timeInput, currentInstant) {
+        engine.resolve(timeInput, currentInstant)
+    }
+    if (resolution is PrayerTimeResolution.Unavailable) {
+        DisplayUnavailableScreen(
+            localDiagnostic = resolution.supportCode,
+            bootstrapState = bootstrapState,
+            onOpenSettings = onOpenSettings,
+        )
+        return
+    }
+    val resolvedCampaign = remember(schedule.campaigns, currentInstant, campaignEngine) {
+        (campaignEngine.resolve(schedule.toCampaignInputs(), currentInstant)
+            as? CampaignResolution.Active)?.campaign
+    }
+    val campaign = remember(resolvedCampaign, qrCodeGenerator) {
+        resolvedCampaign?.let { resolved ->
+            runCatching {
+                resolved.toQrCampaignUiState(
+                    qrCode = qrCodeGenerator.generate(resolved.httpsUrl),
+                    preview = false,
+                )
+            }.getOrNull()
+        }
+    }
+    val recoveryCode = (bootstrapState as? SnapshotBootstrapState.Ready)?.recoveryCode
+    MainPrayerDisplay(
+        state = schedule.toPrayerDisplayUiState(
+            resolution = resolution as PrayerTimeResolution.Available,
+        ).copy(supportCode = recoveryCode, campaign = campaign),
         onOpenSettings = onOpenSettings,
     )
 }

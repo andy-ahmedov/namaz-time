@@ -293,6 +293,17 @@ These are proposals until accepted by the product owner:
   its vendor sleep, energy-saving and process policies remains part of the
   deferred D-004/D-011 physical matrix.
 
+## T019 accelerated offline-rollover record
+
+- `PROPOSAL` — local rollover hardening reuses one immutable synthetic schedule
+  and advances only an injected `Instant`; it performs no network request,
+  source fallback or device-clock mutation.
+- `PROPOSAL` — the seven covered mosque-local dates remain on the connected
+  4K-density prayer display, while the first uncovered date fails closed with
+  the existing bounded coverage diagnostic.
+- `UNKNOWN` — elapsed seven-day stability, memory/thermal behavior, OEM process
+  survival and actual 4K panel output still require the deferred physical soak.
+
 ## Decision template
 
 ```text

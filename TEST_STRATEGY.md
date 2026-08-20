@@ -125,6 +125,13 @@ return. A disposal regression also preserves a pre-existing host flag. This is
 local lifecycle evidence only; OEM power-management behavior remains in the
 physical device matrix.
 
+T019 reuses the connected display resolver with one immutable synthetic local
+schedule and advances an injected instant over seven consecutive mosque-local
+dates at the 4K-density profile. Every covered day retains its date, local
+clock and safe-frame projection; the first uncovered date must replace the
+prayer display with `SCHEDULE_DATE_OUTSIDE_COVERAGE`. This is an accelerated
+deterministic matrix, not elapsed-time, memory, thermal or OEM soak evidence.
+
 ## Physical device tests
 
 Required before pilot:

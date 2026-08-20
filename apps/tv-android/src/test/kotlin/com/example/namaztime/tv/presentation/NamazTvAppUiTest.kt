@@ -27,8 +27,10 @@ import com.example.namaztime.tv.repository.CorruptLocalSnapshotException
 import com.example.namaztime.tv.repository.PrayerScheduleRepository
 import com.example.namaztime.tv.repository.toTimeEngineInput
 import com.example.namaztime.tv.data.snapshot.SnapshotBootstrapState
+import com.example.namaztime.tv.domain.CampaignEngine
 import com.example.namaztime.tv.domain.PrayerTimeEngine
 import com.example.namaztime.tv.domain.PrayerTimeResolution
+import com.example.namaztime.tv.domain.QrCodeGenerator
 import java.io.IOException
 import java.time.Clock
 import java.time.Instant
@@ -270,6 +272,72 @@ class NamazTvAppUiTest {
     @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
     fun mainDisplayFits4kDensityAndKeepsSettingsFocused() {
         assertResponsiveDisplayIsVisible()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun acceleratedOfflineWeekRollsLocalDateAndFailsClosedAfterCoverage() {
+        val localSchedule = schedule().copy(
+            coverageFrom = "2026-08-20",
+            coverageTo = "2026-08-26",
+            days = (20..26).map { day ->
+                LocalPrayerDay(
+                    "2026-08-$day",
+                    "03:14",
+                    "05:23",
+                    "12:08",
+                    "16:45",
+                    "18:51",
+                    "20:58",
+                )
+            },
+        )
+        val currentInstant = mutableStateOf(Instant.parse("2026-08-20T08:00:00Z"))
+        val campaignEngine = CampaignEngine()
+        val qrCodeGenerator = QrCodeGenerator()
+        compose.setContent {
+            NamazTvTheme {
+                ConnectedDisplayContent(
+                    schedule = localSchedule,
+                    currentInstant = currentInstant.value,
+                    bootstrapState = SnapshotBootstrapState.Ready(localSchedule.snapshotId),
+                    campaignEngine = campaignEngine,
+                    qrCodeGenerator = qrCodeGenerator,
+                    onOpenSettings = {},
+                )
+            }
+        }
+
+        (20..26).forEach { day ->
+            compose.runOnIdle {
+                currentInstant.value = Instant.parse("2026-08-${day}T08:00:00Z")
+            }
+            compose.onNodeWithText("$day августа 2026").assertIsDisplayed()
+            compose.onNodeWithText("12:00:00").assertIsDisplayed()
+            compose.onNodeWithTag(DISPLAY_UNAVAILABLE_TAG).assertDoesNotExist()
+
+            val root = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG)
+                .assertIsDisplayed()
+                .getUnclippedBoundsInRoot()
+            val safeContent = compose.onNodeWithTag(MAIN_DISPLAY_SAFE_CONTENT_TAG)
+                .assertIsDisplayed()
+                .getUnclippedBoundsInRoot()
+            val rootWidth = root.right - root.left
+            val rootHeight = root.bottom - root.top
+            assert(safeContent.left - root.left >= rootWidth * 0.04f)
+            assert(root.right - safeContent.right >= rootWidth * 0.04f)
+            assert(safeContent.top - root.top >= rootHeight * 0.04f)
+            assert(root.bottom - safeContent.bottom >= rootHeight * 0.04f)
+        }
+
+        compose.runOnIdle {
+            currentInstant.value = Instant.parse("2026-08-27T08:00:00Z")
+        }
+        compose.onNodeWithText("Prayer schedule unavailable").assertIsDisplayed()
+        compose.onNodeWithText(
+            "Support code: SCHEDULE_DATE_OUTSIDE_COVERAGE",
+        ).assertIsDisplayed()
+        compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG).assertDoesNotExist()
     }
 
     @Test
