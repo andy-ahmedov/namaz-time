@@ -132,6 +132,13 @@ clock and safe-frame projection; the first uncovered date must replace the
 prayer display with `SCHEDULE_DATE_OUTSIDE_COVERAGE`. This is an accelerated
 deterministic matrix, not elapsed-time, memory, thermal or OEM soak evidence.
 
+T020 injects deterministic request clocks into Android manifest sync. Tests
+cover healthy and ±large-skew samples, a backward wall-clock jump, missing or
+malformed `Date`, 200 activation, 304 refresh and file-backed reopen. The Go
+contract test pins `Date` on both 200 and 304 without changing ETag identity.
+Clock health never changes a completed sync result. This does not reproduce a
+bad RTC, TLS failure, reboot or power cut on physical hardware.
+
 ## Physical device tests
 
 Required before pilot:

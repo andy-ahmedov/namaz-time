@@ -138,6 +138,11 @@ Schema-owner DSN используется только отдельной кор
 T013 добавляет bearer/path-scoped privacy-safe heartbeat: PostgreSQL хранит
 только последнее health-состояние и server last-seen, admin list остаётся в
 mosque RBAC, а Android best-effort reporter не влияет на sync/display result.
+T020 добавляет bounded clock-health: Android сравнивает часы только с `Date`
+успешного HTTPS manifest-response, сохраняет результат в локальном checkpoint
+и не меняет ни системное время, ни исходные prayer rows, ни результат валидной
+snapshot activation. Nullable `unknown` пока не отправляется в обязательное
+boolean-поле heartbeat: production assembler/contract не выдумывается.
 T014 добавляет bounded canary cohorts: группа до 100 устройств
 атомарно получает только уже верифицированный snapshot, а rollback
 создаёт новые monotonic manifest versions без частичного commit.

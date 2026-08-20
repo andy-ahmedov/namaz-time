@@ -29,6 +29,13 @@ func TestDeviceReadPathPairsOnceAndServesCacheableImmutableSnapshot(t *testing.T
 	t.Parallel()
 
 	config := validServiceConfig(t)
+	serverTime := time.Date(2026, 8, 20, 12, 0, 0, 0, time.UTC)
+	manifestRequests := 0
+	config.Now = func() time.Time {
+		current := serverTime.Add(time.Duration(manifestRequests) * time.Minute)
+		manifestRequests++
+		return current
+	}
 	snapshot := config.Snapshots[0].Bytes
 	hash, err := hex.DecodeString(config.Snapshots[0].SHA256)
 	if err != nil {
@@ -90,6 +97,9 @@ func TestDeviceReadPathPairsOnceAndServesCacheableImmutableSnapshot(t *testing.T
 	if manifestETag == "" {
 		t.Fatal("manifest ETag is empty")
 	}
+	if manifestResponse.Header.Get("Date") != serverTime.Add(time.Minute).Format(http.TimeFormat) {
+		t.Fatalf("manifest Date = %q", manifestResponse.Header.Get("Date"))
+	}
 	var manifest DeviceManifest
 	decodeJSON(t, manifestResponse.Body, &manifest)
 	if manifest.SnapshotID != "synthetic-android-verification-v1" || manifest.SnapshotSHA256 != hashHex || manifest.SnapshotByteLength != int64(len(snapshot)) || manifest.SigningKeyID != testKeyID {
@@ -98,6 +108,9 @@ func TestDeviceReadPathPairsOnceAndServesCacheableImmutableSnapshot(t *testing.T
 	unchanged := request(t, http.MethodGet, manifestURL, nil, testToken, manifestETag)
 	if unchanged.StatusCode != http.StatusNotModified || unchanged.Body != "" {
 		t.Fatalf("unchanged manifest = %d %q", unchanged.StatusCode, unchanged.Body)
+	}
+	if unchanged.Header.Get("Date") != serverTime.Add(2*time.Minute).Format(http.TimeFormat) {
+		t.Fatalf("unchanged manifest Date = %q", unchanged.Header.Get("Date"))
 	}
 
 	snapshotURL := server.URL + "/v1/snapshots/synthetic-android-verification-v1"

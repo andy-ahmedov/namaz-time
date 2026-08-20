@@ -73,6 +73,7 @@ type ServiceConfig struct {
 	PairingBackend    PairingBackend
 	AdminBackend      AdminFleetBackend
 	BackendTimeout    time.Duration
+	Now               func() time.Time
 }
 
 type DeviceManifest struct {
@@ -114,6 +115,7 @@ type Service struct {
 	pairingBackend PairingBackend
 	adminBackend   AdminFleetBackend
 	backendTimeout time.Duration
+	now            func() time.Time
 }
 
 func NewService(config ServiceConfig) (*Service, error) {
@@ -124,6 +126,10 @@ func NewService(config ServiceConfig) (*Service, error) {
 		mosques:        make(map[string]MosqueIdentity, len(config.PairingFixtures)),
 		pairingBackend: config.PairingBackend,
 		adminBackend:   config.AdminBackend,
+		now:            config.Now,
+	}
+	if service.now == nil {
+		service.now = time.Now
 	}
 	if config.BackendTimeout < 0 || config.BackendTimeout > maximumBackendTimeout {
 		return nil, errors.New("configure pairing: backend timeout is invalid")
@@ -330,6 +336,7 @@ func (s *Service) handlePair(writer http.ResponseWriter, request *http.Request) 
 }
 
 func (s *Service) handleManifest(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Date", s.now().UTC().Format(http.TimeFormat))
 	deviceID := request.PathValue("deviceId")
 	principal, authErr := s.authenticatedDevice(request)
 	if authErr != nil {

@@ -324,6 +324,22 @@ These are proposals until accepted by the product owner:
 - `UNKNOWN` — elapsed seven-day stability, memory/thermal behavior, OEM process
   survival and actual 4K panel output still require the deferred physical soak.
 
+## T020 bounded device-clock-health record
+
+- `PROPOSAL` — the standard `Date` header on a successful authenticated HTTPS
+  manifest response is a bounded operational clock hint, not prayer-source or
+  snapshot authenticity. Hash and Ed25519 signature remain the content trust
+  boundary.
+- `PROPOSAL` — a server instant outside device response receipt by more
+  than five minutes, or a device wall-clock rollback during that request, sets
+  durable `clock_mismatch`; invalid/absent evidence makes no new claim.
+- `PROPOSAL` — nullable clock health cannot be collapsed into the existing
+  heartbeat's required boolean: `unknown` is retained locally until a tri-state
+  contract/runtime assembler is designed. It cannot set OS time, choose a
+  prayer date, block activation or replace the last-known-good snapshot.
+- `UNKNOWN` — RTC errors that prevent TLS, reboot/power-cut recovery and OEM
+  automatic-time behavior require physical-device evidence.
+
 ## Decision template
 
 ```text

@@ -65,6 +65,13 @@ Response:
 - optional `minimum_app_version` and controlled rollout metadata;
 - no prayer rows in the manifest.
 
+Both successful responses carry the standard HTTP `Date` header. The Android
+client may compare this HTTPS-authenticated response time with the device clock
+for a bounded health diagnostic. It is not snapshot/source authenticity, is
+not used to calculate prayer times, and never changes the OS clock or blocks
+last-known-good activation. A missing or malformed header produces no new
+clock-health conclusion.
+
 The manifest and snapshot URL use the same HTTPS origin while the same bearer
 token authenticates both requests. A future CDN must use an explicit host
 allowlist and separate credential design; the client never forwards a bearer

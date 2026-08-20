@@ -54,12 +54,21 @@ paths:
             ETag:
               schema:
                 type: string
+            Date:
+              description: Server response time in IMF-fixdate form; diagnostic only.
+              schema:
+                type: string
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeviceManifest'
         '304':
           description: Manifest unchanged
+          headers:
+            Date:
+              description: Server response time in IMF-fixdate form; diagnostic only.
+              schema:
+                type: string
         '401':
           $ref: '#/components/responses/ErrorResponse'
         '403':

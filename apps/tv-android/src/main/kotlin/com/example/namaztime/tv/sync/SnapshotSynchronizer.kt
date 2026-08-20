@@ -8,7 +8,10 @@ import java.nio.file.AtomicMoveNotSupportedException
 import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.security.MessageDigest
+import java.time.Clock
 import java.time.Instant
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 import com.example.namaztime.tv.BuildConfig
 import kotlinx.coroutines.CancellationException
 import kotlinx.serialization.SerialName
@@ -23,6 +26,7 @@ import kotlinx.serialization.json.JsonObject
 
 private const val MAX_MANIFEST_BYTES = 64 * 1024
 private const val MAX_SNAPSHOT_BYTES = 5 * 1024 * 1024
+private const val CLOCK_SKEW_TOLERANCE_SECONDS = 5 * 60L
 
 @Serializable
 data class DeviceSyncCredentials(
@@ -93,6 +97,9 @@ data class SnapshotSyncCheckpoint(
     val pendingManifest: DeviceSnapshotManifest? = null,
     val lastRejectedSnapshotId: String? = null,
     val lastRejectedCode: String? = null,
+    val clockMismatch: Boolean? = null,
+    val lastServerTime: String? = null,
+    val clockSampledAt: String? = null,
 )
 
 sealed interface SnapshotSyncResult {
@@ -121,6 +128,7 @@ class SnapshotSynchronizer(
     private val activator: SnapshotActivator,
     private val interruptionHook: SnapshotSyncInterruptionHook = SnapshotSyncInterruptionHook {},
     private val currentAppVersion: String = BuildConfig.VERSION_NAME,
+    private val clock: Clock = Clock.systemUTC(),
 ) {
     suspend fun sync(credentials: DeviceSyncCredentials): SnapshotSyncResult {
         if (!credentials.isValid()) return SnapshotSyncResult.Rejected("credentials_invalid")
@@ -143,6 +151,7 @@ class SnapshotSynchronizer(
             return resumePending(checkpoint, pending)
         }
 
+        val requestStartedAt = clock.instant()
         val response = try {
             transport.execute(
                 SyncHttpRequest(
@@ -156,6 +165,15 @@ class SnapshotSynchronizer(
             throw error
         } catch (_: IOException) {
             return SnapshotSyncResult.Retry("manifest_io")
+        }
+        val responseReceivedAt = clock.instant()
+        if (response.statusCode == 200 || response.statusCode == 304) {
+            checkpoint = recordClockSample(
+                checkpoint = checkpoint,
+                response = response,
+                requestStartedAt = requestStartedAt,
+                responseReceivedAt = responseReceivedAt,
+            )
         }
         when (response.statusCode) {
             304 -> return if (checkpoint.acceptedManifestEtag != null && checkpoint.acceptedSnapshotId != null) {
@@ -262,6 +280,29 @@ class SnapshotSynchronizer(
         return activatePending(pending, manifest, snapshotResponse.body)
     }
 
+    private fun recordClockSample(
+        checkpoint: SnapshotSyncCheckpoint,
+        response: SyncHttpResponse,
+        requestStartedAt: Instant,
+        responseReceivedAt: Instant,
+    ): SnapshotSyncCheckpoint {
+        val serverTime = response.header("Date")?.let(::parseHttpDate) ?: return checkpoint
+        val mismatch = responseReceivedAt.isBefore(requestStartedAt) ||
+            serverTime.isBefore(responseReceivedAt.minusSeconds(CLOCK_SKEW_TOLERANCE_SECONDS)) ||
+            serverTime.isAfter(responseReceivedAt.plusSeconds(CLOCK_SKEW_TOLERANCE_SECONDS))
+        val updated = checkpoint.copy(
+            clockMismatch = mismatch,
+            lastServerTime = serverTime.toString(),
+            clockSampledAt = responseReceivedAt.toString(),
+        )
+        try {
+            storage.save(updated)
+        } catch (_: IOException) {
+            // Clock health is best-effort diagnostics and cannot block snapshot sync.
+        }
+        return updated
+    }
+
     private suspend fun resumePending(
         checkpoint: SnapshotSyncCheckpoint,
         manifest: DeviceSnapshotManifest,
@@ -304,6 +345,9 @@ class SnapshotSynchronizer(
                     acceptedSnapshotSha256 = manifest.snapshotSha256,
                     acceptedSnapshotByteLength = manifest.snapshotByteLength,
                     acceptedSigningKeyId = manifest.signingKeyId,
+                    clockMismatch = checkpoint.clockMismatch,
+                    lastServerTime = checkpoint.lastServerTime,
+                    clockSampledAt = checkpoint.clockSampledAt,
                 ),
             )
             storage.deleteStage()
@@ -461,7 +505,12 @@ internal fun DeviceSyncCredentials.provisioningFingerprint(): String {
 private fun SnapshotSyncCheckpoint.hasState(): Boolean =
     provisioningFingerprint != null || acceptedManifestVersion != 0L || acceptedManifestEtag != null ||
         acceptedSnapshotId != null || pendingManifest != null || pendingManifestEtag != null ||
-        lastRejectedSnapshotId != null || lastRejectedCode != null
+        lastRejectedSnapshotId != null || lastRejectedCode != null || clockMismatch != null ||
+        lastServerTime != null || clockSampledAt != null
+
+private fun parseHttpDate(value: String): Instant? = runCatching {
+    ZonedDateTime.parse(value, DateTimeFormatter.RFC_1123_DATE_TIME).toInstant()
+}.getOrNull()
 
 private fun isNamedIanaTimezone(value: String): Boolean = try {
     java.time.ZoneId.getAvailableZoneIds().contains(value) && java.time.ZoneId.of(value).id == value

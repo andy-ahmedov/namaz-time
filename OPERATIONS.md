@@ -42,12 +42,23 @@ Exact thresholds are configurable and approved for the pilot.
 Checks:
 
 - system timezone vs mosque timezone;
-- system time compared to signed server timestamp when online;
+- system time compared to the HTTPS manifest response `Date` when online;
 - monotonic countdown anomalies;
 - large wall-clock jump;
 - NTP/automatic-time setting visible in installation guide.
 
 The app should recalculate display state after clock/timezone broadcasts. It must not require exact-alarm permission just to render a countdown.
+
+T020 records `clock_mismatch` only when a valid manifest `Date` differs from
+local response receipt by more than five minutes, or the wall clock moves
+backward during that request. Missing/malformed evidence does not clear or
+manufacture health. The nullable sample survives process restart, but the
+current required-boolean heartbeat contract cannot represent `unknown`; no
+production mapping is claimed until that contract and its state assembler are
+updated. Sync/activation remains authoritative and unblocked. A clock wrong
+enough to fail TLS certificate validation cannot
+receive this hint; installation guidance and physical wrong-RTC testing remain
+required.
 
 ## Boot and kiosk
 

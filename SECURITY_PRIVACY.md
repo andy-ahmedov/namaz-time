@@ -267,7 +267,7 @@ scraping.
 | TV token leaked | device scope, revocation, no write authority |
 | rollback attack | monotonic policy + signed version/revocation |
 | image decompression bomb | limits + controlled re-encode |
-| wrong device clock | diagnostics + mosque timezone + signed server-time hint |
+| wrong device clock | mosque timezone + diagnostic-only HTTPS `Date`; never changes schedule authenticity or OS time |
 | support bundle leaks secrets | structured allowlist export + redaction tests |
 
 ## Supply chain

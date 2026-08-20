@@ -3,6 +3,9 @@ package com.example.namaztime.tv.sync
 import java.io.IOException
 import java.nio.file.Files
 import java.security.MessageDigest
+import java.time.Clock
+import java.time.Instant
+import java.time.ZoneId
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -48,6 +51,165 @@ class SnapshotSynchronizerTest {
         assertEquals("\"manifest-v1\"", transport.requests.last().ifNoneMatch)
         assertEquals(null, storage.load().pendingManifest)
         assertEquals(1, storage.load().acceptedManifestVersion)
+    }
+
+    @Test
+    fun authenticatedServerDatePersistsClockMismatchWithoutBlockingActivation() = runTest {
+        val snapshot = "signed-snapshot-fixture".encodeToByteArray()
+        val manifest = manifest(snapshot, version = 1, snapshotId = "snapshot-fixture-clock1")
+        val storageRoot = temporaryDirectory()
+        val result = SnapshotSynchronizer(
+            QueueTransport(
+                SyncHttpResponse(
+                    200,
+                    mapOf("ETag" to "\"manifest-clock\"", "Date" to "Thu, 20 Aug 2026 12:00:00 GMT"),
+                    manifest,
+                ),
+                SyncHttpResponse(200, emptyMap(), snapshot),
+            ),
+            FileSnapshotSyncStorage(storageRoot),
+            RecordingActivator(),
+            clock = Clock.fixed(Instant.parse("2026-08-20T13:00:00Z"), ZoneId.of("UTC")),
+        ).sync(credentials)
+
+        assertEquals(SnapshotSyncResult.Updated("snapshot-fixture-clock1", null), result)
+        val reopened = FileSnapshotSyncStorage(storageRoot).load()
+        assertEquals(true, reopened.clockMismatch)
+        assertEquals("2026-08-20T12:00:00Z", reopened.lastServerTime)
+        assertEquals("2026-08-20T13:00:00Z", reopened.clockSampledAt)
+    }
+
+    @Test
+    fun serverAheadSkewAndFiveMinuteBoundaryClassifyDeterministically() = runTest {
+        val snapshot = "signed-snapshot-fixture".encodeToByteArray()
+        val manifest = manifest(snapshot, version = 1, snapshotId = "snapshot-fixture-ahead1")
+        listOf(
+            "2026-08-20T11:00:00Z" to true,
+            "2026-08-20T11:55:00Z" to false,
+            "2026-08-20T11:54:59Z" to true,
+        ).forEach { (deviceTime, expectedMismatch) ->
+            val storage = FileSnapshotSyncStorage(temporaryDirectory())
+            val result = SnapshotSynchronizer(
+                QueueTransport(
+                    SyncHttpResponse(
+                        200,
+                        mapOf("ETag" to "\"manifest-ahead\"", "Date" to "Thu, 20 Aug 2026 12:00:00 GMT"),
+                        manifest,
+                    ),
+                    SyncHttpResponse(200, emptyMap(), snapshot),
+                ),
+                storage,
+                RecordingActivator(),
+                clock = Clock.fixed(Instant.parse(deviceTime), ZoneId.of("UTC")),
+            ).sync(credentials)
+
+            assertTrue(result is SnapshotSyncResult.Updated)
+            assertEquals(expectedMismatch, storage.load().clockMismatch)
+        }
+    }
+
+    @Test
+    fun dateWithinToleranceIsHealthyAnd304CanRefreshClockHealth() = runTest {
+        val snapshot = "signed-snapshot-fixture".encodeToByteArray()
+        val manifest = manifest(snapshot, version = 1, snapshotId = "snapshot-fixture-clock2")
+        val storage = FileSnapshotSyncStorage(temporaryDirectory())
+        val transport = QueueTransport(
+            SyncHttpResponse(
+                200,
+                mapOf("ETag" to "\"manifest-clock\"", "Date" to "Thu, 20 Aug 2026 12:00:00 GMT"),
+                manifest,
+            ),
+            SyncHttpResponse(200, emptyMap(), snapshot),
+            SyncHttpResponse(
+                304,
+                mapOf("Date" to "Thu, 20 Aug 2026 12:10:00 GMT"),
+                byteArrayOf(),
+            ),
+        )
+        val clock = SequenceClock(
+            Instant.parse("2026-08-20T12:03:00Z"),
+            Instant.parse("2026-08-20T12:03:01Z"),
+            Instant.parse("2026-08-20T13:10:00Z"),
+            Instant.parse("2026-08-20T13:10:01Z"),
+        )
+        val synchronizer = SnapshotSynchronizer(transport, storage, RecordingActivator(), clock = clock)
+
+        assertTrue(synchronizer.sync(credentials) is SnapshotSyncResult.Updated)
+        assertEquals(false, storage.load().clockMismatch)
+        assertEquals(SnapshotSyncResult.NotModified("snapshot-fixture-clock2"), synchronizer.sync(credentials))
+        assertEquals(true, storage.load().clockMismatch)
+        assertEquals("2026-08-20T12:10:00Z", storage.load().lastServerTime)
+    }
+
+    @Test
+    fun missingOrMalformedDateStaysUnknownAndBackwardClockIsMismatch() = runTest {
+        val snapshot = "signed-snapshot-fixture".encodeToByteArray()
+        val manifest = manifest(snapshot, version = 1, snapshotId = "snapshot-fixture-clock3")
+        listOf(null, "not-http-date").forEach { date ->
+            val headers = buildMap {
+                put("ETag", "\"manifest-clock\"")
+                if (date != null) put("Date", date)
+            }
+            val storage = FileSnapshotSyncStorage(temporaryDirectory())
+            val result = SnapshotSynchronizer(
+                QueueTransport(
+                    SyncHttpResponse(200, headers, manifest),
+                    SyncHttpResponse(200, emptyMap(), snapshot),
+                ),
+                storage,
+                RecordingActivator(),
+                clock = Clock.fixed(Instant.parse("2036-08-20T12:00:00Z"), ZoneId.of("UTC")),
+            ).sync(credentials)
+            assertTrue(result is SnapshotSyncResult.Updated)
+            assertEquals(null, storage.load().clockMismatch)
+        }
+
+        val backwardStorage = FileSnapshotSyncStorage(temporaryDirectory())
+        val backwardResult = SnapshotSynchronizer(
+            QueueTransport(
+                SyncHttpResponse(
+                    200,
+                    mapOf("ETag" to "\"manifest-clock\"", "Date" to "Thu, 20 Aug 2026 12:00:00 GMT"),
+                    manifest,
+                ),
+                SyncHttpResponse(200, emptyMap(), snapshot),
+            ),
+            backwardStorage,
+            RecordingActivator(),
+            clock = SequenceClock(
+                Instant.parse("2026-08-20T12:00:10Z"),
+                Instant.parse("2026-08-20T11:59:50Z"),
+            ),
+        ).sync(credentials)
+        assertTrue(backwardResult is SnapshotSyncResult.Updated)
+        assertEquals(true, backwardStorage.load().clockMismatch)
+    }
+
+    @Test
+    fun forwardWallClockJumpDuringManifestRequestCannotHideSkew() = runTest {
+        val snapshot = "signed-snapshot-fixture".encodeToByteArray()
+        val manifest = manifest(snapshot, version = 1, snapshotId = "snapshot-fixture-clock4")
+        val storage = FileSnapshotSyncStorage(temporaryDirectory())
+
+        val result = SnapshotSynchronizer(
+            QueueTransport(
+                SyncHttpResponse(
+                    200,
+                    mapOf("ETag" to "\"manifest-clock\"", "Date" to "Thu, 20 Aug 2026 12:00:00 GMT"),
+                    manifest,
+                ),
+                SyncHttpResponse(200, emptyMap(), snapshot),
+            ),
+            storage,
+            RecordingActivator(),
+            clock = SequenceClock(
+                Instant.parse("2026-08-20T12:00:00Z"),
+                Instant.parse("2026-08-20T13:00:00Z"),
+            ),
+        ).sync(credentials)
+
+        assertTrue(result is SnapshotSyncResult.Updated)
+        assertEquals(true, storage.load().clockMismatch)
     }
 
     @Test
@@ -324,6 +486,16 @@ private class QueueTransport(vararg responses: SyncHttpResponse) : DeviceSyncTra
 
 private class ThrowingTransport(private val error: Throwable) : DeviceSyncTransport {
     override suspend fun execute(request: SyncHttpRequest): SyncHttpResponse = throw error
+}
+
+private class SequenceClock(vararg instants: Instant) : Clock() {
+    private val values = ArrayDeque(instants.toList())
+
+    override fun getZone(): ZoneId = ZoneId.of("UTC")
+
+    override fun withZone(zone: ZoneId): Clock = this
+
+    override fun instant(): Instant = values.removeFirstOrNull() ?: error("unexpected clock read")
 }
 
 private fun ByteArray.sha256(): String = MessageDigest.getInstance("SHA-256")

@@ -466,7 +466,13 @@ The domain clock uses mosque timezone, not the device default. The sequence must
 - Store IANA IDs, for example `Europe/Ulyanovsk`.
 - Convert `Instant` to mosque-local date/time at the domain boundary.
 - Detect but do not trust a wrong device timezone.
-- Detect implausible device clock by comparing with signed server time metadata when online; never abruptly alter OS time.
+- Detect implausible device clock by comparing response receipt with the
+  `Date` header on an authenticated HTTPS manifest response. This operational
+  server response time at a bounded tolerance, and reject a wall-clock rollback
+  during the request. This hint is not schedule authenticity: persist
+  `unknown`/healthy/mismatch health,
+  never use it to calculate prayer rows, block last-known-good activation or
+  alter OS time. Snapshot authenticity remains exclusively hash + signature.
 - Schedule date rollover based on mosque timezone.
 - Cache at least 90 future days; annual coverage is preferred.
 

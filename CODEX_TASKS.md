@@ -314,3 +314,32 @@ repository-wide gates pass; the physical seven-day soak remains deferred.
 was separated from its unchanged route ticker so one immutable synthetic local
 schedule could be advanced deterministically across seven named-timezone dates.
 The 4K-density matrix and post-coverage diagnostic pass independent review.
+
+## T020 — bounded device-clock health
+
+**Goal:** detect an implausible Android wall clock when authenticated server
+time is available without coupling schedule display or snapshot activation to
+the diagnostic.
+
+**In scope:** explicit `Date` on 200/304 manifest responses; an injected Android
+request clock; a five-minute response-receipt tolerance; backward-clock
+detection; durable unknown/healthy/mismatch evidence in the provisioning-scoped
+sync checkpoint; explicit preservation of `unknown` rather than collapsing it
+into heartbeat's required boolean; file-backed restart and 200/304 regressions.
+
+**Non-goals:** setting the OS clock, treating HTTP time as source authenticity,
+using network time to calculate prayer rows, blocking last-known-good display,
+NTP/device-owner policy, TLS recovery when RTC makes certificates invalid,
+tri-state heartbeat contract/runtime assembly, power-cut/OEM/runtime claims or
+physical-TV evidence.
+
+**Acceptance:** valid in-range and large forward/backward samples classify
+deterministically; missing/malformed evidence makes no new claim; clock health
+survives checkpoint reopen and refreshes on 304; skew does not prevent a valid
+snapshot activation; Go/Android/repository-wide gates pass.
+
+**Result:** completed locally on 2026-08-20. Successful manifest responses carry
+a body-independent `Date`; Android persists nullable clock health and refreshes
+it on 304 without changing sync outcome. The existing heartbeat payload cannot
+represent `unknown`, so T020 intentionally does not manufacture a boolean or
+claim production heartbeat wiring.
