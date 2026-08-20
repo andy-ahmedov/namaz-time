@@ -74,11 +74,20 @@ Exit condition: a source change cannot reach a TV without validation, approval, 
 | T015 privacy-safe device support bundle | DONE | authenticated mosque-scoped bounded JSON projection from existing device/assignment/latest-health rows; closed OpenAPI contract, uniform isolation, `no-store`, least-privilege PostgreSQL read and forbidden-field regression evidence; no new collection, logs, secrets, URLs or history |
 | T016 PostgreSQL backup and restore drill | DONE | clean-database custom archive restore, corrupt-archive rejection with zero partial tables, exact-schema/auth/current-state/SQLSTATE-55000 append-only verification through a reapplied read-only runtime role, production recovery runbook, full/race/PostgreSQL gates and independent review pass; no production data or RPO/RTO claim |
 
-Following fleet work after T016:
+The independent local fleet foundation is complete through T016. Remaining
+Phase 3 branches are explicitly blocked rather than implemented as alternate
+unsigned content paths:
 
-- remote iqamah/Jumu'ah rules;
-- QR and announcement campaigns;
-- custom background upload pipeline;
+| Future branch | Status | Required decision/dependency |
+|---|---|---|
+| browser admin portal/session | BLOCKED | D-008 plus deployment identity-provider/session model; bearer bootstrap and production credentials must not be invented in Git |
+| remote iqamah/Jumu'ah rules | BLOCKED | mosque policy D-009 and the T010/D-013 approval/signature publication path |
+| QR and announcement campaigns | BLOCKED | destination/approval policy D-010 and the T010/D-013 approval/signature publication path |
+| custom background upload pipeline | BLOCKED | asset custody/type/size/CDN policy plus the T010/D-013 signed publication path |
+
+No Phase 4 work begins at this checkpoint. Physical-TV evidence remains a
+separate deferred acceptance item and does not weaken the completed local
+backend evidence labels.
 
 ## Phase 4 — device reliability
 
