@@ -170,6 +170,13 @@ accepts only a snapshot ID resolved from the verified immutable registry,
 rechecks RBAC in the database transaction, excludes revoked devices and fails
 atomically above the 100-device bound. Devices never choose their own group.
 
+T015 support bundles are generated on demand and never persisted as a second
+diagnostic history. Their closed schema omits device/admin credentials, pairing
+codes, installation keys, capability arrays, snapshot URLs, network/account/
+location identifiers, arbitrary maps and logs. The endpoint is `no-store` and
+uses mosque read RBAC; reported device fields remain labelled separately from
+server receipt/generation time.
+
 ## Analytics/crash reporting
 
 Default proposal: no advertising SDKs. Crash reporting is opt-in per deployment or privacy-reviewed, with:

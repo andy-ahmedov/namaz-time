@@ -227,6 +227,16 @@ unknown-field, idempotency and historical-retry boundaries apply to cohort
 writes. Normal device manifest reads continue to consume only each durable
 per-device assignment.
 
+T015 uses unit tests for server generation time and read-role scoping, HTTP
+tests for authentication, uniform 404, retryable 500, `no-store` and the stable
+schema marker, and the real PostgreSQL suite for the one-device/current
+assignment/latest-health join. The encoded regression rejects the presence of
+device tokens, pairing codes, installation keys, snapshot URLs and arbitrary
+network fields. The API startup integration also reads the bundle through the
+least-privileged runtime database role. The PostgreSQL harness waits for a real
+`SELECT 1` connection before starting tests so an early readiness signal cannot
+race server startup. No schema migration or retention job is introduced.
+
 ## Release evidence
 
 Each release records:

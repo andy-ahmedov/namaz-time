@@ -292,6 +292,20 @@ registry lookup. Assigning a prior verified snapshot is therefore a rollback
 with a newer manifest version, not a downgrade. Failure, an oversized cohort or
 scope mismatch leaves all member assignments unchanged.
 
+### Privacy-safe support bundle (T015)
+
+The support export is a read-only projection, not another telemetry ingest or
+database table. Under existing mosque RBAC, PostgreSQL joins exactly one device,
+its optional durable assignment and its optional latest-only health row. The
+service adds a schema version and server generation time, then returns bounded
+JSON with `no-store`.
+
+The type exposes only a public signing-key identifier and has no fields for
+credentials, installation keys, capabilities,
+snapshot URLs, network/account/location data, arbitrary maps, logs or history.
+Missing assignment/heartbeat becomes an omitted object rather than invented
+values. The projection cannot mutate display, assignment or publication state.
+
 ## Source ingestion pipeline
 
 1. **Retrieve or import.** Store raw bytes unchanged when terms permit, otherwise store immutable metadata plus an approved fixture.

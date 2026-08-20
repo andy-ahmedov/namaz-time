@@ -147,6 +147,55 @@ type RolloutAssignmentResult struct {
 	Assignments  []DeviceAssignment `json:"assignments"`
 }
 
+type DeviceSupportBundle struct {
+	SchemaVersion string             `json:"schema_version"`
+	GeneratedAt   time.Time          `json:"generated_at"`
+	Mosque        SupportMosque      `json:"mosque"`
+	Device        SupportDevice      `json:"device"`
+	Assignment    *SupportAssignment `json:"assignment,omitempty"`
+	Health        *SupportHealth     `json:"health,omitempty"`
+}
+
+type SupportMosque struct {
+	ID       string `json:"id"`
+	Timezone string `json:"timezone"`
+}
+
+type SupportDevice struct {
+	ID           string     `json:"id"`
+	Status       string     `json:"status"`
+	AppVersion   string     `json:"app_version,omitempty"`
+	OSVersion    string     `json:"os_version,omitempty"`
+	Model        string     `json:"model,omitempty"`
+	CreatedAt    time.Time  `json:"created_at"`
+	PairedAt     *time.Time `json:"paired_at,omitempty"`
+	RevokedAt    *time.Time `json:"revoked_at,omitempty"`
+	LastSeenAt   *time.Time `json:"last_seen_at,omitempty"`
+	RolloutGroup string     `json:"rollout_group,omitempty"`
+}
+
+type SupportAssignment struct {
+	ManifestVersion   int64  `json:"manifest_version"`
+	SnapshotID        string `json:"snapshot_id"`
+	SnapshotSHA256    string `json:"snapshot_sha256"`
+	SigningKeyID      string `json:"signing_key_id"`
+	MinimumAppVersion string `json:"minimum_app_version,omitempty"`
+}
+
+type SupportHealth struct {
+	ReportedAt            time.Time        `json:"reported_at"`
+	ReceivedAt            time.Time        `json:"received_at"`
+	ReportedSnapshotID    string           `json:"reported_snapshot_id,omitempty"`
+	SyncStatus            DeviceSyncStatus `json:"sync_status"`
+	CoverageDaysRemaining int              `json:"coverage_days_remaining"`
+	ClockMismatch         bool             `json:"clock_mismatch"`
+	TimezoneMismatch      bool             `json:"timezone_mismatch"`
+	StorageHealth         DeviceHealth     `json:"storage_health"`
+	MemoryHealth          DeviceHealth     `json:"memory_health"`
+	BootMode              DeviceBootMode   `json:"boot_mode"`
+	KioskMode             DeviceKioskMode  `json:"kiosk_mode"`
+}
+
 type AdminRepositoryScope struct {
 	ActorID     string
 	MosqueID    string
@@ -210,6 +259,7 @@ type AdminFleetRepository interface {
 	SetAdminDeviceRolloutGroup(context.Context, AdminRolloutGroupMutation) error
 	ReadAdminRolloutAssignmentRetry(context.Context, AdminRepositoryScope, [sha256.Size]byte, [sha256.Size]byte) (RolloutAssignmentResult, bool, error)
 	AssignAdminRolloutGroup(context.Context, AdminRolloutAssignmentMutation) (RolloutAssignmentResult, error)
+	ReadAdminSupportBundle(context.Context, AdminRepositoryScope, string) (DeviceSupportBundle, error)
 	GetDeviceAssignment(context.Context, string, string) (DeviceAssignment, error)
 }
 
@@ -224,6 +274,7 @@ type AdminFleetBackend interface {
 	SetDeviceRolloutGroup(context.Context, AdminPrincipal, AdminSetRolloutGroupCommand) error
 	RetryRolloutAssignment(context.Context, AdminPrincipal, AdminRolloutAssignmentRetryQuery) (RolloutAssignmentResult, bool, error)
 	AssignRolloutGroup(context.Context, AdminPrincipal, AdminAssignRolloutGroupCommand) (RolloutAssignmentResult, error)
+	GetDeviceSupportBundle(context.Context, AdminPrincipal, string, string) (DeviceSupportBundle, error)
 	GetDeviceAssignment(context.Context, string, string) (DeviceAssignment, error)
 }
 
@@ -368,6 +419,50 @@ func (manager *AdminFleetManager) ListDevices(ctx context.Context, principal Adm
 		return nil, mapAdminRepositoryError("list devices", err)
 	}
 	return append([]FleetDevice(nil), devices...), nil
+}
+
+func (manager *AdminFleetManager) GetDeviceSupportBundle(
+	ctx context.Context,
+	principal AdminPrincipal,
+	mosqueID, deviceID string,
+) (DeviceSupportBundle, error) {
+	if !validIdentifier(mosqueID) || !validIdentifier(deviceID) {
+		return DeviceSupportBundle{}, ErrInvalidAdminRequest
+	}
+	scope, allowed := manager.readScope(principal, mosqueID)
+	if !allowed {
+		return DeviceSupportBundle{}, ErrAdminResourceNotFound
+	}
+	bundle, err := manager.repository.ReadAdminSupportBundle(ctx, scope, deviceID)
+	if err != nil {
+		return DeviceSupportBundle{}, mapAdminRepositoryError("read device support bundle", err)
+	}
+	zone, zoneErr := time.LoadLocation(bundle.Mosque.Timezone)
+	if bundle.Mosque.ID != mosqueID || bundle.Device.ID != deviceID ||
+		zoneErr != nil || zone.String() != bundle.Mosque.Timezone ||
+		strings.HasPrefix(bundle.Mosque.Timezone, "+") || strings.HasPrefix(bundle.Mosque.Timezone, "-") ||
+		(bundle.Device.Status != "pending" && bundle.Device.Status != "active" && bundle.Device.Status != "revoked") {
+		return DeviceSupportBundle{}, errors.New("read device support bundle: repository returned invalid identity")
+	}
+	bundle.SchemaVersion = "device-support-bundle/v1"
+	bundle.GeneratedAt = manager.now().UTC()
+	bundle.Device.CreatedAt = bundle.Device.CreatedAt.UTC()
+	bundle.Device.PairedAt = utcTimePointer(bundle.Device.PairedAt)
+	bundle.Device.RevokedAt = utcTimePointer(bundle.Device.RevokedAt)
+	bundle.Device.LastSeenAt = utcTimePointer(bundle.Device.LastSeenAt)
+	if bundle.Health != nil {
+		bundle.Health.ReportedAt = bundle.Health.ReportedAt.UTC()
+		bundle.Health.ReceivedAt = bundle.Health.ReceivedAt.UTC()
+	}
+	return bundle, nil
+}
+
+func utcTimePointer(value *time.Time) *time.Time {
+	if value == nil {
+		return nil
+	}
+	utc := value.UTC()
+	return &utc
 }
 
 func (manager *AdminFleetManager) RevokeDevice(ctx context.Context, principal AdminPrincipal, command AdminRevokeDeviceCommand) error {

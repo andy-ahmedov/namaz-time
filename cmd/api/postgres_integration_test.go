@@ -257,9 +257,22 @@ func TestRuntimeLoadsRestartSafePostgresPairingWithoutLiteralSecrets(t *testing.
 		Reason: "least privilege rollout", RequestID: "request-runtime-rollout-01",
 		IdempotencyKey: "idem-runtime-rollout-0001",
 	})
-	runtimePool.Close()
-	if err != nil || rollout.DeviceCount != 1 || rollout.Assignments[0].ManifestVersion != 1 {
+	if err != nil || rollout.DeviceCount != 1 || len(rollout.Assignments) != 1 || rollout.Assignments[0].ManifestVersion != 1 {
+		runtimePool.Close()
 		t.Fatalf("least-privilege rollout = %#v, %v", rollout, err)
+	}
+	supportBundle, err := runtimeAdmin.GetDeviceSupportBundle(
+		ctx, runtimePrincipal, "mosque-runtime-0001", issued.DeviceID,
+	)
+	runtimePool.Close()
+	if err != nil {
+		t.Fatalf("read least-privilege support bundle: %v", err)
+	}
+	if supportBundle.Assignment == nil || supportBundle.Assignment.SnapshotID != "synthetic-runtime-snapshot-01" {
+		t.Fatalf("least-privilege support assignment = %#v", supportBundle.Assignment)
+	}
+	if supportBundle.Health == nil || !supportBundle.Health.ClockMismatch {
+		t.Fatalf("least-privilege support health = %#v", supportBundle.Health)
 	}
 	var storedRolloutGroup, storedRolloutSnapshot string
 	if err := pool.QueryRow(ctx, `

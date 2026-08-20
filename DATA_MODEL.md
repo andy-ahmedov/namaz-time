@@ -425,6 +425,12 @@ T014 group rollout expands to these same per-device rows atomically; there is no
 group-level manifest that could bypass device scoping. A rollback points them to
 an older verified `snapshot_id` while still incrementing each manifest version.
 
+T015 adds no table and retains no exported bundle. `device-support-bundle/v1`
+is assembled at request time from one `device`, its optional
+`device_assignment`, its optional latest `device_health` row and mosque
+timezone. Snapshot URL, credentials, installation key, capabilities and raw
+history are intentionally outside the projection.
+
 ### `audit_event`
 
 Append-only:

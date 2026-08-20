@@ -503,6 +503,44 @@ func TestAdminFleetHTTPRequiresAuthScopeAndIdempotency(t *testing.T) {
 	if listed.StatusCode != http.StatusOK || !strings.Contains(listed.Body, "device-production-0001") {
 		t.Fatalf("admin list response = %d %s", listed.StatusCode, listed.Body)
 	}
+	admin.supportBundle = DeviceSupportBundle{
+		SchemaVersion: "device-support-bundle/v1",
+		GeneratedAt:   time.Date(2026, 8, 20, 12, 0, 0, 0, time.UTC),
+		Mosque:        SupportMosque{ID: "synthetic-verification-mosque", Timezone: "Europe/Ulyanovsk"},
+		Device:        SupportDevice{ID: "device-production-0001", Status: "pending"},
+	}
+	support := adminRequest(
+		t, http.MethodGet, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices/device-production-0001/support-bundle",
+		nil, "admin-bearer-token-valid-0001", "",
+	)
+	if support.StatusCode != http.StatusOK || support.Header.Get("Cache-Control") != "no-store" ||
+		!strings.Contains(support.Body, `"schema_version":"device-support-bundle/v1"`) ||
+		strings.Contains(support.Body, "admin-bearer-token-valid-0001") || strings.Contains(support.Body, "snapshot_url") {
+		t.Fatalf("admin support response = %d %s, headers=%v", support.StatusCode, support.Body, support.Header)
+	}
+	if strings.Contains(support.Body, `"assignment"`) || strings.Contains(support.Body, `"health"`) {
+		t.Fatalf("empty optional support objects were invented: %s", support.Body)
+	}
+	if admin.supportMosqueID != "synthetic-verification-mosque" || admin.supportDeviceID != "device-production-0001" {
+		t.Fatalf("admin support scope = %s/%s", admin.supportMosqueID, admin.supportDeviceID)
+	}
+	admin.supportErr = ErrAdminResourceNotFound
+	missingSupport := adminRequest(
+		t, http.MethodGet, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices/device-missing-0001/support-bundle",
+		nil, "admin-bearer-token-valid-0001", "",
+	)
+	if missingSupport.StatusCode != http.StatusNotFound {
+		t.Fatalf("missing support response = %d %s", missingSupport.StatusCode, missingSupport.Body)
+	}
+	admin.supportErr = errors.New("database unavailable")
+	failedSupport := adminRequest(
+		t, http.MethodGet, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices/device-production-0001/support-bundle",
+		nil, "admin-bearer-token-valid-0001", "",
+	)
+	if failedSupport.StatusCode != http.StatusInternalServerError || !strings.Contains(failedSupport.Body, `"retryable":true`) {
+		t.Fatalf("failed support response = %d %s", failedSupport.StatusCode, failedSupport.Body)
+	}
+	admin.supportErr = nil
 
 	revoked := adminRequest(
 		t, http.MethodPost, server.URL+"/v1/admin/mosques/synthetic-verification-mosque/devices/device-production-0001/revoke",
@@ -849,6 +887,10 @@ type recordingHTTPAdminBackend struct {
 	rolloutRetry       RolloutAssignmentResult
 	rolloutRetryFound  bool
 	rolloutErr         error
+	supportBundle      DeviceSupportBundle
+	supportErr         error
+	supportMosqueID    string
+	supportDeviceID    string
 }
 
 func (backend *recordingHTTPAdminBackend) AuthorizeAdminScope(_ AdminPrincipal, _ string, _ bool) error {
@@ -910,6 +952,17 @@ func (backend *recordingHTTPAdminBackend) AssignRolloutGroup(
 ) (RolloutAssignmentResult, error) {
 	backend.rolloutCommand = command
 	return backend.rolloutResult, backend.rolloutErr
+}
+
+func (backend *recordingHTTPAdminBackend) GetDeviceSupportBundle(
+	_ context.Context,
+	_ AdminPrincipal,
+	mosqueID string,
+	deviceID string,
+) (DeviceSupportBundle, error) {
+	backend.supportMosqueID = mosqueID
+	backend.supportDeviceID = deviceID
+	return backend.supportBundle, backend.supportErr
 }
 
 func (backend *recordingHTTPAdminBackend) GetDeviceAssignment(_ context.Context, deviceID, mosqueID string) (DeviceAssignment, error) {

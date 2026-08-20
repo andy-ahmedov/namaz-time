@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -354,6 +355,33 @@ func TestPostgresAdminFleetLifecycleAndIsolation(t *testing.T) {
 	rollbackIssued := rolloutAssignmentForDevice(t, rollback, issued.DeviceID)
 	assertRolloutAuditTransition(t, pool, issued.DeviceID, "canary verified snapshot", secondAssignment, rolloutIssued)
 	assertRolloutAuditTransition(t, pool, issued.DeviceID, "rollback canary to last-known-good", rolloutIssued, rollbackIssued)
+	bundle, err := manager.GetDeviceSupportBundle(t.Context(), viewer, "mosque-ulyanovsk-0001", issued.DeviceID)
+	if err != nil || bundle.SchemaVersion != "device-support-bundle/v1" ||
+		bundle.Device.RolloutGroup != "canary-group-0001" || bundle.Assignment == nil ||
+		bundle.Assignment.ManifestVersion != 4 || bundle.Assignment.SnapshotID != assignment.SnapshotID ||
+		bundle.Health == nil || bundle.Health.SyncStatus != DeviceSyncStatusOK ||
+		bundle.Health.ReportedSnapshotID != "snapshot-device-reported-01" {
+		t.Fatalf("GetDeviceSupportBundle() = %#v, %v", bundle, err)
+	}
+	bundleJSON, err := json.Marshal(bundle)
+	if err != nil {
+		t.Fatalf("encode support bundle: %v", err)
+	}
+	for _, forbidden := range []string{paired.Token, issued.Code, "snapshot_url", "installation_public_key", "wifi"} {
+		if strings.Contains(string(bundleJSON), forbidden) {
+			t.Fatalf("support bundle contains forbidden value/key %q: %s", forbidden, bundleJSON)
+		}
+	}
+	if _, err := manager.GetDeviceSupportBundle(
+		t.Context(), viewer, "mosque-kazan-00000001", issued.DeviceID,
+	); !errors.Is(err, ErrAdminResourceNotFound) {
+		t.Fatalf("cross-mosque GetDeviceSupportBundle() error = %v", err)
+	}
+	if _, err := manager.GetDeviceSupportBundle(
+		t.Context(), viewer, "mosque-ulyanovsk-0001", "device-missing-0001",
+	); !errors.Is(err, ErrAdminResourceNotFound) {
+		t.Fatalf("missing GetDeviceSupportBundle() error = %v", err)
+	}
 	concurrentCommands := []AdminAssignRolloutGroupCommand{rolloutCommand, rolloutCommand}
 	for index := range concurrentCommands {
 		concurrentCommands[index].SnapshotID = fmt.Sprintf("synthetic-concurrent-rollout-%02d", index)

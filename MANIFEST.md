@@ -49,6 +49,7 @@
 - `docs/adr/0005-admin-rbac-idempotency-and-assignments.md`
 - `docs/adr/0006-heartbeat-is-latest-only-and-non-authoritative.md`
 - `docs/adr/0007-canary-rollouts-are-bounded-device-assignments.md`
+- `docs/adr/0008-support-bundles-are-bounded-current-state.md`
 
 ## Technical scaffold
 
@@ -61,7 +62,7 @@
   managers, PostgreSQL v1/v2/v3/v4 migrations/repositories, mosque-scoped fleet
   administration, bearer-scoped manifest/snapshot service and signed immutable
   registry validation, latest-only privacy-safe device health and bounded
-  canary rollout cohorts.
+  canary rollout cohorts, plus a no-store bounded support projection.
 - `cmd/ingestor/` — local manual-fixture inspection CLI; it cannot approve or publish.
 - `internal/domain/` — source-independent snapshot types, validation and contract fixtures.
 - `internal/providers/manual/` — strict raw-artifact + manual CSV candidate provider.

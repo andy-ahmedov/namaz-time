@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Mosque Prayer TV Synchronization API
-  version: 0.5.0
+  version: 0.6.0
   description: >-
     Draft contract for pairing a television, retrieving a small manifest,
     downloading an immutable signed prayer-time snapshot, and reporting
@@ -279,6 +279,28 @@ paths:
         '404':
           $ref: '#/components/responses/ErrorResponse'
         '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/admin/mosques/{mosqueId}/devices/{deviceId}/support-bundle:
+    get:
+      operationId: getFleetDeviceSupportBundle
+      security:
+        - adminBearer: []
+      summary: Read one bounded current-state diagnostic bundle without logs or credentials
+      parameters:
+        - $ref: '#/components/parameters/MosqueId'
+        - $ref: '#/components/parameters/DeviceId'
+      responses:
+        '200':
+          description: Privacy-safe current device support state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceSupportBundle'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
           $ref: '#/components/responses/ErrorResponse'
         '500':
           $ref: '#/components/responses/ErrorResponse'
@@ -570,6 +592,153 @@ components:
           maxItems: 100
           items:
             $ref: '#/components/schemas/DeviceAssignment'
+    DeviceSupportBundle:
+      type: object
+      additionalProperties: false
+      required: [schema_version, generated_at, mosque, device]
+      properties:
+        schema_version:
+          const: device-support-bundle/v1
+        generated_at:
+          type: string
+          format: date-time
+        mosque:
+          $ref: '#/components/schemas/SupportMosque'
+        device:
+          $ref: '#/components/schemas/SupportDevice'
+        assignment:
+          $ref: '#/components/schemas/SupportAssignment'
+        health:
+          $ref: '#/components/schemas/SupportHealth'
+    SupportMosque:
+      type: object
+      additionalProperties: false
+      required: [id, timezone]
+      properties:
+        id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        timezone:
+          type: string
+          minLength: 3
+          maxLength: 64
+          description: Named IANA timezone ID; fixed numeric offsets are invalid.
+    SupportDevice:
+      type: object
+      additionalProperties: false
+      required: [id, status, created_at]
+      properties:
+        id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        status:
+          type: string
+          enum: [pending, active, revoked]
+        app_version:
+          type: string
+          minLength: 1
+          maxLength: 64
+        os_version:
+          type: string
+          minLength: 1
+          maxLength: 128
+        model:
+          type: string
+          minLength: 1
+          maxLength: 240
+        created_at:
+          type: string
+          format: date-time
+        paired_at:
+          type: string
+          format: date-time
+        revoked_at:
+          type: string
+          format: date-time
+        last_seen_at:
+          type: string
+          format: date-time
+        rollout_group:
+          type: string
+          minLength: 8
+          maxLength: 64
+          pattern: '^[A-Za-z0-9][A-Za-z0-9._-]{7,63}$'
+    SupportAssignment:
+      type: object
+      additionalProperties: false
+      required: [manifest_version, snapshot_id, snapshot_sha256, signing_key_id]
+      properties:
+        manifest_version:
+          type: integer
+          format: int64
+          minimum: 1
+        snapshot_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        snapshot_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+        signing_key_id:
+          type: string
+          minLength: 1
+          maxLength: 128
+        minimum_app_version:
+          type: string
+          minLength: 1
+          maxLength: 64
+    SupportHealth:
+      type: object
+      additionalProperties: false
+      required:
+        - reported_at
+        - received_at
+        - sync_status
+        - coverage_days_remaining
+        - clock_mismatch
+        - timezone_mismatch
+        - storage_health
+        - memory_health
+        - boot_mode
+        - kiosk_mode
+      properties:
+        reported_at:
+          type: string
+          format: date-time
+          description: Device-reported and non-authoritative.
+        received_at:
+          type: string
+          format: date-time
+          description: Server-owned receipt timestamp.
+        reported_snapshot_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        sync_status:
+          type: string
+          enum: [ok, offline, transient_failure, rejected_snapshot, auth_failure, unknown]
+        coverage_days_remaining:
+          type: integer
+          minimum: 0
+          maximum: 732
+        clock_mismatch:
+          type: boolean
+        timezone_mismatch:
+          type: boolean
+        storage_health:
+          type: string
+          enum: [ok, low, critical, unknown]
+        memory_health:
+          type: string
+          enum: [ok, low, critical, unknown]
+        boot_mode:
+          type: string
+          enum: [manual, best_effort, managed, unknown]
+        kiosk_mode:
+          type: string
+          enum: [none, best_effort, managed, unknown]
     PairRequest:
       type: object
       additionalProperties: false

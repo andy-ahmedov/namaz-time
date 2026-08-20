@@ -241,3 +241,19 @@ lookup. Rollback submits the previous verified snapshot ID as a new group
 assignment; snapshot versions may move backward, but manifest versions never
 do. Cohort labels select devices only: they cannot approve, sign, upload or
 mutate snapshot content.
+
+## T015 privacy-safe device support bundle
+
+`GET /v1/admin/mosques/{mosqueId}/devices/{deviceId}/support-bundle` returns
+`device-support-bundle/v1` with `Cache-Control: no-store`. It uses the same
+service-admin/mosque read roles as fleet list; a missing, suspended or
+cross-mosque device returns the uniform `404`.
+
+The response is assembled on demand from one device row, its optional current
+assignment and its optional latest health row. It contains mosque ID/timezone,
+bounded device/app/OS/model lifecycle fields, rollout label, snapshot
+ID/SHA-256/signing-key ID/manifest version and allowlisted health. It deliberately
+has no bearer/pairing secret, installation public key, capability list,
+snapshot URL, network/account/location field, arbitrary map, log or history.
+`generated_at` and health `received_at` are server times; `reported_at` and
+`reported_snapshot_id` remain explicitly non-authoritative device claims.

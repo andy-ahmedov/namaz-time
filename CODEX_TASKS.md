@@ -174,3 +174,24 @@ artifacts; PostgreSQL integration proves atomic multi-device assignment,
 idempotent retry, deterministic lock order, bounded group size, monotonic
 rollback and migration v4↔v3; manifest reads expose only each device's durable
 assignment; full/race/PostgreSQL gates pass.
+
+## T015 — privacy-safe device support bundle
+
+**Goal:** give an authorized operator one bounded, structured diagnostic export
+without collecting new telemetry or exposing credentials/history.
+
+**In scope:** mosque-scoped admin read endpoint; server-generated bundle schema;
+device/app/OS/model/lifecycle; mosque timezone; current durable assignment
+identity/hash/key/version; latest-only heartbeat projection; rollout group;
+`no-store` response and explicit reported-vs-server timestamp semantics.
+
+**Non-goals:** device or backend logs, crash dumps, IP/MAC/SSID/BSSID, accounts,
+location, installed apps, arbitrary key/value diagnostics, heartbeat history,
+tokens/pairing codes, snapshot URLs, support upload, dashboard UI, remote
+commands, or physical-TV validation.
+
+**Acceptance:** viewer/support and admin roles can read only their mosque;
+missing/cross-mosque devices share `404`; PostgreSQL integration proves the
+bundle is assembled only from current bounded rows and contains no secret/URL;
+HTTP/OpenAPI tests prove strict authentication, `no-store`, stable schema and
+backend error handling; full/race/PostgreSQL gates pass.

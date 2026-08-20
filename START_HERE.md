@@ -86,8 +86,9 @@ production pairing основу на PostgreSQL; T012 строит поверх 
 admin auth, mosque-scoped RBAC и idempotent fleet API. T013 добавляет latest-only
 privacy-safe heartbeat и server last-seen без зависимости display/sync от
 телеметрии. T014 добавляет атомарную canary/rollback-раскатку уже
-верифицированных snapshots на bounded device cohorts. T009 использует
-только инъецируемый
+верифицированных snapshots на bounded device cohorts.
+T015 добавляет безопасный current-state support bundle без нового сбора
+или истории. T009 использует только инъецируемый
 public-key trust store и test fixture: production key/credentials в APK и Git
 не добавлены. T010 остаётся заблокирован на D-002, полном годовом источнике,
 D-013 и отдельной физической TV/ADB canary/rollback-приёмке.

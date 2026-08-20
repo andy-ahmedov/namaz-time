@@ -16,14 +16,23 @@ docker run --rm --detach \
   --env POSTGRES_PASSWORD=local-integration-only \
   postgres:18-alpine >/dev/null
 
+database_ready() {
+  docker exec "${container_name}" psql \
+    --username namaz_time_test \
+    --dbname namaz_time_test \
+    --no-psqlrc \
+    --tuples-only \
+    --command 'SELECT 1' >/dev/null 2>&1
+}
+
 for _ in $(seq 1 60); do
-  if docker exec "${container_name}" pg_isready --username namaz_time_test --dbname namaz_time_test >/dev/null 2>&1; then
+  if database_ready; then
     break
   fi
   sleep 0.25
 done
 
-if ! docker exec "${container_name}" pg_isready --username namaz_time_test --dbname namaz_time_test >/dev/null 2>&1; then
+if ! database_ready; then
   echo "PostgreSQL integration container did not become ready" >&2
   exit 1
 fi

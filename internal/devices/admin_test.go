@@ -238,6 +238,41 @@ func TestAdminFleetManagerBindsBoundedRolloutCohort(t *testing.T) {
 	}
 }
 
+func TestAdminFleetManagerBuildsMosqueScopedSupportBundle(t *testing.T) {
+	t.Parallel()
+
+	repository := newRecordingAdminRepository()
+	repository.supportBundle = DeviceSupportBundle{
+		Mosque: SupportMosque{ID: "mosque-ulyanovsk-0001", Timezone: "Europe/Ulyanovsk"},
+		Device: SupportDevice{ID: "device-display-0001", Status: "active"},
+		Assignment: &SupportAssignment{
+			ManifestVersion: 3, SnapshotID: "synthetic-android-verification-v1",
+			SnapshotSHA256: "5b55f00294077efcae22e4ff48fc44aca352f25a26abc68a819caa3593fa674d",
+			SigningKeyID:   "phase1-fixture-key-2026-08",
+		},
+	}
+	manager := mustAdminFleetManager(t, repository)
+	viewer := AdminPrincipal{
+		ActorID: "actor-viewer-support-01",
+		Memberships: []AdminMembership{{
+			MosqueID: "mosque-ulyanovsk-0001", Role: AdminRoleViewerSupport,
+		}},
+	}
+	bundle, err := manager.GetDeviceSupportBundle(
+		t.Context(), viewer, "mosque-ulyanovsk-0001", "device-display-0001",
+	)
+	if err != nil || bundle.SchemaVersion != "device-support-bundle/v1" ||
+		bundle.GeneratedAt != time.Date(2026, 8, 20, 12, 0, 0, 0, time.UTC) ||
+		bundle.Assignment == nil || bundle.Assignment.SnapshotID != "synthetic-android-verification-v1" {
+		t.Fatalf("GetDeviceSupportBundle() = %#v, %v", bundle, err)
+	}
+	if _, err := manager.GetDeviceSupportBundle(
+		t.Context(), viewer, "mosque-kazan-00000001", "device-display-0001",
+	); !errors.Is(err, ErrAdminResourceNotFound) {
+		t.Fatalf("cross-mosque GetDeviceSupportBundle() error = %v", err)
+	}
+}
+
 func mustAdminFleetManager(t *testing.T, repository AdminFleetRepository) *AdminFleetManager {
 	t.Helper()
 	manager, err := NewAdminFleetManager(AdminFleetManagerConfig{
@@ -265,6 +300,7 @@ type recordingAdminRepository struct {
 	revocationRows          int
 	lastAssignCommand       AdminAssignDeviceCommand
 	rolloutResult           RolloutAssignmentResult
+	supportBundle           DeviceSupportBundle
 }
 
 type adminPairingFixture struct {
@@ -378,4 +414,12 @@ func (repository *recordingAdminRepository) AssignAdminRolloutGroup(
 	_ AdminRolloutAssignmentMutation,
 ) (RolloutAssignmentResult, error) {
 	return repository.rolloutResult, nil
+}
+
+func (repository *recordingAdminRepository) ReadAdminSupportBundle(
+	_ context.Context,
+	_ AdminRepositoryScope,
+	_ string,
+) (DeviceSupportBundle, error) {
+	return repository.supportBundle, nil
 }

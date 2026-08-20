@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 )
@@ -185,6 +186,91 @@ func (repository *PostgresPairingRepository) ListAdminDevices(ctx context.Contex
 		return nil, fmt.Errorf("admin list devices: commit read: %w", err)
 	}
 	return devices, nil
+}
+
+func (repository *PostgresPairingRepository) ReadAdminSupportBundle(
+	ctx context.Context,
+	scope AdminRepositoryScope,
+	deviceID string,
+) (DeviceSupportBundle, error) {
+	tx, err := repository.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return DeviceSupportBundle{}, fmt.Errorf("admin support bundle: begin transaction: %w", err)
+	}
+	defer rollbackTransaction(tx)
+	if err := authorizeAdminScope(ctx, tx, scope, false); err != nil {
+		return DeviceSupportBundle{}, err
+	}
+	var bundle DeviceSupportBundle
+	var manifestVersion *int64
+	var snapshotID, snapshotSHA256, signingKeyID, minimumAppVersion *string
+	var reportedAt, receivedAt *time.Time
+	var reportedSnapshotID, syncStatus, storageHealth, memoryHealth, bootMode, kioskMode *string
+	var coverageDaysRemaining *int
+	var clockMismatch, timezoneMismatch *bool
+	err = tx.QueryRow(ctx, `
+		SELECT m.id, m.timezone_id,
+		       d.id, d.status, COALESCE(d.app_version, ''), COALESCE(d.os_version, ''),
+		       COALESCE(d.model, ''), d.created_at, d.paired_at, d.revoked_at,
+		       d.last_seen_at, COALESCE(d.rollout_group, ''),
+		       a.manifest_version, a.snapshot_id, a.snapshot_sha256, a.signing_key_id,
+		       a.minimum_app_version,
+		       h.reported_at, h.received_at, h.reported_snapshot_id, h.sync_status,
+		       h.coverage_days_remaining, h.clock_mismatch, h.timezone_mismatch,
+		       h.storage_health, h.memory_health, h.boot_mode, h.kiosk_mode
+		FROM devices d
+		JOIN mosques m ON m.id = d.mosque_id
+		LEFT JOIN device_assignments a ON a.device_id = d.id AND a.mosque_id = d.mosque_id
+		LEFT JOIN device_health h ON h.device_id = d.id AND h.mosque_id = d.mosque_id
+		WHERE d.id = $1 AND d.mosque_id = $2 AND m.status = 'active'`, deviceID, scope.MosqueID).Scan(
+		&bundle.Mosque.ID, &bundle.Mosque.Timezone,
+		&bundle.Device.ID, &bundle.Device.Status, &bundle.Device.AppVersion, &bundle.Device.OSVersion,
+		&bundle.Device.Model, &bundle.Device.CreatedAt, &bundle.Device.PairedAt, &bundle.Device.RevokedAt,
+		&bundle.Device.LastSeenAt, &bundle.Device.RolloutGroup,
+		&manifestVersion, &snapshotID, &snapshotSHA256, &signingKeyID, &minimumAppVersion,
+		&reportedAt, &receivedAt, &reportedSnapshotID, &syncStatus,
+		&coverageDaysRemaining, &clockMismatch, &timezoneMismatch,
+		&storageHealth, &memoryHealth, &bootMode, &kioskMode,
+	)
+	if errors.Is(err, pgx.ErrNoRows) {
+		return DeviceSupportBundle{}, ErrAdminResourceNotFound
+	}
+	if err != nil {
+		return DeviceSupportBundle{}, fmt.Errorf("admin support bundle: read current state: %w", err)
+	}
+	if manifestVersion != nil {
+		if snapshotID == nil || snapshotSHA256 == nil || signingKeyID == nil {
+			return DeviceSupportBundle{}, errors.New("admin support bundle: assignment projection is incomplete")
+		}
+		bundle.Assignment = &SupportAssignment{
+			ManifestVersion: *manifestVersion, SnapshotID: *snapshotID,
+			SnapshotSHA256: *snapshotSHA256, SigningKeyID: *signingKeyID,
+		}
+		if minimumAppVersion != nil {
+			bundle.Assignment.MinimumAppVersion = *minimumAppVersion
+		}
+	}
+	if reportedAt != nil {
+		if receivedAt == nil || syncStatus == nil || coverageDaysRemaining == nil ||
+			clockMismatch == nil || timezoneMismatch == nil || storageHealth == nil ||
+			memoryHealth == nil || bootMode == nil || kioskMode == nil {
+			return DeviceSupportBundle{}, errors.New("admin support bundle: health projection is incomplete")
+		}
+		bundle.Health = &SupportHealth{
+			ReportedAt: *reportedAt, ReceivedAt: *receivedAt,
+			SyncStatus: DeviceSyncStatus(*syncStatus), CoverageDaysRemaining: *coverageDaysRemaining,
+			ClockMismatch: *clockMismatch, TimezoneMismatch: *timezoneMismatch,
+			StorageHealth: DeviceHealth(*storageHealth), MemoryHealth: DeviceHealth(*memoryHealth),
+			BootMode: DeviceBootMode(*bootMode), KioskMode: DeviceKioskMode(*kioskMode),
+		}
+		if reportedSnapshotID != nil {
+			bundle.Health.ReportedSnapshotID = *reportedSnapshotID
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return DeviceSupportBundle{}, fmt.Errorf("admin support bundle: commit read: %w", err)
+	}
+	return bundle, nil
 }
 
 func (repository *PostgresPairingRepository) RevokeAdminDevice(ctx context.Context, mutation AdminRevocationMutation) error {

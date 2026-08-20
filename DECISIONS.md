@@ -228,6 +228,20 @@ These are proposals until accepted by the product owner:
   reproduced locally in disposable PostgreSQL 18. This is controlled backend
   evidence, not a production rollout or physical-TV canary.
 
+## T015 support-bundle record
+
+- `PROPOSAL` — `device-support-bundle/v1` is an on-demand bounded projection of
+  existing device, current assignment and latest health state; it is not stored
+  as new history and collects nothing from the TV.
+- `PROPOSAL` — the closed type excludes all credentials, pairing codes,
+  installation keys, capabilities, snapshot URLs, network/account/location
+  identifiers, arbitrary maps and logs.
+- `PROPOSAL` — existing service/mosque read RBAC and uniform not-found behavior
+  apply; responses are `no-store` and cannot mutate fleet/display state.
+- `CONFIRMED_RUNTIME` — scoped current-state assembly and forbidden-field
+  absence were reproduced locally against disposable PostgreSQL 18. This does
+  not represent a production support workflow or physical-TV export.
+
 ## Decision template
 
 ```text

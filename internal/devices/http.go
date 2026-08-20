@@ -229,6 +229,7 @@ func (s *Service) routes() http.Handler {
 	mux.HandleFunc("PUT /v1/admin/mosques/{mosqueId}/devices/{deviceId}/assignment", s.handleAdminAssignDevice)
 	mux.HandleFunc("PUT /v1/admin/mosques/{mosqueId}/devices/{deviceId}/rollout-group", s.handleAdminSetRolloutGroup)
 	mux.HandleFunc("PUT /v1/admin/mosques/{mosqueId}/rollout-groups/{groupId}/assignment", s.handleAdminAssignRolloutGroup)
+	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/devices/{deviceId}/support-bundle", s.handleAdminDeviceSupportBundle)
 	return securityHeaders(mux)
 }
 
@@ -556,6 +557,24 @@ func (s *Service) handleAdminListDevices(writer http.ResponseWriter, request *ht
 	writeJSON(writer, http.StatusOK, struct {
 		Devices []FleetDevice `json:"devices"`
 	}{Devices: devices})
+}
+
+func (s *Service) handleAdminDeviceSupportBundle(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	bundle, err := s.adminBackend.GetDeviceSupportBundle(
+		backendContext, principal, request.PathValue("mosqueId"), request.PathValue("deviceId"),
+	)
+	if err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	writeJSON(writer, http.StatusOK, bundle)
 }
 
 func (s *Service) handleAdminRevokeDevice(writer http.ResponseWriter, request *http.Request) {

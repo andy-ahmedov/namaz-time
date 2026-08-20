@@ -135,5 +135,8 @@ mosque RBAC, а Android best-effort reporter не влияет на sync/display
 T014 добавляет bounded canary cohorts: группа до 100 устройств
 атомарно получает только уже верифицированный snapshot, а rollback
 создаёт новые monotonic manifest versions без частичного commit.
+T015 даёт mosque-scoped `device-support-bundle/v1`: только текущие
+device/assignment/latest-health поля, `no-store`, без secrets, URLs,
+сетевых identifiers, логов и новой истории.
 Runtime-проверка на физическом Android TV/box ещё не выполнена и не
 подменяется Robolectric-тестом.

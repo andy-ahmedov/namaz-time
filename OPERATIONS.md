@@ -287,21 +287,23 @@ reason/idempotency key; verify every returned manifest version increased. A
 `409 rollout_group_too_large` or any other failure means no member assignment
 was changed. Physical activation evidence is still required for production.
 
-## Device support bundle
+## T015 device support bundle
 
-Structured JSON/text only:
+An authorized fleet reader can request one `device-support-bundle/v1` JSON
+document from the device support endpoint. The response is `no-store`, is not
+persisted as a separate export/history, and contains only:
 
-- app build;
-- model/OS;
-- timezone/clock flags;
-- active/previous snapshot IDs and hashes;
-- last sync status/timestamps;
-- coverage;
-- free storage/memory bucket;
-- boot/kiosk state;
-- last bounded error codes.
+- mosque ID and IANA timezone;
+- device lifecycle, app/model/OS, server last-seen and rollout label;
+- current manifest version, snapshot ID/SHA-256/signing-key ID/minimum app version;
+- optional latest reported/received times, reported snapshot, sync/coverage,
+  clock/timezone flags and storage/memory/boot/kiosk buckets.
 
-No auth tokens, SSID/BSSID, precise GPS, raw external source documents or user account secrets.
+Treat `reported_at` and `reported_snapshot_id` as device claims; only
+`generated_at`, `received_at` and `last_seen_at` are server-owned. Do not copy
+bearer/admin tokens into tickets. The schema cannot contain pairing codes,
+installation keys, capability lists, snapshot URLs, IP/MAC/SSID/BSSID, precise
+location, accounts, installed apps, arbitrary maps, logs or raw source data.
 
 ## Monitoring and SLO proposals
 
