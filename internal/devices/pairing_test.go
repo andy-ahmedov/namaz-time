@@ -202,6 +202,50 @@ func TestPairingManagerRevocationKeepsMosqueScope(t *testing.T) {
 	}
 }
 
+func TestPairingManagerRecordsAllowlistedHeartbeatWithServerTime(t *testing.T) {
+	t.Parallel()
+
+	repository := &recordingPairingRepository{}
+	manager := mustPairingManager(t, repository)
+	principal := DevicePrincipal{
+		DeviceID: "device-display-0001",
+		Mosque: MosqueIdentity{
+			ID: "mosque-ulyanovsk-0001", Name: "Second Cathedral Mosque", Timezone: "Europe/Ulyanovsk",
+		},
+	}
+	report := DeviceHeartbeatReport{
+		SentAt:     time.Date(2026, 8, 20, 13, 0, 0, 0, time.UTC),
+		AppVersion: "0.3.0-shell", OSVersion: "35", Model: "Android TV",
+		ActiveSnapshotID: "synthetic-android-verification-v1",
+		SyncStatus:       DeviceSyncStatusTransientFailure, CoverageDaysRemaining: 12,
+		StorageHealth: DeviceHealthLow, MemoryHealth: DeviceHealthOK,
+		BootMode: DeviceBootModeBestEffort, KioskMode: DeviceKioskModeNone,
+	}
+	if err := manager.Heartbeat(t.Context(), principal, report); err != nil {
+		t.Fatalf("Heartbeat() error = %v", err)
+	}
+	if repository.heartbeat.DeviceID != principal.DeviceID ||
+		repository.heartbeat.MosqueID != principal.Mosque.ID ||
+		repository.heartbeat.ReceivedAt != time.Date(2026, 8, 20, 12, 0, 0, 0, time.UTC) ||
+		!repository.heartbeat.ClockMismatch {
+		t.Fatalf("stored heartbeat = %#v", repository.heartbeat)
+	}
+
+	report.SentAt = time.Date(2200, 1, 1, 0, 0, 0, 0, time.UTC)
+	if err := manager.Heartbeat(t.Context(), principal, report); err != nil {
+		t.Fatalf("Heartbeat(future device clock) error = %v", err)
+	}
+	if !repository.heartbeat.ClockMismatch {
+		t.Fatal("future device clock did not force clock mismatch")
+	}
+
+	invalid := report
+	invalid.SyncStatus = "private_failure_detail"
+	if err := manager.Heartbeat(t.Context(), principal, invalid); !errors.Is(err, ErrInvalidHeartbeat) {
+		t.Fatalf("Heartbeat(invalid) error = %v", err)
+	}
+}
+
 func TestPostgresTransportPolicyRejectsUnauthenticatedRemoteTLS(t *testing.T) {
 	t.Parallel()
 
@@ -260,6 +304,7 @@ type recordingPairingRepository struct {
 	authenticatedHash [sha256.Size]byte
 	authenticated     DevicePrincipal
 	revoked           DeviceRevocation
+	heartbeat         DeviceHeartbeat
 }
 
 func (repository *recordingPairingRepository) CreatePairing(_ context.Context, record PairingRecord) error {
@@ -279,6 +324,11 @@ func (repository *recordingPairingRepository) AuthenticateDevice(_ context.Conte
 
 func (repository *recordingPairingRepository) RevokeDevice(_ context.Context, revocation DeviceRevocation) error {
 	repository.revoked = revocation
+	return nil
+}
+
+func (repository *recordingPairingRepository) RecordHeartbeat(_ context.Context, heartbeat DeviceHeartbeat) error {
+	repository.heartbeat = heartbeat
 	return nil
 }
 

@@ -40,17 +40,27 @@ type AdminPrincipal struct {
 }
 
 type FleetDevice struct {
-	DeviceID        string     `json:"device_id"`
-	MosqueID        string     `json:"mosque_id"`
-	Status          string     `json:"status"`
-	AppVersion      string     `json:"app_version,omitempty"`
-	OSVersion       string     `json:"os_version,omitempty"`
-	Model           string     `json:"model,omitempty"`
-	CreatedAt       time.Time  `json:"created_at"`
-	PairedAt        *time.Time `json:"paired_at,omitempty"`
-	RevokedAt       *time.Time `json:"revoked_at,omitempty"`
-	SnapshotID      string     `json:"snapshot_id,omitempty"`
-	ManifestVersion int64      `json:"manifest_version,omitempty"`
+	DeviceID              string           `json:"device_id"`
+	MosqueID              string           `json:"mosque_id"`
+	Status                string           `json:"status"`
+	AppVersion            string           `json:"app_version,omitempty"`
+	OSVersion             string           `json:"os_version,omitempty"`
+	Model                 string           `json:"model,omitempty"`
+	CreatedAt             time.Time        `json:"created_at"`
+	PairedAt              *time.Time       `json:"paired_at,omitempty"`
+	RevokedAt             *time.Time       `json:"revoked_at,omitempty"`
+	SnapshotID            string           `json:"snapshot_id,omitempty"`
+	ManifestVersion       int64            `json:"manifest_version,omitempty"`
+	LastSeenAt            *time.Time       `json:"last_seen_at,omitempty"`
+	ReportedSnapshotID    string           `json:"reported_snapshot_id,omitempty"`
+	SyncStatus            DeviceSyncStatus `json:"sync_status,omitempty"`
+	CoverageDaysRemaining *int             `json:"coverage_days_remaining,omitempty"`
+	ClockMismatch         *bool            `json:"clock_mismatch,omitempty"`
+	TimezoneMismatch      *bool            `json:"timezone_mismatch,omitempty"`
+	StorageHealth         DeviceHealth     `json:"storage_health,omitempty"`
+	MemoryHealth          DeviceHealth     `json:"memory_health,omitempty"`
+	BootMode              DeviceBootMode   `json:"boot_mode,omitempty"`
+	KioskMode             DeviceKioskMode  `json:"kiosk_mode,omitempty"`
 }
 
 type AdminIssuePairingCommand struct {

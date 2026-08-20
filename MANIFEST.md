@@ -47,6 +47,7 @@
 - `docs/adr/0003-canonical-snapshot-signatures.md`
 - `docs/adr/0004-production-pairing-and-fleet-scope.md`
 - `docs/adr/0005-admin-rbac-idempotency-and-assignments.md`
+- `docs/adr/0006-heartbeat-is-latest-only-and-non-authoritative.md`
 
 ## Technical scaffold
 
@@ -56,9 +57,9 @@
 - `cmd/migrate/` — short-lived explicit-target PostgreSQL schema migration
   command; schema-owner credentials never enter the API process.
 - `internal/devices/` — strict pairing fixture, production pairing/admin
-  managers, PostgreSQL v1/v2 migrations/repositories, mosque-scoped fleet
+  managers, PostgreSQL v1/v2/v3 migrations/repositories, mosque-scoped fleet
   administration, bearer-scoped manifest/snapshot service and signed immutable
-  registry validation.
+  registry validation, plus latest-only privacy-safe device health.
 - `cmd/ingestor/` — local manual-fixture inspection CLI; it cannot approve or publish.
 - `internal/domain/` — source-independent snapshot types, validation and contract fixtures.
 - `internal/providers/manual/` — strict raw-artifact + manual CSV candidate provider.
@@ -73,7 +74,8 @@
   before the atomic Room importer can accept them. T009 adds encrypted device
   provisioning, paired-mosque binding, same-origin bounded HTTPS,
   provisioning-scoped durable stage/quarantine/checkpoint, WorkManager
-  scheduling and authenticated rollback/recovery tests.
+  scheduling and authenticated rollback/recovery tests. T013 adds the strict
+  best-effort heartbeat client without display-state coupling.
 - `.github/workflows/ci.yml` — documentation, Go and Android CI gates.
 
 ## Quality, security and operations

@@ -32,6 +32,7 @@ var (
 	ErrDeviceUnauthorized    = errors.New("device unauthorized")
 	ErrDeviceNotFound        = errors.New("device not found")
 	ErrMosqueNotFound        = errors.New("mosque not found")
+	ErrInvalidHeartbeat      = errors.New("invalid device heartbeat")
 )
 
 type DeviceInfo struct {
@@ -61,11 +62,74 @@ type PairingRepository interface {
 	RedeemPairing(context.Context, PairingRedemption) (PairingDecision, error)
 	AuthenticateDevice(context.Context, [sha256.Size]byte) (DevicePrincipal, error)
 	RevokeDevice(context.Context, DeviceRevocation) error
+	RecordHeartbeat(context.Context, DeviceHeartbeat) error
 }
 
 type PairingBackend interface {
 	Pair(context.Context, PairingAttempt) (PairingProvisioning, error)
 	Authenticate(context.Context, string) (DevicePrincipal, error)
+	Heartbeat(context.Context, DevicePrincipal, DeviceHeartbeatReport) error
+}
+
+type DeviceSyncStatus string
+
+const (
+	DeviceSyncStatusOK               DeviceSyncStatus = "ok"
+	DeviceSyncStatusOffline          DeviceSyncStatus = "offline"
+	DeviceSyncStatusTransientFailure DeviceSyncStatus = "transient_failure"
+	DeviceSyncStatusRejectedSnapshot DeviceSyncStatus = "rejected_snapshot"
+	DeviceSyncStatusAuthFailure      DeviceSyncStatus = "auth_failure"
+	DeviceSyncStatusUnknown          DeviceSyncStatus = "unknown"
+)
+
+type DeviceHealth string
+
+const (
+	DeviceHealthOK       DeviceHealth = "ok"
+	DeviceHealthLow      DeviceHealth = "low"
+	DeviceHealthCritical DeviceHealth = "critical"
+	DeviceHealthUnknown  DeviceHealth = "unknown"
+)
+
+type DeviceBootMode string
+
+const (
+	DeviceBootModeManual     DeviceBootMode = "manual"
+	DeviceBootModeBestEffort DeviceBootMode = "best_effort"
+	DeviceBootModeManaged    DeviceBootMode = "managed"
+	DeviceBootModeUnknown    DeviceBootMode = "unknown"
+)
+
+type DeviceKioskMode string
+
+const (
+	DeviceKioskModeNone       DeviceKioskMode = "none"
+	DeviceKioskModeBestEffort DeviceKioskMode = "best_effort"
+	DeviceKioskModeManaged    DeviceKioskMode = "managed"
+	DeviceKioskModeUnknown    DeviceKioskMode = "unknown"
+)
+
+type DeviceHeartbeatReport struct {
+	SentAt                time.Time        `json:"sent_at"`
+	AppVersion            string           `json:"app_version"`
+	OSVersion             string           `json:"os_version"`
+	Model                 string           `json:"model"`
+	ActiveSnapshotID      string           `json:"active_snapshot_id"`
+	SyncStatus            DeviceSyncStatus `json:"sync_status"`
+	CoverageDaysRemaining int              `json:"coverage_days_remaining"`
+	ClockMismatch         bool             `json:"clock_mismatch"`
+	TimezoneMismatch      bool             `json:"timezone_mismatch"`
+	StorageHealth         DeviceHealth     `json:"storage_health"`
+	MemoryHealth          DeviceHealth     `json:"memory_health"`
+	BootMode              DeviceBootMode   `json:"boot_mode"`
+	KioskMode             DeviceKioskMode  `json:"kiosk_mode"`
+}
+
+type DeviceHeartbeat struct {
+	DeviceHeartbeatReport
+	DeviceID   string
+	MosqueID   string
+	ReceivedAt time.Time
 }
 
 type PairingRecord struct {
@@ -194,6 +258,28 @@ func (manager *PairingManager) Close() {
 	if closer, ok := manager.repository.(interface{ Close() }); ok {
 		closer.Close()
 	}
+}
+
+func (manager *PairingManager) Heartbeat(ctx context.Context, principal DevicePrincipal, report DeviceHeartbeatReport) error {
+	if validateDevicePrincipal(principal) != nil || !validHeartbeatReport(report) {
+		return ErrInvalidHeartbeat
+	}
+	receivedAt := manager.now().UTC()
+	report.SentAt = report.SentAt.UTC()
+	if delta := report.SentAt.Sub(receivedAt); delta > 15*time.Minute || delta < -15*time.Minute {
+		report.ClockMismatch = true
+	}
+	err := manager.repository.RecordHeartbeat(ctx, DeviceHeartbeat{
+		DeviceHeartbeatReport: report,
+		DeviceID:              principal.DeviceID, MosqueID: principal.Mosque.ID, ReceivedAt: receivedAt,
+	})
+	if errors.Is(err, ErrDeviceUnauthorized) {
+		return ErrDeviceUnauthorized
+	}
+	if err != nil {
+		return fmt.Errorf("record device heartbeat: %w", err)
+	}
+	return nil
 }
 
 func NewPairingManager(config PairingManagerConfig) (*PairingManager, error) {
@@ -396,6 +482,42 @@ func validDeviceInfo(info DeviceInfo) bool {
 		seen[capability] = struct{}{}
 	}
 	return true
+}
+
+func validateDevicePrincipal(principal DevicePrincipal) error {
+	if !validIdentifier(principal.DeviceID) {
+		return errors.New("device principal ID is invalid")
+	}
+	return validateMosqueIdentity(principal.Mosque)
+}
+
+func validHeartbeatReport(report DeviceHeartbeatReport) bool {
+	if report.SentAt.IsZero() ||
+		report.AppVersion == "" || len(report.AppVersion) > 64 ||
+		len(report.OSVersion) > 128 || len(report.Model) > 240 ||
+		(report.ActiveSnapshotID != "" && !validIdentifier(report.ActiveSnapshotID)) ||
+		report.CoverageDaysRemaining < 0 || report.CoverageDaysRemaining > 732 {
+		return false
+	}
+	if !oneOf(report.SyncStatus,
+		DeviceSyncStatusOK, DeviceSyncStatusOffline, DeviceSyncStatusTransientFailure,
+		DeviceSyncStatusRejectedSnapshot, DeviceSyncStatusAuthFailure, DeviceSyncStatusUnknown,
+	) || !oneOf(report.StorageHealth, DeviceHealthOK, DeviceHealthLow, DeviceHealthCritical, DeviceHealthUnknown) ||
+		!oneOf(report.MemoryHealth, DeviceHealthOK, DeviceHealthLow, DeviceHealthCritical, DeviceHealthUnknown) ||
+		!oneOf(report.BootMode, DeviceBootModeManual, DeviceBootModeBestEffort, DeviceBootModeManaged, DeviceBootModeUnknown) ||
+		!oneOf(report.KioskMode, DeviceKioskModeNone, DeviceKioskModeBestEffort, DeviceKioskModeManaged, DeviceKioskModeUnknown) {
+		return false
+	}
+	return true
+}
+
+func oneOf[T comparable](value T, allowed ...T) bool {
+	for _, candidate := range allowed {
+		if value == candidate {
+			return true
+		}
+	}
+	return false
 }
 
 func validAuditText(value string, maximum int) bool {

@@ -194,6 +194,34 @@ func TestRuntimeLoadsRestartSafePostgresPairingWithoutLiteralSecrets(t *testing.
 	if manifestResponse.StatusCode != http.StatusNotFound {
 		t.Fatalf("authenticated unassigned manifest status = %d", manifestResponse.StatusCode)
 	}
+	heartbeatRequest, err := http.NewRequest(
+		http.MethodPost,
+		restartedServer.URL+"/v1/devices/"+issued.DeviceID+"/heartbeat",
+		bytes.NewBufferString(`{"sent_at":"2200-01-01T00:00:00Z","app_version":"1.1.0","os_version":"36","model":"Runtime TV","active_snapshot_id":"","sync_status":"ok","coverage_days_remaining":30,"clock_mismatch":false,"timezone_mismatch":false,"storage_health":"ok","memory_health":"ok","boot_mode":"best_effort","kiosk_mode":"none"}`),
+	)
+	if err != nil {
+		t.Fatalf("create heartbeat request: %v", err)
+	}
+	heartbeatRequest.Header.Set("Content-Type", "application/json")
+	heartbeatRequest.Header.Set("Authorization", "Bearer "+paired.DeviceToken)
+	heartbeatResponse, err := http.DefaultClient.Do(heartbeatRequest)
+	if err != nil {
+		t.Fatalf("post heartbeat: %v", err)
+	}
+	heartbeatResponse.Body.Close()
+	if heartbeatResponse.StatusCode != http.StatusNoContent {
+		t.Fatalf("least-privilege heartbeat status = %d", heartbeatResponse.StatusCode)
+	}
+	var healthRows int
+	var forcedClockMismatch bool
+	if err := pool.QueryRow(ctx, `
+		SELECT count(*), bool_and(clock_mismatch)
+		FROM device_health WHERE device_id = $1`, issued.DeviceID).Scan(&healthRows, &forcedClockMismatch); err != nil {
+		t.Fatalf("read least-privilege heartbeat: %v", err)
+	}
+	if healthRows != 1 || !forcedClockMismatch {
+		t.Fatalf("least-privilege heartbeat state: rows=%d clock_mismatch=%v", healthRows, forcedClockMismatch)
+	}
 
 	pool.Close()
 
@@ -221,11 +249,11 @@ func createLeastPrivilegeRuntimeRole(t *testing.T, ownerPool *pgxpool.Pool, owne
 		GRANT USAGE ON SCHEMA public TO namaz_runtime_test;
 		GRANT SELECT ON schema_migrations, mosques, devices, pairing_codes,
 			pairing_rate_buckets, audit_events, admin_actors, admin_credentials,
-			admin_memberships, device_assignments, admin_requests TO namaz_runtime_test;
+			admin_memberships, device_assignments, admin_requests, device_health TO namaz_runtime_test;
 		GRANT INSERT ON devices, pairing_codes, pairing_rate_buckets, audit_events,
-			device_assignments, admin_requests TO namaz_runtime_test;
+			device_assignments, admin_requests, device_health TO namaz_runtime_test;
 		GRANT UPDATE ON devices, pairing_codes, pairing_rate_buckets,
-			device_assignments TO namaz_runtime_test;
+			device_assignments, device_health TO namaz_runtime_test;
 		GRANT DELETE ON pairing_rate_buckets TO namaz_runtime_test;
 	`); err != nil {
 		t.Fatalf("grant runtime database role: %v", err)

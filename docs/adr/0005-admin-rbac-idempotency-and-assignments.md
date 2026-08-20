@@ -26,7 +26,7 @@ the runtime database role only authenticates and operates them.
 
 The schema-owner DSN is injected only into a short-lived out-of-band migration
 process. The long-running API receives only a least-privileged runtime DSN,
-read-only verifies exact schema v2, and cannot alter schema/audit/idempotency
+read-only verified exact schema v2 at the T012 checkpoint, and cannot alter schema/audit/idempotency
 triggers or provision actor credentials.
 
 The role matrix is:
@@ -73,8 +73,9 @@ Positive:
 - issue/revoke/assignment retries do not duplicate state or audit events;
 - durable assignments feed the existing signed manifest/snapshot contract;
 - HMAC key rotation can retain exact pairing-code retry behavior.
-- schema-owner credentials exist only in a short-lived migration process; API
-  startup verifies exact v2 through its runtime role without DDL.
+- schema-owner credentials exist only in a short-lived migration process; T012
+  startup verified exact v2 through its runtime role without DDL (T013 advances
+  the current version to v3).
 
 Costs:
 

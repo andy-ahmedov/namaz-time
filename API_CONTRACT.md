@@ -113,6 +113,15 @@ Contains only operational status:
 
 Do not send precise GPS, Wi-Fi SSID/BSSID, installed-app list, user account, advertising ID or full logs by default.
 
+T013 makes every field above explicit and required, with bounded enums/lengths;
+unknown JSON fields fail closed. The existing device bearer must authenticate
+the exact `{deviceId}` path. `sent_at` is a client report, while PostgreSQL
+records its own `received_at` as authoritative last-seen and forces the clock
+mismatch flag when skew exceeds 15 minutes. Only one latest health row exists
+per device. `active_snapshot_id` is diagnostic and never changes assignment or
+activation. Success is `204`; malformed input is `400`, invalid/revoked scope is
+`401`, and backend failure is retryable `500`.
+
 ## Error format
 
 ```json
@@ -176,7 +185,8 @@ a retryable `500` instead of exhausting the connection pool indefinitely.
 The private JSON config never accepts a literal `database_url`. Migrations run
 out of band through the short-lived `cmd/migrate` process with a schema-owner
 credential. API startup carries only the least-privileged runtime DSN, opens a
-bounded pgx pool, verifies migration ledger v2 without changing it, and fails
+bounded pgx pool, verifies the exact current migration ledger (v3) without
+changing it, and fails
 closed if the database, exact schema or key is unavailable.
 
 Static T009 assignments are rejected in this mode. A newly authenticated but

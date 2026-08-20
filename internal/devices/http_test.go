@@ -382,6 +382,68 @@ func TestProductionPairingBackendCallsHaveBoundedDeadlines(t *testing.T) {
 	}
 }
 
+func TestDeviceHeartbeatIsStrictScopedAndFailureIsolated(t *testing.T) {
+	t.Parallel()
+
+	backend := &recordingHTTPPairingBackend{principal: DevicePrincipal{
+		DeviceID: "device-production-0001",
+		Mosque:   MosqueIdentity{ID: "mosque-ulyanovsk-0001", Name: "Second Cathedral Mosque", Timezone: "Europe/Ulyanovsk"},
+	}}
+	config := validServiceConfig(t)
+	config.PairingFixtures = nil
+	config.Assignments = nil
+	config.PairingBackend = backend
+	service, err := NewService(config)
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+	server := httptest.NewServer(service.Handler())
+	t.Cleanup(server.Close)
+	body := []byte(`{"sent_at":"2026-08-20T12:00:00Z","app_version":"0.3.0-shell","os_version":"35","model":"Android TV","active_snapshot_id":"synthetic-android-verification-v1","sync_status":"ok","coverage_days_remaining":12,"clock_mismatch":false,"timezone_mismatch":false,"storage_health":"ok","memory_health":"low","boot_mode":"best_effort","kiosk_mode":"none"}`)
+	heartbeat := request(t, http.MethodPost, server.URL+"/v1/devices/device-production-0001/heartbeat", body, "valid-device-token-0001", "")
+	if heartbeat.StatusCode != http.StatusNoContent || backend.heartbeat.AppVersion != "0.3.0-shell" {
+		t.Fatalf("heartbeat response = %d %s; report=%#v", heartbeat.StatusCode, heartbeat.Body, backend.heartbeat)
+	}
+	crossDevice := request(t, http.MethodPost, server.URL+"/v1/devices/device-other-0001/heartbeat", body, "valid-device-token-0001", "")
+	if crossDevice.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("cross-device heartbeat = %d %s", crossDevice.StatusCode, crossDevice.Body)
+	}
+	unknownField := request(t, http.MethodPost, server.URL+"/v1/devices/device-production-0001/heartbeat", append(body[:len(body)-1], []byte(`,"wifi_ssid":"private"}`)...), "valid-device-token-0001", "")
+	if unknownField.StatusCode != http.StatusBadRequest {
+		t.Fatalf("private-field heartbeat = %d %s", unknownField.StatusCode, unknownField.Body)
+	}
+	backend.heartbeatErr = errors.New("database unavailable")
+	infrastructure := request(t, http.MethodPost, server.URL+"/v1/devices/device-production-0001/heartbeat", body, "valid-device-token-0001", "")
+	if infrastructure.StatusCode != http.StatusInternalServerError {
+		t.Fatalf("heartbeat infrastructure response = %d %s", infrastructure.StatusCode, infrastructure.Body)
+	}
+	backend.heartbeatErr = ErrDeviceUnauthorized
+	revoked := request(t, http.MethodPost, server.URL+"/v1/devices/device-production-0001/heartbeat", body, "valid-device-token-0001", "")
+	if revoked.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("revoked heartbeat response = %d %s", revoked.StatusCode, revoked.Body)
+	}
+}
+
+func TestDeviceHeartbeatBackendCallHasBoundedDeadline(t *testing.T) {
+	t.Parallel()
+
+	service, err := NewService(ServiceConfig{
+		PairingBackend: &deadlineHeartbeatBackend{},
+		BackendTimeout: 20 * time.Millisecond,
+	})
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+	server := httptest.NewServer(service.Handler())
+	t.Cleanup(server.Close)
+	body := []byte(`{"sent_at":"2026-08-20T12:00:00Z","app_version":"1","os_version":"","model":"","active_snapshot_id":"","sync_status":"unknown","coverage_days_remaining":0,"clock_mismatch":false,"timezone_mismatch":false,"storage_health":"unknown","memory_health":"unknown","boot_mode":"unknown","kiosk_mode":"unknown"}`)
+	started := time.Now()
+	response := request(t, http.MethodPost, server.URL+"/v1/devices/device-production-0001/heartbeat", body, "valid-device-token-0001", "")
+	if response.StatusCode != http.StatusInternalServerError || time.Since(started) >= 250*time.Millisecond {
+		t.Fatalf("bounded heartbeat response = %d after %s", response.StatusCode, time.Since(started))
+	}
+}
+
 func TestAdminFleetHTTPRequiresAuthScopeAndIdempotency(t *testing.T) {
 	t.Parallel()
 
@@ -655,9 +717,13 @@ type recordingHTTPPairingBackend struct {
 	pairErr      error
 	principal    DevicePrincipal
 	authErr      error
+	heartbeat    DeviceHeartbeatReport
+	heartbeatErr error
 }
 
 type deadlineHTTPPairingBackend struct{}
+
+type deadlineHeartbeatBackend struct{}
 
 func (*deadlineHTTPPairingBackend) Pair(ctx context.Context, _ PairingAttempt) (PairingProvisioning, error) {
 	<-ctx.Done()
@@ -667,6 +733,27 @@ func (*deadlineHTTPPairingBackend) Pair(ctx context.Context, _ PairingAttempt) (
 func (*deadlineHTTPPairingBackend) Authenticate(ctx context.Context, _ string) (DevicePrincipal, error) {
 	<-ctx.Done()
 	return DevicePrincipal{}, ctx.Err()
+}
+
+func (*deadlineHTTPPairingBackend) Heartbeat(ctx context.Context, _ DevicePrincipal, _ DeviceHeartbeatReport) error {
+	<-ctx.Done()
+	return ctx.Err()
+}
+
+func (*deadlineHeartbeatBackend) Pair(_ context.Context, _ PairingAttempt) (PairingProvisioning, error) {
+	return PairingProvisioning{}, errors.New("not used")
+}
+
+func (*deadlineHeartbeatBackend) Authenticate(_ context.Context, _ string) (DevicePrincipal, error) {
+	return DevicePrincipal{
+		DeviceID: "device-production-0001",
+		Mosque:   MosqueIdentity{ID: "mosque-ulyanovsk-0001", Name: "Second Cathedral Mosque", Timezone: "Europe/Ulyanovsk"},
+	}, nil
+}
+
+func (*deadlineHeartbeatBackend) Heartbeat(ctx context.Context, _ DevicePrincipal, _ DeviceHeartbeatReport) error {
+	<-ctx.Done()
+	return ctx.Err()
 }
 
 type recordingHTTPAdminBackend struct {
@@ -770,6 +857,11 @@ func (backend *recordingHTTPPairingBackend) Pair(_ context.Context, attempt Pair
 
 func (backend *recordingHTTPPairingBackend) Authenticate(_ context.Context, _ string) (DevicePrincipal, error) {
 	return backend.principal, backend.authErr
+}
+
+func (backend *recordingHTTPPairingBackend) Heartbeat(_ context.Context, _ DevicePrincipal, report DeviceHeartbeatReport) error {
+	backend.heartbeat = report
+	return backend.heartbeatErr
 }
 
 func pairBodySecret(_ []byte) string { return "ABCDEFGHIJKLMNOPQRSTUVWX26" }

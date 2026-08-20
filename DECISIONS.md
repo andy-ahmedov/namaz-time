@@ -194,6 +194,23 @@ These are proposals until accepted by the product owner:
   request audit evidence were reproduced locally in disposable PostgreSQL 18.
   This is controlled backend evidence, not a deployed identity provider or TV.
 
+## T013 device-health record
+
+- `PROPOSAL` — PostgreSQL migration v3 retains one latest health row per device;
+  API `received_at`, not client `sent_at`, owns fleet last-seen.
+- `PROPOSAL` — reported snapshot and health are non-authoritative diagnostics
+  and cannot mutate assignment, publication or Android Room activation.
+- `PROPOSAL` — heartbeat JSON is a closed privacy allowlist; arbitrary codes,
+  logs, URLs, network/account/location identifiers and history retention are
+  rejected.
+- `PROPOSAL` — Android reporting is derived from the provisioned origin/device
+  path and best effort; non-cancellation failure cannot change the completed
+  sync result or offline display.
+- `CONFIRMED_RUNTIME` — latest-only persistence, server last-seen, revoked and
+  cross-mosque denial, RBAC health projection and least-privileged runtime
+  access were reproduced in disposable PostgreSQL 18. Android sender behavior
+  is locally unit-tested, not physical-TV runtime evidence.
+
 ## Decision template
 
 ```text

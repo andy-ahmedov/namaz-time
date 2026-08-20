@@ -129,3 +129,25 @@ Blocked until [SOURCE_PARTNERSHIP_CHECKLIST.md](SOURCE_PARTNERSHIP_CHECKLIST.md)
 **Non-goals:** full visual admin portal, source approval/publication UI, heartbeat dashboards, billing, or multi-tenant branding.
 
 **Acceptance:** integration tests prove `service_admin` and mosque-scoped roles, deny cross-mosque reads/writes without existence leaks, preserve idempotency, and record actor/request/reason audit evidence.
+
+## T013 — privacy-safe device heartbeat and fleet health
+
+**Goal:** add bounded operational health reporting without making display or
+snapshot activation depend on telemetry success.
+
+**In scope:** bearer/path-scoped heartbeat API; strict allowlisted health
+contract; server-received last-seen time; latest-only PostgreSQL health state;
+reported snapshot/sync/coverage/clock/timezone/storage/memory/boot/kiosk fields;
+mosque-scoped fleet read projection; best-effort Android heartbeat client that
+uses the provisioning origin and never changes the underlying sync result.
+
+**Non-goals:** full logs, SSID/BSSID, installed-app/account/location data,
+unbounded heartbeat history, analytics/crash SDK, dashboard UI, remote commands,
+physical-TV validation, or changing snapshot assignment/activation.
+
+**Acceptance:** strict HTTP/unit tests reject unknown/private fields and
+cross-device credentials; PostgreSQL integration proves latest-only persistence,
+revocation/scope behavior and server-trusted last-seen; admin list exposes only
+the allowlisted projection; Android tests prove same-origin authenticated JSON,
+bounded enums and failure-isolated best-effort reporting; full/race/PostgreSQL
+gates pass.

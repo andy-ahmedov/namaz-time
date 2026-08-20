@@ -206,10 +206,37 @@ func TestPostgresAdminFleetLifecycleAndIsolation(t *testing.T) {
 		}
 	})
 
+	pairingManager := newIntegrationPairingManager(
+		t, repository,
+		func() time.Time { return time.Date(2026, 8, 20, 12, 0, 0, 0, time.UTC) },
+		bytes.Repeat([]byte{0x51}, sha256.Size),
+		PairingRateLimits{Window: 10 * time.Minute, SourceAttempts: 20, DeviceAttempts: 20, CodeAttempts: 20},
+	)
+	paired, err := pairingManager.Pair(t.Context(), PairingAttempt{
+		Code: issued.Code, Device: DeviceInfo{AppVersion: "1.0.0", OSVersion: "35", Model: "Lobby TV"},
+		SourceAddress: "192.0.2.80", RequestID: "request-admin-pair-0001",
+	})
+	if err != nil {
+		t.Fatalf("Pair(admin-issued code) error = %v", err)
+	}
+	if err := pairingManager.Heartbeat(t.Context(), DevicePrincipal{DeviceID: paired.DeviceID, Mosque: paired.Mosque}, DeviceHeartbeatReport{
+		SentAt:     time.Date(2026, 8, 20, 12, 0, 0, 0, time.UTC),
+		AppVersion: "1.1.0", OSVersion: "36", Model: "Lobby TV",
+		ActiveSnapshotID: "snapshot-device-reported-01", SyncStatus: DeviceSyncStatusOK,
+		CoverageDaysRemaining: 30, StorageHealth: DeviceHealthOK, MemoryHealth: DeviceHealthOK,
+		BootMode: DeviceBootModeBestEffort, KioskMode: DeviceKioskModeNone,
+	}); err != nil {
+		t.Fatalf("Heartbeat(admin fleet projection) error = %v", err)
+	}
+
 	devices, err := manager.ListDevices(t.Context(), viewer, "mosque-ulyanovsk-0001")
 	foundIssued := false
 	for _, device := range devices {
-		foundIssued = foundIssued || device.DeviceID == issued.DeviceID
+		if device.DeviceID == issued.DeviceID {
+			foundIssued = device.LastSeenAt != nil && device.ReportedSnapshotID == "snapshot-device-reported-01" &&
+				device.SyncStatus == DeviceSyncStatusOK && device.CoverageDaysRemaining != nil &&
+				*device.CoverageDaysRemaining == 30
+		}
 	}
 	if err != nil || len(devices) != 2 || !foundIssued {
 		t.Fatalf("viewer ListDevices() = %#v, %v", devices, err)

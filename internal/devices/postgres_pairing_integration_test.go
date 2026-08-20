@@ -18,7 +18,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-func TestPostgresPairingMigrationUpgradesVersionOneToTwo(t *testing.T) {
+func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 	databaseURL := os.Getenv("NAMAZ_TEST_POSTGRES_URL")
 	if databaseURL == "" {
 		t.Skip("NAMAZ_TEST_POSTGRES_URL is not set")
@@ -64,32 +64,57 @@ func TestPostgresPairingMigrationUpgradesVersionOneToTwo(t *testing.T) {
 		t.Fatalf("upgrade v1 to v2: %v", err)
 	}
 	var versions int
-	var adminTable bool
+	var adminTable, healthTable bool
 	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM schema_migrations`).Scan(&versions); err != nil {
 		t.Fatalf("count upgraded versions: %v", err)
 	}
 	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('admin_actors') IS NOT NULL`).Scan(&adminTable); err != nil {
 		t.Fatalf("inspect v2 table: %v", err)
 	}
-	if versions != 2 || !adminTable {
-		t.Fatalf("upgraded schema: versions=%d admin_table=%v", versions, adminTable)
+	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('device_health') IS NOT NULL`).Scan(&healthTable); err != nil {
+		t.Fatalf("inspect v3 table: %v", err)
+	}
+	if versions != PairingSchemaVersion || !adminTable || !healthTable {
+		t.Fatalf("upgraded schema: versions=%d admin_table=%v health_table=%v", versions, adminTable, healthTable)
 	}
 	if err := repository.VerifySchema(t.Context()); err != nil {
-		t.Fatalf("VerifySchema(v2) error = %v", err)
+		t.Fatalf("VerifySchema(current) error = %v", err)
+	}
+	if err := repository.MigrateTo(t.Context(), 2); err != nil {
+		t.Fatalf("rollback current schema to v2: %v", err)
+	}
+	var v2Versions int
+	var preservedAdmin, removedHealth bool
+	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM schema_migrations`).Scan(&v2Versions); err != nil {
+		t.Fatalf("count v2 rollback versions: %v", err)
+	}
+	if err := pool.QueryRow(t.Context(), `
+		SELECT to_regclass('admin_actors') IS NOT NULL,
+		       to_regclass('device_health') IS NULL`).Scan(&preservedAdmin, &removedHealth); err != nil {
+		t.Fatalf("inspect v3 to v2 rollback: %v", err)
+	}
+	if v2Versions != 2 || !preservedAdmin || !removedHealth {
+		t.Fatalf("v3 to v2 rollback: versions=%d admin=%v health_removed=%v", v2Versions, preservedAdmin, removedHealth)
+	}
+	if err := repository.MigrateUp(t.Context()); err != nil {
+		t.Fatalf("reapply current schema after v2 rollback: %v", err)
 	}
 	if err := repository.MigrateTo(t.Context(), 1); err != nil {
 		t.Fatalf("rollback upgraded schema to v1: %v", err)
 	}
 	var remainingVersions int
-	var pairingTable, removedAdminTable bool
+	var pairingTable, removedAdminTable, removedHealthTable bool
 	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM schema_migrations`).Scan(&remainingVersions); err != nil {
 		t.Fatalf("count rolled-back versions: %v", err)
 	}
-	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('pairing_codes') IS NOT NULL, to_regclass('admin_actors') IS NULL`).Scan(&pairingTable, &removedAdminTable); err != nil {
-		t.Fatalf("inspect v2 to v1 rollback: %v", err)
+	if err := pool.QueryRow(t.Context(), `
+		SELECT to_regclass('pairing_codes') IS NOT NULL,
+		       to_regclass('admin_actors') IS NULL,
+		       to_regclass('device_health') IS NULL`).Scan(&pairingTable, &removedAdminTable, &removedHealthTable); err != nil {
+		t.Fatalf("inspect current to v1 rollback: %v", err)
 	}
-	if remainingVersions != 1 || !pairingTable || !removedAdminTable {
-		t.Fatalf("targeted rollback: versions=%d pairing=%v admin_removed=%v", remainingVersions, pairingTable, removedAdminTable)
+	if remainingVersions != 1 || !pairingTable || !removedAdminTable || !removedHealthTable {
+		t.Fatalf("targeted rollback: versions=%d pairing=%v admin_removed=%v health_removed=%v", remainingVersions, pairingTable, removedAdminTable, removedHealthTable)
 	}
 	if err := repository.VerifySchema(t.Context()); err == nil {
 		t.Fatal("VerifySchema(v1) accepted an outdated schema")
@@ -119,10 +144,10 @@ func TestPostgresPairingMigrationRefusesFutureSchema(t *testing.T) {
 	t.Cleanup(func() {
 		cleanupCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
-		_, _ = pool.Exec(cleanupCtx, `DELETE FROM schema_migrations WHERE version > 2`)
+		_, _ = pool.Exec(cleanupCtx, `DELETE FROM schema_migrations WHERE version > $1`, PairingSchemaVersion)
 		_ = repository.MigrateTo(cleanupCtx, 0)
 	})
-	if _, err := pool.Exec(t.Context(), `INSERT INTO schema_migrations (version, applied_at) VALUES (3, clock_timestamp())`); err != nil {
+	if _, err := pool.Exec(t.Context(), `INSERT INTO schema_migrations (version, applied_at) VALUES ($1, clock_timestamp())`, PairingSchemaVersion+1); err != nil {
 		t.Fatalf("seed future migration: %v", err)
 	}
 	if err := repository.MigrateUp(t.Context()); err == nil {
@@ -262,6 +287,61 @@ func TestPostgresPairingLifecycle(t *testing.T) {
 	principal, err := manager.Authenticate(t.Context(), paired.Token)
 	if err != nil || principal.DeviceID != issued.DeviceID {
 		t.Fatalf("Authenticate() after restart = %#v, %v", principal, err)
+	}
+	heartbeat := DeviceHeartbeatReport{
+		SentAt: now.Now(), AppVersion: "1.1.0", OSVersion: "36", Model: "Android TV Updated",
+		ActiveSnapshotID: "snapshot-reported-0001", SyncStatus: DeviceSyncStatusOK,
+		CoverageDaysRemaining: 27, StorageHealth: DeviceHealthOK, MemoryHealth: DeviceHealthLow,
+		BootMode: DeviceBootModeBestEffort, KioskMode: DeviceKioskModeNone,
+	}
+	if err := manager.Heartbeat(t.Context(), principal, heartbeat); err != nil {
+		t.Fatalf("Heartbeat(first) error = %v", err)
+	}
+	heartbeat.SyncStatus = DeviceSyncStatusTransientFailure
+	heartbeat.CoverageDaysRemaining = 26
+	if err := manager.Heartbeat(t.Context(), principal, heartbeat); err != nil {
+		t.Fatalf("Heartbeat(second) error = %v", err)
+	}
+	var healthRows, coverage int
+	var lastSeen time.Time
+	var syncStatus string
+	if err := restartedPool.QueryRow(t.Context(), `
+		SELECT count(*), max(sync_status), max(coverage_days_remaining)
+		FROM device_health WHERE device_id = $1`, issued.DeviceID).Scan(&healthRows, &syncStatus, &coverage); err != nil {
+		t.Fatalf("read latest-only heartbeat: %v", err)
+	}
+	if err := restartedPool.QueryRow(t.Context(), `SELECT last_seen_at FROM devices WHERE id = $1`, issued.DeviceID).Scan(&lastSeen); err != nil {
+		t.Fatalf("read server last-seen: %v", err)
+	}
+	if healthRows != 1 || syncStatus != string(DeviceSyncStatusTransientFailure) || coverage != 26 || !lastSeen.Equal(now.Now()) {
+		t.Fatalf("heartbeat state: rows=%d status=%s coverage=%d last_seen=%s", healthRows, syncStatus, coverage, lastSeen)
+	}
+	forgedPrincipal := principal
+	forgedPrincipal.Mosque.ID = "mosque-kazan-00000001"
+	if err := manager.Heartbeat(t.Context(), forgedPrincipal, heartbeat); !errors.Is(err, ErrDeviceUnauthorized) {
+		t.Fatalf("cross-mosque Heartbeat() error = %v", err)
+	}
+	if _, err := restartedPool.Exec(t.Context(), `
+		UPDATE mosques SET status = 'suspended'
+		WHERE id = 'mosque-ulyanovsk-0001'`); err != nil {
+		t.Fatalf("suspend heartbeat mosque: %v", err)
+	}
+	now.Advance(time.Minute)
+	if err := manager.Heartbeat(t.Context(), principal, heartbeat); !errors.Is(err, ErrDeviceUnauthorized) {
+		t.Fatalf("suspended-mosque stale-principal Heartbeat() error = %v", err)
+	}
+	var suspendedLastSeen time.Time
+	if err := restartedPool.QueryRow(t.Context(), `
+		SELECT last_seen_at FROM devices WHERE id = $1`, issued.DeviceID).Scan(&suspendedLastSeen); err != nil {
+		t.Fatalf("read suspended-mosque last-seen: %v", err)
+	}
+	if !suspendedLastSeen.Equal(lastSeen) {
+		t.Fatalf("suspended mosque changed last-seen: got %s want %s", suspendedLastSeen, lastSeen)
+	}
+	if _, err := restartedPool.Exec(t.Context(), `
+		UPDATE mosques SET status = 'active'
+		WHERE id = 'mosque-ulyanovsk-0001'`); err != nil {
+		t.Fatalf("reactivate heartbeat mosque: %v", err)
 	}
 	_, err = manager.Pair(t.Context(), PairingAttempt{
 		Code: issued.Code, Device: DeviceInfo{AppVersion: "1", OSVersion: "35", Model: "TV"},
@@ -568,6 +648,9 @@ func TestPostgresPairingLifecycle(t *testing.T) {
 		}
 		if _, err := manager.Authenticate(t.Context(), paired.Token); !errors.Is(err, ErrDeviceUnauthorized) {
 			t.Fatalf("revoked Authenticate() error = %v", err)
+		}
+		if err := manager.Heartbeat(t.Context(), principal, heartbeat); !errors.Is(err, ErrDeviceUnauthorized) {
+			t.Fatalf("revoked stale-principal Heartbeat() error = %v", err)
 		}
 	})
 

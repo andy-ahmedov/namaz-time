@@ -277,6 +277,30 @@ T011 persists the pairing subset first. Device lifecycle is `pending` →
 `active` → `revoked`; only an active row may contain a 32-byte `token_hash`,
 and the plaintext bearer credential is returned once and never stored.
 
+T013 migration v3 adds `last_seen_at` to this row. It is server-received time,
+not the untrusted timestamp supplied by the TV.
+
+### `device_health`
+
+Latest-only operational health, one row per composite-scoped device:
+
+```text
+device_id + mosque_id
+reported_at
+received_at
+reported_snapshot_id nullable
+sync_status
+coverage_days_remaining
+clock_mismatch + timezone_mismatch
+storage_health + memory_health
+boot_mode + kiosk_mode
+```
+
+The row is replaced in place under the device lock; no raw heartbeat history is
+retained. `reported_snapshot_id` is deliberately separate from
+`device_assignment.snapshot_id` and has no authority to change it. Backward
+server time cannot overwrite a newer last-seen/health record.
+
 ### TV sync checkpoint (local file)
 
 Transport state is not schedule authority and therefore stays outside Room:
@@ -449,5 +473,5 @@ All operator queries are scoped by mosque/organization membership. Add composite
 - raw artifacts: retain when permission allows, otherwise metadata + approved fixture;
 - candidate schedules: retain for traceability;
 - snapshots: active + previous indefinitely for pilot, then policy-driven;
-- heartbeat detail: short retention and aggregation;
+- heartbeat detail: latest-only per device; no raw history in T013;
 - pairing codes: delete/expire quickly.

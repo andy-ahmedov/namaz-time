@@ -185,18 +185,19 @@ or credential:
 ```bash
 go run ./cmd/migrate \
   -database-url-env NAMAZ_MIGRATION_DATABASE_URL \
-  -target-version 2
+  -target-version 3
 ```
 
 The command applies embedded migrations under a transaction-scoped advisory
 lock and exits. Only then start the API with `NAMAZ_DATABASE_URL` for the
-least-privileged runtime role. API startup performs a read-only exact-v2 ledger
+least-privileged runtime role. API startup performs a read-only exact-v3 ledger
 check and refuses missing, v1, gapped or future schemas. The runtime role must
 not own schema/functions/triggers.
 
 Minimum runtime privileges are deployment-managed: `SELECT` on mosque/device/
 pairing/admin identity/membership/assignment/idempotency tables; required
-`INSERT`/`UPDATE` on devices, pairing codes, rate buckets and assignments;
+`INSERT`/`UPDATE` on devices, pairing codes, rate buckets, assignments and the
+latest-only `device_health` table;
 bounded `DELETE` only on expired rate buckets; and `INSERT`-only on audit and
 admin idempotency tables. It needs no DDL, trigger/function ownership,
 `schema_migrations` mutation, admin actor/credential/membership writes, or
@@ -204,13 +205,14 @@ audit/idempotency update/delete/truncate. It requires `SELECT` on
 `schema_migrations` solely for startup verification. Verify the grants in
 staging rather than granting broad schema ownership.
 
-For a controlled T012-to-T011 binary rollback, stop T012 write traffic and take
-a verified database backup, then run the short-lived migration command with
-`-target-version 1` before deploying the T011 binary. Migration `000002` down
-drops only T012 admin identities, idempotency evidence and assignments; v1
-mosque/device/pairing/rate/audit state remains. The deployment command rejects
-target `0`; complete schema removal exists only as a repository test helper. A
-v2 binary will refuse to start after the targeted rollback until v2 is reapplied.
+For a controlled T013-to-T012 rollback, stop heartbeat/write traffic, take a
+verified database backup, and run `-target-version 2`; migration `000003` down
+drops only latest health and `last_seen_at`. For T012-to-T011, then run target
+`1`; migration `000002` down drops admin identities, idempotency evidence and
+assignments while v1 mosque/device/pairing/rate/audit state remains. The command
+rejects target `0`; complete schema removal exists only as a repository test
+helper. The current v3 binary refuses to start on either lower target until v3
+is reapplied.
 
 Run the restart/concurrency/migration suite in a disposable local PostgreSQL 18
 container:
@@ -248,6 +250,22 @@ Admin writes require a fresh random `Idempotency-Key` containing no PII or
 secret. An identical retry within 24 hours returns the original result. Reuse
 with changed reason, expiry, device or assignment, or reuse after expiry,
 returns `409` and cannot create another side effect.
+
+## T013 heartbeat operation
+
+Provisioned devices may post one strict health report after the existing daily
+sync run. A failure is best effort and cannot fail an already completed sync or
+affect local display. PostgreSQL retains only the latest row per device; it does
+not require a heartbeat-history pruning job. Fleet freshness uses server
+`last_seen_at`, never client `sent_at`.
+
+Monitor aggregate 401, 400 and retryable 500 rates without logging bearer
+headers or request bodies. Repeated 401 normally means revoked/stale
+provisioning; repeated 400 means client/contract drift. Rate-limit authenticated
+heartbeat traffic at the trusted ingress if a compromised device floods it,
+while preserving normal daily reports. Never add SSID/BSSID, network address,
+location, account identifiers, installed apps, logs or full URLs to this
+endpoint.
 
 ## Device support bundle
 

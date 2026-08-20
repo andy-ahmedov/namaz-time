@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Mosque Prayer TV Synchronization API
-  version: 0.3.0
+  version: 0.4.0
   description: >-
     Draft contract for pairing a television, retrieving a small manifest,
     downloading an immutable signed prayer-time snapshot, and reporting
@@ -112,6 +112,8 @@ paths:
     post:
       operationId: postDeviceHeartbeat
       summary: Report privacy-safe operational health
+      security:
+        - deviceBearer: []
       parameters:
         - $ref: '#/components/parameters/DeviceId'
       requestBody:
@@ -123,7 +125,11 @@ paths:
       responses:
         '204':
           description: Accepted
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
         '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
           $ref: '#/components/responses/ErrorResponse'
   /v1/admin/mosques/{mosqueId}/devices:
     get:
@@ -386,6 +392,36 @@ components:
           type: integer
           format: int64
           minimum: 1
+        last_seen_at:
+          type: string
+          format: date-time
+        reported_snapshot_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        sync_status:
+          type: string
+          enum: [ok, offline, transient_failure, rejected_snapshot, auth_failure, unknown]
+        coverage_days_remaining:
+          type: integer
+          minimum: 0
+          maximum: 732
+        clock_mismatch:
+          type: boolean
+        timezone_mismatch:
+          type: boolean
+        storage_health:
+          type: string
+          enum: [ok, low, critical, unknown]
+        memory_health:
+          type: string
+          enum: [ok, low, critical, unknown]
+        boot_mode:
+          type: string
+          enum: [manual, best_effort, managed, unknown]
+        kiosk_mode:
+          type: string
+          enum: [none, best_effort, managed, unknown]
     DeviceAssignment:
       type: object
       additionalProperties: false
@@ -570,19 +606,40 @@ components:
     Heartbeat:
       type: object
       additionalProperties: false
-      required: [sent_at, app_version, active_snapshot_id, sync_status, coverage_days_remaining]
+      required:
+        - sent_at
+        - app_version
+        - os_version
+        - model
+        - active_snapshot_id
+        - sync_status
+        - coverage_days_remaining
+        - clock_mismatch
+        - timezone_mismatch
+        - storage_health
+        - memory_health
+        - boot_mode
+        - kiosk_mode
       properties:
         sent_at:
           type: string
           format: date-time
         app_version:
           type: string
+          minLength: 1
+          maxLength: 64
         os_version:
           type: string
+          maxLength: 128
         model:
           type: string
+          maxLength: 240
         active_snapshot_id:
-          type: string
+          oneOf:
+            - const: ''
+            - type: string
+              minLength: 8
+              maxLength: 128
         sync_status:
           type: string
           enum: [ok, offline, transient_failure, rejected_snapshot, auth_failure, unknown]
@@ -597,9 +654,15 @@ components:
         storage_health:
           type: string
           enum: [ok, low, critical, unknown]
+        memory_health:
+          type: string
+          enum: [ok, low, critical, unknown]
+        boot_mode:
+          type: string
+          enum: [manual, best_effort, managed, unknown]
         kiosk_mode:
           type: string
-          enum: [none, best_effort, managed]
+          enum: [none, best_effort, managed, unknown]
     ErrorEnvelope:
       type: object
       additionalProperties: false

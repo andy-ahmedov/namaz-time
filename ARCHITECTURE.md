@@ -240,9 +240,9 @@ tenant-isolation control.
 
 The schema-owner DSN exists only in a short-lived `cmd/migrate` deployment
 process. It moves the ledger to an explicit version under an advisory lock,
-including a targeted v2-to-v1 rollback. The API process receives only the
-least-privileged runtime DSN and read-only verifies exact v2 at startup; v1,
-gaps and future versions fail closed.
+including a targeted v2-to-v1 rollback. At the T012 checkpoint the API process
+received only the least-privileged runtime DSN and read-only verified exact v2;
+T013 advances the same fail-closed rule to v3.
 
 Pairing issue uses domain-separated HMAC derivation so a retry can reproduce
 the same 128-bit code while storage remains verifier-only. Current and staged
@@ -258,6 +258,24 @@ registry. Admin assignment can reference that registry but cannot inject raw
 URL/hash/signing-key fields. Durable assignment reads are rebound to the
 authenticated device mosque and registry mosque/timezone/hash/key before a
 manifest or snapshot is served.
+
+### Latest-only device health (T013)
+
+Migration v3 adds a single replaceable `device_health` row and server-owned
+`devices.last_seen_at`. The authenticated heartbeat path requires the bearer
+principal to match the URL device, then PostgreSQL rechecks and locks the active
+device/mosque row. Client `sent_at`, reported snapshot and health fields remain
+diagnostic claims; server `received_at` determines fleet freshness, and reported
+snapshot never mutates the signed assignment path.
+
+The payload is a closed allowlist of bounded enums/strings and cannot transport
+logs, network identifiers, accounts, location or arbitrary codes. Admin list
+joins only the latest row through the existing mosque RBAC boundary. Android
+constructs the endpoint from the provisioned manifest origin/path. A wrapper
+may report after sync, but ignores every non-cancellation reporting failure and
+returns the original sync result, keeping display and activation independent.
+The current API read-only verifies exact schema v3; lower, gapped and future
+ledgers all fail startup.
 
 ## Source ingestion pipeline
 
@@ -328,7 +346,7 @@ See [contracts/prayer-snapshot.schema.json](contracts/prayer-snapshot.schema.jso
 6. Run domain validation and next-event smoke checks.
 7. Atomically switch `active_snapshot_id`.
 8. Keep at least one prior valid snapshot for rollback.
-9. Report a privacy-safe heartbeat later; display remains independent from heartbeat success.
+9. Report the T013 privacy-safe latest-only heartbeat when provisioned; display remains independent from heartbeat success.
 
 Never erase the active snapshot before the new one is proven valid.
 

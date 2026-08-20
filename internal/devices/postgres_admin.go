@@ -148,9 +148,14 @@ func (repository *PostgresPairingRepository) ListAdminDevices(ctx context.Contex
 	rows, err := tx.Query(ctx, `
 		SELECT d.id, d.mosque_id, d.status, COALESCE(d.app_version, ''), COALESCE(d.os_version, ''),
 		       COALESCE(d.model, ''), d.created_at, d.paired_at, d.revoked_at,
-		       COALESCE(a.snapshot_id, ''), COALESCE(a.manifest_version, 0)
+		       COALESCE(a.snapshot_id, ''), COALESCE(a.manifest_version, 0), d.last_seen_at,
+		       COALESCE(h.reported_snapshot_id, ''), COALESCE(h.sync_status, ''),
+		       h.coverage_days_remaining, h.clock_mismatch,
+		       h.timezone_mismatch, COALESCE(h.storage_health, ''),
+		       COALESCE(h.memory_health, ''), COALESCE(h.boot_mode, ''), COALESCE(h.kiosk_mode, '')
 		FROM devices d
 		LEFT JOIN device_assignments a ON a.device_id = d.id AND a.mosque_id = d.mosque_id
+		LEFT JOIN device_health h ON h.device_id = d.id AND h.mosque_id = d.mosque_id
 		WHERE d.mosque_id = $1
 		ORDER BY d.created_at DESC, d.id`, scope.MosqueID)
 	if err != nil {
@@ -163,7 +168,10 @@ func (repository *PostgresPairingRepository) ListAdminDevices(ctx context.Contex
 		if err := rows.Scan(
 			&device.DeviceID, &device.MosqueID, &device.Status, &device.AppVersion, &device.OSVersion,
 			&device.Model, &device.CreatedAt, &device.PairedAt, &device.RevokedAt,
-			&device.SnapshotID, &device.ManifestVersion,
+			&device.SnapshotID, &device.ManifestVersion, &device.LastSeenAt,
+			&device.ReportedSnapshotID, &device.SyncStatus, &device.CoverageDaysRemaining,
+			&device.ClockMismatch, &device.TimezoneMismatch, &device.StorageHealth,
+			&device.MemoryHealth, &device.BootMode, &device.KioskMode,
 		); err != nil {
 			return nil, fmt.Errorf("admin list devices: scan: %w", err)
 		}

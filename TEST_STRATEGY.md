@@ -208,6 +208,15 @@ schema verification rejects v1. The runtime restart path connects as a separate
 least-privileged role and proves it cannot provision admin actors or disable an
 audit trigger while normal pairing/admin operations still succeed.
 
+T013 extends the PostgreSQL ledger through v3 and proves two reports keep one
+latest health row, server time owns last-seen, forged mosque and revoked stale
+principals cannot write, and the mosque-scoped admin projection contains only
+the allowlisted fields. HTTP tests cover strict unknown-field rejection,
+credential/path mismatch and 400/401/500 boundaries. Android unit tests assert
+same-origin device-path construction, absence of token and mosque ID from JSON,
+exact field allowlist/enums, response mapping and that best-effort reporting
+cannot change a completed sync result.
+
 ## Release evidence
 
 Each release records:

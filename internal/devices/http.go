@@ -27,6 +27,7 @@ import (
 
 const (
 	maxPairRequestBytes   = 16 * 1024
+	maxHeartbeatBytes     = 16 * 1024
 	maxAdminRequestBytes  = 16 * 1024
 	maxSnapshotBytes      = 5 * 1024 * 1024
 	defaultBackendTimeout = 5 * time.Second
@@ -220,6 +221,7 @@ func (s *Service) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("POST /v1/devices/pair", s.handlePair)
 	mux.HandleFunc("GET /v1/devices/{deviceId}/manifest", s.handleManifest)
+	mux.HandleFunc("POST /v1/devices/{deviceId}/heartbeat", s.handleHeartbeat)
 	mux.HandleFunc("GET /v1/snapshots/{snapshotId}", s.handleSnapshot)
 	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/devices", s.handleAdminListDevices)
 	mux.HandleFunc("POST /v1/admin/mosques/{mosqueId}/pairing-codes", s.handleAdminIssuePairing)
@@ -239,6 +241,22 @@ type pairResponse struct {
 	DeviceToken string         `json:"device_token"`
 	Mosque      MosqueIdentity `json:"mosque"`
 	ManifestURL string         `json:"manifest_url"`
+}
+
+type heartbeatRequest struct {
+	SentAt                *time.Time        `json:"sent_at"`
+	AppVersion            *string           `json:"app_version"`
+	OSVersion             *string           `json:"os_version"`
+	Model                 *string           `json:"model"`
+	ActiveSnapshotID      *string           `json:"active_snapshot_id"`
+	SyncStatus            *DeviceSyncStatus `json:"sync_status"`
+	CoverageDaysRemaining *int              `json:"coverage_days_remaining"`
+	ClockMismatch         *bool             `json:"clock_mismatch"`
+	TimezoneMismatch      *bool             `json:"timezone_mismatch"`
+	StorageHealth         *DeviceHealth     `json:"storage_health"`
+	MemoryHealth          *DeviceHealth     `json:"memory_health"`
+	BootMode              *DeviceBootMode   `json:"boot_mode"`
+	KioskMode             *DeviceKioskMode  `json:"kiosk_mode"`
 }
 
 func (s *Service) handlePair(writer http.ResponseWriter, request *http.Request) {
@@ -353,6 +371,70 @@ func (s *Service) handleManifest(writer http.ResponseWriter, request *http.Reque
 		return
 	}
 	writeJSONBytes(writer, http.StatusOK, body)
+}
+
+func (s *Service) handleHeartbeat(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, authErr := s.authenticatedDevice(request)
+	if authErr != nil {
+		writeDeviceAuthenticationError(writer, authErr)
+		return
+	}
+	if subtle.ConstantTimeCompare([]byte(principal.DeviceID), []byte(request.PathValue("deviceId"))) != 1 {
+		writeAPIError(writer, http.StatusUnauthorized, "device_unauthorized", false)
+		return
+	}
+	mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
+	if err != nil || mediaType != "application/json" {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	request.Body = http.MaxBytesReader(writer, request.Body, maxHeartbeatBytes)
+	decoder := json.NewDecoder(request.Body)
+	decoder.DisallowUnknownFields()
+	var input heartbeatRequest
+	if err := decoder.Decode(&input); err != nil || decodeEOF(decoder) != nil || !input.complete() {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	report := input.report()
+	if s.pairingBackend != nil {
+		backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+		defer cancel()
+		err := s.pairingBackend.Heartbeat(backendContext, principal, report)
+		switch {
+		case err == nil:
+		case errors.Is(err, ErrInvalidHeartbeat):
+			writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+			return
+		case errors.Is(err, ErrDeviceUnauthorized):
+			writeAPIError(writer, http.StatusUnauthorized, "device_unauthorized", false)
+			return
+		default:
+			writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+			return
+		}
+	}
+	writer.WriteHeader(http.StatusNoContent)
+}
+
+func (input heartbeatRequest) complete() bool {
+	return input.SentAt != nil && input.AppVersion != nil && input.OSVersion != nil &&
+		input.Model != nil && input.ActiveSnapshotID != nil && input.SyncStatus != nil &&
+		input.CoverageDaysRemaining != nil && input.ClockMismatch != nil &&
+		input.TimezoneMismatch != nil && input.StorageHealth != nil &&
+		input.MemoryHealth != nil && input.BootMode != nil && input.KioskMode != nil
+}
+
+func (input heartbeatRequest) report() DeviceHeartbeatReport {
+	return DeviceHeartbeatReport{
+		SentAt: *input.SentAt, AppVersion: *input.AppVersion, OSVersion: *input.OSVersion,
+		Model: *input.Model, ActiveSnapshotID: *input.ActiveSnapshotID,
+		SyncStatus: *input.SyncStatus, CoverageDaysRemaining: *input.CoverageDaysRemaining,
+		ClockMismatch: *input.ClockMismatch, TimezoneMismatch: *input.TimezoneMismatch,
+		StorageHealth: *input.StorageHealth, MemoryHealth: *input.MemoryHealth,
+		BootMode: *input.BootMode, KioskMode: *input.KioskMode,
+	}
 }
 
 func (s *Service) handleSnapshot(writer http.ResponseWriter, request *http.Request) {

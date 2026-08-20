@@ -155,6 +155,14 @@ Backend may store:
 
 Do not collect precise attendee data. A mosque display is not an audience-tracking device.
 
+T013 heartbeat is a strict operational allowlist and latest-only row, not an
+analytics event stream. The server owns `last_seen_at`; client `sent_at` and
+reported snapshot are visibly non-authoritative. Unknown request fields,
+including network/account/location/log data, are rejected. Heartbeat uses the
+existing device bearer and exact device path, and a revoked or cross-device
+principal receives the same unauthorized outcome. Delivery failure cannot
+affect cached display or snapshot activation.
+
 ## Analytics/crash reporting
 
 Default proposal: no advertising SDKs. Crash reporting is opt-in per deployment or privacy-reviewed, with:

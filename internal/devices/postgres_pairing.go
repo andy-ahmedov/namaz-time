@@ -22,7 +22,7 @@ var pairingMigrations embed.FS
 
 // PairingSchemaVersion is the exact PostgreSQL schema version required by the
 // current API binary.
-const PairingSchemaVersion = 2
+const PairingSchemaVersion = 3
 
 const postgresRollbackTimeout = 2 * time.Second
 
@@ -452,6 +452,73 @@ func (repository *PostgresPairingRepository) RevokeDevice(ctx context.Context, r
 	return commitTransaction(ctx, tx, "revoke device: commit")
 }
 
+func (repository *PostgresPairingRepository) RecordHeartbeat(ctx context.Context, heartbeat DeviceHeartbeat) error {
+	tx, err := repository.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return fmt.Errorf("record heartbeat: begin transaction: %w", err)
+	}
+	defer rollbackTransaction(tx)
+	var deviceStatus, mosqueStatus string
+	var lastSeenAt *time.Time
+	if err := tx.QueryRow(ctx, `
+		SELECT d.status, m.status, d.last_seen_at
+		FROM devices d
+		JOIN mosques m ON m.id = d.mosque_id
+		WHERE d.id = $1 AND d.mosque_id = $2
+		FOR UPDATE OF d`, heartbeat.DeviceID, heartbeat.MosqueID).Scan(
+		&deviceStatus, &mosqueStatus, &lastSeenAt,
+	); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return ErrDeviceUnauthorized
+		}
+		return fmt.Errorf("record heartbeat: lock device: %w", err)
+	}
+	if deviceStatus != "active" || mosqueStatus != "active" {
+		return ErrDeviceUnauthorized
+	}
+	if lastSeenAt != nil && heartbeat.ReceivedAt.Before(*lastSeenAt) {
+		return commitTransaction(ctx, tx, "record heartbeat: commit stale server time")
+	}
+	if _, err := tx.Exec(ctx, `
+		UPDATE devices SET last_seen_at = $3, app_version = $4,
+		       os_version = NULLIF($5, ''), model = NULLIF($6, '')
+		WHERE id = $1 AND mosque_id = $2`,
+		heartbeat.DeviceID, heartbeat.MosqueID, heartbeat.ReceivedAt,
+		heartbeat.AppVersion, heartbeat.OSVersion, heartbeat.Model,
+	); err != nil {
+		return fmt.Errorf("record heartbeat: update device: %w", err)
+	}
+	if _, err := tx.Exec(ctx, `
+		INSERT INTO device_health (
+			device_id, mosque_id, reported_at, received_at, reported_snapshot_id,
+			sync_status, coverage_days_remaining, clock_mismatch, timezone_mismatch,
+			storage_health, memory_health, boot_mode, kiosk_mode
+		) VALUES ($1, $2, $3, $4, NULLIF($5, ''), $6, $7, $8, $9, $10, $11, $12, $13)
+		ON CONFLICT (device_id) DO UPDATE SET
+			mosque_id = EXCLUDED.mosque_id,
+			reported_at = EXCLUDED.reported_at,
+			received_at = EXCLUDED.received_at,
+			reported_snapshot_id = EXCLUDED.reported_snapshot_id,
+			sync_status = EXCLUDED.sync_status,
+			coverage_days_remaining = EXCLUDED.coverage_days_remaining,
+			clock_mismatch = EXCLUDED.clock_mismatch,
+			timezone_mismatch = EXCLUDED.timezone_mismatch,
+			storage_health = EXCLUDED.storage_health,
+			memory_health = EXCLUDED.memory_health,
+			boot_mode = EXCLUDED.boot_mode,
+			kiosk_mode = EXCLUDED.kiosk_mode
+		WHERE device_health.mosque_id = EXCLUDED.mosque_id
+		  AND device_health.received_at <= EXCLUDED.received_at`,
+		heartbeat.DeviceID, heartbeat.MosqueID, heartbeat.SentAt, heartbeat.ReceivedAt,
+		heartbeat.ActiveSnapshotID, heartbeat.SyncStatus, heartbeat.CoverageDaysRemaining,
+		heartbeat.ClockMismatch, heartbeat.TimezoneMismatch, heartbeat.StorageHealth,
+		heartbeat.MemoryHealth, heartbeat.BootMode, heartbeat.KioskMode,
+	); err != nil {
+		return fmt.Errorf("record heartbeat: upsert latest health: %w", err)
+	}
+	return commitTransaction(ctx, tx, "record heartbeat: commit")
+}
+
 func bumpPairingRateBucket(
 	ctx context.Context,
 	tx pgx.Tx,
@@ -561,6 +628,8 @@ func pairingMigrationPath(version int, direction string) string {
 	name := "fleet_pairing"
 	if version == 2 {
 		name = "fleet_admin"
+	} else if version == 3 {
+		name = "device_health"
 	}
 	return fmt.Sprintf("migrations/%06d_%s.%s.sql", version, name, direction)
 }
