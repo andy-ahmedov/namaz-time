@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "compose-agent": {
+      "source": "hamen/compose_skill",
+      "sourceType": "github",
+      "skillPath": "skills/compose-agent/SKILL.md",
+      "computedHash": "552fe29525e418a8bce4a04170aea1b03d954c8eae5228f2de3d2987c7534955"
+    },
+    "material-3": {
+      "source": "hamen/material-3-skill",
+      "sourceType": "github",
+      "skillPath": "skills/material-3/SKILL.md",
+      "computedHash": "72d56347fae33c9b1763e16d0bffb781da382aa3be316b9252dcd35fd050c6bc"
+    }
+  }
+}

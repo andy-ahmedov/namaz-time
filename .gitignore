@@ -49,3 +49,7 @@ research/private/
 # Generated packages
 *.zip
 SHA256SUMS.local.txt
+
+# Python tooling caches
+__pycache__/
+*.py[cod]
