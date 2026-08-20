@@ -340,6 +340,18 @@ These are proposals until accepted by the product owner:
 - `UNKNOWN` — RTC errors that prevent TLS, reboot/power-cut recovery and OEM
   automatic-time behavior require physical-device evidence.
 
+## T021 bounded display-retention record
+
+- `PROPOSAL` — available and unavailable public display foreground content
+  follows a deterministic six-position cycle, advancing every ten minutes and
+  bounded to ±2 dp on each axis inside the shared overscan-safe frame.
+- `PROPOSAL` — the shift is discrete rather than animated and does not move the
+  full-bleed background or settings route, reorder semantics/focus, add a
+  permission or introduce another visual language.
+- `UNKNOWN` — whether this measure materially reduces retention on a selected
+  pilot panel, and whether vendor signage controls are also required, remain
+  part of the physical-TV soak and cannot be inferred from Robolectric bounds.
+
 ## Decision template
 
 ```text

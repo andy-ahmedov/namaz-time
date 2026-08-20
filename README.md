@@ -143,6 +143,10 @@ T020 добавляет bounded clock-health: Android сравнивает ча�
 и не меняет ни системное время, ни исходные prayer rows, ни результат валидной
 snapshot activation. Nullable `unknown` пока не отправляется в обязательное
 boolean-поле heartbeat: production assembler/contract не выдумывается.
+T021 добавляет только для публичного display-route детерминированный
+десятиминутный сдвиг foreground-контента в пределах ±2 dp и общего safe-frame.
+Он не анимирует экран, не меняет D-pad/settings и не считается доказательством
+защиты конкретной физической панели от остаточного изображения или выгорания.
 T014 добавляет bounded canary cohorts: группа до 100 устройств
 атомарно получает только уже верифицированный snapshot, а rollback
 создаёт новые monotonic manifest versions без частичного commit.

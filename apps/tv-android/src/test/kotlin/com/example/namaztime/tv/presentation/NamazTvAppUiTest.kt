@@ -15,6 +15,7 @@ import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.unit.DpRect
+import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorPreferencesRepository
@@ -272,6 +273,60 @@ class NamazTvAppUiTest {
     @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
     fun mainDisplayFits4kDensityAndKeepsSettingsFocused() {
         assertResponsiveDisplayIsVisible()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun retentionCycleMovesOnlySafeForegroundAndPreservesFocus() {
+        val currentInstant = mutableStateOf(fixedClock.instant())
+        val schedule = schedule()
+        compose.setContent {
+            NamazTvTheme {
+                ConnectedDisplayContent(
+                    schedule = schedule,
+                    currentInstant = currentInstant.value,
+                    bootstrapState = SnapshotBootstrapState.Ready(schedule.snapshotId),
+                    campaignEngine = CampaignEngine(),
+                    qrCodeGenerator = QrCodeGenerator(),
+                    onOpenSettings = {},
+                )
+            }
+        }
+
+        val rootBefore = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG)
+            .getUnclippedBoundsInRoot()
+        val safeBefore = compose.onNodeWithTag(MAIN_DISPLAY_SAFE_CONTENT_TAG)
+            .getUnclippedBoundsInRoot()
+        compose.runOnIdle {
+            currentInstant.value = currentInstant.value.plusSeconds(600L)
+        }
+        val rootAfter = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG)
+            .getUnclippedBoundsInRoot()
+        val safeAfter = compose.onNodeWithTag(MAIN_DISPLAY_SAFE_CONTENT_TAG)
+            .getUnclippedBoundsInRoot()
+
+        assertEquals(rootBefore, rootAfter)
+        assertEquals(safeBefore.left - 4.dp, safeAfter.left)
+        assertEquals(safeBefore.top, safeAfter.top)
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun everyRetentionPositionStaysInside720pSafeFrame() {
+        assertEveryRetentionPositionStaysInsideSafeFrame()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun everyRetentionPositionStaysInside1080pDensitySafeFrame() {
+        assertEveryRetentionPositionStaysInsideSafeFrame()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun everyRetentionPositionStaysInside4kDensitySafeFrame() {
+        assertEveryRetentionPositionStaysInsideSafeFrame()
     }
 
     @Test
@@ -594,6 +649,44 @@ class NamazTvAppUiTest {
             .getUnclippedBoundsInRoot()
         assert(settingsBounds.left >= rootBounds.left && settingsBounds.right <= rootBounds.right)
         assert(settingsBounds.top >= rootBounds.top && settingsBounds.bottom <= rootBounds.bottom)
+    }
+
+    private fun assertEveryRetentionPositionStaysInsideSafeFrame() {
+        val currentInstant = mutableStateOf(Instant.parse("2026-08-19T23:00:00Z"))
+        val schedule = schedule()
+        compose.setContent {
+            NamazTvTheme {
+                ConnectedDisplayContent(
+                    schedule = schedule,
+                    currentInstant = currentInstant.value,
+                    bootstrapState = SnapshotBootstrapState.Ready(schedule.snapshotId),
+                    campaignEngine = CampaignEngine(),
+                    qrCodeGenerator = QrCodeGenerator(),
+                    onOpenSettings = {},
+                )
+            }
+        }
+
+        val root = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG)
+            .getUnclippedBoundsInRoot()
+        val insets = TvSafeFrameInsets.forSize(
+            width = root.right - root.left,
+            height = root.bottom - root.top,
+        )
+        repeat(6) { slot ->
+            compose.runOnIdle {
+                currentInstant.value = Instant.parse("2026-08-19T23:00:00Z")
+                    .plusSeconds(slot * 600L)
+            }
+            val safeContent = compose.onNodeWithTag(MAIN_DISPLAY_SAFE_CONTENT_TAG)
+                .assertIsDisplayed()
+                .getUnclippedBoundsInRoot()
+            assert(safeContent.left >= root.left + insets.horizontal)
+            assert(safeContent.right <= root.right - insets.horizontal)
+            assert(safeContent.top >= root.top + insets.vertical)
+            assert(safeContent.bottom <= root.bottom - insets.vertical)
+            compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
+        }
     }
 
     private fun assertUnavailableScreenSafeFrame() {

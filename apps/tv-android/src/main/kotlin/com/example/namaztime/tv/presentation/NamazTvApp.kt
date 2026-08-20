@@ -22,6 +22,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
@@ -159,18 +160,18 @@ private fun DisplayRoute(
     onOpenSettings: () -> Unit,
 ) {
     DisplayKeepAwakeEffect()
-    if (schedule != null) {
-        var currentInstant by remember(schedule.snapshotId, clock) {
-            mutableStateOf(clock.instant())
-        }
-        LaunchedEffect(schedule.snapshotId, clock, tickIntervalMillis) {
-            if (tickIntervalMillis != null) {
-                while (true) {
-                    delay(tickIntervalMillis)
-                    currentInstant = clock.instant()
-                }
+    var currentInstant by remember(clock) {
+        mutableStateOf(clock.instant())
+    }
+    LaunchedEffect(clock, tickIntervalMillis) {
+        if (tickIntervalMillis != null) {
+            while (true) {
+                delay(tickIntervalMillis)
+                currentInstant = clock.instant()
             }
         }
+    }
+    if (schedule != null) {
         ConnectedDisplayContent(
             schedule = schedule,
             currentInstant = currentInstant,
@@ -184,6 +185,7 @@ private fun DisplayRoute(
     DisplayUnavailableScreen(
         localDiagnostic = localDiagnostic,
         bootstrapState = bootstrapState,
+        retentionOffset = screenRetentionOffsetAt(currentInstant),
         onOpenSettings = onOpenSettings,
     )
 }
@@ -197,6 +199,7 @@ internal fun ConnectedDisplayContent(
     qrCodeGenerator: QrCodeGenerator,
     onOpenSettings: () -> Unit,
 ) {
+    val retentionOffset = screenRetentionOffsetAt(currentInstant)
     val engine = remember { PrayerTimeEngine() }
     val timeInput = remember(schedule) { schedule.toTimeEngineInput() }
     val validationCode = remember(timeInput) { engine.validate(timeInput) }
@@ -204,6 +207,7 @@ internal fun ConnectedDisplayContent(
         DisplayUnavailableScreen(
             localDiagnostic = validationCode,
             bootstrapState = bootstrapState,
+            retentionOffset = retentionOffset,
             onOpenSettings = onOpenSettings,
         )
         return
@@ -215,6 +219,7 @@ internal fun ConnectedDisplayContent(
         DisplayUnavailableScreen(
             localDiagnostic = resolution.supportCode,
             bootstrapState = bootstrapState,
+            retentionOffset = retentionOffset,
             onOpenSettings = onOpenSettings,
         )
         return
@@ -238,6 +243,7 @@ internal fun ConnectedDisplayContent(
         state = schedule.toPrayerDisplayUiState(
             resolution = resolution as PrayerTimeResolution.Available,
         ).copy(supportCode = recoveryCode, campaign = campaign),
+        retentionOffset = retentionOffset,
         onOpenSettings = onOpenSettings,
     )
 }
@@ -246,6 +252,7 @@ internal fun ConnectedDisplayContent(
 private fun DisplayUnavailableScreen(
     localDiagnostic: String?,
     bootstrapState: SnapshotBootstrapState,
+    retentionOffset: DpOffset = DpOffset.Zero,
     onOpenSettings: () -> Unit,
 ) {
     val settingsFocusRequester = remember { FocusRequester() }
@@ -254,6 +261,8 @@ private fun DisplayUnavailableScreen(
     TvSafeFrame(
         testTag = DISPLAY_UNAVAILABLE_TAG,
         contentAlignment = Alignment.Center,
+        contentOffset = retentionOffset,
+        contentShiftBudget = SCREEN_RETENTION_SHIFT_BUDGET,
     ) {
         TvGlassPanel(
             modifier = Modifier

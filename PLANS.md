@@ -106,6 +106,7 @@ backend or current Robolectric evidence labels.
 | T018 display-only screen-on lifecycle | DONE | lifecycle-bound Compose `keepScreenOn` is active for normal/unavailable display, restores the prior host flag in settings/disposal and adds no permission; SDK 28/35 navigation/restoration tests, Android build and repository gates pass; OEM power behavior remains deferred |
 | T019 accelerated offline rollover hardening | DONE | deterministic seven-day matrix over one materialized local schedule preserves mosque-local date/time and safe frame at 4K density, then fails closed on the first uncovered date; Android/repository gates and independent review pass; this is not a Room-reopen or physical seven-day soak |
 | T020 bounded device-clock health | DONE | HTTPS manifest `Date` compared with injected response receipt at ±5-minute tolerance plus rollback detection; durable nullable health never blocks sync/display; heartbeat tri-state contract/wiring and physical bad-RTC/TLS/power evidence remain deferred |
+| T021 bounded display-retention shift | DONE | public display foreground follows a deterministic six-position, ten-minute, ±2 dp cycle inside the shared safe frame; unavailable display participates while settings/background/focus order remain unchanged; pure policy plus 720p/1080p/4K safe-frame and D-pad regressions pass locally; panel-specific efficacy remains physical evidence |
 
 - physical matrix: Google TV, common Android TV box, Sber/Salute if targeted;
 - boot/restart behavior per OEM;
@@ -113,7 +114,7 @@ backend or current Robolectric evidence labels.
 - power loss and bad clock tests;
 - seven-day offline soak;
 - memory/4K asset soak;
-- screen burn-in mitigation policy where applicable.
+- panel/OEM screen-retention validation and any additional vendor-specific policy.
 
 ## Phase 5 — regional scale
 

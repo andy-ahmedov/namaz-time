@@ -139,6 +139,12 @@ contract test pins `Date` on both 200 and 304 without changing ETag identity.
 Clock health never changes a completed sync result. This does not reproduce a
 bad RTC, TLS failure, reboot or power cut on physical hardware.
 
+T021 unit tests pin every position in the six-slot cycle, slot stability and
+the ±2 dp axis bound. Existing connected and unavailable UI matrices exercise
+the shifted shared safe frame at 720p, 1080p-density and 4K-density while the
+D-pad tests continue to pin initial focus and display/settings return. These
+tests prove deterministic layout bounds, not burn-in prevention on a panel.
+
 ## Physical device tests
 
 Required before pilot:

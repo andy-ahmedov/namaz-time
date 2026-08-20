@@ -101,6 +101,12 @@ The Phase 4 built-in background is an original static Compose drawing. The
 product-owner-supplied `design.png` is a hierarchy/mood reference only and is
 not packaged, cropped or copied as an application asset.
 
+In public display mode, the foreground safe-frame content uses a deterministic
+six-position cycle every ten minutes, bounded to ±2 dp per axis. The full-bleed
+background and settings route remain fixed, and the shift does not animate or
+change semantic/focus order. This is a conservative screen-retention measure,
+not evidence that a particular panel cannot retain or burn in an image.
+
 ## Settings navigation
 
 Suggested left navigation:

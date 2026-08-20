@@ -89,6 +89,14 @@ composition. The unavailable/recovery projection is still display mode;
 settings and background sync do not hold this flag. This uses the platform view
 hint, not a wake lock, and adds no permission.
 
+T021 derives a deterministic, bounded foreground offset from the display
+route's existing injected clock. Every ten-minute slot selects one of six
+positions within ±2 dp on each axis. The offset is applied inside the shared
+overscan-safe frame to both available and unavailable display projections;
+settings, the static atmospheric background, focus order and persisted state
+are unaffected. It has no network dependency and makes no panel-protection
+guarantee.
+
 ### Android local baseline (T003–T004)
 
 Room schema version 1 stores immutable snapshot provenance/integrity metadata,

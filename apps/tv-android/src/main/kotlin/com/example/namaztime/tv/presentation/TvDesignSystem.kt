@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -23,6 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
 import androidx.tv.material3.Shapes
@@ -143,6 +145,8 @@ internal fun TvSafeFrame(
     testTag: String,
     modifier: Modifier = Modifier,
     contentAlignment: Alignment = Alignment.TopStart,
+    contentOffset: DpOffset = DpOffset.Zero,
+    contentShiftBudget: Dp = 0.dp,
     content: @Composable BoxScope.() -> Unit,
 ) {
     BoxWithConstraints(modifier = modifier.fillMaxSize()) {
@@ -151,6 +155,8 @@ internal fun TvSafeFrame(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = insets.horizontal, vertical = insets.vertical)
+                .padding(contentShiftBudget)
+                .offset(contentOffset.x, contentOffset.y)
                 .testTag(testTag),
             contentAlignment = contentAlignment,
             content = content,

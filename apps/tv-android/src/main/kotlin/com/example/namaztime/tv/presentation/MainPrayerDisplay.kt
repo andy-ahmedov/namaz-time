@@ -39,6 +39,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -111,6 +112,7 @@ internal fun MainPrayerDisplay(
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     requestInitialFocus: Boolean = true,
+    retentionOffset: DpOffset = DpOffset.Zero,
 ) {
     val settingsFocusRequester = remember { FocusRequester() }
 
@@ -118,7 +120,11 @@ internal fun MainPrayerDisplay(
         modifier = modifier.fillMaxSize().testTag(MAIN_PRAYER_DISPLAY_TAG),
     ) {
         val metrics = MainDisplayMetrics.forHeight(maxHeight)
-        TvSafeFrame(testTag = MAIN_DISPLAY_SAFE_CONTENT_TAG) {
+        TvSafeFrame(
+            testTag = MAIN_DISPLAY_SAFE_CONTENT_TAG,
+            contentOffset = retentionOffset,
+            contentShiftBudget = SCREEN_RETENTION_SHIFT_BUDGET,
+        ) {
             Column(modifier = Modifier.fillMaxSize()) {
                 DisplayHeader(
                     state,

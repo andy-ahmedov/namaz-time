@@ -343,3 +343,31 @@ a body-independent `Date`; Android persists nullable clock health and refreshes
 it on 304 without changing sync outcome. The existing heartbeat payload cannot
 represent `unknown`, so T020 intentionally does not manufacture a boolean or
 claim production heartbeat wiring.
+
+## T021 — bounded display-retention shift
+
+**Goal:** reduce exact foreground pixel persistence on the always-on public
+display without introducing distracting motion, changing the T017 visual
+language or weakening overscan and D-pad behavior.
+
+**In scope:** one deterministic six-position cycle selected from wall-clock
+ten-minute slots; at most two dp movement on either axis; main and bounded
+unavailable display states; movement inside the existing responsive safe frame;
+unchanged static atmospheric background, settings route, semantic tree and
+focus order; pure policy and existing 720p/1080p/4K UI regressions.
+
+**Non-goals:** claiming prevention of burn-in or image retention; panel/OEM
+controls; continuous animation; moving the settings UI or full-bleed
+background; wake locks; physical-TV/ADB evidence; D-011 or Phase 5.
+
+**Acceptance:** the offset is stable within each ten-minute slot, cycles
+deterministically and never exceeds ±2 dp per axis; the most constrained
+connected profile retains its root-relative safe margins and initial settings
+focus; unavailable and settings navigation remain usable; Android unit/build
+and repository-wide gates pass.
+
+**Result:** completed locally on 2026-08-20. The display route derives a tiny
+foreground offset from its existing injected clock and passes it through the
+shared safe frame for both available and unavailable projections. No new
+animation, permission, data dependency or visual style was introduced. Actual
+panel efficacy remains `UNKNOWN` until a physical soak.

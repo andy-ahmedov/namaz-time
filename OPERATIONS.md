@@ -67,6 +67,8 @@ required.
 - boot receiver enabled only by operator setting;
 - document OEM “auto start/energy optimization/last app” settings;
 - keep screen on while active;
+- keep the bounded foreground retention shift enabled; treat it as a local UI
+  measure, not a replacement for panel/OEM signage and retention settings;
 - recover from process death;
 - show diagnostics if overlay/autostart capability unavailable.
 
