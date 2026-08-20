@@ -1,3 +1,8 @@
+---
+name: prayer-times-provider
+description: Implement or review NamazTime prayer-time source adapters with explicit authority, provenance, deterministic normalization, validation, and fail-closed publication boundaries.
+---
+
 # Prayer-times provider skill
 
 Use this skill when implementing or reviewing a source adapter.

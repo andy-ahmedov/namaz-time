@@ -1,3 +1,8 @@
+---
+name: android-tv-screen
+description: Implement or review NamazTime Android TV display and settings screens while preserving offline local-state, D-pad, timezone, and responsive-layout invariants.
+---
+
 # Android TV screen skill
 
 Use this skill for main display/settings work.
