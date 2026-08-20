@@ -1,0 +1,23 @@
+{
+  "raw_artifact": {
+    "filename": "calendar_for_the_year_Ulyanovsk.pdf",
+    "byte_length": 35078839,
+    "sha256": "82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21",
+    "pdf_version": "1.4",
+    "pages": 18,
+    "title": "календарь 2026 НА ПЕЧАТЬ г. Ульяновск",
+    "creator": "Adobe Illustrator 27.8 (Windows)",
+    "creation_date_from_pdf": "2025-12-23T17:11:55+03:00"
+  },
+  "controlled_extraction": {
+    "tool": "Poppler pdftotext",
+    "tool_version": "24.02.0",
+    "mode": "layout text layer",
+    "table_pages": [6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+    "extracted_text_sha256": "dcfeccc4cd08ceae7dcedd1d7519e90e1c9b5de8071c1da17348b50ff79f4962",
+    "transcription_filename": "schedule.csv",
+    "transcription_sha256": "41b44173e99534ffc7d6a1ee7b429f98a95ca863bb29d2971b57e8693dd51538",
+    "row_count": 365,
+    "visual_review": "Все 12 месячных страниц просмотрены в рендере; август дополнительно сопоставлен с отдельным фото-источником"
+  }
+}

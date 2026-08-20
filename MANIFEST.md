@@ -40,6 +40,9 @@
 - `examples/synthetic-prayer-snapshot.json`
 - `fixtures/pilot/ulyanovsk-2026-08/` — authorized raw August 2026 image,
   provenance/source record and controlled transcription; unapproved.
+- `fixtures/pilot/ulyanovsk-2026/` — authorized raw annual 2026 Ulyanovsk PDF,
+  strict controlled transcription, extraction provenance and August conflict
+  ledger; unapproved.
 - `fixtures/synthetic/manual-annual-2025.csv` — static 365-day parser/publication golden.
 - `fixtures/verification/` — signed synthetic snapshot plus public test key only.
 - `docs/adr/0001-source-authority-and-signed-snapshots.md`
@@ -64,9 +67,15 @@
   administration, bearer-scoped manifest/snapshot service and signed immutable
   registry validation, latest-only privacy-safe device health and bounded
   canary rollout cohorts, plus a no-store bounded support projection.
-- `cmd/ingestor/` — local manual-fixture inspection CLI; it cannot approve or publish.
+- `cmd/ingestor/` — local version-dispatched manual/official-file inspection CLI; it cannot approve or publish.
 - `internal/domain/` — source-independent snapshot types, validation and contract fixtures.
 - `internal/providers/manual/` — strict raw-artifact + manual CSV candidate provider.
+- `internal/providers/sourceconfig/` — source-registry fields shared by strict
+  provider adapters without sharing provider trust policy.
+- `internal/providers/controlled/` — source-independent validation shared by
+  controlled, human-reviewed transcription adapters.
+- `internal/providers/officialpdf/` — strict source-specific Ulyanovsk 2026
+  official-PDF controlled-transcription provider.
 - `internal/publication/` — deterministic diff, approval gate, canonical signing and verification.
 - `settings.gradle.kts`, `build.gradle.kts`, `gradle/` — Android Gradle build and wrapper.
 - `apps/tv-android/` — Compose for TV shell, D-pad/UI tests, DataStore

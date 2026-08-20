@@ -2,6 +2,8 @@
 
 Use this before implementing a production adapter for a mosque, DUM or other authority.
 
+Pilot application: [Ulyanovsk 2026 onboarding checklist](fixtures/pilot/ulyanovsk-2026/partnership-checklist.md).
+
 ## Authority and scope
 
 - [ ] Legal/organizational name recorded.

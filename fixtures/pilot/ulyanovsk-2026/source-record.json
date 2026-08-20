@@ -1,0 +1,39 @@
+{
+  "source_id": "official-rdumul-ulyanovsk-2026",
+  "kind": "official_file",
+  "authority_name": "Региональное духовное управление мусульман Ульяновской области в составе ЦДУМ России",
+  "authority_branch": "Годовой календарь времени намазов для г. Ульяновска на 2026 год",
+  "canonical_url": "https://www.rdumul.ru",
+  "contact": "Печатные каналы источника: www.rdumul.ru; Telegram @dumul73",
+  "geographic_scope": {
+    "country_code": "RU",
+    "region_codes": ["RU-ULY"],
+    "locality_ids": ["ulyanovsk"],
+    "description": "г. Ульяновск; применение как канонического расписания Второй Соборной мечети требует решения D-002"
+  },
+  "timezone_policy": {
+    "mode": "fixed_iana",
+    "iana_timezone": "Europe/Ulyanovsk"
+  },
+  "retrieval": {
+    "mode": "manual_upload",
+    "cadence": "annual",
+    "stale_after_hours": 8760,
+    "honor_etag": false,
+    "honor_last_modified": false,
+    "rate_limit_note": "Предоставленный владельцем продукта PDF; сетевое получение не выполняется"
+  },
+  "permission": {
+    "status": "granted",
+    "license_reference": "Разрешение владельца продукта использовать расписание в проекте, подтверждено 2026-08-20",
+    "attribution_text": "Региональное духовное управление мусульман Ульяновской области в составе ЦДУМ России · www.rdumul.ru",
+    "evidence_reference": "Запрос владельца продукта от 2026-08-20 и сохранённый исходный PDF"
+  },
+  "validation": {
+    "approval_required": true,
+    "max_automatic_delta_minutes": 30,
+    "minimum_coverage_days": 365,
+    "fixture_set": "fixtures/pilot/ulyanovsk-2026"
+  },
+  "status": "testing"
+}

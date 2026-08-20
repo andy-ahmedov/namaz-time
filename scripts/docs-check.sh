@@ -5,11 +5,16 @@ cd "$ROOT"
 
 python3 - <<'PYDOCS'
 from pathlib import Path
+import hashlib
 import json
 import re
 
 root = Path('.').resolve()
 ignored_directory_names = {'.git', '.gradle', 'build', 'dist', 'node_modules'}
+large_file_sha256_allowlist = {
+    Path('fixtures/pilot/ulyanovsk-2026/calendar_for_the_year_Ulyanovsk.pdf'):
+        '82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21',
+}
 
 
 def repository_files(pattern: str):
@@ -108,7 +113,16 @@ for path in repository_files('*'):
     if forbidden:
         raise SystemExit(f'Prohibited artifact: {path.relative_to(root)}')
     if path.stat().st_size > 5 * 1024 * 1024:
-        raise SystemExit(f'Unexpected file over 5 MiB: {path.relative_to(root)}')
+        relative = path.relative_to(root)
+        expected_sha256 = large_file_sha256_allowlist.get(relative)
+        if expected_sha256 is None:
+            raise SystemExit(f'Unexpected file over 5 MiB: {relative}')
+        digest = hashlib.sha256()
+        with path.open('rb') as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b''):
+                digest.update(chunk)
+        if digest.hexdigest() != expected_sha256:
+            raise SystemExit(f'Authorized large fixture SHA-256 mismatch: {relative}')
 
 summary = json.loads((root / 'research/evidence/islamapp-1.6.2-static-summary.json').read_text(encoding='utf-8'))
 san = summary.get('sanitization', {})

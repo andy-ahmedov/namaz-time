@@ -98,16 +98,25 @@ created_at
 candidate_schedule_id
 local_date
 fajr
+recommended_fajr nullable (source-only al-Isfar/performance time)
 sunrise
+zenith nullable
 dhuhr
+dhuhr_congregation nullable (candidate only; not implicit mosque iqamah)
 asr
 maghrib
 isha
 optional fields
 source_revision
+source_flags
 ```
 
 Primary key: `(candidate_schedule_id, local_date)`.
+
+`recommended_fajr`, zenith and source congregation fields are review evidence;
+they participate in candidate identity/diff but do not become adhan rows.
+Collective Dhuhr can become an iqamah override only after an approval explicitly
+covers that mosque-local practice. Missing daily Hijri fields remain absent.
 
 ### `approval`
 

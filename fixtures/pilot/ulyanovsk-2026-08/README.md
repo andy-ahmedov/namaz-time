@@ -36,6 +36,8 @@ Expected `manual-csv/v1` inspection fingerprints:
   `e6737632e901576039d4728c3d0919e2ca6be83caad6cec519cbab682d39fd76`;
 - status `needs_review`, 31 changed days, zero blocking errors.
 
-The fixture covers one month only. It is not the full-year onboarding evidence
-required by T010 and cannot establish future update cadence or correction
-policy.
+The fixture covers one month only. T010 now retains the separate annual source
+at `../ulyanovsk-2026/`; its August overlap disagrees with this photo on Dhuhr
+onset for Aug 20–30, the Aug 24 collective value and transition-footnote
+wording. Those conflicts remain unresolved review evidence rather than edits
+to this earlier transcription.

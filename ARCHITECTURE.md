@@ -198,6 +198,22 @@ layer; display repositories remain network-free.
 Go and Android both reject malformed UTF-8, explicit JSON nulls and invalid
 typed iqamah, Jumu'ah, campaign or theme children before activation.
 
+T010 adds exactly one source-specific `official_file` adapter for the supplied
+RDUM Ulyanovsk 2026 PDF. The 35 MB PDF is retained unchanged and hash-bound;
+the runtime parser consumes a strict, visually reviewed CSV transcription, not
+Poppler or OCR. The candidate retains recommended al-Isfar as source-only
+metadata and the printed collective Dhuhr separately from onset. It has no
+daily Hijri values because the PDF has none. Four required source flags bind
+the printed summer Fajr/Isha transition night (10→11 May) and completion night
+(2→3 August); drift fails before candidate creation.
+
+The full-year candidate and deterministic diff stop at `needs_review`. A
+machine-checked 31-day overlap against the earlier August photo records eleven
+Dhuhr-onset conflicts and one collective-time conflict, while the footnote
+wording conflict remains human review evidence. No precedence is inferred.
+Named mosque/authority approval, the pilot iqamah decision, production signing
+trust and physical rollout/rollback evidence remain outside the local adapter.
+
 T009 adds the device-facing delivery path. The Go API loads only explicitly
 configured immutable snapshots that pass raw hash, canonical Ed25519,
 schema/domain, snapshot-ID/signing-key and paired-mosque binding checks. Pairing
@@ -359,9 +375,10 @@ referenced snapshot-artifact inventory pass.
 
 The Phase 1 implementation of steps 1–8 is local and file-backed. It does not
 create an approval actor, production key or rollout channel. The real August
-2026 Ulyanovsk artifact reaches `needs_review` only; the static 365-day
-synthetic golden fixture proves deterministic publication without inventing
-missing real months.
+and full-year 2026 Ulyanovsk artifacts reach `needs_review` only. The annual
+source now proves deterministic 365-day real-source normalization/diff without
+inventing absent Hijri data; only the static annual golden fixture is approved
+with an ephemeral test key.
 
 ## Provider interface
 

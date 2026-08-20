@@ -40,7 +40,16 @@ Detailed prompts: [CODEX_TASKS.md](CODEX_TASKS.md).
 | Task | Status | Acceptance / evidence |
 |---|---|---|
 | T009 manifest/snapshot sync | DONE | explicit ephemeral one-use pairing fixture and scoped bearer API; duplicate credential rejection; signed registry and paired-mosque binding; same-origin canonical snapshot URLs; manifest/raw snapshot ETag/304 and Digest; Android AES-GCM/Keystore provisioning, provisioning-scoped durable stage/quarantine/checkpoint, signature/schema/domain/manifest/mosque binding, atomic activation and authenticated rollback; 401/404/500/timeout/tamper/re-pair plus file-backed import/post-commit interruption recovery tests pass |
-| T010 first real source onboarding | BLOCKED | requires completed `SOURCE_PARTNERSHIP_CHECKLIST.md`, named D-002 approver, full-year authorized source, D-013 production signer/trust distribution and physical canary/rollback drill |
+| T010 first real source onboarding | BLOCKED | local source slice DONE: authorized raw annual PDF/hash, strict `official_file` controlled transcription, 365-day candidate/diff, seasonal-rule flags and 31-day August reconciliation; production approval/publication remains blocked on named D-002/D-009 decisions, D-013 signer/trust and physical canary/rollback |
+
+T010's locally executable source slice is complete. The retained PDF SHA-256 is
+`82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21`;
+the strict parser produces a 2026-01-01→2026-12-31 `needs_review` candidate
+with zero blocking validation errors. It preserves al-Isfar as source-only
+metadata, keeps collective Dhuhr separate, binds the printed May/August
+Fajr/Isha transitions and records all twelve numeric August disagreements.
+This does not manufacture the missing approver, production signature or TV
+canary evidence, so the combined T010 task remains `BLOCKED` rather than DONE.
 
 T009 completes the locally testable delivery half of the Phase 2 invariant. The
 runtime command refuses to embed fixture credentials or trust keys, requires
@@ -132,7 +141,7 @@ Do not begin until the first pilot is stable.
 - T003 implements only the reversible local-first shell while D-008 is open;
 - Room currently uses kapt because Room 2.8.4 KSP processing is incompatible with the scaffold's Kotlin 2.0.21 processor classpath; revisit with a coordinated Kotlin/AGP upgrade;
 - pilot source image is selected and permission is confirmed, but the named mosque/authority prayer-time approver remains open under D-002;
-- the real August 2026 photo is monthly rather than the annual golden fixture required for broad production coverage; T008 uses it as a real candidate fixture without inventing missing months;
+- the official 2026 annual PDF now supplies full-year pilot coverage through T010; its daily Hijri values are absent and therefore remain unset rather than invented;
 - no physical Android TV/box available in the analysis environment;
 - abrupt OS process-kill/journal-recovery remains a future instrumentation/ADB
   acceptance case; T004 locally proves transactional rollback followed by a
@@ -144,10 +153,11 @@ Do not begin until the first pilot is stable.
 - D-013 still requires a production signer/KMS, public-key distribution,
   rotation and revocation policy. T008 commits only a public test fixture; its
   ephemeral private key was discarded.
-- local Phase 1 and T009 are complete, but a real pilot publication remains
-  intentionally impossible until D-002 approves the exact
-  raw/transcription/diff hashes and warnings, a full-year source is obtained,
-  D-013 provisions production trust, and a physical canary/rollback drill is
-  performed. T010 is therefore blocked rather than partially fabricated.
+- local Phase 1/T009 and T010 source onboarding are complete, but a real pilot
+  publication remains intentionally impossible until D-002 resolves the exact
+  annual raw/transcription/diff hashes, warnings and August source conflicts,
+  D-009 decides whether any printed collective value is pilot iqamah, D-013
+  provisions production trust, and a physical canary/rollback drill is
+  performed. T010 therefore remains blocked only at those external gates.
 - T009 intentionally rejects non-empty remote asset manifests; custom asset
   staging/type/dimension activation requires a separately bounded task.

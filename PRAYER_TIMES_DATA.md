@@ -107,11 +107,18 @@ optional_imsak
 optional_duha
 optional_tahajjud_start
 optional_midnight
+optional_recommended_fajr (source-only al-Isfar/performance recommendation)
+optional_zenith
+optional_collective_dhuhr (review candidate, not implicit mosque iqamah)
 source_revision
 validation_flags
 ```
 
 Use local wall-clock `HH:MM` plus the schedule's IANA timezone. Preserve source precision; do not invent seconds.
+Do not invent daily Hijri values when a source supplies only Gregorian rows.
+Recommended performance times such as al-Isfar remain distinct from prayer
+onset, just as a city-wide collective recommendation remains distinct from an
+approved mosque-local iqamah rule.
 
 ## Candidate validation
 

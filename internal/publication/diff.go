@@ -165,6 +165,7 @@ func dayDiff(before, after []domain.CandidatePrayerDay) []DiffChange {
 		get  func(domain.CandidatePrayerDay) string
 	}{
 		{"fajr", func(day domain.CandidatePrayerDay) string { return day.Fajr }},
+		{"recommended_fajr", func(day domain.CandidatePrayerDay) string { return day.RecommendedFajr }},
 		{"sunrise", func(day domain.CandidatePrayerDay) string { return day.Sunrise }},
 		{"zenith", func(day domain.CandidatePrayerDay) string { return day.Zenith }},
 		{"dhuhr", func(day domain.CandidatePrayerDay) string { return day.Dhuhr }},

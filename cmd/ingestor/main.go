@@ -13,6 +13,7 @@ import (
 
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/manual"
+	"github.com/andy-ahmedov/namaz-time/internal/providers/officialpdf"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
 )
 
@@ -20,6 +21,7 @@ const componentName = "ingestor"
 
 type importManifest struct {
 	DataClassification    domain.DataClassification `json:"data_classification"`
+	ParserVersion         string                    `json:"parser_version,omitempty"`
 	Mosque                domain.Mosque             `json:"mosque"`
 	ArtifactFilename      string                    `json:"artifact_filename"`
 	ArtifactContentType   string                    `json:"artifact_content_type"`
@@ -89,27 +91,50 @@ func inspectFixture(directory string) (inspection, error) {
 	if err != nil {
 		return inspection{}, fmt.Errorf("read source record: %w", err)
 	}
-	source, err := manual.DecodeSourceRecord(sourceData)
-	if err != nil {
-		return inspection{}, err
-	}
 	artifactFile, err := os.Open(filepath.Join(directory, manifest.ArtifactFilename))
 	if err != nil {
 		return inspection{}, fmt.Errorf("open artifact: %w", err)
 	}
 	defer artifactFile.Close()
-	artifact, err := manual.CaptureArtifact(manifest.ArtifactFilename, manifest.ArtifactContentType, capturedAt, artifactFile)
-	if err != nil {
-		return inspection{}, err
-	}
 	transcription, err := os.ReadFile(filepath.Join(directory, manifest.TranscriptionFilename))
 	if err != nil {
 		return inspection{}, fmt.Errorf("read transcription: %w", err)
 	}
-	candidate, err := manual.Parse(manual.ParseConfig{
-		Mosque: manifest.Mosque, Source: source, ExpectedRawSHA256: manifest.ArtifactSHA256,
-		DataClassification: manifest.DataClassification,
-	}, artifact, transcription)
+	parserVersion := manifest.ParserVersion
+	if parserVersion == "" {
+		parserVersion = manual.ParserVersion
+	}
+	var candidate domain.CandidateSchedule
+	switch parserVersion {
+	case manual.ParserVersion:
+		source, decodeErr := manual.DecodeSourceRecord(sourceData)
+		if decodeErr != nil {
+			return inspection{}, decodeErr
+		}
+		artifact, captureErr := manual.CaptureArtifact(manifest.ArtifactFilename, manifest.ArtifactContentType, capturedAt, artifactFile)
+		if captureErr != nil {
+			return inspection{}, captureErr
+		}
+		candidate, err = manual.Parse(manual.ParseConfig{
+			Mosque: manifest.Mosque, Source: source, ExpectedRawSHA256: manifest.ArtifactSHA256,
+			DataClassification: manifest.DataClassification,
+		}, artifact, transcription)
+	case officialpdf.ParserVersion:
+		source, decodeErr := officialpdf.DecodeSourceRecord(sourceData)
+		if decodeErr != nil {
+			return inspection{}, decodeErr
+		}
+		artifact, captureErr := officialpdf.CaptureArtifact(manifest.ArtifactFilename, manifest.ArtifactContentType, capturedAt, artifactFile)
+		if captureErr != nil {
+			return inspection{}, captureErr
+		}
+		candidate, err = officialpdf.Parse(officialpdf.ParseConfig{
+			Mosque: manifest.Mosque, Source: source, ExpectedRawSHA256: manifest.ArtifactSHA256,
+			DataClassification: manifest.DataClassification,
+		}, artifact, transcription)
+	default:
+		return inspection{}, fmt.Errorf("unsupported parser version %q", parserVersion)
+	}
 	if err != nil {
 		return inspection{}, err
 	}

@@ -192,6 +192,17 @@ pilot fixture is validation/diff evidence only while D-002 is open. Direct
 parser-entry provenance bypasses, normalized metadata/Hijri-only diffs and
 cross-runtime malformed UTF-8 are regression-tested.
 
+T010 adds the retained 18-page Ulyanovsk 2026 PDF plus a strict 365-row
+controlled transcription. Provider tests bind raw/transcription/normalized/
+diff hashes, exact header and source scope, gap/duplicate/time failures,
+candidate-only al-Isfar ordering, absent Hijri values and the four printed
+May/August summer-transition markers. A field-by-field test covers all 31
+overlapping August days and requires the reconciliation ledger to contain
+exactly eleven Dhuhr-onset differences plus the Aug 24 collective difference.
+The real candidate remains unapproved and a publication regression rejects it
+without a named approval. This is static/local evidence, not physical TV or
+production signer evidence.
+
 T009 adds real HTTP-handler tests for one-use pairing, bearer isolation,
 manifest/snapshot 200 and 304, Digest and registry-time signature rejection.
 Android tests cover 200/304/401/404/500/timeout, raw length/hash tamper,

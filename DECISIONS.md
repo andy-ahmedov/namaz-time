@@ -7,7 +7,7 @@ Record product decisions here before converting stable architecture choices into
 | ID | Decision | Status | Owner | Needed by | Notes |
 |---|---|---|---|---|---|
 | D-001 | First pilot mosque and locality | ACCEPTED | Product owner | before T008/T010 | Second Cathedral Mosque of Ulyanovsk, 18A Dzerzhinsky Street, Ulyanovsk; confirmed 2026-08-20 |
-| D-002 | Canonical prayer-time authority/source | OPEN | Mosque approver | before real publication | August 2026 `rdumul.ru`-attributed photo is selected as the pilot manual-import fixture; a named religious approver/authority confirmation is still required before labeling publication official |
+| D-002 | Canonical prayer-time authority/source | OPEN | Mosque approver | before real publication | supplied RDUM Ulyanovsk annual 2026 PDF is the primary pilot candidate source; it conflicts with the earlier August photo on Dhuhr Aug 20–30, Aug 24 collective time and transition wording, so a named religious approver must resolve exact hashes/diff before pilot publication |
 | D-003 | Written permission and attribution | ACCEPTED | Product owner/source | before real data commit/publication | product owner confirmed project use on 2026-08-20; preserve the exact raw SHA-256 and printed attribution |
 | D-004 | Pilot TV/box model and Android version | OPEN | Installer | before performance/autostart promises | T001 compiles with minSdk 28 / targetSdk 35; this is a scaffold baseline, not a hardware support promise |
 | D-005 | Product name and Android application ID | OPEN | Product owner | before distributable build | T003 deliberately retains the T001 placeholder: `Namaz Time` / `com.example.namaztime.tv` |
@@ -130,6 +130,26 @@ These are proposals until accepted by the product owner:
   values and 31 August Dhuhr value remain verbatim review evidence.
 - `UNKNOWN` — D-013 remains open. The committed key is public and test-only;
   its private half was discarded and no production trust anchor was selected.
+
+## T010 annual Ulyanovsk source record
+
+- `CONFIRMED_PUBLIC` — the supplied 18-page PDF names the Regional Spiritual
+  Administration of Muslims of the Ulyanovsk Region within the Central
+  Spiritual Administration of Muslims of Russia, covers Ulyanovsk for all of
+  2026 and has raw SHA-256
+  `82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21`.
+- `CONFIRMED_PUBLIC` — the PDF prescribes an Astrakhan analogy for summer Fajr
+  and Isha, starts the Ulyanovsk period overnight 10→11 May and completes it
+  overnight 2→3 August. The exact four marked cells are retained as flags.
+- `PROPOSAL` — `ulyanovsk-official-pdf-csv/v1` is a source-specific,
+  fail-closed controlled-transcription adapter. Al-Isfar and collective Dhuhr
+  remain candidate review metadata; absent daily Hijri dates remain absent.
+- `UNKNOWN` — the annual PDF and monthly August photo disagree on Dhuhr onset
+  for Aug 20–30, the Aug 24 collective value and transition-footnote wording.
+  No precedence/correction is inferred; D-002 must resolve the exact diff.
+- `UNKNOWN` — D-009 must decide whether any source-wide collective Dhuhr value
+  is the pilot mosque's iqamah. D-013 and physical canary/rollback evidence
+  still block production publication and activation.
 
 ## T009 device-sync record
 

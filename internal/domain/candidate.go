@@ -40,6 +40,7 @@ type CandidateSource struct {
 
 type CandidatePrayerDay struct {
 	PrayerDay
+	RecommendedFajr   string `json:"recommended_fajr,omitempty"`
 	Zenith            string `json:"zenith,omitempty"`
 	DhuhrCongregation string `json:"dhuhr_congregation,omitempty"`
 	HijriDay          int    `json:"hijri_day,omitempty"`

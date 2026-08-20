@@ -43,7 +43,7 @@
    make lint
    ```
 
-5. Проверить локально завершённые Phase 1/T009 и блокеры T010 в
+5. Проверить локально завершённую часть T010 и оставшиеся блокеры в
    [PLANS.md](PLANS.md).
 
 Реальный pilot fixture можно безопасно прогнать до candidate/diff без
@@ -51,7 +51,7 @@
 
 ```bash
 go run ./cmd/ingestor inspect \
-  --fixture-dir fixtures/pilot/ulyanovsk-2026-08
+  --fixture-dir fixtures/pilot/ulyanovsk-2026
 ```
 
 Команда не имеет approve/publish режима и возвращает `needs_review`.
@@ -105,17 +105,23 @@ QR, строгую HTTPS/lifecycle-валидацию, безопасное ск
 просроченных кампаний и operator preview без сетевого разрешения. T008 добавил
 строгий manual CSV provider, raw/transcription/normalized provenance,
 детерминированный diff, approval gate, canonical Ed25519 signing и
-cross-platform Go/Android verification. Реальное расписание Ульяновска
-сохранено как `needs_review`, потому что D-002 не называет religious approver;
-оно не опубликовано и не названо официальным. Локальный Phase 1 завершён.
+cross-platform Go/Android verification. T010 добавил отдельный строгий
+`official_file` adapter для предоставленного годового PDF Ульяновска:
+неизменённый raw-файл и SHA-256, 365-дневная controlled transcription,
+source-only аль-исфар, раздельные наступление Зухра/коллективное время,
+переходы летнего исчисления 10→11 мая и 2→3 августа, а также проверяемую
+сверку всех 31 августовских строк. Годовой candidate остаётся `needs_review`:
+D-002 не называет religious approver, а расхождения источников не исправлены
+по догадке. Локальный Phase 1 завершён.
 T009 добавил явно ephemeral/test-only one-use pairing fixture и bearer-scoped
 Go read API, ETag/304 и Digest, полную registry-time signature/schema/mosque
 validation, Android Keystore/AES-GCM provisioning, same-origin HTTPS,
 provisioning-scoped durable stage/quarantine, WorkManager и атомарный
 activate/rollback с file-backed process-interruption тестами. Ни test token, ни
-private/production signing key в APK/Git не встроены; T010 заблокирован на
-D-002, полном годовом источнике, D-013 и
-физическом canary/rollback drill.
+private/production signing key в APK/Git не встроены. Источниковая часть T010
+завершена локально; production publication остаётся `BLOCKED` на D-002,
+D-009 для mosque-local коллективного времени, D-013 и физическом
+canary/rollback drill.
 T011 добавляет независимое PostgreSQL-хранилище production pairing: случайные
 одноразовые коды и device tokens, только hash/HMAC at rest, expiry/rate limits,
 атомарный single-use redeem, revocation, mosque-scoped composite constraints и

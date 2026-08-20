@@ -110,6 +110,17 @@ Blocked until [SOURCE_PARTNERSHIP_CHECKLIST.md](SOURCE_PARTNERSHIP_CHECKLIST.md)
 
 **Acceptance:** full-year fixture, manual comparison evidence, source permission record, candidate diff/approval, canary TV validation and rollback drill.
 
+**Result (local source slice, 2026-08-20):** the supplied RDUM Ulyanovsk PDF is
+retained byte-for-byte with provenance and SHA-256; a source-specific strict
+controlled-transcription adapter normalizes all 365 days, retains al-Isfar and
+collective Dhuhr as separate candidate metadata, and enforces the printed May
+10→11 / August 2→3 Fajr/Isha transition markers. All 31 August rows are
+compared against the earlier photo fixture and every numeric disagreement is
+recorded without choosing a value. Candidate/diff output is deterministic and
+stays `needs_review`; a regression proves it cannot publish without a named
+approval. Named D-002/D-009 approval, D-013 production signing/trust and a
+physical canary/rollback drill remain `BLOCKED`, so T010 is not marked DONE.
+
 ## T011 — production pairing persistence
 
 **Goal:** replace the T009 process-local pairing fixture with a production-capable, restart-safe pairing and device-credential foundation without depending on T010.

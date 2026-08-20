@@ -1,0 +1,17 @@
+{
+  "data_classification": "production",
+  "parser_version": "ulyanovsk-official-pdf-csv/v1",
+  "mosque": {
+    "id": "second-cathedral-mosque-ulyanovsk",
+    "name": "Вторая Соборная мечеть Ульяновска",
+    "country_code": "RU",
+    "region": "Ульяновская область",
+    "locality": "Ульяновск, ул. Дзержинского, 18А",
+    "timezone": "Europe/Ulyanovsk"
+  },
+  "artifact_filename": "calendar_for_the_year_Ulyanovsk.pdf",
+  "artifact_content_type": "application/pdf",
+  "artifact_captured_at": "2026-08-20T09:35:29Z",
+  "artifact_sha256": "82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21",
+  "transcription_filename": "schedule.csv"
+}
