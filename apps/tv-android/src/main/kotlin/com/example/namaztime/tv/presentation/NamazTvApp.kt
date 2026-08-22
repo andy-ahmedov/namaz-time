@@ -51,10 +51,12 @@ import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorPreferencesRepository
 import com.example.namaztime.tv.repository.PrayerScheduleRepository
 import com.example.namaztime.tv.repository.toCampaignInputs
+import com.example.namaztime.tv.repository.toCampaignInput
 import com.example.namaztime.tv.repository.toTimeEngineInput
 import java.io.IOException
 import java.time.Clock
 import java.time.Instant
+import java.time.ZoneId
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
@@ -92,19 +94,35 @@ fun NamazTvApp(
         initialValue = SnapshotBootstrapState.Pending,
     )
     val availableSchedule = (observedSchedule as? DisplayScheduleState.Available)?.schedule
-    val campaignPreview = remember(availableSchedule, campaignEngine, qrCodeGenerator) {
-        availableSchedule?.let { schedule ->
-            val validPreviews = schedule.toCampaignInputs().mapNotNull { campaign ->
-                (campaignEngine.preview(campaign) as? CampaignPreview.Valid)?.campaign
+    val campaignPreview = remember(
+        availableSchedule,
+        preferences.qrConfiguration,
+        campaignEngine,
+        qrCodeGenerator,
+    ) {
+        val operatorCampaign = preferences.qrConfiguration
+            .takeUnless { it.isEmpty }
+            ?.toCampaignInput()
+            ?.let(campaignEngine::preview)
+            ?.let { it as? CampaignPreview.Valid }
+            ?.campaign
+        val snapshotCampaign = if (preferences.qrConfiguration.isEmpty) {
+            availableSchedule?.let { schedule ->
+                val validPreviews = schedule.toCampaignInputs().mapNotNull { campaign ->
+                    (campaignEngine.preview(campaign) as? CampaignPreview.Valid)?.campaign
+                }
+                validPreviews.singleOrNull()
             }
-            validPreviews.singleOrNull()?.let { campaign ->
-                runCatching {
-                    campaign.toQrCampaignUiState(
-                        qrCode = qrCodeGenerator.generate(campaign.httpsUrl),
-                        preview = true,
-                    )
-                }.getOrNull()
-            }
+        } else {
+            null
+        }
+        (operatorCampaign ?: snapshotCampaign)?.let { campaign ->
+            runCatching {
+                campaign.toQrCampaignUiState(
+                    qrCode = qrCodeGenerator.generate(campaign.httpsUrl),
+                    preview = true,
+                )
+            }.getOrNull()
         }
     }
 
@@ -128,6 +146,7 @@ fun NamazTvApp(
                             tickIntervalMillis = tickIntervalMillis,
                             campaignEngine = campaignEngine,
                             qrCodeGenerator = qrCodeGenerator,
+                            operatorPreferences = preferences,
                             screenRetentionShiftEnabled =
                                 preferences.screenRetentionShiftEnabled,
                             onOpenSettings = { navController.navigate(SETTINGS_ROUTE) },
@@ -183,6 +202,28 @@ fun NamazTvApp(
                                     }
                                 }
                             },
+                            onQrConfigurationChanged = { configuration ->
+                                coroutineScope.launch {
+                                    try {
+                                        operatorPreferencesRepository.setQrConfiguration(configuration)
+                                    } catch (_: IOException) {
+                                        // The last valid local QR remains active if persistence fails.
+                                    } catch (_: IllegalArgumentException) {
+                                        // Invalid operator input is rejected without changing the display.
+                                    }
+                                }
+                            },
+                            onIqamahTimesChanged = { times ->
+                                coroutineScope.launch {
+                                    try {
+                                        operatorPreferencesRepository.setIqamahTimes(times)
+                                    } catch (_: IOException) {
+                                        // The last valid local iqamah settings remain active.
+                                    } catch (_: IllegalArgumentException) {
+                                        // Invalid operator input is rejected without changing the display.
+                                    }
+                                }
+                            },
                             onOpenSystemSettings = {
                                 context.startActivity(
                                     Intent(
@@ -208,6 +249,7 @@ private fun DisplayRoute(
     tickIntervalMillis: Long?,
     campaignEngine: CampaignEngine,
     qrCodeGenerator: QrCodeGenerator,
+    operatorPreferences: OperatorPreferences,
     screenRetentionShiftEnabled: Boolean,
     onOpenSettings: () -> Unit,
 ) {
@@ -230,6 +272,7 @@ private fun DisplayRoute(
             bootstrapState = bootstrapState,
             campaignEngine = campaignEngine,
             qrCodeGenerator = qrCodeGenerator,
+            operatorPreferences = operatorPreferences,
             screenRetentionShiftEnabled = screenRetentionShiftEnabled,
             onOpenSettings = onOpenSettings,
         )
@@ -254,6 +297,7 @@ internal fun ConnectedDisplayContent(
     bootstrapState: SnapshotBootstrapState,
     campaignEngine: CampaignEngine,
     qrCodeGenerator: QrCodeGenerator,
+    operatorPreferences: OperatorPreferences = OperatorPreferences(),
     screenRetentionShiftEnabled: Boolean = true,
     onOpenSettings: () -> Unit,
 ) {
@@ -264,7 +308,16 @@ internal fun ConnectedDisplayContent(
         DpOffset.Zero
     }
     val engine = remember { PrayerTimeEngine() }
-    val timeInput = remember(schedule) { schedule.toTimeEngineInput() }
+    val mosqueZone = remember(schedule.timezoneId) { ZoneId.of(schedule.timezoneId) }
+    val mosqueLocalDate = remember(currentInstant, mosqueZone) {
+        currentInstant.atZone(mosqueZone).toLocalDate()
+    }
+    val projectionInstant = remember(mosqueLocalDate, mosqueZone) {
+        mosqueLocalDate.atStartOfDay(mosqueZone).toInstant()
+    }
+    val timeInput = remember(schedule, operatorPreferences.iqamahTimes, projectionInstant) {
+        schedule.toTimeEngineInput(operatorPreferences.iqamahTimes, projectionInstant)
+    }
     val validationCode = remember(timeInput) { engine.validate(timeInput) }
     if (validationCode != null) {
         DisplayUnavailableScreen(
@@ -287,9 +340,24 @@ internal fun ConnectedDisplayContent(
         )
         return
     }
-    val resolvedCampaign = remember(schedule.campaigns, currentInstant, campaignEngine) {
-        (campaignEngine.resolve(schedule.toCampaignInputs(), currentInstant)
-            as? CampaignResolution.Active)?.campaign
+    val resolvedCampaign = remember(
+        schedule.campaigns,
+        operatorPreferences.qrConfiguration,
+        currentInstant,
+        campaignEngine,
+    ) {
+        val operatorCampaign = operatorPreferences.qrConfiguration
+            .takeUnless { it.isEmpty }
+            ?.toCampaignInput()
+            ?.let(campaignEngine::preview)
+            ?.let { it as? CampaignPreview.Valid }
+            ?.campaign
+        if (operatorPreferences.qrConfiguration.isEmpty) {
+            operatorCampaign ?: (campaignEngine.resolve(schedule.toCampaignInputs(), currentInstant)
+                as? CampaignResolution.Active)?.campaign
+        } else {
+            operatorCampaign
+        }
     }
     val campaign = remember(resolvedCampaign, qrCodeGenerator) {
         resolvedCampaign?.let { resolved ->

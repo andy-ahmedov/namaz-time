@@ -80,6 +80,19 @@ Requirements:
 - stable quiet zone and sufficient contrast;
 - campaign must not reduce prayer text below readability threshold.
 
+When a complete device-local sadaqah QR configuration exists, display mode
+uses the authorized `main_with_qr.png` three-column composition: the existing
+left next/time stack and prayer panel remain a single group with their bottom
+event strip, while a tall right glass panel spans from the prayer-body top to
+the strip bottom. The panel contains `Садака`, an original line/diamond
+divider, the operator-entered purpose, a high-contrast locally generated QR in
+the supplied-reference corner frame, the supplied-reference support-icon
+treatment beside the operator-entered motivation, a small NamazTime center
+badge protected by high QR error correction, and a subdued Islamic geometric
+lower ornament. Empty/invalid settings remove the third column and
+restore the normal T024 composition. No technical preview label appears in
+public display mode.
+
 ## Theme/background
 
 - all screens use the T017 semantic dark/amber Compose tokens and shared
@@ -102,9 +115,10 @@ Golden dusk is the safe default and Blue hour is selectable from Appearance;
 both remain offline and use the same bounded dark scrim. Unknown persisted IDs
 fall back to Golden dusk. For the T024 main-display pass, the
 product-owner-supplied `design.png` is the geometric visual specification for
-composition, proportion, hierarchy, spacing and decorative rhythm. It is not
-packaged, cropped, traced or copied as an application asset, and all project
-imagery, glyphs and ornament remain original. Custom/remote media remains
+composition, proportion, hierarchy, spacing and decorative rhythm. T025 also
+uses the explicitly authorized product-owner-supplied `main_with_qr.png` as the
+visual specification for the QR composition, frame, support icon and lower
+ornament under ADR 0014. Neither raw reference is packaged. Custom/remote media remains
 outside this local allowlist and requires its separately approved signed asset
 pipeline.
 
@@ -140,9 +154,9 @@ Suggested left navigation:
 
 1. Mosque/location
 2. Prayer source (read-only summary for normal operator)
-3. Iqamah & Jumu'ah
+3. Iqamah
 4. Appearance
-5. QR/announcements
+5. QR code
 6. Language
 7. Autostart/kiosk
 8. Diagnostics
@@ -162,9 +176,10 @@ Each page:
 
 1. start in Russian with the authenticated preconfigured mosque snapshot;
 2. review mosque, timezone, source approval and coverage in settings;
-3. review approved iqamah/Jumu'ah policy without editing snapshot data on TV;
+3. optionally enter five device-local iqamah values; these remain visibly and
+   architecturally separate from signed snapshot provenance;
 4. optionally switch the whole UI to English; persist the choice locally;
-5. preview an approved QR campaign only when one exists in the snapshot;
+5. optionally enter a validated HTTPS QR link, sadaqah purpose and motivation;
 6. return to the main screen with D-pad focus restored.
 
 ### Remote mode

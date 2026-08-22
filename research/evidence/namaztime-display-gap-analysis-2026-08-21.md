@@ -61,3 +61,7 @@ The remaining differences are intentional or data-driven: the mosque name and
 address are longer, NamazTime shows separate adhan/iqamah values, Friday may
 show its real Jumu'ah session, and all imagery/glyphs/ornaments remain original
 rather than copied from the supplied target.
+
+This records the T024 decision at that checkpoint. The product owner's later
+explicit authorization for accurate use of `main_with_qr.png` applies to T025
+under ADR 0014 and does not retroactively change these T024 observations.

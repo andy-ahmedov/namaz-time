@@ -8,6 +8,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -65,6 +66,72 @@ class OperatorPreferencesRepositoryTest {
             BLUE_HOUR_BACKGROUND_STYLE_ID,
             repository.preferences.first().backgroundStyleId,
         )
+    }
+
+    @Test
+    fun qrConfigurationPersistsAsOneOperatorPreference() = runTest {
+        val repository = repositoryFor(this)
+        val configuration = OperatorQrConfiguration(
+            httpsUrl = "https://example.org/sadaqah",
+            title = "На ремонт мечети",
+            message = "Лучшее пожертвование — то, которое принесло пользу.",
+        )
+
+        repository.setQrConfiguration(configuration)
+
+        assertEquals(configuration, repository.preferences.first().qrConfiguration)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun unsafeQrUrlCannotBeStored() = runTest {
+        repositoryFor(this).setQrConfiguration(
+            OperatorQrConfiguration(
+                httpsUrl = "http://example.org/sadaqah",
+                title = "На ремонт мечети",
+                message = "",
+            ),
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun qrUrlThatExceedsHighCorrectionCapacityCannotBeStored() = runTest {
+        val prefix = "https://example.org/"
+
+        repositoryFor(this).setQrConfiguration(
+            OperatorQrConfiguration(
+                httpsUrl = prefix + "a".repeat(2_048 - prefix.length),
+                title = "На ремонт мечети",
+                message = "",
+            ),
+        )
+    }
+
+    @Test
+    fun iqamahTimesPersistIndependentlyForEveryCollectivePrayer() = runTest {
+        val repository = repositoryFor(this)
+        val expected = OperatorIqamahTimes(
+            fajr = "05:30",
+            dhuhr = "13:30",
+            asr = "17:45",
+            maghrib = "20:15",
+            isha = "22:10",
+        )
+
+        repository.setIqamahTimes(expected)
+
+        val actual = repository.preferences.first().iqamahTimes
+        assertEquals(expected, actual)
+        assertNull(actual.forPrayer("sunrise"))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun invalidIqamahTimeCannotBeStored() = runTest {
+        repositoryFor(this).setIqamahTime("fajr", "5:75")
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun sunriseCannotReceiveIqamah() = runTest {
+        repositoryFor(this).setIqamahTime("sunrise", "06:30")
     }
 
     @Test(expected = IllegalArgumentException::class)

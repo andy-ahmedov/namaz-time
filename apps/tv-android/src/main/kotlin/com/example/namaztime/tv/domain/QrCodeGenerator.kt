@@ -29,7 +29,7 @@ class QrCodeGenerator(
             size,
             mapOf(
                 EncodeHintType.CHARACTER_SET to StandardCharsets.UTF_8.name(),
-                EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.M,
+                EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.H,
                 EncodeHintType.MARGIN to quietZoneModules,
             ),
         )

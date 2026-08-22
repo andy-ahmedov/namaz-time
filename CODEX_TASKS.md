@@ -502,3 +502,42 @@ anchors, softer table rhythm and a subordinate circular Settings action.
 Room/T006 data projection, T022 pilot values, background preference and
 Settings behavior are unchanged. Controlled emulator evidence is
 `CONFIRMED_RUNTIME`; physical overscan/readability remains `UNKNOWN`.
+
+## T025 — device-local sadaqah QR and per-prayer iqamah controls
+
+**Goal:** let a TV operator configure the existing local QR generator and five
+fixed iqamah values, and render the configured QR in the explicitly authorized
+`main_with_qr.png` visual composition without weakening signed schedule
+provenance.
+
+**In scope:** validated DataStore fields for HTTPS URL, sadaqah purpose and
+motivation; five independent Fajr/Dhuhr/Asr/Maghrib/Isha times; a D-pad editor
+under renamed `Икамат` and `QR-код` settings; removal of Friday technical copy;
+ephemeral time-engine projection; configured-QR three-column display; the
+authorized corner frame, support icon and lower geometric ornament treatment;
+RU/EN, adaptive tests and API 36 runtime screenshots.
+
+**Non-goals:** editing the signed Room snapshot, assigning iqamah to Sunrise,
+labelling local values official, a live donation destination, payment
+processing, analytics, remote administration/publication, network calls from
+Compose, APK-extracted code/resources, physical-TV or real-phone scan claims,
+push or PR.
+
+**Acceptance:** unsafe or partial QR settings fail closed; five valid values
+persist atomically and project without mutating source lists; pre-adhan local
+iqamah cannot hide prayer data; the renamed settings are fully D-pad reachable
+and contain no removed Jumu'ah/Dhuhr explanation; complete QR settings activate
+the reference-proportion right panel and all decorative anchors; existing
+prayer, QR-decode, localization and 720p/1080p/4K regressions plus repository
+checks pass; emulator evidence and authorization basis are recorded.
+
+**Result:** completed locally on 2026-08-21. The pre-existing ZXing generator
+now has a validated operator input path. DataStore keeps local QR and iqamah
+state separate from Room; the resolver overlays only current/next-day valid
+iqamah values. Settings exposes three QR fields and five prayer fields with
+explicit save actions. A complete QR switches display mode to the authorized
+three-column Sadaqah treatment while preserving real T022 prayer data. API 36
+runtime evidence confirms entry, persistence and projection at 1920×1080. The
+NamazTime center badge uses high QR error correction and a four-size
+worst-case-obstruction decode regression;
+physical-TV readability and real-phone scan distance remain `UNKNOWN`.

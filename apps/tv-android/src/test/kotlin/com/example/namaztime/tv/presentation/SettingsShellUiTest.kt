@@ -18,6 +18,7 @@ import com.example.namaztime.tv.repository.LocalPrayerDay
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
 import com.example.namaztime.tv.repository.LocalSnapshotDiagnostics
 import com.example.namaztime.tv.repository.OperatorPreferences
+import com.example.namaztime.tv.repository.OPERATOR_IQAMAH_PRAYER_IDS
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -104,8 +105,11 @@ class SettingsShellUiTest {
         compose.onNodeWithText("Одобрено").assertIsDisplayed()
 
         moveDownFrom(SettingsDestination.SOURCE)
-        compose.onNodeWithText("5 минут после азана").assertIsDisplayed()
-        compose.onNodeWithText("Джума · 13:15").assertIsDisplayed()
+        OPERATOR_IQAMAH_PRAYER_IDS.forEach { prayerId ->
+            compose.onNodeWithTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX$prayerId").assertIsDisplayed()
+        }
+        compose.onNodeWithText("Пятничный намаз").assertDoesNotExist()
+        compose.onNodeWithText("Зухр в пятницу").assertDoesNotExist()
 
         moveDownFrom(SettingsDestination.IQAMAH)
         compose.onNodeWithText("Защитный сдвиг: включён").assertIsDisplayed()
@@ -113,7 +117,9 @@ class SettingsShellUiTest {
         assertEquals(false, shiftChoice)
 
         moveDownFrom(SettingsDestination.APPEARANCE)
-        compose.onNodeWithText("QR и объявления не настроены").assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_QR_URL_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_QR_TITLE_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_QR_MESSAGE_FIELD_TAG).assertIsDisplayed()
 
         moveDownFrom(SettingsDestination.CAMPAIGNS)
         compose.onNodeWithText("Русский").assertIsDisplayed()

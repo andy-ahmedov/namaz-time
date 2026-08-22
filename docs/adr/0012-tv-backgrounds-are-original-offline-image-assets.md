@@ -3,6 +3,7 @@
 - Status: Accepted
 - Date: 2026-08-20
 - Supersedes: the code-drawn background portion of ADR 0010
+- Reference-use restriction amended by: ADR 0014
 
 ## Context
 

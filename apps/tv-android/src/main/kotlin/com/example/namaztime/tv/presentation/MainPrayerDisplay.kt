@@ -156,45 +156,56 @@ internal fun MainPrayerDisplay(
                 ) {
                     DisplayHeader(state, metrics)
                     Spacer(Modifier.height(metrics.sectionGap))
-                    Row(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(metrics.sectionGap),
-                    ) {
-                        Column(
-                            modifier = Modifier.weight(metrics.leftColumnWeight).fillMaxHeight(),
+                    if (state.campaign == null) {
+                        Row(
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(metrics.sectionGap),
                         ) {
-                            NextEventCard(
+                            MainLeftColumn(state, metrics, Modifier.weight(1f).fillMaxHeight())
+                            PrayerListCard(
                                 state,
                                 metrics,
-                                Modifier.weight(1f).fillMaxWidth(),
-                            )
-                            Spacer(Modifier.height(metrics.sectionGap))
-                            LocalClockCard(
-                                state,
-                                metrics,
-                                Modifier.fillMaxWidth().height(metrics.clockCardHeight),
+                                Modifier.weight(1f).fillMaxHeight(),
                             )
                         }
-                        PrayerListCard(
+                        Spacer(Modifier.height(metrics.sectionGap))
+                        IqamahStatusStrip(
                             state,
                             metrics,
-                            Modifier.weight(1f).fillMaxHeight(),
+                            Modifier.fillMaxWidth().height(metrics.iqamahStripHeight),
                         )
-                        state.campaign?.let { campaign ->
+                    } else {
+                        Row(
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(metrics.sectionGap),
+                        ) {
+                            Column(modifier = Modifier.weight(1f).fillMaxHeight()) {
+                                Row(
+                                    modifier = Modifier.weight(1f).fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(metrics.sectionGap),
+                                ) {
+                                    MainLeftColumn(state, metrics, Modifier.weight(1f).fillMaxHeight())
+                                    PrayerListCard(
+                                        state,
+                                        metrics,
+                                        Modifier.weight(1f).fillMaxHeight(),
+                                    )
+                                }
+                                Spacer(Modifier.height(metrics.sectionGap))
+                                IqamahStatusStrip(
+                                    state,
+                                    metrics,
+                                    Modifier.fillMaxWidth().height(metrics.iqamahStripHeight),
+                                )
+                            }
                             QrCampaignPanel(
-                                state = campaign,
+                                state = state.campaign,
                                 qrSize = metrics.qrSize,
                                 compact = true,
-                                modifier = Modifier.width(metrics.campaignPanelWidth),
+                                modifier = Modifier.width(metrics.campaignPanelWidth).fillMaxHeight(),
                             )
                         }
                     }
-                    Spacer(Modifier.height(metrics.sectionGap))
-                    IqamahStatusStrip(
-                        state,
-                        metrics,
-                        Modifier.fillMaxWidth().height(metrics.iqamahStripHeight),
-                    )
                     Spacer(Modifier.height(metrics.bottomBreathingRoom))
                 }
                 SettingsButton(
@@ -206,6 +217,23 @@ internal fun MainPrayerDisplay(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun MainLeftColumn(
+    state: PrayerDisplayUiState,
+    metrics: MainDisplayMetrics,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        NextEventCard(state, metrics, Modifier.weight(1f).fillMaxWidth())
+        Spacer(Modifier.height(metrics.sectionGap))
+        LocalClockCard(
+            state,
+            metrics,
+            Modifier.fillMaxWidth().height(metrics.clockCardHeight),
+        )
     }
 }
 
@@ -1140,8 +1168,8 @@ private data class MainDisplayMetrics(
                 bottomBreathingRoom = 4.dp,
                 countdownWidth = 220.dp,
                 clockWidth = 180.dp,
-                campaignPanelWidth = 132.dp,
-                qrSize = 74.dp,
+                campaignPanelWidth = 204.dp,
+                qrSize = 128.dp,
                 gridHeaderHeight = 18.dp,
                 jumuahHeight = 24.dp,
                 cardRadius = 19.dp,
@@ -1185,8 +1213,8 @@ private data class MainDisplayMetrics(
                 bottomBreathingRoom = 4.dp,
                 countdownWidth = 300.dp,
                 clockWidth = 230.dp,
-                campaignPanelWidth = 170.dp,
-                qrSize = 96.dp,
+                campaignPanelWidth = 264.dp,
+                qrSize = 168.dp,
                 gridHeaderHeight = 24.dp,
                 jumuahHeight = 30.dp,
                 cardRadius = 24.dp,

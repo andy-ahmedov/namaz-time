@@ -130,8 +130,9 @@ backend or current Robolectric evidence labels.
 | T022 pilot-local real runtime and settings | DONE | debug/pilot-local packages an approval-bound 365-day Ulyanovsk snapshot plus disjoint public trust, authenticates and atomically activates it through Room, and atomically replaces only the known prior demo snapshot on an in-place install without retaining synthetic rollback; unexpected real/remote active IDs are never replaced. August precedence/D-009 and D-014 expiry are pinned; release embeds no schedule/trust. Every settings section reports Room/local state, local appearance/language actions persist, Russian is default, RU/EN covers display/settings/error/QR/accessibility, and D-pad plus 720p/1080p/4K regressions pass locally. Emulator acceptance is product-owner-owned and remains `UNKNOWN`. |
 | T023 Android TV visual redesign | DONE | original Golden dusk/Blue hour offline image assets, validated persisted Appearance selection, app-wide navy/gold Material 3 glass system, NamazTime identity, six original prayer glyphs plus iqamah, centered Sunrise time, explicit active-row treatment and redesigned display/settings/recovery surfaces; UI/DataStore/adaptive tests and controlled API 36 emulator screenshots pass while prayer/source logic remains unchanged |
 | T024 pixel-accurate main-display refinement | DONE | explicit normalized gap analysis against `design.png`; about 71% centered foreground, equal columns, reference-like next/clock/strip proportions, decorated location/date treatments, softer prayer rows and separators, compact icon-only Settings focus target and exceptional-only public source status; UI geometry/D-pad/adaptive regressions plus repeated API 36 build/install/screenshot comparison pass without prayer/domain/settings changes |
+| T025 device-local sadaqah QR and iqamah controls | DONE | validated HTTPS QR/purpose/motivation and five independent fixed iqamah values persist in DataStore without mutating the signed Room snapshot; Settings removes Friday technical copy and exposes D-pad editors; a configured QR activates the authorized-reference three-column Sadaqah panel with frame, support icon, scan-tested NamazTime center badge and lower geometric ornament; repository/projection/Compose/adaptive/QR-decode tests plus API 36 build/install/runtime screenshots pass |
 
-The independent local Phase 4 queue is complete through T024. After T024, the
+The independent local Phase 4 queue is complete through T025. After T025, the
 remaining matrix below requires physical hardware, OEM behavior or an open
 deployment decision, so it is not replaced with an invented local task and
 Phase 5 has not started.
@@ -177,9 +178,10 @@ Do not begin until the first pilot is stable.
   acceptance case; T004 locally proves transactional rollback followed by a
   file-backed database close/reopen, not a physical-device process death;
 - product name is `NamazTime`; production package ID and license remain undecided.
-- D-010 still requires an approved pilot QR destination/domain; T007 therefore
-  exercises only the authorized local mechanism with synthetic `example.org`
-  fixtures and does not invent a live campaign.
+- D-010 still requires an approved pilot QR destination/domain for signed or
+  remote campaigns. T025 adds a clearly device-local operator QR preference,
+  while tests/runtime evidence continue to use synthetic `example.org` and do
+  not invent a live destination or official claim.
 - D-013 policy and local implementation are complete under ADR 0011. KMS is
   selected as the custody class, but the concrete provider, real Ed25519 key,
   a signer/security operator distinct from the approver, authenticated production trust-bundle

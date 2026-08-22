@@ -111,3 +111,42 @@ Evidence label: `UNKNOWN` for physical-device overscan/readability, OEM focus
 rendering and long-running 4K behavior. The emulator clock could not be changed
 by non-root ADB, so this run naturally exercised the Friday/Jumu'ah state rather
 than reproducing the reference screenshot's exact weekday and prayer.
+
+## T025 local QR and iqamah runtime loop — 2026-08-21
+
+Evidence label: `CONFIRMED_RUNTIME` for the bounded observations below on the
+controlled Android TV Emulator API 36 at 1920×1080/320 dpi. The supplied
+`main_with_qr.png` is `CONFIRMED_PUBLIC` as a product-owner-supplied screenshot;
+its explicit visual-use authorization is recorded in ADR 0014.
+
+- the existing app was rebuilt, installed with `adb install -r` and launched
+  without clearing Room or DataStore;
+- the operator entered a synthetic `https://example.org/sadaqah` URL, purpose
+  and motivation through the new QR settings, saved them, returned with D-pad
+  and observed the three-column Sadaqah display;
+- the operator entered and saved five independent iqamah values. UIAutomator
+  then exposed Fajr `03:10`, Asr `18:00`, Maghrib `20:30` and Isha `22:20` in
+  the public prayer rows. Friday Dhuhr remained separate from the real 13:15
+  Jumu'ah session;
+- QR Settings shows URL/purpose/motivation fields plus local preview. Iqamah
+  Settings shows exactly five prayer fields and no removed Friday technical
+  explanation;
+- the final Sadaqah panel aligns its top with the prayer panel and its bottom
+  with the event strip. It includes `Садака`, operator purpose/motivation, the
+  corner frame, scan-tested NamazTime center badge, supplied-reference support
+  icon treatment and subdued lower geometric ornament;
+- the synthetic destination and transliterated content exist only in emulator
+  DataStore/runtime evidence and are not a production campaign claim.
+
+The authorized reference SHA-256 is
+`dbe3fa01283d5176237923b6ae87f6a4beadaacb312e56707c2c90a74577b2ea`.
+The final debug APK SHA-256 is
+`4111151806786f2dc154321b7659ae6e7c239ed76f4c3c07a100b1ea87ddafb3`.
+The final main, QR Settings and Iqamah Settings screencap SHA-256 values are
+`d5b2efb270bd56412b1b4e8f802e0ebf675b7199658a59a9f90ed0e199bc9293`,
+`7225026e45f46d7013a978b67c6b2910516b758affbe868b5b986ef6f62cb6fd`
+and `f11e3859319d1dd2e1620b711212fa8f34e823154aa9ff34362672017e297b02`.
+Raw reference and screenshots remain outside Git.
+
+Evidence label: `UNKNOWN` for physical-TV overscan/readability, real-phone
+scan distance, OEM keyboard/focus behavior and long-running panel retention.

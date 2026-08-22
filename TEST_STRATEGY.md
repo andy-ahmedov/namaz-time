@@ -155,6 +155,20 @@ target. Existing Sunrise, six-glyph, D-pad, long-text, Jumu'ah and
 screencaps are compared at a normalized size; this is visual runtime evidence,
 not a claim of automated perceptual equivalence or physical-TV acceptance.
 
+T025 adds repository tests for atomic QR/purpose/motivation persistence,
+unsafe-URL and unencodable high-correction QR rejection, five independent fixed
+iqamah values and invalid time/Sunrise rejection. Projection tests prove local
+values do not mutate the signed schedule, apply independently for current/next
+day and fail closed when a configured iqamah precedes adhan. Compose tests enter all settings with
+D-pad focus, assert that the removed Friday technical copy is absent, verify
+the tall QR panel/frame/support icon/lower ornament anchors and pin its top and
+bottom relationship to the prayer panel and event strip. The existing
+720p/1080p/4K safe-frame matrix and nearest-neighbor QR decode tests remain
+mandatory; a worst-case dark obstruction test covers the same area as the
+NamazTime center badge at four raster sizes under high error correction. API
+36 screenshots are bounded runtime evidence; real-phone scan distance and
+physical-TV entry/readability remain `UNKNOWN`.
+
 T019 reuses the connected display resolver with one immutable synthetic local
 schedule and advances an injected instant over seven consecutive mosque-local
 dates at the 4K-density profile. Every covered day retains its date, local

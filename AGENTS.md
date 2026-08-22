@@ -32,7 +32,12 @@ Never silently promote `CONFIRMED_STATIC` to `CONFIRMED_RUNTIME` or an inference
 
 ## Clean-room restrictions
 
-- Do not copy IslamApp source, decompiled code, package-private names, full datasets, proprietary backgrounds, icons, branding, wording or pixel-perfect layouts.
+- Product-owner-supplied visual references may be reproduced accurately in
+  layout, styling, decorative patterns, icons and wording when the product
+  owner explicitly confirms that the project may use them. Record that basis
+  in the relevant UI/evidence documentation. This permission does not extend
+  to source code, decompiled code, package-private names, full datasets or
+  APK-extracted resources.
 - Do not commit the uploaded APK, decrypted competitor data, embedded secrets, raw decompilation output or extracted proprietary resources.
 - Do not bypass authentication, TLS pinning, anti-tamper, store protection or access controls.
 - Static findings may inform requirements and independent interfaces; implementation must be written from this repository's specifications.

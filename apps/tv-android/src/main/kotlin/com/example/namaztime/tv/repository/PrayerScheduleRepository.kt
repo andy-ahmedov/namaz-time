@@ -8,6 +8,11 @@ import com.example.namaztime.tv.domain.IqamahRuleInput
 import com.example.namaztime.tv.domain.JumuahSessionInput
 import com.example.namaztime.tv.domain.PrayerDayInput
 import com.example.namaztime.tv.domain.PrayerScheduleInput
+import java.time.DayOfWeek
+import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
@@ -115,52 +120,100 @@ data class LocalSnapshotDiagnostics(
 
 class CorruptLocalSnapshotException(val code: String) : IllegalStateException(code)
 
-fun LocalPrayerSchedule.toTimeEngineInput() = PrayerScheduleInput(
-    timezoneId = timezoneId,
-    days = days.map { day ->
-        PrayerDayInput(
-            localDate = day.localDate,
-            fajr = day.fajr,
-            sunrise = day.sunrise,
-            dhuhr = day.dhuhr,
-            asr = day.asr,
-            maghrib = day.maghrib,
-            isha = day.isha,
-        )
-    },
-    iqamahRules = iqamahRules.map { rule ->
-        IqamahRuleInput(
-            id = rule.id,
-            prayer = rule.prayer,
-            validFrom = rule.validFrom,
-            validTo = rule.validTo,
-            weekdaysMask = rule.weekdaysMask,
-            priority = rule.priority,
-            mode = rule.mode,
-            fixedTime = rule.fixedTime,
-            offsetMinutes = rule.offsetMinutes,
-        )
-    },
-    iqamahDateOverrides = iqamahDateOverrides.map { override ->
-        IqamahDateOverrideInput(
-            localDate = override.localDate,
-            prayer = override.prayer,
-            mode = override.mode,
-            fixedTime = override.fixedTime,
-            offsetMinutes = override.offsetMinutes,
-        )
-    },
-    jumuahSessions = jumuahSessions.map { session ->
-        JumuahSessionInput(
-            id = session.id,
-            label = session.label,
-            khutbahTime = session.khutbahTime,
-            salahTime = session.salahTime,
-            validFrom = session.validFrom,
-            validTo = session.validTo,
-        )
-    },
-)
+fun LocalPrayerSchedule.toTimeEngineInput(
+    operatorIqamahTimes: OperatorIqamahTimes = OperatorIqamahTimes(),
+    currentInstant: Instant? = null,
+): PrayerScheduleInput {
+    val configuredPrayerIds = operatorIqamahTimes.configuredPrayerIds
+    val appliedPrayerIds = if (currentInstant == null) emptySet() else configuredPrayerIds
+    val operatorOverrides = if (appliedPrayerIds.isEmpty() || currentInstant == null) {
+        emptyList()
+    } else {
+        val currentDate = currentInstant.atZone(ZoneId.of(timezoneId)).toLocalDate()
+        listOf(currentDate, currentDate.plusDays(1)).flatMap { date ->
+            val day = days.firstOrNull { it.localDate == date.toString() }
+                ?: return@flatMap emptyList()
+            appliedPrayerIds.mapNotNull { prayerId ->
+                val fixedTime = operatorIqamahTimes.forPrayer(prayerId)
+                    ?: return@mapNotNull null
+                if (prayerId == "dhuhr" && date.dayOfWeek == DayOfWeek.FRIDAY && hasJumuahOn(date)) {
+                    return@mapNotNull null
+                }
+                val adhan = LocalTime.parse(day.adhanFor(prayerId))
+                val iqamah = LocalTime.parse(fixedTime)
+                if (iqamah.isBefore(adhan)) return@mapNotNull null
+                IqamahDateOverrideInput(
+                    localDate = date.toString(),
+                    prayer = prayerId,
+                    mode = "fixed_time",
+                    fixedTime = fixedTime,
+                    offsetMinutes = null,
+                )
+            }
+        }
+    }
+    return PrayerScheduleInput(
+        timezoneId = timezoneId,
+        days = days.map { day ->
+            PrayerDayInput(
+                localDate = day.localDate,
+                fajr = day.fajr,
+                sunrise = day.sunrise,
+                dhuhr = day.dhuhr,
+                asr = day.asr,
+                maghrib = day.maghrib,
+                isha = day.isha,
+            )
+        },
+        iqamahRules = iqamahRules.filterNot { it.prayer in appliedPrayerIds }.map { rule ->
+            IqamahRuleInput(
+                id = rule.id,
+                prayer = rule.prayer,
+                validFrom = rule.validFrom,
+                validTo = rule.validTo,
+                weekdaysMask = rule.weekdaysMask,
+                priority = rule.priority,
+                mode = rule.mode,
+                fixedTime = rule.fixedTime,
+                offsetMinutes = rule.offsetMinutes,
+            )
+        },
+        iqamahDateOverrides = iqamahDateOverrides.filterNot {
+            it.prayer in appliedPrayerIds
+        }.map { override ->
+            IqamahDateOverrideInput(
+                localDate = override.localDate,
+                prayer = override.prayer,
+                mode = override.mode,
+                fixedTime = override.fixedTime,
+                offsetMinutes = override.offsetMinutes,
+            )
+        } + operatorOverrides,
+        jumuahSessions = jumuahSessions.map { session ->
+            JumuahSessionInput(
+                id = session.id,
+                label = session.label,
+                khutbahTime = session.khutbahTime,
+                salahTime = session.salahTime,
+                validFrom = session.validFrom,
+                validTo = session.validTo,
+            )
+        },
+    )
+}
+
+private fun LocalPrayerDay.adhanFor(prayerId: String): String = when (prayerId) {
+    "fajr" -> fajr
+    "dhuhr" -> dhuhr
+    "asr" -> asr
+    "maghrib" -> maghrib
+    "isha" -> isha
+    else -> throw IllegalArgumentException("unsupported iqamah prayer")
+}
+
+private fun LocalPrayerSchedule.hasJumuahOn(date: LocalDate): Boolean = jumuahSessions.any { session ->
+    !date.isBefore(LocalDate.parse(session.validFrom)) && !date.isAfter(LocalDate.parse(session.validTo))
+}
 
 fun LocalPrayerSchedule.toCampaignInputs(): List<CampaignInput> = campaigns.mapNotNull { campaign ->
     val startsAt = campaign.startsAt ?: return@mapNotNull null

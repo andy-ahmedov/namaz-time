@@ -14,3 +14,5 @@ Create an ADR for durable decisions affecting correctness, source authority, sec
 - [0010 — TV UI uses one offline design system](0010-tv-ui-uses-one-offline-design-system.md)
 - [0011 — Production signing uses isolated Ed25519 keys and versioned public trust bundles](0011-production-signing-uses-isolated-ed25519-keys.md)
 - [0012 — TV backgrounds are original offline image assets](0012-tv-backgrounds-are-original-offline-image-assets.md)
+- [0013 — Device-local display overrides stay separate from signed snapshots](0013-device-local-display-overrides-stay-separate-from-signed-snapshots.md)
+- [0014 — Owner-authorized visual references may be reproduced](0014-owner-authorized-visual-references-may-be-reproduced.md)

@@ -41,7 +41,11 @@ import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import com.example.namaztime.tv.R
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
+import com.example.namaztime.tv.repository.OperatorIqamahTimes
 import com.example.namaztime.tv.repository.OperatorPreferences
+import com.example.namaztime.tv.repository.OperatorQrConfiguration
+import com.example.namaztime.tv.repository.isValidIqamahTimes
+import com.example.namaztime.tv.repository.isValidQrConfiguration
 
 const val SETTINGS_PAGE_ACTION_TEST_TAG = "settings-page-primary-action"
 const val SETTINGS_LOCAL_ACTION_TEST_TAG = "settings-page-local-action"
@@ -64,6 +68,8 @@ fun SettingsShell(
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)? = null,
     onBackgroundStyleChanged: ((String) -> Unit)? = null,
     onLanguageChanged: ((String) -> Unit)? = null,
+    onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)? = null,
+    onIqamahTimesChanged: ((OperatorIqamahTimes) -> Unit)? = null,
     onOpenSystemSettings: (() -> Unit)? = null,
 ) {
     val navigationRequesters = remember {
@@ -186,6 +192,8 @@ fun SettingsShell(
                     onScreenRetentionShiftChanged = onScreenRetentionShiftChanged,
                     onBackgroundStyleChanged = onBackgroundStyleChanged,
                     onLanguageChanged = onLanguageChanged,
+                    onQrConfigurationChanged = onQrConfigurationChanged,
+                    onIqamahTimesChanged = onIqamahTimesChanged,
                     onOpenSystemSettings = onOpenSystemSettings,
                     modifier = Modifier.padding(28.dp),
                 )
@@ -198,6 +206,7 @@ private data class LocalSettingsAction(
     val label: String,
     val invoke: () -> Unit,
     val testTag: String = SETTINGS_LOCAL_ACTION_TEST_TAG,
+    val enabled: Boolean = true,
 )
 
 @Composable
@@ -215,12 +224,68 @@ private fun SettingsPage(
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)?,
     onBackgroundStyleChanged: ((String) -> Unit)?,
     onLanguageChanged: ((String) -> Unit)?,
+    onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)?,
+    onIqamahTimesChanged: ((OperatorIqamahTimes) -> Unit)?,
     onOpenSystemSettings: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
     val language = AppLanguage.fromTag(preferences.languageTag)
     val backgroundStyle = TvBackgroundStyle.fromId(preferences.backgroundStyleId)
+    var qrUrl by rememberSaveable(preferences.qrConfiguration.httpsUrl) {
+        mutableStateOf(preferences.qrConfiguration.httpsUrl)
+    }
+    var qrTitle by rememberSaveable(preferences.qrConfiguration.title) {
+        mutableStateOf(preferences.qrConfiguration.title)
+    }
+    var qrMessage by rememberSaveable(preferences.qrConfiguration.message) {
+        mutableStateOf(preferences.qrConfiguration.message)
+    }
+    var fajrIqamah by rememberSaveable(preferences.iqamahTimes.fajr) {
+        mutableStateOf(preferences.iqamahTimes.fajr)
+    }
+    var dhuhrIqamah by rememberSaveable(preferences.iqamahTimes.dhuhr) {
+        mutableStateOf(preferences.iqamahTimes.dhuhr)
+    }
+    var asrIqamah by rememberSaveable(preferences.iqamahTimes.asr) {
+        mutableStateOf(preferences.iqamahTimes.asr)
+    }
+    var maghribIqamah by rememberSaveable(preferences.iqamahTimes.maghrib) {
+        mutableStateOf(preferences.iqamahTimes.maghrib)
+    }
+    var ishaIqamah by rememberSaveable(preferences.iqamahTimes.isha) {
+        mutableStateOf(preferences.iqamahTimes.isha)
+    }
+    val qrDraft = OperatorQrConfiguration(qrUrl, qrTitle, qrMessage)
+    val iqamahDraft = OperatorIqamahTimes(
+        fajr = fajrIqamah,
+        dhuhr = dhuhrIqamah,
+        asr = asrIqamah,
+        maghrib = maghribIqamah,
+        isha = ishaIqamah,
+    )
+    val isEditor = destination == SettingsDestination.CAMPAIGNS ||
+        destination == SettingsDestination.IQAMAH
     val localActions = when (destination) {
+        SettingsDestination.CAMPAIGNS -> onQrConfigurationChanged?.let { change ->
+            listOf(
+                LocalSettingsAction(
+                    label = appString(R.string.save_qr_settings),
+                    invoke = { change(qrDraft) },
+                    testTag = SETTINGS_QR_SAVE_TAG,
+                    enabled = isValidQrConfiguration(qrDraft),
+                ),
+            )
+        }.orEmpty()
+        SettingsDestination.IQAMAH -> onIqamahTimesChanged?.let { change ->
+            listOf(
+                LocalSettingsAction(
+                    label = appString(R.string.save_iqamah_settings),
+                    invoke = { change(iqamahDraft) },
+                    testTag = SETTINGS_IQAMAH_SAVE_TAG,
+                    enabled = isValidIqamahTimes(iqamahDraft),
+                ),
+            )
+        }.orEmpty()
         SettingsDestination.APPEARANCE -> buildList {
             onScreenRetentionShiftChanged?.let { change ->
                 add(
@@ -268,7 +333,12 @@ private fun SettingsPage(
     val secondaryActionRequesters = remember(destination, localActions.size) {
         List((localActions.size - 1).coerceAtLeast(0)) { FocusRequester() }
     }
-    val actionRequesters = listOf(pageActionRequester) + secondaryActionRequesters
+    val editorSaveRequester = remember(destination) { FocusRequester() }
+    val actionRequesters = if (isEditor) {
+        listOf(editorSaveRequester) + secondaryActionRequesters
+    } else {
+        listOf(pageActionRequester) + secondaryActionRequesters
+    }
 
     BoxWithConstraints(modifier = modifier.fillMaxHeight()) {
         val compactPreview = maxHeight < 600.dp
@@ -298,12 +368,29 @@ private fun SettingsPage(
                 appVersion = appVersion,
                 pilotLocalRuntime = pilotLocalRuntime,
                 campaignPreview = campaignPreview,
+                qrConfiguration = qrDraft,
+                onQrConfigurationChange = { updated ->
+                    qrUrl = updated.httpsUrl
+                    qrTitle = updated.title
+                    qrMessage = updated.message
+                },
+                iqamahTimes = iqamahDraft,
+                onIqamahTimesChange = { updated ->
+                    fajrIqamah = updated.fajr
+                    dhuhrIqamah = updated.dhuhr
+                    asrIqamah = updated.asr
+                    maghribIqamah = updated.maghrib
+                    ishaIqamah = updated.isha
+                },
+                entryRequester = pageActionRequester,
+                saveRequester = actionRequesters.firstOrNull() ?: returnActionRequester,
                 compact = compactPreview,
                 modifier = Modifier.weight(1f),
             )
             localActions.forEachIndexed { index, action ->
                 Button(
                     onClick = action.invoke,
+                    enabled = action.enabled,
                     colors = ButtonDefaults.colors(
                         containerColor = NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.72f),
                         contentColor = NamazTvTheme.colors.textPrimary,
@@ -332,7 +419,13 @@ private fun SettingsPage(
                 ),
                 modifier = Modifier
                     .testTag(SETTINGS_PAGE_ACTION_TEST_TAG)
-                    .focusRequester(if (localActions.isEmpty()) pageActionRequester else returnActionRequester)
+                    .focusRequester(
+                        if (localActions.isEmpty() && !isEditor) {
+                            pageActionRequester
+                        } else {
+                            returnActionRequester
+                        },
+                    )
                     .focusProperties {
                         left = navigationRequester
                         localActions.lastOrNull()?.let { up = actionRequesters.last() }
@@ -352,10 +445,39 @@ private fun SettingsContent(
     appVersion: String,
     pilotLocalRuntime: Boolean,
     campaignPreview: QrCampaignUiState?,
+    qrConfiguration: OperatorQrConfiguration,
+    onQrConfigurationChange: (OperatorQrConfiguration) -> Unit,
+    iqamahTimes: OperatorIqamahTimes,
+    onIqamahTimesChange: (OperatorIqamahTimes) -> Unit,
+    entryRequester: FocusRequester,
+    saveRequester: FocusRequester,
     compact: Boolean,
     modifier: Modifier,
 ) {
     val backgroundStyle = TvBackgroundStyle.fromId(preferences.backgroundStyleId)
+    if (destination == SettingsDestination.CAMPAIGNS) {
+        QrSettingsEditor(
+            configuration = qrConfiguration,
+            onConfigurationChange = onQrConfigurationChange,
+            entryRequester = entryRequester,
+            saveRequester = saveRequester,
+            campaignPreview = campaignPreview,
+            compact = compact,
+            modifier = modifier,
+        )
+        return
+    }
+    if (destination == SettingsDestination.IQAMAH) {
+        IqamahSettingsEditor(
+            times = iqamahTimes,
+            onTimesChange = onIqamahTimesChange,
+            entryRequester = entryRequester,
+            saveRequester = saveRequester,
+            compact = compact,
+            modifier = modifier,
+        )
+        return
+    }
     if (schedule == null) {
         Text(
             text = appString(R.string.no_active_schedule),
@@ -365,24 +487,7 @@ private fun SettingsContent(
         )
         return
     }
-    if (destination == SettingsDestination.CAMPAIGNS && campaignPreview != null) {
-        QrCampaignPanel(
-            state = campaignPreview,
-            qrSize = if (compact) 96.dp else 160.dp,
-            compact = compact,
-            modifier = modifier.fillMaxWidth(),
-        )
-        return
-    }
     val diagnostics = schedule.diagnostics
-    val jumuahLabels = mutableListOf<String>()
-    for (session in schedule.jumuahSessions) {
-        jumuahLabels += appString(
-            R.string.value_jumuah_session,
-            session.label,
-            session.salahTime,
-        )
-    }
     val details = when (destination) {
         SettingsDestination.MOSQUE -> listOf(
             R.string.field_mosque to schedule.mosqueName,
@@ -399,16 +504,7 @@ private fun SettingsContent(
             R.string.field_source_id to schedule.sourceId,
             R.string.field_raw_hash to (diagnostics?.rawSha256 ?: appString(R.string.value_not_available)),
         )
-        SettingsDestination.IQAMAH -> listOf(
-            R.string.field_iqamah_rule to iqamahRuleLabel(schedule),
-            R.string.field_jumuah to jumuahLabels.joinToString("; ")
-                .ifEmpty { appString(R.string.value_not_configured) },
-            R.string.field_friday_dhuhr to if (schedule.jumuahSessions.isNotEmpty()) {
-                appString(R.string.value_friday_dhuhr_replaced)
-            } else {
-                appString(R.string.value_not_configured)
-            },
-        )
+        SettingsDestination.IQAMAH -> emptyList()
         SettingsDestination.APPEARANCE -> listOf(
             R.string.field_theme to appString(R.string.value_dark_theme),
             R.string.field_background to appString(backgroundStyle.labelRes),
@@ -416,13 +512,7 @@ private fun SettingsContent(
                 if (preferences.screenRetentionShiftEnabled) R.string.value_screen_shift_on else R.string.value_screen_shift_off,
             ),
         )
-        SettingsDestination.CAMPAIGNS -> listOf(
-            R.string.settings_campaigns_title to if (schedule.campaigns.isEmpty()) {
-                appString(R.string.campaigns_not_configured)
-            } else {
-                appString(R.string.campaigns_configured_count, schedule.campaigns.size)
-            },
-        )
+        SettingsDestination.CAMPAIGNS -> emptyList()
         SettingsDestination.LANGUAGE -> {
             val language = AppLanguage.fromTag(preferences.languageTag)
             listOf(
@@ -492,17 +582,3 @@ private fun sourceKindLabel(kind: String): String = appString(
         else -> R.string.value_other_source
     },
 )
-
-@Composable
-private fun iqamahRuleLabel(schedule: LocalPrayerSchedule): String {
-    val offsets = schedule.iqamahRules
-        .filter { it.mode == "offset_after_adhan" }
-        .mapNotNull { it.offsetMinutes }
-        .distinct()
-    return when {
-        schedule.iqamahRules.isEmpty() -> appString(R.string.value_no_iqamah_rules)
-        offsets.size == 1 && schedule.iqamahRules.all { it.mode == "offset_after_adhan" } ->
-            appString(R.string.value_iqamah_offset, offsets.single())
-        else -> appString(R.string.value_multiple_iqamah_rules)
-    }
-}
