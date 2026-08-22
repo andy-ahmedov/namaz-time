@@ -163,6 +163,12 @@ rounded warm-white surface with dark-navy modules, a decorative NamazTime
 center badge and an asymmetric corner/bottom frame. These decorative layers do
 not read data, accept focus, or introduce network work into display state.
 
+For mosque ID `second-cathedral-mosque-ulyanovsk`, the public main display and
+Mosque settings summary use the concise presentation identity `Вторая Соборная
+Мечеть` / `Ульяновск`. This is a UI-only alias: the canonical signed snapshot,
+source scope, approval evidence and stored locality remain unchanged and remain
+available to provenance/diagnostic flows.
+
 ## Settings navigation
 
 Suggested left navigation:

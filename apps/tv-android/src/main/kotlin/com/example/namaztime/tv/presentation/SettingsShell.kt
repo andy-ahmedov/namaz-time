@@ -488,10 +488,11 @@ private fun SettingsContent(
         return
     }
     val diagnostics = schedule.diagnostics
+    val displayIdentity = schedule.toMosqueDisplayIdentity()
     val details = when (destination) {
         SettingsDestination.MOSQUE -> listOf(
-            R.string.field_mosque to schedule.mosqueName,
-            R.string.field_location to (schedule.locality ?: appString(R.string.value_not_available)),
+            R.string.field_mosque to displayIdentity.name,
+            R.string.field_location to (displayIdentity.locality ?: appString(R.string.value_not_available)),
             R.string.field_timezone to schedule.timezoneId,
             R.string.field_coverage to "${schedule.coverageFrom} — ${schedule.coverageTo}",
         )

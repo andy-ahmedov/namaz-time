@@ -27,6 +27,7 @@ class MainPrayerDisplayStateTest {
         ) as PrayerTimeResolution.Available
         val state = schedule.toPrayerDisplayUiState(resolution, strings())
 
+        assertEquals("Синтетическая мечеть", state.mosqueName)
         assertEquals("20 августа 2026", state.dateLabel)
         assertEquals("Четверг", state.weekdayLabel)
         assertEquals("03:20:00", state.mosqueLocalTime)
@@ -39,6 +40,24 @@ class MainPrayerDisplayStateTest {
         assertEquals("через 00:19:00", state.iqamahSummary?.countdownLabel)
         assertEquals("03:14", state.rows.first().adhan)
         assertEquals("03:39", state.rows.first().iqamah)
+    }
+
+    @Test
+    fun pilotMosqueUsesItsShortPublicDisplayIdentity() {
+        val schedule = schedule().copy(
+            mosqueId = "second-cathedral-mosque-ulyanovsk",
+            mosqueName = "Вторая Соборная мечеть Ульяновска",
+            locality = "Ульяновск, ул. Дзержинского, 18А",
+        )
+        val resolution = PrayerTimeEngine().resolve(
+            schedule.toTimeEngineInput(),
+            Instant.parse("2026-08-19T23:20:00Z"),
+        ) as PrayerTimeResolution.Available
+
+        val state = schedule.toPrayerDisplayUiState(resolution, strings())
+
+        assertEquals("Вторая Соборная Мечеть", state.mosqueName)
+        assertEquals("Ульяновск", state.location)
     }
 
     @Test

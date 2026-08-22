@@ -178,6 +178,11 @@ composition is measured. Three API 36 build/install/screenshot passes were
 compared directly with `main_with_qr.png`; this is bounded visual runtime
 evidence, not automated perceptual equivalence or physical-TV acceptance.
 
+T027 pins the concise public display identity for the Ulyanovsk pilot mosque
+on both the main screen and Mosque settings page. A non-pilot passthrough
+assertion and the authenticated pilot bootstrap test prove the presentation
+mapping does not rewrite another mosque or mutate canonical signed Room data.
+
 T019 reuses the connected display resolver with one immutable synthetic local
 schedule and advances an injected instant over seven consecutive mosque-local
 dates at the 4K-density profile. Every covered day retains its date, local

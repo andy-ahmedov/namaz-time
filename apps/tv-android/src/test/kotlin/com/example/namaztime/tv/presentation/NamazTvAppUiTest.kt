@@ -208,7 +208,9 @@ class NamazTvAppUiTest {
     @Test
     fun approvedProductionScheduleKeepsTechnicalMarkersOffDisplay() {
         val approved = schedule().copy(
+            mosqueId = "second-cathedral-mosque-ulyanovsk",
             mosqueName = "Вторая Соборная мечеть Ульяновска",
+            locality = "Ульяновск, ул. Дзержинского, 18А",
             diagnostics = schedule().diagnostics?.copy(dataClassification = "production"),
         )
         compose.setContent {
@@ -221,7 +223,8 @@ class NamazTvAppUiTest {
             )
         }
 
-        compose.onNodeWithText("Вторая Соборная мечеть Ульяновска").assertIsDisplayed()
+        compose.onNodeWithText("Вторая Соборная Мечеть").assertIsDisplayed()
+        compose.onNodeWithText("Ульяновск").assertIsDisplayed()
         compose.onNodeWithText("УТВЕРЖДЁННЫЕ ДАННЫЕ").assertDoesNotExist()
         compose.onNodeWithText("ТЕСТОВЫЕ ДАННЫЕ").assertDoesNotExist()
     }

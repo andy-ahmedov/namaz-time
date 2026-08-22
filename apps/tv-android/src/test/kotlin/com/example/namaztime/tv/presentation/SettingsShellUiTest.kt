@@ -97,8 +97,8 @@ class SettingsShellUiTest {
             )
         }
 
-        compose.onNodeWithText("Вторая Соборная мечеть Ульяновска").assertIsDisplayed()
-        compose.onNodeWithText("Ульяновск, ул. Дзержинского, 18А").assertIsDisplayed()
+        compose.onNodeWithText("Вторая Соборная Мечеть").assertIsDisplayed()
+        compose.onNodeWithText("Ульяновск").assertIsDisplayed()
 
         moveDownFrom(SettingsDestination.MOSQUE)
         compose.onNodeWithText("Региональное духовное управление мусульман Ульяновской области").assertIsDisplayed()

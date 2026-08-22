@@ -1028,9 +1028,10 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
         diagnostics.dataClassification != "production" ||
         sourceKind == "calculation_profile"
     val nextEvent = resolution.nextEvent
+    val displayIdentity = toMosqueDisplayIdentity()
     return PrayerDisplayUiState(
-        mosqueName = mosqueName,
-        location = locality,
+        mosqueName = displayIdentity.name,
+        location = displayIdentity.locality,
         dateLabel = dateLabel,
         weekdayLabel = weekdayLabel,
         mosqueLocalTime = resolution.localTime.format(CLOCK_FORMAT),

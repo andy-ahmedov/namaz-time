@@ -174,3 +174,17 @@ The detailed pass-by-pass and requirement review is in
 
 Evidence label: `UNKNOWN` for physical-TV overscan/readability, OEM rendering,
 real-phone QR scan distance and long-running 4K/panel behavior.
+
+## T027 concise pilot display identity — 2026-08-22
+
+Evidence label: `CONFIRMED_RUNTIME` for the controlled Android TV Emulator API
+36 at 1920×1080/320 dpi. The updated debug APK was installed with
+`adb install -r`, preserving the existing Room and DataStore state, then
+`MainActivity` was cold-launched and remained the focused app. UIAutomator
+exposed the exact public strings `Вторая Соборная Мечеть` and `Ульяновск` on
+the main display; the prior street-address string was absent from that screen.
+
+The debug APK SHA-256 is
+`3b67628c3b822a0ccc2794c18a8e86f01350894be2bcbf776967ecc728378d49`.
+The presentation alias does not modify the authenticated canonical snapshot or
+its stored provenance identity.
