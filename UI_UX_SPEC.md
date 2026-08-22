@@ -148,6 +148,21 @@ background and settings route remain fixed, and the shift does not animate or
 change semantic/focus order. This is a conservative screen-retention measure,
 not evidence that a particular panel cannot retain or burn in an image.
 
+T026 keeps that structure and refines the `main_with_qr.png` composition as a
+presentation-only layer. The image background receives a stronger bounded navy
+treatment; high-opacity matte navy/blue-gray cards use thin neutral outlines,
+muted champagne accents and gray secondary text. Large clock/countdown values
+use lighter weights, and gold is no longer a card-level selection border.
+
+Decorative horizontal lines use a shared thin, softly glowing treatment whose
+opacity fades toward both ends around a small diamond. The next-prayer card has
+a non-semantic low-contrast arch and hanging-lantern watermark. A connected
+star/diamond lattice is reused below the QR and at the right of the bottom
+strip. The QR keeps its local payload and error correction but renders on a
+rounded warm-white surface with dark-navy modules, a decorative NamazTime
+center badge and an asymmetric corner/bottom frame. These decorative layers do
+not read data, accept focus, or introduce network work into display state.
+
 ## Settings navigation
 
 Suggested left navigation:

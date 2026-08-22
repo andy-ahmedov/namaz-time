@@ -169,6 +169,15 @@ NamazTime center badge at four raster sizes under high error correction. API
 36 screenshots are bounded runtime evidence; real-phone scan distance and
 physical-TV entry/readability remain `UNKNOWN`.
 
+T026 adds token regressions for high-opacity photographic-background surfaces
+and the minimum bounded scrim, while the existing semantic contrast tests guard
+the muted palette. QR raster tests prove modules are dark navy rather than pure
+black and remain decodable. Compose semantics pin the next-event watermark,
+bottom-strip ornament and a complete clock region after the three-column
+composition is measured. Three API 36 build/install/screenshot passes were
+compared directly with `main_with_qr.png`; this is bounded visual runtime
+evidence, not automated perceptual equivalence or physical-TV acceptance.
+
 T019 reuses the connected display resolver with one immutable synthetic local
 schedule and advances an injected instant over seven consecutive mosque-local
 dates at the 4K-density profile. Every covered day retains its date, local

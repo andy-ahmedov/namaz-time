@@ -150,3 +150,27 @@ Raw reference and screenshots remain outside Git.
 
 Evidence label: `UNKNOWN` for physical-TV overscan/readability, real-phone
 scan distance, OEM keyboard/focus behavior and long-running panel retention.
+
+## T026 focused main-display visual refinement — 2026-08-22
+
+Evidence label: `CONFIRMED_RUNTIME` for three build/install/screenshot passes
+on the controlled Android TV Emulator API 36 at 1920×1080/320 dpi. The
+product-owner-supplied reference remains `CONFIRMED_PUBLIC` under ADR 0014.
+
+The final pass has dense matte navy surfaces, a stronger bounded background
+treatment, neutral card outlines, muted champagne accents, lighter display
+type, an arch/lantern watermark, softly fading diamond lines, coordinated
+prayer/iqamah strokes, a full-row prayer highlight, dark-navy QR modules with
+an asymmetric frame, compact support copy, and a shared geometric lattice in
+the QR panel and bottom strip. The local prayer state, QR payload, D-pad path
+and offline data flow remained active.
+
+The final debug APK SHA-256 is
+`190cb91ef2fcba34e60e48bbc70d7a50bfa4682968bc02871e0d2276144daab3`.
+The final screencap SHA-256 is
+`75c5550a42ec1ad0b7f885e74ce5eab90dd120545f110a84c054c156175981e8`.
+The detailed pass-by-pass and requirement review is in
+`namaztime-main-visual-refinement-2026-08-22.md`. Raw images remain outside Git.
+
+Evidence label: `UNKNOWN` for physical-TV overscan/readability, OEM rendering,
+real-phone QR scan distance and long-running 4K/panel behavior.
