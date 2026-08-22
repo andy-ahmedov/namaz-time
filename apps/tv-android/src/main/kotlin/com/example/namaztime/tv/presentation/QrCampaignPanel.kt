@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
@@ -79,20 +80,20 @@ internal fun QrCampaignPanel(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
                     .fillMaxWidth()
-                    .height(if (compact) 60.dp else 94.dp)
+                    .height(if (compact) 72.dp else 104.dp)
                     .testTag(QR_BOTTOM_ORNAMENT_TAG),
             )
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = if (compact) 14.dp else 20.dp, vertical = 16.dp),
+                    .padding(horizontal = if (compact) 14.dp else 20.dp, vertical = 14.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
+                verticalArrangement = Arrangement.spacedBy(if (compact) 7.dp else 11.dp),
             ) {
                 Text(
                     text = kindLabel,
                     color = NamazTvTheme.colors.accent,
-                    fontSize = if (compact) 16.sp else 20.sp,
+                    fontSize = if (compact) 15.sp else 19.sp,
                     fontWeight = FontWeight.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -123,12 +124,12 @@ internal fun QrCampaignPanel(
                 state.subtitle?.let { subtitle ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.Top,
+                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
                     ) {
                         SadaqahSupportGlyph(
                             modifier = Modifier
-                                .size(if (compact) 30.dp else 38.dp)
+                                .size(if (compact) 26.dp else 34.dp)
                                 .testTag(QR_SUPPORT_ICON_TAG),
                         )
                         Text(
@@ -137,9 +138,10 @@ internal fun QrCampaignPanel(
                                 .weight(1f)
                                 .testTag(QR_CAMPAIGN_SUBTITLE_TAG),
                             color = NamazTvTheme.colors.textSecondary,
-                            fontSize = if (compact) 12.sp else 15.sp,
+                            fontSize = if (compact) 11.sp else 14.sp,
+                            lineHeight = if (compact) 14.sp else 18.sp,
                             textAlign = TextAlign.Start,
-                            maxLines = if (compact) 4 else 5,
+                            maxLines = if (compact) 3 else 4,
                             overflow = TextOverflow.Ellipsis,
                         )
                     }
@@ -155,47 +157,50 @@ private fun ElegantQrFrame(
     qrSize: Dp,
     modifier: Modifier = Modifier,
 ) {
-    val frameSize = qrSize + 18.dp
+    val frameSize = qrSize + 22.dp
     val tint = NamazTvTheme.colors.accent
     Box(modifier = modifier.size(frameSize), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val inset = 1.dp.toPx()
-            val arm = size.minDimension * 0.14f
+            val arm = size.minDimension * 0.15f
             val radius = size.minDimension * 0.06f
-            val strokeWidth = 1.5.dp.toPx()
+            val strokeWidth = 1.15.dp.toPx()
             val left = inset
             val top = inset
             val right = size.width - inset
             val bottom = size.height - inset
-            val corners = listOf(
+            val framePaths = listOf(
                 Path().apply {
-                    moveTo(left, top + arm)
+                    moveTo(left, top + arm * 1.08f)
                     lineTo(left, top + radius)
                     quadraticTo(left, top, left + radius, top)
-                    lineTo(left + arm, top)
+                    lineTo(size.width * 0.76f, top)
                 },
                 Path().apply {
-                    moveTo(right - arm, top)
-                    lineTo(right - radius, top)
-                    quadraticTo(right, top, right, top + radius)
-                    lineTo(right, top + arm)
-                },
-                Path().apply {
-                    moveTo(right, bottom - arm)
+                    moveTo(right, bottom - arm * 1.42f)
                     lineTo(right, bottom - radius)
                     quadraticTo(right, bottom, right - radius, bottom)
-                    lineTo(right - arm, bottom)
-                },
-                Path().apply {
-                    moveTo(left + arm, bottom)
-                    lineTo(left + radius, bottom)
+                    lineTo(size.width * 0.18f, bottom)
                     quadraticTo(left, bottom, left, bottom - radius)
-                    lineTo(left, bottom - arm)
+                    lineTo(left, bottom - arm * 0.48f)
                 },
             )
-            corners.forEach { drawPath(it, tint, style = Stroke(strokeWidth, cap = StrokeCap.Round)) }
+            framePaths.forEach {
+                drawPath(
+                    it,
+                    tint.copy(alpha = 0.22f),
+                    style = Stroke(3.2.dp.toPx(), cap = StrokeCap.Round),
+                )
+                drawPath(it, tint, style = Stroke(strokeWidth, cap = StrokeCap.Round))
+            }
         }
-        Box(modifier = Modifier.size(qrSize), contentAlignment = Alignment.Center) {
+        Box(
+            modifier = Modifier
+                .size(qrSize)
+                .clip(RoundedCornerShape(qrSize * 0.055f))
+                .background(QR_LIGHT),
+            contentAlignment = Alignment.Center,
+        ) {
             Image(
                 bitmap = rememberQrBitmap(
                     matrix = state.qrCode,
@@ -205,54 +210,63 @@ private fun ElegantQrFrame(
                 modifier = Modifier
                     .fillMaxSize()
                     .testTag(QR_CODE_IMAGE_TAG)
-                    .background(Color.White),
+                    .background(QR_LIGHT),
                 filterQuality = FilterQuality.None,
             )
-            Box(
+            DecorativeQrBadge(
                 modifier = Modifier
                     .size(qrSize * 0.23f)
-                    .background(
-                        NamazTvTheme.colors.backgroundTop,
-                        RoundedCornerShape(qrSize * 0.035f),
-                    )
-                    .border(
-                        1.dp,
-                        NamazTvTheme.colors.accent,
-                        RoundedCornerShape(qrSize * 0.035f),
-                    )
                     .testTag(QR_CENTER_BRAND_BADGE_TAG),
-                contentAlignment = Alignment.Center,
-            ) {
-                BrandMark(Modifier.fillMaxSize().padding(qrSize * 0.045f))
+            )
+        }
+    }
+}
+
+@Composable
+private fun DecorativeQrBadge(modifier: Modifier = Modifier) {
+    val colors = NamazTvTheme.colors
+    Box(modifier = modifier, contentAlignment = Alignment.Center) {
+        Canvas(Modifier.fillMaxSize()) {
+            val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
+            val radius = size.minDimension * 0.47f
+            val star = Path()
+            repeat(16) { point ->
+                val angle = Math.PI * point / 8.0 - Math.PI / 2.0
+                val pointRadius = radius * if (point % 2 == 0) 1f else 0.78f
+                val x = center.x + kotlin.math.cos(angle).toFloat() * pointRadius
+                val y = center.y + kotlin.math.sin(angle).toFloat() * pointRadius
+                if (point == 0) star.moveTo(x, y) else star.lineTo(x, y)
             }
+            star.close()
+            drawPath(star, colors.backgroundTop)
+            drawPath(
+                star,
+                colors.accent.copy(alpha = 0.92f),
+                style = Stroke(0.8.dp.toPx(), cap = StrokeCap.Round),
+            )
+        }
+        Box(
+            modifier = Modifier
+                .fillMaxSize(0.70f)
+                .background(colors.backgroundTop, RoundedCornerShape(22))
+                .border(0.55.dp, colors.accentOutline, RoundedCornerShape(22)),
+            contentAlignment = Alignment.Center,
+        ) {
+            BrandMark(Modifier.fillMaxSize().padding(4.dp))
         }
     }
 }
 
 @Composable
 private fun SadaqahDivider(modifier: Modifier = Modifier) {
-    val tint = NamazTvTheme.colors.accentOutline
-    Canvas(modifier) {
-        val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
-        val radius = size.height * 0.31f
-        drawLine(tint.copy(alpha = 0.58f), androidx.compose.ui.geometry.Offset(0f, center.y), androidx.compose.ui.geometry.Offset(center.x - radius * 2f, center.y), 0.75.dp.toPx())
-        drawLine(tint.copy(alpha = 0.58f), androidx.compose.ui.geometry.Offset(center.x + radius * 2f, center.y), androidx.compose.ui.geometry.Offset(size.width, center.y), 0.75.dp.toPx())
-        val diamond = Path().apply {
-            moveTo(center.x, center.y - radius)
-            lineTo(center.x + radius, center.y)
-            lineTo(center.x, center.y + radius)
-            lineTo(center.x - radius, center.y)
-            close()
-        }
-        drawPath(diamond, tint, style = Stroke(0.9.dp.toPx()))
-    }
+    TvFadingDiamondDivider(modifier = modifier)
 }
 
 @Composable
 private fun SadaqahSupportGlyph(modifier: Modifier = Modifier) {
     val tint = NamazTvTheme.colors.accent
     Canvas(modifier) {
-        val stroke = Stroke(size.minDimension * 0.055f, cap = StrokeCap.Round)
+        val stroke = Stroke(size.minDimension * TV_ICON_STROKE_FRACTION, cap = StrokeCap.Round)
         drawRoundRect(
             color = tint,
             topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.20f, size.height * 0.06f),
@@ -299,49 +313,7 @@ private fun SadaqahSupportGlyph(modifier: Modifier = Modifier) {
 
 @Composable
 private fun SadaqahBottomOrnament(modifier: Modifier = Modifier) {
-    val tint = NamazTvTheme.colors.accentOutline
-    Canvas(modifier) {
-        val cell = size.width / 3.25f
-        val stroke = Stroke(0.5.dp.toPx())
-        repeat(5) { column ->
-            repeat(3) { row ->
-                val centerX = (column - 0.42f) * cell + if (row % 2 == 0) 0f else cell / 2f
-                val centerY = size.height * 0.27f + row * cell * 0.72f
-                val radius = cell * 0.42f
-                val alpha = (0.12f - row * 0.028f).coerceAtLeast(0.04f)
-                listOf(1f to 0.42f, 0.68f to 0.30f).forEach { (outer, inner) ->
-                    val star = Path()
-                    repeat(16) { point ->
-                        val angle = Math.PI * point / 8.0 - Math.PI / 2.0
-                        val pointRadius = radius * if (point % 2 == 0) outer else inner
-                        val x = centerX + kotlin.math.cos(angle).toFloat() * pointRadius
-                        val y = centerY + kotlin.math.sin(angle).toFloat() * pointRadius
-                        if (point == 0) star.moveTo(x, y) else star.lineTo(x, y)
-                    }
-                    star.close()
-                    drawPath(star, tint.copy(alpha = alpha), style = stroke)
-                }
-                drawCircle(
-                    tint.copy(alpha = alpha * 0.72f),
-                    radius * 0.73f,
-                    androidx.compose.ui.geometry.Offset(centerX, centerY),
-                    style = stroke,
-                )
-                repeat(8) { point ->
-                    val angle = Math.PI * point / 4.0
-                    val start = androidx.compose.ui.geometry.Offset(
-                        centerX + kotlin.math.cos(angle).toFloat() * radius * 0.30f,
-                        centerY + kotlin.math.sin(angle).toFloat() * radius * 0.30f,
-                    )
-                    val end = androidx.compose.ui.geometry.Offset(
-                        centerX + kotlin.math.cos(angle).toFloat() * radius * 0.73f,
-                        centerY + kotlin.math.sin(angle).toFloat() * radius * 0.73f,
-                    )
-                    drawLine(tint.copy(alpha = alpha * 0.72f), start, end, stroke.width)
-                }
-            }
-        }
-    }
+    TvIslamicGeometricPattern(modifier = modifier, intensity = 0.12f)
 }
 
 @Composable
@@ -367,7 +339,7 @@ internal fun qrArgbPixels(matrix: QrCodeMatrix, outputSize: Int): IntArray {
         val targetY = index / outputSize
         val sourceX = targetX * matrix.size / outputSize
         val sourceY = targetY * matrix.size / outputSize
-        if (matrix.darkPixels[sourceY * matrix.size + sourceX]) BLACK else WHITE
+        if (matrix.darkPixels[sourceY * matrix.size + sourceX]) QR_DARK else QR_LIGHT_ARGB
     }
 }
 
@@ -392,5 +364,6 @@ private fun campaignKindResource(kind: String): Int = when (kind) {
     else -> R.string.campaign_kind_information
 }
 
-private const val BLACK: Int = -0x1000000
-private const val WHITE: Int = -0x1
+private val QR_LIGHT = Color(0xFFFFFDF8)
+private const val QR_DARK: Int = 0xFF172331.toInt()
+private const val QR_LIGHT_ARGB: Int = 0xFFFFFDF8.toInt()

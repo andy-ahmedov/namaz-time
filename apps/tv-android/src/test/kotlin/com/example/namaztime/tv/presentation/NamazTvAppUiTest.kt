@@ -329,8 +329,36 @@ class NamazTvAppUiTest {
         compose.onNodeWithTag("mosque-location-ornament").assertIsDisplayed()
         compose.onNodeWithTag("next-event-ornament-divider").assertIsDisplayed()
         compose.onNodeWithTag("clock-ornament-divider").assertIsDisplayed()
+        compose.onNodeWithTag(NEXT_EVENT_WATERMARK_TAG, useUnmergedTree = true).assertExists()
+        compose.onNodeWithTag(BOTTOM_STRIP_ORNAMENT_TAG, useUnmergedTree = true).assertExists()
         compose.onNodeWithTag("calendar-icon", useUnmergedTree = true).assertExists()
         compose.onNodeWithContentDescription("Настройки").assertIsFocused()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun qrCompositionKeepsTheFullEightDigitClockRegion() {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(
+                    schedule().copy(campaigns = listOf(campaign())),
+                ),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        val clockCard = compose.onNodeWithTag(LOCAL_CLOCK_CARD_TAG).getUnclippedBoundsInRoot()
+        val clockValue = compose.onNodeWithTag(LOCAL_CLOCK_VALUE_TAG, useUnmergedTree = true)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+
+        assertTrue(clockValue.right - clockValue.left >= 148.dp)
+        assertTrue(clockValue.left >= clockCard.left && clockValue.right <= clockCard.right)
     }
 
     @Test

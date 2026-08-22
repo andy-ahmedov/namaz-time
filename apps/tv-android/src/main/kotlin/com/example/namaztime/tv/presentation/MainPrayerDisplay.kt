@@ -83,6 +83,9 @@ const val MOSQUE_LOCATION_ORNAMENT_TAG = "mosque-location-ornament"
 const val NEXT_EVENT_DIVIDER_TAG = "next-event-ornament-divider"
 const val CLOCK_DIVIDER_TAG = "clock-ornament-divider"
 const val CALENDAR_ICON_TAG = "calendar-icon"
+const val LOCAL_CLOCK_VALUE_TAG = "mosque-local-clock"
+const val NEXT_EVENT_WATERMARK_TAG = "next-event-watermark"
+const val BOTTOM_STRIP_ORNAMENT_TAG = "bottom-strip-ornament"
 
 internal enum class IqamahPresentation {
     MISSING,
@@ -146,7 +149,7 @@ internal fun MainPrayerDisplay(
             contentShiftBudget = SCREEN_RETENTION_SHIFT_BUDGET,
         ) {
             Box(Modifier.fillMaxSize()) {
-                val compositionWidth = if (state.campaign == null) 0.79f else 0.90f
+                val compositionWidth = if (state.campaign == null) 0.79f else 0.88f
                 Column(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
@@ -244,7 +247,7 @@ private fun DisplayHeader(
 ) {
     val colors = NamazTvTheme.colors
     Column(
-        modifier = Modifier.fillMaxWidth().height(metrics.headerHeight),
+        modifier = Modifier.fillMaxWidth().height(metrics.headerHeight).offset(y = (-7).dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
@@ -252,9 +255,9 @@ private fun DisplayHeader(
             modifier = Modifier
                 .offset(y = (-8).dp)
                 .testTag(BRAND_PILL_TEST_TAG)
-                .background(colors.surfaceStrong.copy(alpha = 0.54f), RoundedCornerShape(50))
-                .border(0.75.dp, colors.surfaceOutline, RoundedCornerShape(50))
-                .padding(horizontal = metrics.inlineGap * 1.35f, vertical = 3.dp),
+                .background(colors.surfaceStrong.copy(alpha = 0.76f), RoundedCornerShape(50))
+                .border(0.5.dp, colors.surfaceOutline, RoundedCornerShape(50))
+                .padding(horizontal = metrics.inlineGap * 1.65f, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(metrics.inlineGap / 2),
         ) {
@@ -263,7 +266,7 @@ private fun DisplayHeader(
                 text = "NamazTime",
                 color = colors.textPrimary,
                 fontSize = metrics.brandSize,
-                fontWeight = FontWeight.Medium,
+                fontWeight = FontWeight.Normal,
             )
         }
         Text(
@@ -271,7 +274,7 @@ private fun DisplayHeader(
             modifier = Modifier.testTag(MOSQUE_NAME_TEST_TAG).semantics { heading() },
             color = colors.textPrimary,
             fontSize = metrics.mosqueNameSize,
-            fontWeight = FontWeight.Bold,
+            fontWeight = FontWeight.Medium,
             textAlign = TextAlign.Center,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -371,36 +374,15 @@ private fun OrnamentDivider(
     diamondAtStart: Boolean = false,
     diamondAtEnd: Boolean = false,
 ) {
-    Canvas(modifier) {
-        val centerY = size.height / 2f
-        val diamondRadius = size.height * 0.34f
-        val centerX = when {
-            diamondAtStart -> diamondRadius + 1.dp.toPx()
-            diamondAtEnd -> size.width - diamondRadius - 1.dp.toPx()
-            else -> size.width / 2f
-        }
-        val gap = diamondRadius * 1.7f
-        drawLine(
-            color = tint.copy(alpha = 0.62f),
-            start = Offset(0f, centerY),
-            end = Offset((centerX - gap).coerceAtLeast(0f), centerY),
-            strokeWidth = 0.75.dp.toPx(),
-        )
-        drawLine(
-            color = tint.copy(alpha = 0.62f),
-            start = Offset((centerX + gap).coerceAtMost(size.width), centerY),
-            end = Offset(size.width, centerY),
-            strokeWidth = 0.75.dp.toPx(),
-        )
-        val diamond = Path().apply {
-            moveTo(centerX, centerY - diamondRadius)
-            lineTo(centerX + diamondRadius, centerY)
-            lineTo(centerX, centerY + diamondRadius)
-            lineTo(centerX - diamondRadius, centerY)
-            close()
-        }
-        drawPath(diamond, tint, style = Stroke(0.75.dp.toPx()))
-    }
+    TvFadingDiamondDivider(
+        modifier = modifier,
+        tint = tint,
+        diamondPosition = when {
+            diamondAtStart -> OrnamentDiamondPosition.START
+            diamondAtEnd -> OrnamentDiamondPosition.END
+            else -> OrnamentDiamondPosition.CENTER
+        },
+    )
 }
 
 @Composable
@@ -472,50 +454,126 @@ private fun NextEventCard(
         radius = metrics.cardRadius,
         accented = true,
     ) {
-        Column(
-            modifier = Modifier.fillMaxSize().padding(metrics.cardPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-        ) {
-            Text(
-                appString(R.string.next_prayer),
-                color = colors.accent,
-                fontSize = metrics.labelSize,
-                fontWeight = FontWeight.Normal,
-            )
-            Text(
-                state.nextPrayerLabel,
-                color = colors.textPrimary,
-                fontSize = metrics.nextPrayerSize,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            OrnamentDivider(
-                tint = colors.accentOutline,
+        Box(Modifier.fillMaxSize()) {
+            NextPrayerWatermark(
                 modifier = Modifier
-                    .padding(vertical = metrics.inlineGap / 2)
-                    .width(metrics.ornamentDividerWidth)
-                    .height(8.dp)
-                    .testTag(NEXT_EVENT_DIVIDER_TAG),
+                    .align(Alignment.BottomStart)
+                    .fillMaxWidth(0.55f)
+                    .fillMaxHeight(0.90f)
+                    .testTag(NEXT_EVENT_WATERMARK_TAG),
             )
-            Text(
-                state.countdown,
-                modifier = Modifier
-                    .width(metrics.countdownWidth)
-                    .testTag(COUNTDOWN_TEST_TAG)
-                    .semantics {
-                        contentDescription = countdownDescription
-                    },
-                color = colors.accent,
-                fontSize = metrics.countdownSize,
-                fontWeight = FontWeight.Bold,
-                fontFamily = FontFamily.SansSerif,
-                textAlign = TextAlign.Center,
-                maxLines = 1,
-            )
+            Column(
+                modifier = Modifier.fillMaxSize().padding(metrics.cardPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center,
+            ) {
+                Text(
+                    appString(R.string.next_prayer),
+                    color = colors.accent,
+                    fontSize = metrics.labelSize,
+                    fontWeight = FontWeight.Normal,
+                )
+                Text(
+                    state.nextPrayerLabel,
+                    color = colors.textPrimary,
+                    fontSize = metrics.nextPrayerSize,
+                    fontWeight = FontWeight.Medium,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                OrnamentDivider(
+                    tint = colors.accentOutline,
+                    modifier = Modifier
+                        .padding(vertical = metrics.inlineGap / 2)
+                        .width(metrics.ornamentDividerWidth)
+                        .height(8.dp)
+                        .testTag(NEXT_EVENT_DIVIDER_TAG),
+                )
+                Text(
+                    state.countdown,
+                    modifier = Modifier
+                        .width(metrics.countdownWidth)
+                        .testTag(COUNTDOWN_TEST_TAG)
+                        .semantics {
+                            contentDescription = countdownDescription
+                        },
+                    color = colors.accent,
+                    fontSize = metrics.countdownSize,
+                    fontWeight = FontWeight.Light,
+                    fontFamily = FontFamily.SansSerif,
+                    letterSpacing = 1.2.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun NextPrayerWatermark(modifier: Modifier = Modifier) {
+    val tint = NamazTvTheme.colors.accentOutline
+    Canvas(modifier) {
+        val stroke = Stroke(0.65.dp.toPx(), cap = StrokeCap.Round)
+        val glowStroke = Stroke(2.6.dp.toPx(), cap = StrokeCap.Round)
+        val arch = Path().apply {
+            moveTo(size.width * 0.08f, size.height)
+            lineTo(size.width * 0.08f, size.height * 0.44f)
+            cubicTo(
+                size.width * 0.08f,
+                size.height * 0.34f,
+                size.width * 0.23f,
+                size.height * 0.31f,
+                size.width * 0.27f,
+                size.height * 0.17f,
+            )
+            cubicTo(
+                size.width * 0.31f,
+                size.height * 0.31f,
+                size.width * 0.46f,
+                size.height * 0.34f,
+                size.width * 0.46f,
+                size.height * 0.44f,
+            )
+            lineTo(size.width * 0.46f, size.height)
+        }
+        drawPath(arch, tint.copy(alpha = 0.035f), style = glowStroke)
+        drawPath(arch, tint.copy(alpha = 0.12f), style = stroke)
+
+        val lanternX = size.width * 0.27f
+        val chainTop = size.height * 0.18f
+        val lanternTop = size.height * 0.49f
+        drawLine(
+            tint.copy(alpha = 0.12f),
+            Offset(lanternX, chainTop),
+            Offset(lanternX, lanternTop),
+            stroke.width,
+            StrokeCap.Round,
+        )
+        val lantern = Path().apply {
+            moveTo(lanternX, lanternTop)
+            lineTo(size.width * 0.22f, size.height * 0.55f)
+            lineTo(size.width * 0.23f, size.height * 0.74f)
+            lineTo(lanternX, size.height * 0.80f)
+            lineTo(size.width * 0.31f, size.height * 0.74f)
+            lineTo(size.width * 0.32f, size.height * 0.55f)
+            close()
+        }
+        drawPath(lantern, tint.copy(alpha = 0.035f), style = glowStroke)
+        drawPath(lantern, tint.copy(alpha = 0.14f), style = stroke)
+        drawLine(
+            tint.copy(alpha = 0.14f),
+            Offset(size.width * 0.235f, size.height * 0.62f),
+            Offset(size.width * 0.305f, size.height * 0.62f),
+            stroke.width,
+            StrokeCap.Round,
+        )
+        drawCircle(
+            tint.copy(alpha = 0.12f),
+            1.2.dp.toPx(),
+            Offset(lanternX, size.height * 0.85f),
+        )
     }
 }
 
@@ -575,16 +633,19 @@ private fun LocalClockCard(
                     )
                     Text(
                         state.mosqueLocalTime,
-                        modifier = Modifier.widthIn(min = metrics.clockWidth),
+                        modifier = Modifier
+                            .widthIn(min = metrics.clockWidth)
+                            .testTag(LOCAL_CLOCK_VALUE_TAG),
                         color = colors.textPrimary,
                         fontSize = metrics.clockSize,
-                        fontWeight = FontWeight.Medium,
+                        fontWeight = FontWeight.Light,
                         fontFamily = FontFamily.SansSerif,
+                        letterSpacing = 1.sp,
                         textAlign = TextAlign.Center,
                         maxLines = 1,
                     )
                 }
-                Spacer(Modifier.width(metrics.calendarAreaWidth))
+                Spacer(Modifier.width(metrics.calendarAreaWidth / 2))
             }
         }
     }
@@ -611,11 +672,9 @@ private fun PrayerListCard(
             state.rows.forEachIndexed { index, row ->
                 PrayerGridRow(row, metrics, Modifier.weight(1f))
                 if (index < state.rows.lastIndex) {
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .height(0.5.dp)
-                            .background(colors.separator),
+                    TvFadingHairline(
+                        modifier = Modifier.fillMaxWidth().height(1.dp),
+                        color = colors.separator,
                     )
                 }
             }
@@ -638,7 +697,7 @@ private fun PrayerListCard(
                                 .padding(horizontal = metrics.cellPadding, vertical = 3.dp),
                             color = colors.accent,
                             fontSize = metrics.captionSize,
-                            fontWeight = FontWeight.SemiBold,
+                            fontWeight = FontWeight.Medium,
                             textAlign = TextAlign.Center,
                             maxLines = 1,
                             overflow = TextOverflow.Ellipsis,
@@ -686,15 +745,21 @@ private fun PrayerGridRow(
                         .background(
                             brush = Brush.horizontalGradient(
                                 listOf(
-                                    colors.accentSoft.copy(alpha = 0.74f),
-                                    colors.accentSoft.copy(alpha = 0.28f),
+                                    colors.accentSoft.copy(alpha = 0.64f),
+                                    colors.accentSoft.copy(alpha = 0.30f),
+                                    colors.accentSoft.copy(alpha = 0.18f),
                                 ),
                             ),
                             shape = RoundedCornerShape(metrics.rowRadius),
                         )
                         .border(
-                            0.75.dp,
-                            colors.accentOutline.copy(alpha = 0.78f),
+                            2.5.dp,
+                            colors.accentOutline.copy(alpha = 0.10f),
+                            RoundedCornerShape(metrics.rowRadius),
+                        )
+                        .border(
+                            0.65.dp,
+                            colors.accentOutline.copy(alpha = 0.62f),
                             RoundedCornerShape(metrics.rowRadius),
                         )
                 } else {
@@ -705,22 +770,11 @@ private fun PrayerGridRow(
                 contentDescription = rowDescription
             },
     ) {
-        if (row.isNextEvent) {
-            Box(
-                Modifier
-                    .align(Alignment.CenterStart)
-                    .width(3.dp)
-                    .fillMaxHeight(0.62f)
-                    .background(colors.accent, RoundedCornerShape(4.dp)),
-            )
-        }
         PrayerGridColumns(
             row = row,
             iqamahText = iqamahText,
             metrics = metrics,
-            modifier = Modifier.fillMaxSize().padding(
-                start = if (row.isNextEvent) metrics.inlineGap else 0.dp,
-            ),
+            modifier = Modifier.fillMaxSize(),
         )
     }
 }
@@ -756,7 +810,10 @@ private fun PrayerGridHeader(
             )
         }
     }
-    Box(Modifier.fillMaxWidth().height(0.5.dp).background(colors.separator))
+    TvFadingHairline(
+        modifier = Modifier.fillMaxWidth().height(1.dp),
+        color = colors.separator,
+    )
 }
 
 @Composable
@@ -794,7 +851,7 @@ private fun PrayerGridColumns(
                     modifier = Modifier.fillMaxWidth().testTag(SUNRISE_CENTERED_TIME_TEST_TAG),
                     color = if (row.isNextEvent) colors.accent else colors.textPrimary,
                     fontSize = metrics.prayerRowSize,
-                    fontWeight = if (row.isNextEvent) FontWeight.SemiBold else FontWeight.Medium,
+                    fontWeight = if (row.isNextEvent) FontWeight.Medium else FontWeight.Normal,
                     fontFamily = FontFamily.SansSerif,
                     textAlign = TextAlign.Center,
                     maxLines = 1,
@@ -842,7 +899,7 @@ private fun RowScope.GridText(
         fontWeight = when {
             header -> FontWeight.Normal
             emphasized -> FontWeight.SemiBold
-            numeric -> FontWeight.Medium
+            numeric -> FontWeight.Normal
             else -> FontWeight.Normal
         },
         fontFamily = if (numeric) FontFamily.SansSerif else null,
@@ -863,73 +920,83 @@ private fun IqamahStatusStrip(
         modifier = modifier.testTag(IQAMAH_STRIP_TAG),
         radius = metrics.cardRadius,
     ) {
-        Row(
-            modifier = Modifier.fillMaxSize().padding(horizontal = metrics.cardPadding),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(metrics.sectionGap),
-        ) {
-            IqamahIcon(
-                Modifier.width(metrics.iqamahIconSize).height(metrics.iqamahIconSize),
-                exposeTestTag = true,
+        Box(Modifier.fillMaxSize()) {
+            TvIslamicGeometricPattern(
+                modifier = Modifier
+                    .align(Alignment.CenterEnd)
+                    .width(metrics.stripOrnamentWidth)
+                    .fillMaxHeight()
+                    .testTag(BOTTOM_STRIP_ORNAMENT_TAG),
+                intensity = 0.12f,
             )
             Row(
-                modifier = Modifier.weight(1f),
+                modifier = Modifier.fillMaxSize().padding(horizontal = metrics.cardPadding),
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(metrics.inlineGap),
+                horizontalArrangement = Arrangement.spacedBy(metrics.sectionGap),
             ) {
-                Text(
-                    state.iqamahSummary?.label ?: appString(R.string.iqamah_nearest),
-                    color = colors.textSecondary,
-                    fontSize = metrics.captionSize,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
+                IqamahIcon(
+                    Modifier.width(metrics.iqamahIconSize).height(metrics.iqamahIconSize),
+                    exposeTestTag = true,
                 )
-                Text(
-                    state.iqamahSummary?.time ?: appString(R.string.iqamah_not_specified),
-                    color = if (state.iqamahSummary == null) {
-                        colors.textPrimary
-                    } else {
-                        colors.accent
-                    },
-                    fontSize = metrics.iqamahSize,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = if (state.iqamahSummary == null) null else FontFamily.SansSerif,
-                    maxLines = 1,
-                )
-            }
-            Box(Modifier.width(0.5.dp).fillMaxHeight(0.54f).background(colors.separator))
-            Row(
-                modifier = Modifier.weight(1f),
-                horizontalArrangement = Arrangement.Center,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    state.nextEventKindLabel,
-                    color = colors.textSecondary,
-                    fontSize = metrics.captionSize,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    state.countdown,
-                    modifier = Modifier.padding(start = metrics.inlineGap),
-                    color = colors.accent,
-                    fontSize = metrics.iqamahSize,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = FontFamily.SansSerif,
-                    maxLines = 1,
-                )
-            }
-            if (state.sourceRequiresAttention || state.supportCode != null) {
-                Text(
-                    state.supportCode?.let { appString(R.string.support_code, it) }
-                        ?: state.sourceLabel,
-                    color = colors.warning,
-                    fontSize = metrics.sourceDescriptionSize,
-                    fontWeight = FontWeight.Medium,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                )
+                Row(
+                    modifier = Modifier.weight(1f),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(metrics.inlineGap),
+                ) {
+                    Text(
+                        state.iqamahSummary?.label ?: appString(R.string.iqamah_nearest),
+                        color = colors.textSecondary,
+                        fontSize = metrics.captionSize,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        state.iqamahSummary?.time ?: appString(R.string.iqamah_not_specified),
+                        color = if (state.iqamahSummary == null) {
+                            colors.textPrimary
+                        } else {
+                            colors.accent
+                        },
+                        fontSize = metrics.iqamahSize,
+                        fontWeight = FontWeight.Medium,
+                        fontFamily = if (state.iqamahSummary == null) null else FontFamily.SansSerif,
+                        maxLines = 1,
+                    )
+                }
+                Box(Modifier.width(0.5.dp).fillMaxHeight(0.44f).background(colors.separator))
+                Row(
+                    modifier = Modifier.weight(1f),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        state.nextEventKindLabel,
+                        color = colors.textSecondary,
+                        fontSize = metrics.captionSize,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        state.countdown,
+                        modifier = Modifier.padding(start = metrics.inlineGap),
+                        color = colors.accent,
+                        fontSize = metrics.iqamahSize,
+                        fontWeight = FontWeight.Normal,
+                        fontFamily = FontFamily.SansSerif,
+                        maxLines = 1,
+                    )
+                }
+                if (state.sourceRequiresAttention || state.supportCode != null) {
+                    Text(
+                        state.supportCode?.let { appString(R.string.support_code, it) }
+                            ?: state.sourceLabel,
+                        color = colors.warning,
+                        fontSize = metrics.sourceDescriptionSize,
+                        fontWeight = FontWeight.Medium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
             }
         }
     }
@@ -1124,6 +1191,7 @@ private data class MainDisplayMetrics(
     val clockWidth: Dp,
     val campaignPanelWidth: Dp,
     val qrSize: Dp,
+    val stripOrnamentWidth: Dp,
     val gridHeaderHeight: Dp,
     val jumuahHeight: Dp,
     val cardRadius: Dp,
@@ -1157,20 +1225,21 @@ private data class MainDisplayMetrics(
             MainDisplayMetrics(
                 sectionGap = 8.dp,
                 inlineGap = 8.dp,
-                cardPadding = 14.dp,
-                gridHorizontalPadding = 12.dp,
-                gridVerticalPadding = 7.dp,
+                cardPadding = 16.dp,
+                gridHorizontalPadding = 14.dp,
+                gridVerticalPadding = 9.dp,
                 cellPadding = 3.dp,
                 headerHeight = 86.dp,
                 settingsHeight = 48.dp,
                 clockCardHeight = 128.dp,
                 iqamahStripHeight = 58.dp,
-                bottomBreathingRoom = 4.dp,
-                countdownWidth = 220.dp,
+                bottomBreathingRoom = 0.dp,
+                countdownWidth = 230.dp,
                 clockWidth = 180.dp,
-                campaignPanelWidth = 204.dp,
-                qrSize = 128.dp,
-                gridHeaderHeight = 18.dp,
+                campaignPanelWidth = 202.dp,
+                qrSize = 132.dp,
+                stripOrnamentWidth = 132.dp,
+                gridHeaderHeight = 16.dp,
                 jumuahHeight = 24.dp,
                 cardRadius = 19.dp,
                 rowRadius = 11.dp,
@@ -1180,20 +1249,20 @@ private data class MainDisplayMetrics(
                 locationOrnamentWidth = 54.dp,
                 calendarAreaWidth = 52.dp,
                 mosqueNameSize = 28.sp,
-                nextPrayerSize = 30.sp,
+                nextPrayerSize = 27.sp,
                 clockSize = 36.sp,
-                countdownSize = 44.sp,
+                countdownSize = 46.sp,
                 iqamahSize = 21.sp,
-                dateSize = 18.sp,
+                dateSize = 17.sp,
                 prayerRowSize = 17.sp,
                 gridHeaderSize = 12.sp,
-                labelSize = 16.sp,
+                labelSize = 14.sp,
                 secondarySize = 14.sp,
                 captionSize = 13.sp,
                 sourceDescriptionSize = 10.sp,
                 brandIconSize = 17.dp,
-                prayerIconSize = 24.dp,
-                iqamahIconSize = 28.dp,
+                prayerIconSize = 22.dp,
+                iqamahIconSize = 24.dp,
                 settingsIconSize = 21.dp,
                 calendarIconSize = 34.dp,
                 brandSize = 15.sp,
@@ -1202,20 +1271,21 @@ private data class MainDisplayMetrics(
             MainDisplayMetrics(
                 sectionGap = 14.dp,
                 inlineGap = 10.dp,
-                cardPadding = 22.dp,
-                gridHorizontalPadding = 18.dp,
-                gridVerticalPadding = 10.dp,
+                cardPadding = 24.dp,
+                gridHorizontalPadding = 20.dp,
+                gridVerticalPadding = 12.dp,
                 cellPadding = 5.dp,
                 headerHeight = 108.dp,
                 settingsHeight = 56.dp,
                 clockCardHeight = 170.dp,
                 iqamahStripHeight = 68.dp,
-                bottomBreathingRoom = 4.dp,
-                countdownWidth = 300.dp,
+                bottomBreathingRoom = 0.dp,
+                countdownWidth = 310.dp,
                 clockWidth = 230.dp,
-                campaignPanelWidth = 264.dp,
-                qrSize = 168.dp,
-                gridHeaderHeight = 24.dp,
+                campaignPanelWidth = 260.dp,
+                qrSize = 174.dp,
+                stripOrnamentWidth = 176.dp,
+                gridHeaderHeight = 22.dp,
                 jumuahHeight = 30.dp,
                 cardRadius = 24.dp,
                 rowRadius = 15.dp,
@@ -1225,20 +1295,20 @@ private data class MainDisplayMetrics(
                 locationOrnamentWidth = 72.dp,
                 calendarAreaWidth = 70.dp,
                 mosqueNameSize = 38.sp,
-                nextPrayerSize = 40.sp,
+                nextPrayerSize = 36.sp,
                 clockSize = 48.sp,
-                countdownSize = 58.sp,
+                countdownSize = 61.sp,
                 iqamahSize = 28.sp,
-                dateSize = 23.sp,
+                dateSize = 22.sp,
                 prayerRowSize = 23.sp,
                 gridHeaderSize = 15.sp,
-                labelSize = 21.sp,
+                labelSize = 19.sp,
                 secondarySize = 18.sp,
                 captionSize = 16.sp,
                 sourceDescriptionSize = 13.sp,
                 brandIconSize = 21.dp,
-                prayerIconSize = 34.dp,
-                iqamahIconSize = 40.dp,
+                prayerIconSize = 32.dp,
+                iqamahIconSize = 32.dp,
                 settingsIconSize = 24.dp,
                 calendarIconSize = 46.dp,
                 brandSize = 18.sp,

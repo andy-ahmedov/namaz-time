@@ -12,6 +12,7 @@ import androidx.compose.ui.platform.testTag
 
 const val PRAYER_ICON_TEST_TAG_PREFIX = "prayer-icon-"
 const val IQAMAH_ICON_TEST_TAG = "iqamah-icon"
+internal const val TV_ICON_STROKE_FRACTION = 0.045f
 
 @Composable
 internal fun PrayerIcon(
@@ -23,7 +24,7 @@ internal fun PrayerIcon(
     Canvas(
         if (exposeTestTag) modifier.testTag("$PRAYER_ICON_TEST_TAG_PREFIX$prayerId") else modifier,
     ) {
-        val stroke = Stroke(width = size.minDimension * 0.055f, cap = StrokeCap.Round)
+        val stroke = Stroke(width = size.minDimension * TV_ICON_STROKE_FRACTION, cap = StrokeCap.Round)
         val center = Offset(size.width / 2f, size.height / 2f)
         val radius = size.minDimension * 0.22f
         fun horizon(y: Float = size.height * 0.68f) {
@@ -96,7 +97,7 @@ internal fun IqamahIcon(
     exposeTestTag: Boolean = false,
 ) {
     Canvas(if (exposeTestTag) modifier.testTag(IQAMAH_ICON_TEST_TAG) else modifier) {
-        val width = size.minDimension * 0.055f
+        val width = size.minDimension * TV_ICON_STROKE_FRACTION
         val stroke = Stroke(width, cap = StrokeCap.Round)
         drawArc(tint, 180f, 180f, false, Offset(size.width * 0.17f, size.height * 0.10f), Size(size.width * 0.66f, size.height * 0.72f), style = stroke)
         drawLine(tint, Offset(size.width * 0.17f, size.height * 0.46f), Offset(size.width * 0.17f, size.height * 0.86f), width)

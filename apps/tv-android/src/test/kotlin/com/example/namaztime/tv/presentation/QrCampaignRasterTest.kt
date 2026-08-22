@@ -6,9 +6,18 @@ import com.google.zxing.RGBLuminanceSource
 import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Test
 
 class QrCampaignRasterTest {
+    @Test
+    fun `TV raster uses dark navy modules rather than pure black`() {
+        val matrix = QrCodeGenerator().generate("https://example.org/sadaqah")
+        val pixels = qrArgbPixels(matrix, 192)
+
+        assertFalse(pixels.any { pixel -> pixel == 0xFF000000.toInt() })
+    }
+
     @Test
     fun `nearest-neighbor TV rasters decode at representative physical sizes`() {
         val target = "https://example.org/mosque"

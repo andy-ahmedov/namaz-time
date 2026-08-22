@@ -9,6 +9,16 @@ import kotlin.math.pow
 
 class TvDesignSystemTest {
     @Test
+    fun photographicBackgroundUsesMattePanelsAndABoundedDimTreatment() {
+        assertTrue(DarkTvColors.surfaceTop.alpha >= 0.84f)
+        assertTrue(DarkTvColors.surfaceBottom.alpha >= 0.88f)
+        assertTrue(DarkTvColors.surfaceStrong.alpha >= 0.88f)
+        TvBackgroundStyle.entries.forEach { style ->
+            assertTrue("${style.id} scrim must subordinate the photo", style.scrimAlpha >= 0.32f)
+        }
+    }
+
+    @Test
     fun textAndFocusTokensMeetDarkSurfaceContrastFloors() {
         val surface = composite(DarkTvColors.surfaceTop, DarkTvColors.backgroundTop)
         val accentedSurface = composite(DarkTvColors.accentSoft, DarkTvColors.backgroundTop)

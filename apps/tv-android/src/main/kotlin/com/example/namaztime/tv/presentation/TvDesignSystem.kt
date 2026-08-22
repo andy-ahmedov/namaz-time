@@ -2,6 +2,7 @@ package com.example.namaztime.tv.presentation
 
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -18,8 +19,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.platform.testTag
@@ -51,13 +57,13 @@ internal enum class TvBackgroundStyle(
         DEFAULT_BACKGROUND_STYLE_ID,
         R.drawable.tv_background_golden_dusk,
         R.string.value_background_golden_dusk,
-        0.18f,
+        0.40f,
     ),
     BLUE_HOUR(
         BLUE_HOUR_BACKGROUND_STYLE_ID,
         R.drawable.tv_background_blue_hour,
         R.string.value_background_blue_hour,
-        0.16f,
+        0.38f,
     ),
     ;
 
@@ -105,18 +111,18 @@ internal val DarkTvColors = TvColorTokens(
     backgroundTop = Color(0xFF14233A),
     backgroundBottom = Color(0xFF07111F),
     backgroundGlow = Color(0xFFB57936),
-    surfaceTop = Color(0x8F2B3341),
-    surfaceBottom = Color(0xB5161C28),
-    surfaceStrong = Color(0xB0161C27),
-    surfaceOutline = Color(0x59FFF4DC),
-    textPrimary = Color(0xFFFFFBF2),
-    textSecondary = Color(0xFFD5D9DE),
-    accent = Color(0xFFFFCF7A),
-    accentSoft = Color(0x4DCB8730),
-    accentOutline = Color(0xCCFFD38A),
+    surfaceTop = Color(0xE8232D3B),
+    surfaceBottom = Color(0xED151E2C),
+    surfaceStrong = Color(0xF0141D2A),
+    surfaceOutline = Color(0x668F99A6),
+    textPrimary = Color(0xFFE9EAE7),
+    textSecondary = Color(0xFFAEB6BF),
+    accent = Color(0xFFD6B172),
+    accentSoft = Color(0xFF4A3826),
+    accentOutline = Color(0xCCC6A76F),
     focus = Color(0xFFFFFFFF),
-    separator = Color(0x2BFFFFFF),
-    warning = Color(0xFFFFD38B),
+    separator = Color(0x1FBCC3CA),
+    warning = Color(0xFFD9A767),
 )
 
 internal val DarkTvMaterialColorScheme = darkColorScheme(
@@ -162,19 +168,19 @@ internal val TvMaterialShapes = Shapes(
 internal val TvMaterialTypography = Typography().copy(
     displayLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Light,
         fontSize = 58.sp,
         lineHeight = 64.sp,
     ),
     headlineLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.Bold,
+        fontWeight = FontWeight.Medium,
         fontSize = 40.sp,
         lineHeight = 46.sp,
     ),
     titleLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Normal,
         fontSize = 26.sp,
         lineHeight = 32.sp,
     ),
@@ -186,7 +192,7 @@ internal val TvMaterialTypography = Typography().copy(
     ),
     labelLarge = TextStyle(
         fontFamily = FontFamily.SansSerif,
-        fontWeight = FontWeight.SemiBold,
+        fontWeight = FontWeight.Medium,
         fontSize = 18.sp,
         lineHeight = 24.sp,
     ),
@@ -241,6 +247,7 @@ internal fun TvAtmosphericBackground(
     modifier: Modifier = Modifier,
 ) {
     val style = TvBackgroundStyle.fromId(styleId)
+    val colors = NamazTvTheme.colors
     Box(modifier = modifier.fillMaxSize().testTag(TV_ATMOSPHERIC_BACKGROUND_TAG)) {
         Image(
             painter = painterResource(style.drawableRes),
@@ -248,7 +255,11 @@ internal fun TvAtmosphericBackground(
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize().testTag("$TV_BACKGROUND_STYLE_TAG_PREFIX${style.id}"),
         )
-        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = style.scrimAlpha)))
+        Box(
+            Modifier
+                .fillMaxSize()
+                .background(colors.backgroundBottom.copy(alpha = style.scrimAlpha)),
+        )
     }
 }
 
@@ -269,10 +280,185 @@ internal fun TvGlassPanel(
                 shape = shape,
             )
             .border(
-                width = if (accented) 1.dp else 0.75.dp,
-                color = if (accented) colors.accentOutline else colors.surfaceOutline,
+                width = if (accented) 0.75.dp else 0.65.dp,
+                color = colors.surfaceOutline,
                 shape = shape,
             ),
         content = content,
     )
+}
+
+internal enum class OrnamentDiamondPosition {
+    START,
+    CENTER,
+    END,
+}
+
+@Composable
+internal fun TvFadingDiamondDivider(
+    modifier: Modifier = Modifier,
+    tint: Color = NamazTvTheme.colors.accentOutline,
+    diamondPosition: OrnamentDiamondPosition = OrnamentDiamondPosition.CENTER,
+) {
+    Canvas(modifier) {
+        val centerY = size.height / 2f
+        val diamondRadius = size.height * 0.30f
+        val centerX = when (diamondPosition) {
+            OrnamentDiamondPosition.START -> diamondRadius + 1.dp.toPx()
+            OrnamentDiamondPosition.CENTER -> size.width / 2f
+            OrnamentDiamondPosition.END -> size.width - diamondRadius - 1.dp.toPx()
+        }
+        val gap = diamondRadius * 1.8f
+        val colorStops = when (diamondPosition) {
+            OrnamentDiamondPosition.START -> arrayOf(
+                0f to tint.copy(alpha = 0.68f),
+                0.46f to tint.copy(alpha = 0.50f),
+                1f to Color.Transparent,
+            )
+            OrnamentDiamondPosition.CENTER -> arrayOf(
+                0f to Color.Transparent,
+                0.18f to tint.copy(alpha = 0.48f),
+                0.50f to tint.copy(alpha = 0.68f),
+                0.82f to tint.copy(alpha = 0.48f),
+                1f to Color.Transparent,
+            )
+            OrnamentDiamondPosition.END -> arrayOf(
+                0f to Color.Transparent,
+                0.54f to tint.copy(alpha = 0.50f),
+                1f to tint.copy(alpha = 0.68f),
+            )
+        }
+        val lineBrush = Brush.horizontalGradient(colorStops = colorStops)
+        val glowBrush = Brush.horizontalGradient(
+            colorStops = colorStops.map { (stop, color) ->
+                stop to color.copy(alpha = color.alpha * 0.20f)
+            }.toTypedArray(),
+        )
+        fun line(startX: Float, endX: Float) {
+            if (endX <= startX) return
+            drawLine(
+                brush = glowBrush,
+                start = Offset(startX, centerY),
+                end = Offset(endX, centerY),
+                strokeWidth = 3.dp.toPx(),
+                cap = StrokeCap.Round,
+            )
+            drawLine(
+                brush = lineBrush,
+                start = Offset(startX, centerY),
+                end = Offset(endX, centerY),
+                strokeWidth = 0.65.dp.toPx(),
+                cap = StrokeCap.Round,
+            )
+        }
+        line(0f, (centerX - gap).coerceAtLeast(0f))
+        line((centerX + gap).coerceAtMost(size.width), size.width)
+
+        val diamond = Path().apply {
+            moveTo(centerX, centerY - diamondRadius)
+            lineTo(centerX + diamondRadius, centerY)
+            lineTo(centerX, centerY + diamondRadius)
+            lineTo(centerX - diamondRadius, centerY)
+            close()
+        }
+        drawPath(
+            diamond,
+            tint.copy(alpha = 0.12f),
+            style = Stroke(2.5.dp.toPx(), cap = StrokeCap.Round),
+        )
+        drawPath(
+            diamond,
+            tint.copy(alpha = 0.78f),
+            style = Stroke(0.7.dp.toPx(), cap = StrokeCap.Round),
+        )
+    }
+}
+
+@Composable
+internal fun TvFadingHairline(
+    modifier: Modifier = Modifier,
+    color: Color = NamazTvTheme.colors.separator,
+) {
+    Canvas(modifier) {
+        val centerY = size.height / 2f
+        drawLine(
+            brush = Brush.horizontalGradient(
+                0f to Color.Transparent,
+                0.14f to color,
+                0.86f to color,
+                1f to Color.Transparent,
+            ),
+            start = Offset(0f, centerY),
+            end = Offset(size.width, centerY),
+            strokeWidth = 0.5.dp.toPx(),
+            cap = StrokeCap.Round,
+        )
+    }
+}
+
+@Composable
+internal fun TvIslamicGeometricPattern(
+    modifier: Modifier = Modifier,
+    tint: Color = NamazTvTheme.colors.accentOutline,
+    intensity: Float = 0.10f,
+) {
+    Canvas(modifier) {
+        val cell = (size.height * 0.62f).coerceAtLeast(18.dp.toPx())
+        val columns = (size.width / cell).toInt() + 2
+        val rows = (size.height / (cell * 0.72f)).toInt() + 2
+        val stroke = Stroke(0.48.dp.toPx(), cap = StrokeCap.Round)
+        repeat(columns) { column ->
+            repeat(rows) { row ->
+                val centerX = (column - 0.35f) * cell + if (row % 2 == 0) 0f else cell / 2f
+                val centerY = row * cell * 0.72f
+                val radius = cell * 0.42f
+                val edgeFade = (1f - centerY / size.height).coerceIn(0.28f, 1f)
+                val alpha = intensity * edgeFade
+                val star = Path()
+                repeat(16) { point ->
+                    val angle = Math.PI * point / 8.0 - Math.PI / 2.0
+                    val pointRadius = radius * if (point % 2 == 0) 1f else 0.42f
+                    val x = centerX + kotlin.math.cos(angle).toFloat() * pointRadius
+                    val y = centerY + kotlin.math.sin(angle).toFloat() * pointRadius
+                    if (point == 0) star.moveTo(x, y) else star.lineTo(x, y)
+                }
+                star.close()
+                val lattice = Path().apply {
+                    moveTo(centerX, centerY - radius * 1.04f)
+                    lineTo(centerX + radius * 1.04f, centerY)
+                    lineTo(centerX, centerY + radius * 1.04f)
+                    lineTo(centerX - radius * 1.04f, centerY)
+                    close()
+                }
+                drawPath(
+                    lattice,
+                    tint.copy(alpha = alpha * 0.54f),
+                    style = stroke,
+                )
+                drawPath(star, tint.copy(alpha = alpha), style = stroke)
+                drawCircle(
+                    tint.copy(alpha = alpha * 0.72f),
+                    radius * 0.72f,
+                    Offset(centerX, centerY),
+                    style = stroke,
+                )
+                repeat(8) { point ->
+                    val angle = Math.PI * point / 4.0
+                    drawLine(
+                        tint.copy(alpha = alpha * 0.62f),
+                        Offset(
+                            centerX + kotlin.math.cos(angle).toFloat() * radius * 0.28f,
+                            centerY + kotlin.math.sin(angle).toFloat() * radius * 0.28f,
+                        ),
+                        Offset(
+                            centerX + kotlin.math.cos(angle).toFloat() * radius * 0.72f,
+                            centerY + kotlin.math.sin(angle).toFloat() * radius * 0.72f,
+                        ),
+                        stroke.width,
+                        StrokeCap.Round,
+                    )
+                }
+            }
+        }
+    }
 }
