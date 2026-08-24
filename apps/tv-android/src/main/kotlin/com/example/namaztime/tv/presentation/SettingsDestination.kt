@@ -33,6 +33,11 @@ enum class SettingsDestination(
         titleRes = R.string.settings_campaigns_title,
         descriptionRes = R.string.settings_campaigns_description,
     ),
+    DONATION(
+        route = "donation",
+        titleRes = R.string.settings_donation_title,
+        descriptionRes = R.string.settings_donation_description,
+    ),
     LANGUAGE(
         route = "language",
         titleRes = R.string.settings_language_title,

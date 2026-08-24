@@ -93,6 +93,15 @@ lower ornament. Empty/invalid settings remove the third column and
 restore the normal T024 composition. No technical preview label appears in
 public display mode.
 
+T028 additionally provides a standalone donation display mode. It replaces the
+schedule composition only after a complete local configuration passes the same
+HTTPS campaign validation and QR generator used by the optional column. The
+full-screen surface contains the chosen image, locally generated QR,
+operator-entered transfer details and message inside the overscan-safe frame.
+Five packaged image choices and one validated app-local custom-photo slot are
+available. A focused Settings control is always visible; Settings exposes an
+explicit action to return to the prayer schedule. No payment flow is present.
+
 ## Theme/background
 
 - all screens use the T017 semantic dark/amber Compose tokens and shared

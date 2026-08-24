@@ -146,6 +146,10 @@ fixed-time preferences на device-local offsets `adhan + N minutes`; стары
 приглушает фон и золото, облегчает типографику, унифицирует декоративные линии,
 watermark, орнаменты и QR presentation без изменения prayer/domain logic,
 локального QR payload, D-pad или offline-first поведения.
+T028 также добавляет отдельный device-local экран пожертвований: валидированный
+HTTPS QR, реквизиты, текст и один из пяти встроенных либо app-local custom
+images. Неполная конфигурация не может заменить расписание, payment processing
+не добавлен, а Settings всегда позволяет вернуть обычный display mode.
 
 ## 5. Запрет на гигантскую первую задачу
 

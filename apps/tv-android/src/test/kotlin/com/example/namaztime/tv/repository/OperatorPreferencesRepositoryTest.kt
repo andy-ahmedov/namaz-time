@@ -96,6 +96,54 @@ class OperatorPreferencesRepositoryTest {
         assertEquals(configuration, repository.preferences.first().qrConfiguration)
     }
 
+    @Test
+    fun donationScreenConfigurationAndModePersistIndependently() = runTest {
+        val repository = repositoryFor(this)
+        val configuration = OperatorDonationConfiguration(
+            httpsUrl = "https://example.org/donate",
+            transferDetails = "Получатель: Местная религиозная организация\nСчёт: 0000 0000",
+            message = "Поддержите мечеть",
+            imageStyleId = DONATION_IMAGE_LANTERN_STYLE_ID,
+        )
+
+        repository.setDonationConfiguration(configuration)
+        repository.setDisplayMode(OperatorDisplayMode.DONATION)
+
+        val preferences = repository.preferences.first()
+        assertEquals(configuration, preferences.donationConfiguration)
+        assertEquals(OperatorDisplayMode.DONATION, preferences.displayMode)
+    }
+
+    @Test
+    fun donationImageAllowlistContainsFiveBuiltInsAndOneCustomSlot() = runTest {
+        assertEquals(5, BUILT_IN_DONATION_IMAGE_STYLE_IDS.size)
+        assertTrue(CUSTOM_DONATION_IMAGE_STYLE_ID in SELECTABLE_DONATION_IMAGE_STYLE_IDS)
+
+        val repository = repositoryFor(this)
+        repository.setDonationImageStyleId(CUSTOM_DONATION_IMAGE_STYLE_ID)
+
+        assertEquals(
+            CUSTOM_DONATION_IMAGE_STYLE_ID,
+            repository.preferences.first().donationConfiguration.imageStyleId,
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun donationModeCannotBeEnabledWithoutValidContent() = runTest {
+        repositoryFor(this).setDisplayMode(OperatorDisplayMode.DONATION)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun unsafeDonationQrCannotBeStored() = runTest {
+        repositoryFor(this).setDonationConfiguration(
+            OperatorDonationConfiguration(
+                httpsUrl = "http://example.org/donate",
+                transferDetails = "Получатель: мечеть",
+                message = "Поддержите мечеть",
+            ),
+        )
+    }
+
     @Test(expected = IllegalArgumentException::class)
     fun unsafeQrUrlCannotBeStored() = runTest {
         repositoryFor(this).setQrConfiguration(

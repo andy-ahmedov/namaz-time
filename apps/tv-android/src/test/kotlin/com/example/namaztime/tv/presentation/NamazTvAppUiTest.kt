@@ -25,6 +25,8 @@ import androidx.tv.material3.MaterialTheme
 import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorPreferencesRepository
 import com.example.namaztime.tv.repository.OperatorQrConfiguration
+import com.example.namaztime.tv.repository.OperatorDisplayMode
+import com.example.namaztime.tv.repository.OperatorDonationConfiguration
 import com.example.namaztime.tv.repository.LocalPrayerDay
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
 import com.example.namaztime.tv.repository.LocalJumuahSession
@@ -59,6 +61,65 @@ import org.robolectric.annotation.Config
 class NamazTvAppUiTest {
     @get:Rule
     val compose = createComposeRule()
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun donationDisplayKeepsSettingsReachableAndCanReturnToScheduleMode() {
+        val configuration = OperatorDonationConfiguration(
+            httpsUrl = "https://example.org/donate",
+            transferDetails = "Получатель: Местная религиозная организация\nСчёт: 0000 0000",
+            message = "Поддержите нашу мечеть",
+        )
+        val preferences = FakeOperatorPreferencesRepository(
+            initialPreferences = OperatorPreferences(
+                donationConfiguration = configuration,
+                displayMode = OperatorDisplayMode.DONATION,
+            ),
+        )
+        compose.setContent { NamazTvApp(preferences, tickIntervalMillis = null) }
+
+        compose.onNodeWithTag(DONATION_DISPLAY_SETTINGS_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        repeat(SettingsDestination.DONATION.ordinal) { index ->
+            compose.onNodeWithTag(SettingsDestination.entries[index].navigationTestTag)
+                .performKeyInput { pressKey(Key.DirectionDown) }
+        }
+        compose.onNodeWithTag(SettingsDestination.DONATION.navigationTestTag)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag(SETTINGS_DONATION_URL_FIELD_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_DETAILS_FIELD_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_MESSAGE_FIELD_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(
+            "$SETTINGS_DONATION_IMAGE_TAG_PREFIX${DonationImageStyle.MOSQUE.id}",
+        ).assertIsFocused().performKeyInput {
+            pressKey(Key.DirectionDown)
+            pressKey(Key.DirectionDown)
+            pressKey(Key.DirectionDown)
+        }
+        compose.onNodeWithTag(SETTINGS_DONATION_SAVE_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_PICKER_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_MODE_TAG).assertIsFocused()
+            .performKeyInput {
+                pressKey(Key.Enter)
+                pressKey(Key.DirectionDown)
+            }
+        compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+
+        compose.onNodeWithTag(DONATION_DISPLAY_TAG).assertDoesNotExist()
+        compose.onNodeWithTag(DISPLAY_UNAVAILABLE_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
+    }
 
     @Test
     @OptIn(ExperimentalTestApi::class)
@@ -1249,6 +1310,27 @@ private class FakeOperatorPreferencesRepository(
     ) {
         if (failWrites) throw IOException("synthetic preference storage failure")
         state.value = state.value.copy(iqamahOffsets = offsets)
+    }
+
+    override suspend fun setDonationConfiguration(
+        configuration: com.example.namaztime.tv.repository.OperatorDonationConfiguration,
+    ) {
+        if (failWrites) throw IOException("synthetic preference storage failure")
+        state.value = state.value.copy(donationConfiguration = configuration)
+    }
+
+    override suspend fun setDonationImageStyleId(styleId: String) {
+        if (failWrites) throw IOException("synthetic preference storage failure")
+        state.value = state.value.copy(
+            donationConfiguration = state.value.donationConfiguration.copy(imageStyleId = styleId),
+        )
+    }
+
+    override suspend fun setDisplayMode(
+        mode: com.example.namaztime.tv.repository.OperatorDisplayMode,
+    ) {
+        if (failWrites) throw IOException("synthetic preference storage failure")
+        state.value = state.value.copy(displayMode = mode)
     }
 }
 

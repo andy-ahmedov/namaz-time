@@ -181,7 +181,12 @@ offsets. Repository tests pin the bounded values and prove legacy `HH:mm` keys
 are not guessed into offsets. Projection tests prove `adhan + N minutes`,
 approved-policy fallback when unset, Sunrise exclusion and no Room mutation.
 Compose tests drive the five +/− rows by D-pad and verify the resolved displayed
-times.
+times. Donation repository tests pin complete HTTPS/text validation, five
+built-in image IDs plus a separate custom slot, persisted mode and fail-closed
+activation. Compose tests cover the 720p/1080p/4K safe frame, local QR/image/
+details rendering, nine-item Settings reachability and the complete D-pad path
+from donation display through Settings back to schedule mode. The shared asset
+tests import the donation photo into an independent app-private slot.
 
 T026 adds token regressions for high-opacity photographic-background surfaces
 and the minimum bounded scrim, while the existing semantic contrast tests guard

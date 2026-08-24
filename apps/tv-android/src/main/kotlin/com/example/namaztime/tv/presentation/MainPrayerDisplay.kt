@@ -416,7 +416,7 @@ private fun CalendarGlyph(
 }
 
 @Composable
-private fun SettingsGlyph(
+internal fun SettingsGlyph(
     tint: Color,
     modifier: Modifier = Modifier,
 ) {

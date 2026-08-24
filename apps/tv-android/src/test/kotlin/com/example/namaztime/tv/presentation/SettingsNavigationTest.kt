@@ -13,6 +13,7 @@ class SettingsNavigationTest {
             "iqamah",
             "appearance",
             "campaigns",
+            "donation",
             "language",
             "kiosk",
             "diagnostics",

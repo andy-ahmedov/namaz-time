@@ -44,6 +44,20 @@ class OperatorImageAssetStoreTest {
     }
 
     @Test
+    fun donationPhotoUsesAnIndependentStableAppLocalSlot() {
+        val store = OperatorImageAssetStore(temporaryFolder.root)
+
+        val result = store.importDocument(
+            OperatorImageSlot.DONATION,
+            OperatorImageDocument("image/webp", validLandscapeImage()),
+        )
+
+        assertEquals(OperatorImageImportResult.Imported, result)
+        assertNotNull(store.resolve(OperatorImageSlot.DONATION))
+        assertNull(store.resolve(OperatorImageSlot.BACKGROUND))
+    }
+
+    @Test
     fun declaredNonImageTypeIsRejectedWithoutReplacingLastKnownGood() {
         val store = OperatorImageAssetStore(temporaryFolder.root)
         store.importDocument(

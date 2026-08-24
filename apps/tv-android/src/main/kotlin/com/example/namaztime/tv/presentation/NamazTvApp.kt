@@ -54,11 +54,14 @@ import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorPreferencesRepository
 import com.example.namaztime.tv.repository.AndroidOperatorImageAssetImporter
 import com.example.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.CUSTOM_DONATION_IMAGE_STYLE_ID
+import com.example.namaztime.tv.repository.OperatorDisplayMode
 import com.example.namaztime.tv.repository.OperatorImageImportResult
 import com.example.namaztime.tv.repository.OperatorImageSlot
 import com.example.namaztime.tv.repository.PrayerScheduleRepository
 import com.example.namaztime.tv.repository.toCampaignInputs
 import com.example.namaztime.tv.repository.toCampaignInput
+import com.example.namaztime.tv.repository.toDonationCampaignInput
 import com.example.namaztime.tv.repository.toTimeEngineInput
 import java.io.IOException
 import java.time.Clock
@@ -95,6 +98,7 @@ fun NamazTvApp(
     val context = LocalContext.current
     val imageImporter = remember(context) { AndroidOperatorImageAssetImporter(context) }
     var customAssetVersion by remember { mutableLongStateOf(0L) }
+    var donationAssetVersion by remember { mutableLongStateOf(0L) }
     val backgroundPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
         uri ->
         if (uri != null) {
@@ -107,6 +111,25 @@ fun NamazTvApp(
                             CUSTOM_BACKGROUND_STYLE_ID,
                         )
                         customAssetVersion += 1L
+                    } catch (_: IOException) {
+                        // The imported app-local copy remains available for a later selection.
+                    }
+                }
+            }
+        }
+    }
+    val donationImagePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+        uri ->
+        if (uri != null) {
+            coroutineScope.launch {
+                if (imageImporter.import(OperatorImageSlot.DONATION, uri) ==
+                    OperatorImageImportResult.Imported
+                ) {
+                    try {
+                        operatorPreferencesRepository.setDonationImageStyleId(
+                            CUSTOM_DONATION_IMAGE_STYLE_ID,
+                        )
+                        donationAssetVersion += 1L
                     } catch (_: IOException) {
                         // The imported app-local copy remains available for a later selection.
                     }
@@ -153,6 +176,22 @@ fun NamazTvApp(
             }.getOrNull()
         }
     }
+    val donationQrState = remember(preferences.donationConfiguration, qrCodeGenerator) {
+        preferences.donationConfiguration
+            .takeUnless { it.isEmpty }
+            ?.toDonationCampaignInput()
+            ?.let(campaignEngine::preview)
+            ?.let { it as? CampaignPreview.Valid }
+            ?.campaign
+            ?.let { campaign ->
+                runCatching {
+                    campaign.toQrCampaignUiState(
+                        qrCode = qrCodeGenerator.generate(campaign.httpsUrl),
+                        preview = false,
+                    )
+                }.getOrNull()
+            }
+    }
 
     AppLanguageProvider(preferences.languageTag) {
         NamazTvTheme {
@@ -167,7 +206,18 @@ fun NamazTvApp(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     composable(DISPLAY_ROUTE) {
-                        DisplayRoute(
+                        if (preferences.displayMode == OperatorDisplayMode.DONATION &&
+                            donationQrState != null
+                        ) {
+                            DisplayKeepAwakeEffect()
+                            DonationDisplayScreen(
+                                configuration = preferences.donationConfiguration,
+                                qrState = donationQrState!!,
+                                customAssetVersion = donationAssetVersion,
+                                onOpenSettings = { navController.navigate(SETTINGS_ROUTE) },
+                            )
+                        } else {
+                            DisplayRoute(
                             schedule =
                                 (observedSchedule as? DisplayScheduleState.Available)?.schedule,
                             localDiagnostic =
@@ -181,7 +231,8 @@ fun NamazTvApp(
                             screenRetentionShiftEnabled =
                                 preferences.screenRetentionShiftEnabled,
                             onOpenSettings = { navController.navigate(SETTINGS_ROUTE) },
-                        )
+                            )
+                        }
                     }
                     composable(SETTINGS_ROUTE) {
                         SettingsShell(
@@ -255,12 +306,43 @@ fun NamazTvApp(
                                     }
                                 }
                             },
+                            onDonationConfigurationChanged = { configuration ->
+                                coroutineScope.launch {
+                                    try {
+                                        operatorPreferencesRepository
+                                            .setDonationConfiguration(configuration)
+                                    } catch (_: IOException) {
+                                        // The last valid donation screen remains active.
+                                    } catch (_: IllegalArgumentException) {
+                                        // Invalid operator input is rejected without state change.
+                                    }
+                                }
+                            },
+                            onDonationDisplayModeChanged = { configuration, mode ->
+                                coroutineScope.launch {
+                                    try {
+                                        operatorPreferencesRepository
+                                            .setDonationConfiguration(configuration)
+                                        operatorPreferencesRepository.setDisplayMode(mode)
+                                    } catch (_: IOException) {
+                                        // A partial write cannot enable an invalid donation screen.
+                                    } catch (_: IllegalArgumentException) {
+                                        // Invalid content cannot replace the prayer schedule.
+                                    }
+                                }
+                            },
                             onPickCustomBackground = {
                                 backgroundPicker.launch(
                                     arrayOf("image/jpeg", "image/png", "image/webp"),
                                 )
                             },
+                            onPickCustomDonationImage = {
+                                donationImagePicker.launch(
+                                    arrayOf("image/jpeg", "image/png", "image/webp"),
+                                )
+                            },
                             customAssetVersion = customAssetVersion,
+                            donationAssetVersion = donationAssetVersion,
                             onOpenSystemSettings = {
                                 context.startActivity(
                                     Intent(

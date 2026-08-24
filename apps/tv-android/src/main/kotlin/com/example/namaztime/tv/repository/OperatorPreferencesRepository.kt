@@ -24,7 +24,29 @@ data class OperatorPreferences(
     val backgroundStyleId: String = DEFAULT_BACKGROUND_STYLE_ID,
     val qrConfiguration: OperatorQrConfiguration = OperatorQrConfiguration(),
     val iqamahOffsets: OperatorIqamahOffsets = OperatorIqamahOffsets(),
+    val donationConfiguration: OperatorDonationConfiguration = OperatorDonationConfiguration(),
+    val displayMode: OperatorDisplayMode = OperatorDisplayMode.SCHEDULE,
 )
+
+enum class OperatorDisplayMode(val id: String) {
+    SCHEDULE("schedule"),
+    DONATION("donation"),
+    ;
+
+    companion object {
+        fun fromId(id: String?): OperatorDisplayMode = entries.firstOrNull { it.id == id } ?: SCHEDULE
+    }
+}
+
+data class OperatorDonationConfiguration(
+    val httpsUrl: String = "",
+    val transferDetails: String = "",
+    val message: String = "",
+    val imageStyleId: String = DEFAULT_DONATION_IMAGE_STYLE_ID,
+) {
+    val isEmpty: Boolean
+        get() = httpsUrl.isBlank() && transferDetails.isBlank() && message.isBlank()
+}
 
 data class OperatorQrConfiguration(
     val httpsUrl: String = "",
@@ -82,6 +104,12 @@ interface OperatorPreferencesRepository {
     suspend fun setIqamahOffset(prayerId: String, offsetMinutes: Int?)
 
     suspend fun setIqamahOffsets(offsets: OperatorIqamahOffsets)
+
+    suspend fun setDonationConfiguration(configuration: OperatorDonationConfiguration)
+
+    suspend fun setDonationImageStyleId(styleId: String)
+
+    suspend fun setDisplayMode(mode: OperatorDisplayMode)
 }
 
 class DataStoreOperatorPreferencesRepository(
@@ -96,6 +124,12 @@ class DataStoreOperatorPreferencesRepository(
             }
         }
         .map { values ->
+            val donationConfiguration = values.toDonationConfiguration()
+                .takeIf(::isValidDonationConfiguration)
+                ?: OperatorDonationConfiguration()
+            val displayMode = OperatorDisplayMode.fromId(values[DISPLAY_MODE])
+                .takeIf { it != OperatorDisplayMode.DONATION || !donationConfiguration.isEmpty }
+                ?: OperatorDisplayMode.SCHEDULE
             OperatorPreferences(
                 lastSettingsDestination = values[LAST_SETTINGS_DESTINATION],
                 reducedMotion = values[REDUCED_MOTION] ?: true,
@@ -118,6 +152,8 @@ class DataStoreOperatorPreferencesRepository(
                     maghrib = values[IQAMAH_OFFSET_MAGHRIB].validIqamahOffsetOrNull(),
                     isha = values[IQAMAH_OFFSET_ISHA].validIqamahOffsetOrNull(),
                 ),
+                donationConfiguration = donationConfiguration,
+                displayMode = displayMode,
             )
         }
 
@@ -174,6 +210,36 @@ class DataStoreOperatorPreferencesRepository(
         }
     }
 
+    override suspend fun setDonationConfiguration(configuration: OperatorDonationConfiguration) {
+        require(isValidDonationConfiguration(configuration)) { "invalid donation configuration" }
+        dataStore.edit { values ->
+            values[DONATION_HTTPS_URL] = configuration.httpsUrl.trim()
+            values[DONATION_TRANSFER_DETAILS] = configuration.transferDetails.trim()
+            values[DONATION_MESSAGE] = configuration.message.trim()
+            values[DONATION_IMAGE_STYLE_ID] = configuration.imageStyleId
+            if (configuration.isEmpty) values[DISPLAY_MODE] = OperatorDisplayMode.SCHEDULE.id
+        }
+    }
+
+    override suspend fun setDonationImageStyleId(styleId: String) {
+        require(styleId in SELECTABLE_DONATION_IMAGE_STYLE_IDS) {
+            "unsupported donation image style"
+        }
+        dataStore.edit { values -> values[DONATION_IMAGE_STYLE_ID] = styleId }
+    }
+
+    override suspend fun setDisplayMode(mode: OperatorDisplayMode) {
+        dataStore.edit { values ->
+            if (mode == OperatorDisplayMode.DONATION) {
+                val configuration = values.toDonationConfiguration()
+                require(isValidDonationConfiguration(configuration) && !configuration.isEmpty) {
+                    "donation display is not configured"
+                }
+            }
+            values[DISPLAY_MODE] = mode.id
+        }
+    }
+
     private companion object {
         val LAST_SETTINGS_DESTINATION = stringPreferencesKey("last_settings_destination")
         val REDUCED_MOTION = booleanPreferencesKey("reduced_motion")
@@ -190,6 +256,11 @@ class DataStoreOperatorPreferencesRepository(
         val IQAMAH_OFFSET_ASR = intPreferencesKey("operator_iqamah_offset_asr")
         val IQAMAH_OFFSET_MAGHRIB = intPreferencesKey("operator_iqamah_offset_maghrib")
         val IQAMAH_OFFSET_ISHA = intPreferencesKey("operator_iqamah_offset_isha")
+        val DISPLAY_MODE = stringPreferencesKey("operator_display_mode")
+        val DONATION_HTTPS_URL = stringPreferencesKey("operator_donation_https_url")
+        val DONATION_TRANSFER_DETAILS = stringPreferencesKey("operator_donation_transfer_details")
+        val DONATION_MESSAGE = stringPreferencesKey("operator_donation_message")
+        val DONATION_IMAGE_STYLE_ID = stringPreferencesKey("operator_donation_image_style_id")
 
         fun iqamahOffsetKey(prayerId: String) = when (prayerId) {
             "fajr" -> IQAMAH_OFFSET_FAJR
@@ -199,6 +270,15 @@ class DataStoreOperatorPreferencesRepository(
             "isha" -> IQAMAH_OFFSET_ISHA
             else -> throw IllegalArgumentException("unsupported iqamah prayer")
         }
+
+        fun Preferences.toDonationConfiguration() = OperatorDonationConfiguration(
+            httpsUrl = this[DONATION_HTTPS_URL].orEmpty(),
+            transferDetails = this[DONATION_TRANSFER_DETAILS].orEmpty(),
+            message = this[DONATION_MESSAGE].orEmpty(),
+            imageStyleId = this[DONATION_IMAGE_STYLE_ID]
+                ?.takeIf(SELECTABLE_DONATION_IMAGE_STYLE_IDS::contains)
+                ?: DEFAULT_DONATION_IMAGE_STYLE_ID,
+        )
     }
 }
 
@@ -216,6 +296,31 @@ internal fun OperatorQrConfiguration.toCampaignInput() = CampaignInput(
 internal fun isValidQrConfiguration(configuration: OperatorQrConfiguration): Boolean {
     if (configuration.isEmpty) return true
     val campaign = CampaignEngine().preview(configuration.toCampaignInput())
+    if (campaign !is CampaignPreview.Valid) return false
+    return runCatching { OPERATOR_QR_GENERATOR.generate(campaign.campaign.httpsUrl) }.isSuccess
+}
+
+internal fun OperatorDonationConfiguration.toDonationCampaignInput() = CampaignInput(
+    id = "operator-local-donation-screen",
+    kind = "donation",
+    httpsUrl = httpsUrl.trim(),
+    title = message.trim(),
+    subtitle = null,
+    startsAt = "2000-01-01T00:00:00Z",
+    endsAt = "9999-12-31T23:59:59Z",
+    placement = "always",
+)
+
+internal fun isValidDonationConfiguration(configuration: OperatorDonationConfiguration): Boolean {
+    if (configuration.imageStyleId !in SELECTABLE_DONATION_IMAGE_STYLE_IDS) return false
+    if (configuration.isEmpty) return true
+    if (configuration.httpsUrl.isBlank() ||
+        configuration.transferDetails.isBlank() ||
+        configuration.message.isBlank() ||
+        configuration.transferDetails.length > MAX_DONATION_TRANSFER_DETAILS_LENGTH ||
+        configuration.message.length > MAX_DONATION_MESSAGE_LENGTH
+    ) return false
+    val campaign = CampaignEngine().preview(configuration.toDonationCampaignInput())
     if (campaign !is CampaignPreview.Valid) return false
     return runCatching { OPERATOR_QR_GENERATOR.generate(campaign.campaign.httpsUrl) }.isSuccess
 }
@@ -253,5 +358,23 @@ val BUILT_IN_BACKGROUND_STYLE_IDS = setOf(
 )
 val SELECTABLE_BACKGROUND_STYLE_IDS = BUILT_IN_BACKGROUND_STYLE_IDS + CUSTOM_BACKGROUND_STYLE_ID
 
+const val DEFAULT_DONATION_IMAGE_STYLE_ID = "donation_mosque"
+const val DONATION_IMAGE_COURTYARD_STYLE_ID = "donation_courtyard"
+const val DONATION_IMAGE_LANTERN_STYLE_ID = "donation_lantern"
+const val DONATION_IMAGE_CRESCENT_STYLE_ID = "donation_crescent"
+const val DONATION_IMAGE_COMMUNITY_STYLE_ID = "donation_community"
+const val CUSTOM_DONATION_IMAGE_STYLE_ID = "donation_custom"
+val BUILT_IN_DONATION_IMAGE_STYLE_IDS = setOf(
+    DEFAULT_DONATION_IMAGE_STYLE_ID,
+    DONATION_IMAGE_COURTYARD_STYLE_ID,
+    DONATION_IMAGE_LANTERN_STYLE_ID,
+    DONATION_IMAGE_CRESCENT_STYLE_ID,
+    DONATION_IMAGE_COMMUNITY_STYLE_ID,
+)
+val SELECTABLE_DONATION_IMAGE_STYLE_IDS =
+    BUILT_IN_DONATION_IMAGE_STYLE_IDS + CUSTOM_DONATION_IMAGE_STYLE_ID
+
 val OPERATOR_IQAMAH_PRAYER_IDS = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")
 val OPERATOR_IQAMAH_OFFSET_RANGE = 0..180
+const val MAX_DONATION_TRANSFER_DETAILS_LENGTH = 1_000
+const val MAX_DONATION_MESSAGE_LENGTH = 160

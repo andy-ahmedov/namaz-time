@@ -132,6 +132,14 @@ class SettingsShellUiTest {
         compose.onNodeWithTag(SETTINGS_QR_MESSAGE_FIELD_TAG).assertIsDisplayed()
 
         moveDownFrom(SettingsDestination.CAMPAIGNS)
+        compose.onNodeWithTag(SETTINGS_DONATION_URL_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_DETAILS_FIELD_TAG).assertIsDisplayed()
+        DonationImageStyle.entries.forEach { style ->
+            compose.onNodeWithTag("$SETTINGS_DONATION_IMAGE_TAG_PREFIX${style.id}")
+                .assertIsDisplayed()
+        }
+
+        moveDownFrom(SettingsDestination.DONATION)
         compose.onNodeWithText("Русский").assertIsDisplayed()
         invokeLocalActionFrom(SettingsDestination.LANGUAGE)
         assertEquals("en", languageChoice)

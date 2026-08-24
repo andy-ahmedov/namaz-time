@@ -50,11 +50,14 @@ import androidx.tv.material3.Text
 import com.example.namaztime.tv.R
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
 import com.example.namaztime.tv.repository.OperatorIqamahOffsets
+import com.example.namaztime.tv.repository.OperatorDisplayMode
+import com.example.namaztime.tv.repository.OperatorDonationConfiguration
 import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorQrConfiguration
 import com.example.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID
 import com.example.namaztime.tv.repository.OperatorImageSlot
 import com.example.namaztime.tv.repository.isValidIqamahOffsets
+import com.example.namaztime.tv.repository.isValidDonationConfiguration
 import com.example.namaztime.tv.repository.isValidQrConfiguration
 
 const val SETTINGS_PAGE_ACTION_TEST_TAG = "settings-page-primary-action"
@@ -82,8 +85,12 @@ fun SettingsShell(
     onLanguageChanged: ((String) -> Unit)? = null,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)? = null,
     onIqamahOffsetsChanged: ((OperatorIqamahOffsets) -> Unit)? = null,
+    onDonationConfigurationChanged: ((OperatorDonationConfiguration) -> Unit)? = null,
+    onDonationDisplayModeChanged: ((OperatorDonationConfiguration, OperatorDisplayMode) -> Unit)? = null,
     onPickCustomBackground: (() -> Unit)? = null,
+    onPickCustomDonationImage: (() -> Unit)? = null,
     customAssetVersion: Long = 0L,
+    donationAssetVersion: Long = 0L,
     onOpenSystemSettings: (() -> Unit)? = null,
 ) {
     val navigationRequesters = remember {
@@ -113,17 +120,17 @@ fun SettingsShell(
                 Column(
                     modifier = Modifier
                         .fillMaxSize()
-                        .padding(18.dp)
+                        .padding(horizontal = 18.dp, vertical = 14.dp)
                         .selectableGroup(),
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     Text(
                         text = appString(R.string.settings_title),
                         modifier = Modifier
                             .semantics { heading() }
-                            .padding(bottom = 12.dp),
+                            .padding(bottom = 4.dp),
                         color = NamazTvTheme.colors.textPrimary,
-                        fontSize = 30.sp,
+                        fontSize = 26.sp,
                         fontWeight = FontWeight.SemiBold,
                     )
                     SettingsDestination.entries.forEach { destination ->
@@ -147,6 +154,7 @@ fun SettingsShell(
                             ),
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .height(40.dp)
                                 .testTag(destination.navigationTestTag)
                                 .semantics { selected = isSelected }
                                 .focusRequester(navigationRequesters.getValue(destination))
@@ -208,8 +216,12 @@ fun SettingsShell(
                     onLanguageChanged = onLanguageChanged,
                     onQrConfigurationChanged = onQrConfigurationChanged,
                     onIqamahOffsetsChanged = onIqamahOffsetsChanged,
+                    onDonationConfigurationChanged = onDonationConfigurationChanged,
+                    onDonationDisplayModeChanged = onDonationDisplayModeChanged,
                     onPickCustomBackground = onPickCustomBackground,
+                    onPickCustomDonationImage = onPickCustomDonationImage,
                     customAssetVersion = customAssetVersion,
+                    donationAssetVersion = donationAssetVersion,
                     onOpenSystemSettings = onOpenSystemSettings,
                     modifier = Modifier.padding(28.dp),
                 )
@@ -242,8 +254,12 @@ private fun SettingsPage(
     onLanguageChanged: ((String) -> Unit)?,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)?,
     onIqamahOffsetsChanged: ((OperatorIqamahOffsets) -> Unit)?,
+    onDonationConfigurationChanged: ((OperatorDonationConfiguration) -> Unit)?,
+    onDonationDisplayModeChanged: ((OperatorDonationConfiguration, OperatorDisplayMode) -> Unit)?,
     onPickCustomBackground: (() -> Unit)?,
+    onPickCustomDonationImage: (() -> Unit)?,
     customAssetVersion: Long,
+    donationAssetVersion: Long,
     onOpenSystemSettings: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
@@ -257,6 +273,18 @@ private fun SettingsPage(
     }
     var qrMessage by rememberSaveable(preferences.qrConfiguration.message) {
         mutableStateOf(preferences.qrConfiguration.message)
+    }
+    var donationUrl by rememberSaveable(preferences.donationConfiguration.httpsUrl) {
+        mutableStateOf(preferences.donationConfiguration.httpsUrl)
+    }
+    var donationDetails by rememberSaveable(preferences.donationConfiguration.transferDetails) {
+        mutableStateOf(preferences.donationConfiguration.transferDetails)
+    }
+    var donationMessage by rememberSaveable(preferences.donationConfiguration.message) {
+        mutableStateOf(preferences.donationConfiguration.message)
+    }
+    var donationImageStyleId by rememberSaveable(preferences.donationConfiguration.imageStyleId) {
+        mutableStateOf(preferences.donationConfiguration.imageStyleId)
     }
     var fajrIqamah by rememberSaveable(preferences.iqamahOffsets.fajr) {
         mutableStateOf(preferences.iqamahOffsets.fajr)
@@ -274,6 +302,12 @@ private fun SettingsPage(
         mutableStateOf(preferences.iqamahOffsets.isha)
     }
     val qrDraft = OperatorQrConfiguration(qrUrl, qrTitle, qrMessage)
+    val donationDraft = OperatorDonationConfiguration(
+        httpsUrl = donationUrl,
+        transferDetails = donationDetails,
+        message = donationMessage,
+        imageStyleId = donationImageStyleId,
+    )
     val iqamahDraft = OperatorIqamahOffsets(
         fajr = fajrIqamah,
         dhuhr = dhuhrIqamah,
@@ -282,7 +316,8 @@ private fun SettingsPage(
         isha = ishaIqamah,
     )
     val isEditor = destination == SettingsDestination.CAMPAIGNS ||
-        destination == SettingsDestination.IQAMAH
+        destination == SettingsDestination.IQAMAH ||
+        destination == SettingsDestination.DONATION
     val localActions = when (destination) {
         SettingsDestination.CAMPAIGNS -> onQrConfigurationChanged?.let { change ->
             listOf(
@@ -325,6 +360,49 @@ private fun SettingsPage(
                         label = appString(R.string.action_choose_custom_background),
                         invoke = pick,
                         testTag = SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG,
+                    ),
+                )
+            }
+        }
+        SettingsDestination.DONATION -> buildList {
+            onDonationConfigurationChanged?.let { change ->
+                add(
+                    LocalSettingsAction(
+                        label = appString(R.string.save_donation_settings),
+                        invoke = { change(donationDraft) },
+                        testTag = SETTINGS_DONATION_SAVE_TAG,
+                        enabled = isValidDonationConfiguration(donationDraft),
+                    ),
+                )
+            }
+            onPickCustomDonationImage?.let { pick ->
+                add(
+                    LocalSettingsAction(
+                        label = appString(R.string.choose_donation_image),
+                        invoke = pick,
+                        testTag = SETTINGS_DONATION_PICKER_TAG,
+                    ),
+                )
+            }
+            onDonationDisplayModeChanged?.let { change ->
+                val nextMode = if (preferences.displayMode == OperatorDisplayMode.DONATION) {
+                    OperatorDisplayMode.SCHEDULE
+                } else {
+                    OperatorDisplayMode.DONATION
+                }
+                add(
+                    LocalSettingsAction(
+                        label = appString(
+                            if (nextMode == OperatorDisplayMode.DONATION) {
+                                R.string.show_donation_screen
+                            } else {
+                                R.string.show_prayer_schedule
+                            },
+                        ),
+                        invoke = { change(donationDraft, nextMode) },
+                        testTag = SETTINGS_DONATION_MODE_TAG,
+                        enabled = nextMode == OperatorDisplayMode.SCHEDULE ||
+                            (isValidDonationConfiguration(donationDraft) && !donationDraft.isEmpty),
                     ),
                 )
             }
@@ -402,10 +480,18 @@ private fun SettingsPage(
                     maghribIqamah = updated.maghrib
                     ishaIqamah = updated.isha
                 },
+                donationConfiguration = donationDraft,
+                onDonationConfigurationChange = { updated ->
+                    donationUrl = updated.httpsUrl
+                    donationDetails = updated.transferDetails
+                    donationMessage = updated.message
+                    donationImageStyleId = updated.imageStyleId
+                },
                 entryRequester = pageActionRequester,
                 saveRequester = actionRequesters.firstOrNull() ?: returnActionRequester,
                 onBackgroundStyleChanged = onBackgroundStyleChanged,
                 customAssetVersion = customAssetVersion,
+                donationAssetVersion = donationAssetVersion,
                 compact = compactPreview,
                 modifier = Modifier.weight(1f),
             )
@@ -471,10 +557,13 @@ private fun SettingsContent(
     onQrConfigurationChange: (OperatorQrConfiguration) -> Unit,
     iqamahOffsets: OperatorIqamahOffsets,
     onIqamahOffsetsChange: (OperatorIqamahOffsets) -> Unit,
+    donationConfiguration: OperatorDonationConfiguration,
+    onDonationConfigurationChange: (OperatorDonationConfiguration) -> Unit,
     entryRequester: FocusRequester,
     saveRequester: FocusRequester,
     onBackgroundStyleChanged: ((String) -> Unit)?,
     customAssetVersion: Long,
+    donationAssetVersion: Long,
     compact: Boolean,
     modifier: Modifier,
 ) {
@@ -509,6 +598,18 @@ private fun SettingsContent(
             entryRequester = entryRequester,
             nextRequester = saveRequester,
             customAssetVersion = customAssetVersion,
+            compact = compact,
+            modifier = modifier,
+        )
+        return
+    }
+    if (destination == SettingsDestination.DONATION) {
+        DonationSettingsEditor(
+            configuration = donationConfiguration,
+            onConfigurationChange = onDonationConfigurationChange,
+            entryRequester = entryRequester,
+            saveRequester = saveRequester,
+            customAssetVersion = donationAssetVersion,
             compact = compact,
             modifier = modifier,
         )
@@ -550,6 +651,7 @@ private fun SettingsContent(
             ),
         )
         SettingsDestination.CAMPAIGNS -> emptyList()
+        SettingsDestination.DONATION -> emptyList()
         SettingsDestination.LANGUAGE -> {
             val language = AppLanguage.fromTag(preferences.languageTag)
             listOf(
