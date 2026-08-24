@@ -3,6 +3,8 @@ package com.example.namaztime.tv.presentation
 import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +15,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -49,6 +52,10 @@ import com.example.namaztime.tv.repository.EmptyPrayerScheduleRepository
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
 import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorPreferencesRepository
+import com.example.namaztime.tv.repository.AndroidOperatorImageAssetImporter
+import com.example.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.OperatorImageImportResult
+import com.example.namaztime.tv.repository.OperatorImageSlot
 import com.example.namaztime.tv.repository.PrayerScheduleRepository
 import com.example.namaztime.tv.repository.toCampaignInputs
 import com.example.namaztime.tv.repository.toCampaignInput
@@ -86,6 +93,27 @@ fun NamazTvApp(
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
+    val imageImporter = remember(context) { AndroidOperatorImageAssetImporter(context) }
+    var customAssetVersion by remember { mutableLongStateOf(0L) }
+    val backgroundPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+        uri ->
+        if (uri != null) {
+            coroutineScope.launch {
+                if (imageImporter.import(OperatorImageSlot.BACKGROUND, uri) ==
+                    OperatorImageImportResult.Imported
+                ) {
+                    try {
+                        operatorPreferencesRepository.setBackgroundStyleId(
+                            CUSTOM_BACKGROUND_STYLE_ID,
+                        )
+                        customAssetVersion += 1L
+                    } catch (_: IOException) {
+                        // The imported app-local copy remains available for a later selection.
+                    }
+                }
+            }
+        }
+    }
     val campaignEngine = remember { CampaignEngine() }
     val qrCodeGenerator = remember { QrCodeGenerator() }
     val observedSchedule by prayerScheduleRepository.observeForDisplay()
@@ -129,7 +157,10 @@ fun NamazTvApp(
     AppLanguageProvider(preferences.languageTag) {
         NamazTvTheme {
             Box(Modifier.fillMaxSize()) {
-                TvAtmosphericBackground(preferences.backgroundStyleId)
+                TvAtmosphericBackground(
+                    styleId = preferences.backgroundStyleId,
+                    customAssetVersion = customAssetVersion,
+                )
                 NavHost(
                     navController = navController,
                     startDestination = DISPLAY_ROUTE,
@@ -224,6 +255,12 @@ fun NamazTvApp(
                                     }
                                 }
                             },
+                            onPickCustomBackground = {
+                                backgroundPicker.launch(
+                                    arrayOf("image/jpeg", "image/png", "image/webp"),
+                                )
+                            },
+                            customAssetVersion = customAssetVersion,
                             onOpenSystemSettings = {
                                 context.startActivity(
                                     Intent(

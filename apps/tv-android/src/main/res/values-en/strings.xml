@@ -33,6 +33,14 @@
     <string name="field_background">Background</string>
     <string name="value_background_golden_dusk">Golden dusk</string>
     <string name="value_background_blue_hour">Blue hour</string>
+    <string name="value_background_night_minaret">Night minaret</string>
+    <string name="value_background_desert_dawn">Desert dawn</string>
+    <string name="value_background_emerald_mosque">Emerald mosque</string>
+    <string name="value_background_winter_twilight">Winter twilight</string>
+    <string name="value_background_autumn_courtyard">Autumn courtyard</string>
+    <string name="value_background_celestial_navy">Celestial navy</string>
+    <string name="value_background_custom">Custom image</string>
+    <string name="action_choose_custom_background">Choose image from TV</string>
     <string name="field_screen_shift">Screen protection</string>
     <string name="field_language">Current language</string>
     <string name="field_supported_languages">Available languages</string>

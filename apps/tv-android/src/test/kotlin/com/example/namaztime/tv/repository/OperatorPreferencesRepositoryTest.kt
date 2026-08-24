@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
@@ -68,6 +69,17 @@ class OperatorPreferencesRepositoryTest {
             BLUE_HOUR_BACKGROUND_STYLE_ID,
             repository.preferences.first().backgroundStyleId,
         )
+    }
+
+    @Test
+    fun appearanceAllowlistContainsEightBuiltInsAndOneCustomSlot() = runTest {
+        assertEquals(8, BUILT_IN_BACKGROUND_STYLE_IDS.size)
+        assertTrue(CUSTOM_BACKGROUND_STYLE_ID in SELECTABLE_BACKGROUND_STYLE_IDS)
+
+        val repository = repositoryFor(this)
+        repository.setBackgroundStyleId(CUSTOM_BACKGROUND_STYLE_ID)
+
+        assertEquals(CUSTOM_BACKGROUND_STYLE_ID, repository.preferences.first().backgroundStyleId)
     }
 
     @Test

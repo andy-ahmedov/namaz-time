@@ -144,6 +144,13 @@ Controlled API 36 emulator screenshots provide bounded `CONFIRMED_RUNTIME`
 visual evidence; they do not establish physical-TV overscan, scan distance or
 panel behavior.
 
+T028 expands the Appearance regression to eight built-in previews and a custom
+slot. JVM tests reject oversized, unsupported, corrupt and undersized documents,
+preserve the previous app-local copy on rejection, and verify a missing custom
+copy renders the packaged default. The manifest regression forbids both legacy
+storage permissions and `READ_MEDIA_IMAGES`; picker behavior and OEM document
+providers still require the controlled emulator/runtime loop.
+
 T024 adds a controlled 960×540 reference-proportion contract: the centered
 composition must occupy 70–76 percent of the full viewport, left and right
 columns may differ by no more than four percent, next/clock cards must retain

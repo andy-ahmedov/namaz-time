@@ -20,15 +20,19 @@ asset/publication policy that remains unresolved.
 
 ## Decision
 
-The Android TV app packages two original landscape WebP backgrounds in
-`drawable-nodpi`: Golden dusk is the safe default and Blue hour is the second
-built-in choice. Compose renders the selected asset full bleed with
+The Android TV app packages eight original/project-derived landscape WebP
+backgrounds in `drawable-nodpi`: Golden dusk is the safe default. Compose
+renders the selected asset full bleed with
 `ContentScale.Crop` and a bounded flat dark scrim; foreground glass panels and
 all controls stay inside the existing overscan-safe frame.
 
-The selected built-in ID is a validated local operator preference. Unsupported
-or corrupt IDs fail safely to Golden dusk. Appearance may cycle only through
-the packaged allowlist. This setting does not alter, fetch or infer prayer
+The selected background ID is a validated local operator preference. Appearance
+shows an eight-item preview gallery and one custom slot. Custom import uses the
+Android system document picker, requests no storage/media permission, accepts
+only bounded JPEG/PNG/WebP documents, validates byte size, decoded type,
+dimensions and pixel count, then atomically writes a normalized app-local copy.
+The URI itself is not retained. Unsupported/corrupt IDs or a missing/corrupt
+custom copy fail safely to Golden dusk. This setting does not alter, fetch or infer prayer
 data, and it does not create a network path from composables.
 
 The background images, prayer glyphs and NamazTime mark are original project
@@ -41,17 +45,18 @@ Positive:
 
 - the display has a photographic mosque/landscape atmosphere while remaining
   deterministic and offline;
-- operators can change the app-wide background from Appearance;
+- operators can change the app-wide background from an eight-item Appearance
+  gallery or import one device-local custom image;
 - display, Settings and recovery surfaces retain one Material 3 token system;
 - invalid persisted style IDs have an explicit fallback and cannot select an
   arbitrary file or URL.
 
 Costs and limits:
 
-- the APK grows by the two compressed assets;
+- the APK grows by the eight compressed assets;
 - crop and readability still need physical-TV/overscan acceptance;
-- custom/remote backgrounds remain blocked on custody, type/size, approval,
-  signing and delivery policy and are not implemented here;
+- remote/fleet-distributed backgrounds remain blocked on custody, approval,
+  signing and delivery policy; the device-local picker does not bypass that path;
 - static images do not establish panel-retention safety.
 
 ## Rejected alternatives

@@ -1,5 +1,6 @@
 package com.example.namaztime.tv.presentation
 
+import android.graphics.BitmapFactory
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import androidx.compose.foundation.Canvas
@@ -16,6 +17,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -25,9 +28,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
@@ -42,7 +48,18 @@ import androidx.tv.material3.Typography
 import androidx.tv.material3.darkColorScheme
 import com.example.namaztime.tv.R
 import com.example.namaztime.tv.repository.BLUE_HOUR_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.AUTUMN_COURTYARD_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.CELESTIAL_NAVY_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID
 import com.example.namaztime.tv.repository.DEFAULT_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.DESERT_DAWN_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.EMERALD_MOSQUE_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.NIGHT_MINARET_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.OperatorImageAssetStore
+import com.example.namaztime.tv.repository.OperatorImageSlot
+import com.example.namaztime.tv.repository.WINTER_TWILIGHT_BACKGROUND_STYLE_ID
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 const val TV_ATMOSPHERIC_BACKGROUND_TAG = "tv-atmospheric-background"
 const val TV_BACKGROUND_STYLE_TAG_PREFIX = "tv-background-style-"
@@ -64,6 +81,42 @@ internal enum class TvBackgroundStyle(
         R.drawable.tv_background_blue_hour,
         R.string.value_background_blue_hour,
         0.38f,
+    ),
+    NIGHT_MINARET(
+        NIGHT_MINARET_BACKGROUND_STYLE_ID,
+        R.drawable.tv_background_night_minaret,
+        R.string.value_background_night_minaret,
+        0.34f,
+    ),
+    DESERT_DAWN(
+        DESERT_DAWN_BACKGROUND_STYLE_ID,
+        R.drawable.tv_background_desert_dawn,
+        R.string.value_background_desert_dawn,
+        0.40f,
+    ),
+    EMERALD_MOSQUE(
+        EMERALD_MOSQUE_BACKGROUND_STYLE_ID,
+        R.drawable.tv_background_emerald_mosque,
+        R.string.value_background_emerald_mosque,
+        0.38f,
+    ),
+    WINTER_TWILIGHT(
+        WINTER_TWILIGHT_BACKGROUND_STYLE_ID,
+        R.drawable.tv_background_winter_twilight,
+        R.string.value_background_winter_twilight,
+        0.42f,
+    ),
+    AUTUMN_COURTYARD(
+        AUTUMN_COURTYARD_BACKGROUND_STYLE_ID,
+        R.drawable.tv_background_autumn_courtyard,
+        R.string.value_background_autumn_courtyard,
+        0.40f,
+    ),
+    CELESTIAL_NAVY(
+        CELESTIAL_NAVY_BACKGROUND_STYLE_ID,
+        R.drawable.tv_background_celestial_navy,
+        R.string.value_background_celestial_navy,
+        0.34f,
     ),
     ;
 
@@ -245,22 +298,62 @@ internal fun TvSafeFrame(
 internal fun TvAtmosphericBackground(
     styleId: String = DEFAULT_BACKGROUND_STYLE_ID,
     modifier: Modifier = Modifier,
+    customAssetVersion: Long = 0L,
 ) {
     val style = TvBackgroundStyle.fromId(styleId)
     val colors = NamazTvTheme.colors
+    val customImage = rememberOperatorImageBitmap(
+        slot = OperatorImageSlot.BACKGROUND,
+        assetVersion = customAssetVersion,
+        enabled = styleId == CUSTOM_BACKGROUND_STYLE_ID,
+    )
+    val customAvailable = styleId == CUSTOM_BACKGROUND_STYLE_ID && customImage != null
+    val renderedStyleId = if (customAvailable) CUSTOM_BACKGROUND_STYLE_ID else style.id
+    val painter = customImage?.let(::BitmapPainter) ?: painterResource(style.drawableRes)
     Box(modifier = modifier.fillMaxSize().testTag(TV_ATMOSPHERIC_BACKGROUND_TAG)) {
         Image(
-            painter = painterResource(style.drawableRes),
+            painter = painter,
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.fillMaxSize().testTag("$TV_BACKGROUND_STYLE_TAG_PREFIX${style.id}"),
+            modifier = Modifier.fillMaxSize().testTag("$TV_BACKGROUND_STYLE_TAG_PREFIX$renderedStyleId"),
         )
         Box(
             Modifier
                 .fillMaxSize()
-                .background(colors.backgroundBottom.copy(alpha = style.scrimAlpha)),
+                .background(
+                    colors.backgroundBottom.copy(
+                        alpha = if (customAvailable) 0.44f else style.scrimAlpha,
+                    ),
+                ),
         )
     }
+}
+
+@Composable
+internal fun rememberOperatorImageBitmap(
+    slot: OperatorImageSlot,
+    assetVersion: Long = 0L,
+    enabled: Boolean = true,
+): androidx.compose.ui.graphics.ImageBitmap? {
+    val context = LocalContext.current
+    val image by produceState<androidx.compose.ui.graphics.ImageBitmap?>(
+        initialValue = null,
+        key1 = slot,
+        key2 = assetVersion,
+        key3 = enabled,
+    ) {
+        value = if (enabled) {
+            withContext(Dispatchers.IO) {
+                OperatorImageAssetStore(context.filesDir)
+                    .resolve(slot)
+                    ?.let { BitmapFactory.decodeFile(it.path) }
+                    ?.asImageBitmap()
+            }
+        } else {
+            null
+        }
+    }
+    return image
 }
 
 @Composable

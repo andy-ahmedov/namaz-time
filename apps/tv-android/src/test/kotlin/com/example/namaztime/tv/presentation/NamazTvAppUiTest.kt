@@ -398,14 +398,51 @@ class NamazTvAppUiTest {
         }
         compose.onNodeWithTag(SettingsDestination.APPEARANCE.navigationTestTag)
             .performKeyInput { pressKey(Key.DirectionRight) }
-        compose.onNodeWithTag(SETTINGS_LOCAL_ACTION_TEST_TAG)
-            .performKeyInput { pressKey(Key.DirectionDown) }
-        compose.onNodeWithTag(SETTINGS_BACKGROUND_ACTION_TEST_TAG)
+        compose.onNodeWithTag(
+            "$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX${com.example.namaztime.tv.repository.DEFAULT_BACKGROUND_STYLE_ID}",
+        ).performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag(
+            "$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX${com.example.namaztime.tv.repository.BLUE_HOUR_BACKGROUND_STYLE_ID}",
+        )
             .assertIsFocused()
             .performKeyInput { pressKey(Key.Enter) }
 
         compose.onNodeWithTag("$TV_BACKGROUND_STYLE_TAG_PREFIX${com.example.namaztime.tv.repository.BLUE_HOUR_BACKGROUND_STYLE_ID}")
             .assertIsDisplayed()
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun appearanceShowsEightBuiltInPreviewsAndCustomPicker() {
+        compose.setContent { NamazTvApp(FakeOperatorPreferencesRepository()) }
+
+        openSettingsDestination(SettingsDestination.APPEARANCE)
+        com.example.namaztime.tv.repository.BUILT_IN_BACKGROUND_STYLE_IDS.forEach { styleId ->
+            compose.onNodeWithTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX$styleId")
+                .assertIsDisplayed()
+        }
+        compose.onNodeWithTag(
+            "$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX${com.example.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID}",
+        ).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG).assertExists()
+    }
+
+    @Test
+    fun missingCustomBackgroundFallsBackToPackagedDefault() {
+        compose.setContent {
+            NamazTvApp(
+                FakeOperatorPreferencesRepository(
+                    initialPreferences = OperatorPreferences(
+                        backgroundStyleId = com.example.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID,
+                    ),
+                ),
+            )
+        }
+
+        compose.onNodeWithTag(
+            "$TV_BACKGROUND_STYLE_TAG_PREFIX${com.example.namaztime.tv.repository.DEFAULT_BACKGROUND_STYLE_ID}",
+        ).assertIsDisplayed()
     }
 
     @Test
@@ -1164,8 +1201,9 @@ class NamazTvAppUiTest {
 
 private class FakeOperatorPreferencesRepository(
     private val failWrites: Boolean = false,
+    initialPreferences: OperatorPreferences = OperatorPreferences(),
 ) : OperatorPreferencesRepository {
-    private val state = MutableStateFlow(OperatorPreferences())
+    private val state = MutableStateFlow(initialPreferences)
 
     override val preferences: Flow<OperatorPreferences> = state
 

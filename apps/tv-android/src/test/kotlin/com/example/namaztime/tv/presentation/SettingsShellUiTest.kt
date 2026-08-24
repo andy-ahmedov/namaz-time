@@ -77,6 +77,7 @@ class SettingsShellUiTest {
     fun settingsPanelsFit4kDensitySafeFrame() = assertSettingsPanelsFit()
 
     @Test
+    @OptIn(ExperimentalTestApi::class)
     @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
     fun everySectionShowsRealPilotStateAndLocalActionsAreEffective() {
         var shiftChoice: Boolean? = null
@@ -112,8 +113,17 @@ class SettingsShellUiTest {
         compose.onNodeWithText("Зухр в пятницу").assertDoesNotExist()
 
         moveDownFrom(SettingsDestination.IQAMAH)
-        compose.onNodeWithText("Защитный сдвиг: включён").assertIsDisplayed()
-        invokeLocalActionFrom(SettingsDestination.APPEARANCE)
+        compose.onNodeWithTag("${SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX}golden_dusk")
+            .assertIsDisplayed()
+        compose.onNodeWithTag(SettingsDestination.APPEARANCE.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+            repeat(3) { pressKey(Key.DirectionDown) }
+        }
+        compose.onNodeWithTag(SETTINGS_LOCAL_ACTION_TEST_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+            .performKeyInput { pressKey(Key.DirectionLeft) }
+        compose.onNodeWithTag(SettingsDestination.APPEARANCE.navigationTestTag).assertIsFocused()
         assertEquals(false, shiftChoice)
 
         moveDownFrom(SettingsDestination.APPEARANCE)

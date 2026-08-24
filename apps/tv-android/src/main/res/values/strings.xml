@@ -33,6 +33,14 @@
     <string name="field_background">Фон</string>
     <string name="value_background_golden_dusk">Золотой закат</string>
     <string name="value_background_blue_hour">Синий час</string>
+    <string name="value_background_night_minaret">Ночной минарет</string>
+    <string name="value_background_desert_dawn">Рассвет в пустыне</string>
+    <string name="value_background_emerald_mosque">Изумрудная мечеть</string>
+    <string name="value_background_winter_twilight">Зимние сумерки</string>
+    <string name="value_background_autumn_courtyard">Осенний двор</string>
+    <string name="value_background_celestial_navy">Небесный индиго</string>
+    <string name="value_background_custom">Своё изображение</string>
+    <string name="action_choose_custom_background">Выбрать изображение с телевизора</string>
     <string name="field_screen_shift">Защита экрана</string>
     <string name="field_language">Текущий язык</string>
     <string name="field_supported_languages">Доступные языки</string>

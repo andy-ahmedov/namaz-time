@@ -196,9 +196,13 @@ remain later work pending D-010.
 T017 establishes a single Compose design system above the existing T005–T007
 behavior. Semantic dark-surface, text, amber state, warning, separator and
 focus tokens are shared by the main display, settings, QR and safe unavailable
-screen. A project-drawn static atmospheric background is the only new visual
-asset and is always available offline. The supplied reference image is not
-packaged because it contains third-party branding and imagery.
+screen. T028 expands the packaged offline background set to eight images and
+adds a separate device-local custom slot. The system document picker grants
+temporary read access; the app validates type, byte size, decoded dimensions
+and pixel count, normalizes to JPEG, and atomically replaces an app-private
+copy. Composables decode only that local copy and fall back to the packaged
+Golden dusk asset when it is missing or corrupt. No content URI, broad storage
+permission, network path or schedule mutation is introduced.
 
 The main display uses an overscan-safe content frame around a dominant local
 next-event card, mosque-local date/clock card, six-row adhan/iqamah table and
@@ -537,13 +541,18 @@ The domain clock uses mosque timezone, not the device default. The sequence must
 
 ## Assets and themes
 
-Built-in themes are packaged with the app. Remote custom images are content-addressed:
+Built-in themes are packaged with the app. A single-TV operator image imported
+through the system document picker is validated and copied into app-private
+storage; it is not an approved remote/fleet asset. Remote custom images remain
+content-addressed:
 
 ```text
 asset_id -> sha256 -> byte length -> media type -> dimensions -> orientation
 ```
 
-The TV downloads an asset to staging, validates type/dimensions/hash, then activates it. Keep a built-in fallback background. MVP excludes video backgrounds.
+The TV downloads an approved remote asset to staging, validates
+type/dimensions/hash, then activates it. Keep a built-in fallback background.
+MVP excludes video backgrounds.
 
 ## Autostart and kiosk modes
 

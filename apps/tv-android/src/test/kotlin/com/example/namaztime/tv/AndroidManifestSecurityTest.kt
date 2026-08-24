@@ -33,6 +33,7 @@ class AndroidManifestSecurityTest {
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
             Manifest.permission.READ_EXTERNAL_STORAGE,
+            Manifest.permission.READ_MEDIA_IMAGES,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
         )
         assertTrue("forbidden permissions: ${requested.intersect(forbidden)}", requested.intersect(forbidden).isEmpty())

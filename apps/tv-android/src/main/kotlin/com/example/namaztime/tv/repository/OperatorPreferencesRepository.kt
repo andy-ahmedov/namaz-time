@@ -104,7 +104,7 @@ class DataStoreOperatorPreferencesRepository(
                     ?: DEFAULT_LANGUAGE_TAG,
                 screenRetentionShiftEnabled = values[SCREEN_RETENTION_SHIFT_ENABLED] ?: true,
                 backgroundStyleId = values[BACKGROUND_STYLE_ID]
-                    ?.takeIf(BUILT_IN_BACKGROUND_STYLE_IDS::contains)
+                    ?.takeIf(SELECTABLE_BACKGROUND_STYLE_IDS::contains)
                     ?: DEFAULT_BACKGROUND_STYLE_ID,
                 qrConfiguration = OperatorQrConfiguration(
                     httpsUrl = values[QR_HTTPS_URL].orEmpty(),
@@ -139,7 +139,7 @@ class DataStoreOperatorPreferencesRepository(
     }
 
     override suspend fun setBackgroundStyleId(styleId: String) {
-        require(styleId in BUILT_IN_BACKGROUND_STYLE_IDS) { "unsupported background style" }
+        require(styleId in SELECTABLE_BACKGROUND_STYLE_IDS) { "unsupported background style" }
         dataStore.edit { it[BACKGROUND_STYLE_ID] = styleId }
     }
 
@@ -234,10 +234,24 @@ const val DEFAULT_LANGUAGE_TAG = "ru"
 val SUPPORTED_LANGUAGE_TAGS = setOf(DEFAULT_LANGUAGE_TAG, "en")
 const val DEFAULT_BACKGROUND_STYLE_ID = "golden_dusk"
 const val BLUE_HOUR_BACKGROUND_STYLE_ID = "blue_hour"
+const val CUSTOM_BACKGROUND_STYLE_ID = "custom"
+const val NIGHT_MINARET_BACKGROUND_STYLE_ID = "night_minaret"
+const val DESERT_DAWN_BACKGROUND_STYLE_ID = "desert_dawn"
+const val EMERALD_MOSQUE_BACKGROUND_STYLE_ID = "emerald_mosque"
+const val WINTER_TWILIGHT_BACKGROUND_STYLE_ID = "winter_twilight"
+const val AUTUMN_COURTYARD_BACKGROUND_STYLE_ID = "autumn_courtyard"
+const val CELESTIAL_NAVY_BACKGROUND_STYLE_ID = "celestial_navy"
 val BUILT_IN_BACKGROUND_STYLE_IDS = setOf(
     DEFAULT_BACKGROUND_STYLE_ID,
     BLUE_HOUR_BACKGROUND_STYLE_ID,
+    NIGHT_MINARET_BACKGROUND_STYLE_ID,
+    DESERT_DAWN_BACKGROUND_STYLE_ID,
+    EMERALD_MOSQUE_BACKGROUND_STYLE_ID,
+    WINTER_TWILIGHT_BACKGROUND_STYLE_ID,
+    AUTUMN_COURTYARD_BACKGROUND_STYLE_ID,
+    CELESTIAL_NAVY_BACKGROUND_STYLE_ID,
 )
+val SELECTABLE_BACKGROUND_STYLE_IDS = BUILT_IN_BACKGROUND_STYLE_IDS + CUSTOM_BACKGROUND_STYLE_ID
 
 val OPERATOR_IQAMAH_PRAYER_IDS = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")
 val OPERATOR_IQAMAH_OFFSET_RANGE = 0..180

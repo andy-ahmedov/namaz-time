@@ -110,17 +110,19 @@ public display mode.
 - avoid detailed imagery behind small text;
 - no video background in MVP.
 
-The Phase 4 built-in backgrounds are original static landscape WebP images.
-Golden dusk is the safe default and Blue hour is selectable from Appearance;
-both remain offline and use the same bounded dark scrim. Unknown persisted IDs
-fall back to Golden dusk. For the T024 main-display pass, the
+The Phase 4 built-in backgrounds are eight original/project-derived static
+landscape WebP images. Appearance renders a D-pad preview gallery and persists
+only allowlisted IDs. A ninth custom slot imports JPEG/PNG/WebP through the
+system document picker into a validated app-local copy without broad storage
+permissions. Missing/corrupt custom media and unknown persisted IDs fall back
+to Golden dusk; all backgrounds use the same bounded dark scrim. For the T024 main-display pass, the
 product-owner-supplied `design.png` is the geometric visual specification for
 composition, proportion, hierarchy, spacing and decorative rhythm. T025 also
 uses the explicitly authorized product-owner-supplied `main_with_qr.png` as the
 visual specification for the QR composition, frame, support icon and lower
 ornament under ADR 0014. Neither raw reference is packaged. Custom/remote media remains
-outside this local allowlist and requires its separately approved signed asset
-pipeline.
+outside this device-local pipeline and requires its separately approved signed
+asset pipeline.
 
 The main display uses a centered NamazTime pill, mosque identity, a left
 next-event/countdown and local-clock stack, a right six-row prayer table and a

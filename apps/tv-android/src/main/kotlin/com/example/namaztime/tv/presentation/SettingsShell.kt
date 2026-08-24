@@ -1,7 +1,9 @@
 package com.example.namaztime.tv.presentation
 
 import androidx.compose.foundation.border
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,6 +11,8 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -22,12 +26,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.BitmapPainter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
@@ -44,12 +52,16 @@ import com.example.namaztime.tv.repository.LocalPrayerSchedule
 import com.example.namaztime.tv.repository.OperatorIqamahOffsets
 import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorQrConfiguration
+import com.example.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID
+import com.example.namaztime.tv.repository.OperatorImageSlot
 import com.example.namaztime.tv.repository.isValidIqamahOffsets
 import com.example.namaztime.tv.repository.isValidQrConfiguration
 
 const val SETTINGS_PAGE_ACTION_TEST_TAG = "settings-page-primary-action"
 const val SETTINGS_LOCAL_ACTION_TEST_TAG = "settings-page-local-action"
 const val SETTINGS_BACKGROUND_ACTION_TEST_TAG = "settings-background-action"
+const val SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX = "settings-background-preview-"
+const val SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG = "settings-custom-background-picker"
 const val SETTINGS_SHELL_TAG = "settings-shell"
 const val SETTINGS_NAVIGATION_PANEL_TAG = "settings-navigation-panel"
 const val SETTINGS_CONTENT_PANEL_TAG = "settings-content-panel"
@@ -70,6 +82,8 @@ fun SettingsShell(
     onLanguageChanged: ((String) -> Unit)? = null,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)? = null,
     onIqamahOffsetsChanged: ((OperatorIqamahOffsets) -> Unit)? = null,
+    onPickCustomBackground: (() -> Unit)? = null,
+    customAssetVersion: Long = 0L,
     onOpenSystemSettings: (() -> Unit)? = null,
 ) {
     val navigationRequesters = remember {
@@ -194,6 +208,8 @@ fun SettingsShell(
                     onLanguageChanged = onLanguageChanged,
                     onQrConfigurationChanged = onQrConfigurationChanged,
                     onIqamahOffsetsChanged = onIqamahOffsetsChanged,
+                    onPickCustomBackground = onPickCustomBackground,
+                    customAssetVersion = customAssetVersion,
                     onOpenSystemSettings = onOpenSystemSettings,
                     modifier = Modifier.padding(28.dp),
                 )
@@ -226,6 +242,8 @@ private fun SettingsPage(
     onLanguageChanged: ((String) -> Unit)?,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)?,
     onIqamahOffsetsChanged: ((OperatorIqamahOffsets) -> Unit)?,
+    onPickCustomBackground: (() -> Unit)?,
+    customAssetVersion: Long,
     onOpenSystemSettings: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
@@ -301,15 +319,12 @@ private fun SettingsPage(
                     ),
                 )
             }
-            onBackgroundStyleChanged?.let { change ->
+            onPickCustomBackground?.let { pick ->
                 add(
                     LocalSettingsAction(
-                        label = appString(
-                            R.string.action_switch_background,
-                            appString(backgroundStyle.next.labelRes),
-                        ),
-                        invoke = { change(backgroundStyle.next.id) },
-                        testTag = SETTINGS_BACKGROUND_ACTION_TEST_TAG,
+                        label = appString(R.string.action_choose_custom_background),
+                        invoke = pick,
+                        testTag = SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG,
                     ),
                 )
             }
@@ -334,8 +349,13 @@ private fun SettingsPage(
         List((localActions.size - 1).coerceAtLeast(0)) { FocusRequester() }
     }
     val editorSaveRequester = remember(destination) { FocusRequester() }
+    val appearanceActionRequesters = remember(destination, localActions.size) {
+        List(localActions.size) { FocusRequester() }
+    }
     val actionRequesters = if (isEditor) {
         listOf(editorSaveRequester) + secondaryActionRequesters
+    } else if (destination == SettingsDestination.APPEARANCE) {
+        appearanceActionRequesters
     } else {
         listOf(pageActionRequester) + secondaryActionRequesters
     }
@@ -384,6 +404,8 @@ private fun SettingsPage(
                 },
                 entryRequester = pageActionRequester,
                 saveRequester = actionRequesters.firstOrNull() ?: returnActionRequester,
+                onBackgroundStyleChanged = onBackgroundStyleChanged,
+                customAssetVersion = customAssetVersion,
                 compact = compactPreview,
                 modifier = Modifier.weight(1f),
             )
@@ -451,6 +473,8 @@ private fun SettingsContent(
     onIqamahOffsetsChange: (OperatorIqamahOffsets) -> Unit,
     entryRequester: FocusRequester,
     saveRequester: FocusRequester,
+    onBackgroundStyleChanged: ((String) -> Unit)?,
+    customAssetVersion: Long,
     compact: Boolean,
     modifier: Modifier,
 ) {
@@ -473,6 +497,18 @@ private fun SettingsContent(
             onOffsetsChange = onIqamahOffsetsChange,
             entryRequester = entryRequester,
             saveRequester = saveRequester,
+            compact = compact,
+            modifier = modifier,
+        )
+        return
+    }
+    if (destination == SettingsDestination.APPEARANCE) {
+        AppearanceBackgroundGallery(
+            selectedStyleId = preferences.backgroundStyleId,
+            onStyleSelected = onBackgroundStyleChanged,
+            entryRequester = entryRequester,
+            nextRequester = saveRequester,
+            customAssetVersion = customAssetVersion,
             compact = compact,
             modifier = modifier,
         )
@@ -573,6 +609,132 @@ private fun SettingsDetail(label: String, value: String, compact: Boolean) {
         )
     }
 }
+
+@Composable
+private fun AppearanceBackgroundGallery(
+    selectedStyleId: String,
+    onStyleSelected: ((String) -> Unit)?,
+    entryRequester: FocusRequester,
+    nextRequester: FocusRequester,
+    customAssetVersion: Long,
+    compact: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val choices = remember {
+        TvBackgroundStyle.entries.map { it.id } + CUSTOM_BACKGROUND_STYLE_ID
+    }
+    val requesters = remember(entryRequester) {
+        choices.associateWith { FocusRequester() }.toMutableMap().apply {
+            this[choices.first()] = entryRequester
+        }
+    }
+    val customImage = rememberOperatorImageBitmap(
+        slot = OperatorImageSlot.BACKGROUND,
+        assetVersion = customAssetVersion,
+    )
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
+    ) {
+        choices.chunked(BACKGROUND_GALLERY_COLUMNS).forEachIndexed { rowIndex, rowChoices ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
+            ) {
+                rowChoices.forEach { styleId ->
+                    val index = choices.indexOf(styleId)
+                    val style = TvBackgroundStyle.entries.firstOrNull { it.id == styleId }
+                    val selected = selectedStyleId == styleId
+                    val enabled = onStyleSelected != null &&
+                        (styleId != CUSTOM_BACKGROUND_STYLE_ID || customImage != null)
+                    Button(
+                        onClick = { onStyleSelected?.invoke(styleId) },
+                        enabled = enabled,
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.colors(
+                            containerColor = NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.78f),
+                            contentColor = NamazTvTheme.colors.textPrimary,
+                            focusedContainerColor = NamazTvTheme.colors.accentSoft,
+                            focusedContentColor = NamazTvTheme.colors.textPrimary,
+                        ),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(if (compact) 68.dp else 88.dp)
+                            .testTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX$styleId")
+                            .semantics { this.selected = selected }
+                            .focusRequester(requesters.getValue(styleId))
+                            .focusProperties {
+                                choices.getOrNull(index - 1)
+                                    ?.takeIf { index % BACKGROUND_GALLERY_COLUMNS != 0 }
+                                    ?.let { left = requesters.getValue(it) }
+                                choices.getOrNull(index + 1)
+                                    ?.takeIf { (index + 1) % BACKGROUND_GALLERY_COLUMNS != 0 }
+                                    ?.let { right = requesters.getValue(it) }
+                                choices.getOrNull(index - BACKGROUND_GALLERY_COLUMNS)
+                                    ?.let { up = requesters.getValue(it) }
+                                down = choices.getOrNull(index + BACKGROUND_GALLERY_COLUMNS)
+                                    ?.let(requesters::getValue)
+                                    ?: nextRequester
+                            }
+                            .border(
+                                width = if (selected) 2.dp else 0.5.dp,
+                                color = if (selected) {
+                                    NamazTvTheme.colors.accent
+                                } else {
+                                    NamazTvTheme.colors.surfaceOutline
+                                },
+                                shape = RoundedCornerShape(12.dp),
+                            ),
+                    ) {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                        ) {
+                            if (style != null) {
+                                Image(
+                                    painter = painterResource(style.drawableRes),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxWidth().weight(1f),
+                                )
+                            } else if (customImage != null) {
+                                Image(
+                                    painter = BitmapPainter(customImage),
+                                    contentDescription = null,
+                                    contentScale = ContentScale.Crop,
+                                    modifier = Modifier.fillMaxWidth().weight(1f),
+                                )
+                            } else {
+                                Box(
+                                    modifier = Modifier.fillMaxWidth().weight(1f),
+                                    contentAlignment = Alignment.Center,
+                                ) {
+                                    Text("+", color = NamazTvTheme.colors.accent, fontSize = 24.sp)
+                                }
+                            }
+                            Text(
+                                text = if (style != null) {
+                                    appString(style.labelRes)
+                                } else {
+                                    appString(R.string.value_background_custom)
+                                },
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
+                                fontSize = if (compact) 11.sp else 14.sp,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                    }
+                }
+                repeat(BACKGROUND_GALLERY_COLUMNS - rowChoices.size) {
+                    Spacer(Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+private const val BACKGROUND_GALLERY_COLUMNS = 3
 
 @Composable
 private fun sourceKindLabel(kind: String): String = appString(
