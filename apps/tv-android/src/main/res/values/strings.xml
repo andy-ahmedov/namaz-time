@@ -81,7 +81,7 @@
     <string name="qr_message_label">Мотивационный текст</string>
     <string name="qr_message_hint">Аят, хадис или призыв к благому</string>
     <string name="save_qr_settings">Сохранить QR-код</string>
-    <string name="donation_qr_link_label">HTTPS-ссылка для QR пожертвования</string>
+    <string name="donation_qr_link_label">HTTPS-ссылка для QR</string>
     <string name="donation_transfer_details_title">Реквизиты для перевода</string>
     <string name="donation_transfer_details_hint">Получатель, банк, счёт или номер телефона</string>
     <string name="donation_message_label">Текст экрана</string>
@@ -95,7 +95,7 @@
     <string name="value_donation_image_custom">Своё фото</string>
     <string name="save_donation_settings">Сохранить экран</string>
     <string name="choose_donation_image">Выбрать своё фото</string>
-    <string name="show_donation_screen">Показывать экран пожертвований</string>
+    <string name="show_donation_screen">Включить экран</string>
     <string name="show_prayer_schedule">Показывать расписание</string>
     <string name="donation_display_title">Пожертвование</string>
     <string name="iqamah_time_label">Смещение икамата</string>

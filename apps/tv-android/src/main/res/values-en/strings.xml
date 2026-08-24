@@ -81,7 +81,7 @@
     <string name="qr_message_label">Motivational text</string>
     <string name="qr_message_hint">An ayah, hadith, or invitation to good</string>
     <string name="save_qr_settings">Save QR code</string>
-    <string name="donation_qr_link_label">HTTPS link for donation QR</string>
+    <string name="donation_qr_link_label">HTTPS link for QR</string>
     <string name="donation_transfer_details_title">Transfer details</string>
     <string name="donation_transfer_details_hint">Recipient, bank, account, or phone number</string>
     <string name="donation_message_label">Screen message</string>
@@ -95,7 +95,7 @@
     <string name="value_donation_image_custom">Custom photo</string>
     <string name="save_donation_settings">Save screen</string>
     <string name="choose_donation_image">Choose custom photo</string>
-    <string name="show_donation_screen">Show donation screen</string>
+    <string name="show_donation_screen">Enable screen</string>
     <string name="show_prayer_schedule">Show prayer schedule</string>
     <string name="donation_display_title">Donation</string>
     <string name="iqamah_time_label">Iqamah offset</string>

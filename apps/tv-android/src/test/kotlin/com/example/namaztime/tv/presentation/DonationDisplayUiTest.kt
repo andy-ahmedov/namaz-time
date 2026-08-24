@@ -45,6 +45,8 @@ class DonationDisplayUiTest {
                     onExit = {},
                     preferences = OperatorPreferences(donationConfiguration = configuration()),
                     onDonationConfigurationChanged = {},
+                    onDonationDisplayModeChanged = { _, _ -> },
+                    onPickCustomDonationImage = {},
                 )
             }
         }
@@ -56,6 +58,9 @@ class DonationDisplayUiTest {
         compose.onNodeWithTag(
             "$SETTINGS_DONATION_IMAGE_TAG_PREFIX$CUSTOM_DONATION_IMAGE_STYLE_ID",
         ).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_MESSAGE_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_SAVE_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG).assertIsDisplayed()
     }
 
     private fun assertDonationDisplayFits() {

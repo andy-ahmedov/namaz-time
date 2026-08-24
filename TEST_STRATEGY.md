@@ -191,7 +191,14 @@ The main-display reference contract additionally pins the Settings target to
 3.9–4.4 percent of viewport width, a 1.8–2.4 percent right margin and a
 4.5–5.5 percent top margin at the controlled 960×540 profile. Focus tests pin a
 single gold focus token, no focus scaling, selected semantics and complete
-nine-item D-pad navigation; pixel/runtime review remains separately labelled.
+nine-item D-pad navigation. The controlled API 36/1920×1080 loop verifies the
+reference-positioned main control, gold-only Settings focus, all eight
+background previews, donation entry/configuration/display and the return to
+the normal schedule. The first donation-settings pass found vertically clipped
+actions; the corrected horizontal action row was rebuilt and rechecked inside
+the safe frame. The installed emulator had no document-provider activity, so
+dispatch without a crash is `CONFIRMED_RUNTIME`, while actual OEM document
+selection remains `UNKNOWN` and is not promoted from JVM importer tests.
 
 T026 adds token regressions for high-opacity photographic-background surfaces
 and the minimum bounded scrim, while the existing semantic contrast tests guard

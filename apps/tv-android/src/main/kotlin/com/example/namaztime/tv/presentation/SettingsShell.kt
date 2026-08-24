@@ -485,26 +485,59 @@ private fun SettingsPage(
                 compact = compactPreview,
                 modifier = Modifier.weight(1f),
             )
-            localActions.forEachIndexed { index, action ->
-                Button(
-                    onClick = action.invoke,
-                    enabled = action.enabled,
-                    colors = ButtonDefaults.colors(
-                        containerColor = NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.72f),
-                        contentColor = NamazTvTheme.colors.textPrimary,
-                        focusedContainerColor = NamazTvTheme.colors.accent,
-                        focusedContentColor = NamazTvTheme.colors.backgroundBottom,
-                    ),
-                    modifier = Modifier
-                        .testTag(action.testTag)
-                        .focusRequester(actionRequesters[index])
-                        .focusProperties {
-                            left = navigationRequester
-                            if (index > 0) up = actionRequesters[index - 1]
-                            down = actionRequesters.getOrNull(index + 1) ?: returnActionRequester
-                        },
+            if (destination == SettingsDestination.DONATION) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(action.label)
+                    localActions.forEachIndexed { index, action ->
+                        Button(
+                            onClick = action.invoke,
+                            enabled = action.enabled,
+                            colors = ButtonDefaults.colors(
+                                containerColor = NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.72f),
+                                contentColor = NamazTvTheme.colors.textPrimary,
+                                focusedContainerColor = NamazTvTheme.colors.accent,
+                                focusedContentColor = NamazTvTheme.colors.backgroundBottom,
+                            ),
+                            modifier = Modifier
+                                .weight(1f)
+                                .testTag(action.testTag)
+                                .focusRequester(actionRequesters[index])
+                                .focusProperties {
+                                    left = actionRequesters.getOrNull(index - 1)
+                                        ?: navigationRequester
+                                    actionRequesters.getOrNull(index + 1)?.let { right = it }
+                                    down = returnActionRequester
+                                },
+                        ) {
+                            Text(action.label, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                }
+            } else {
+                localActions.forEachIndexed { index, action ->
+                    Button(
+                        onClick = action.invoke,
+                        enabled = action.enabled,
+                        colors = ButtonDefaults.colors(
+                            containerColor = NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.72f),
+                            contentColor = NamazTvTheme.colors.textPrimary,
+                            focusedContainerColor = NamazTvTheme.colors.accent,
+                            focusedContentColor = NamazTvTheme.colors.backgroundBottom,
+                        ),
+                        modifier = Modifier
+                            .testTag(action.testTag)
+                            .focusRequester(actionRequesters[index])
+                            .focusProperties {
+                                left = navigationRequester
+                                if (index > 0) up = actionRequesters[index - 1]
+                                down = actionRequesters.getOrNull(index + 1)
+                                    ?: returnActionRequester
+                            },
+                    ) {
+                        Text(action.label)
+                    }
                 }
             }
             Button(

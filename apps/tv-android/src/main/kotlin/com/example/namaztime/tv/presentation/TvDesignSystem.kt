@@ -17,8 +17,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.produceState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
@@ -336,13 +339,11 @@ internal fun rememberOperatorImageBitmap(
     enabled: Boolean = true,
 ): androidx.compose.ui.graphics.ImageBitmap? {
     val context = LocalContext.current
-    val image by produceState<androidx.compose.ui.graphics.ImageBitmap?>(
-        initialValue = null,
-        key1 = slot,
-        key2 = assetVersion,
-        key3 = enabled,
-    ) {
-        value = if (enabled) {
+    var image by remember(slot, assetVersion, enabled) {
+        mutableStateOf<androidx.compose.ui.graphics.ImageBitmap?>(null)
+    }
+    LaunchedEffect(slot, assetVersion, enabled) {
+        image = if (enabled) {
             withContext(Dispatchers.IO) {
                 OperatorImageAssetStore(context.filesDir)
                     .resolve(slot)

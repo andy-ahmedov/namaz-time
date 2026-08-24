@@ -501,7 +501,7 @@ private fun TvSettingsTextField(
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
                 when (event.key) {
-                    Key.DirectionDown -> {
+                    Key.DirectionDown, Key.Tab -> {
                         nextRequester.requestFocus()
                         true
                     }

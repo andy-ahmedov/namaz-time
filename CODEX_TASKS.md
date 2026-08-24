@@ -541,3 +541,47 @@ runtime evidence confirms entry, persistence and projection at 1920×1080. The
 NamazTime center badge uses high QR error correction and a four-size
 worst-case-obstruction decode regression;
 physical-TV readability and real-phone scan distance remain `UNKNOWN`.
+
+## T028 — local TV operator UX and alternate display modes
+
+**Goal:** complete the device-local operator experience with reference-matched
+Settings focus, relative iqamah controls, safe local image selection and a
+standalone donation display while preserving the signed Room schedule.
+
+**In scope:** one gold-only D-pad focus treatment; the product-owner-authorized
+`new_main_page_with_setting_icon.png` Settings-control geometry and glass
+treatment; five bounded `adhan + N minutes` iqamah offsets with approved-policy
+fallback; eight packaged display backgrounds; a validated Android document
+picker that copies JPEG/PNG/WebP input into app-private storage; a separate
+persisted donation display using the existing HTTPS/QR validation, transfer
+text, five packaged images and an independent custom-photo slot; explicit
+D-pad paths from either display mode to Settings and back to the schedule;
+RU/EN and 720p/1080p/4K regressions.
+
+**Non-goals:** changing signed Room schedule or provenance, guessing a migration
+from legacy fixed clock times, iqamah for Sunrise, broad storage permission,
+payment processing, analytics, remote/fleet asset publication, network access
+from display composition, physical-TV claims, nationwide source selection,
+push or PR.
+
+**Acceptance:** legacy fixed-time preferences cannot silently become offsets;
+valid offsets project from each prayer's adhan without Room mutation and unset
+values use approved policy; packaged/custom background and donation images
+survive restart with bounded type/size/decode validation and safe fallback;
+invalid donation state cannot activate; all settings and both display modes are
+D-pad reachable within the adaptive safe frame; the Settings control matches
+the normalized reference contract and focus has no additional white frame;
+targeted tests, `make test`, `make lint`, controlled emulator build/install and
+the bounded screenshot loop pass, with unsupported emulator document-provider
+behavior recorded as `UNKNOWN`.
+
+**Result:** completed locally on 2026-08-24 in five checkpoint commits. The
+signed Room snapshot remains immutable; local iqamah offsets are ephemeral
+projection only. Both custom-image slots use atomic app-private copies and
+fall back independently. The donation mode validates complete local content,
+reuses the existing QR generator and always exposes Settings plus a schedule
+return action. Controlled API 36/1920×1080 evidence is
+`CONFIRMED_RUNTIME` for the main screen, Settings, eight-background gallery,
+donation configuration/display and restoration of schedule mode. The emulator
+had no document-provider activity, so OEM picker selection and physical-TV
+behavior remain `UNKNOWN`.

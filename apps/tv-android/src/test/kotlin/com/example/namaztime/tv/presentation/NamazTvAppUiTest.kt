@@ -104,9 +104,9 @@ class NamazTvAppUiTest {
             pressKey(Key.DirectionDown)
         }
         compose.onNodeWithTag(SETTINGS_DONATION_SAVE_TAG).assertIsFocused()
-            .performKeyInput { pressKey(Key.DirectionDown) }
+            .performKeyInput { pressKey(Key.DirectionRight) }
         compose.onNodeWithTag(SETTINGS_DONATION_PICKER_TAG).assertIsFocused()
-            .performKeyInput { pressKey(Key.DirectionDown) }
+            .performKeyInput { pressKey(Key.DirectionRight) }
         compose.onNodeWithTag(SETTINGS_DONATION_MODE_TAG).assertIsFocused()
             .performKeyInput {
                 pressKey(Key.Enter)
