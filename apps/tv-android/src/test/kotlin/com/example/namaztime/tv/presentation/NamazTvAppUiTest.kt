@@ -350,6 +350,7 @@ class NamazTvAppUiTest {
         val strip = compose.onNodeWithTag(IQAMAH_STRIP_TAG).getUnclippedBoundsInRoot()
 
         val rootWidth = root.right - root.left
+        val rootHeight = root.bottom - root.top
         val compositionWidth = composition.right - composition.left
         val leftWidth = next.right - next.left
         val prayerWidth = prayers.right - prayers.left
@@ -370,7 +371,15 @@ class NamazTvAppUiTest {
         assertEquals(composition.left, strip.left)
         assertEquals(composition.right, strip.right)
         assertTrue(kotlin.math.abs((settings.right - settings.left).value - (settings.bottom - settings.top).value) <= 2f)
-        assertTrue(settings.right - settings.left <= 60.dp)
+        val settingsWidth = settings.right - settings.left
+        val settingsRightMargin = root.right - settings.right
+        val settingsTopMargin = settings.top - root.top
+        assertTrue(settingsWidth >= rootWidth * 0.039f)
+        assertTrue(settingsWidth <= rootWidth * 0.044f)
+        assertTrue(settingsRightMargin >= rootWidth * 0.018f)
+        assertTrue(settingsRightMargin <= rootWidth * 0.024f)
+        assertTrue(settingsTopMargin >= rootHeight * 0.045f)
+        assertTrue(settingsTopMargin <= rootHeight * 0.055f)
     }
 
     @Test

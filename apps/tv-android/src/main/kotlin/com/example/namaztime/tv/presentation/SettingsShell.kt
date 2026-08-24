@@ -134,8 +134,8 @@ fun SettingsShell(
                         fontWeight = FontWeight.SemiBold,
                     )
                     SettingsDestination.entries.forEach { destination ->
-                        var focused by remember(destination) { mutableStateOf(false) }
                         val isSelected = selectedRoute == destination.route
+                        val navigationShape = RoundedCornerShape(12.dp)
                         Button(
                             onClick = {
                                 navigationRequesters.getValue(destination).requestFocus()
@@ -152,6 +152,11 @@ fun SettingsShell(
                                 focusedContainerColor = NamazTvTheme.colors.accent,
                                 focusedContentColor = NamazTvTheme.colors.backgroundBottom,
                             ),
+                            shape = ButtonDefaults.shape(
+                                shape = navigationShape,
+                                focusedShape = navigationShape,
+                                pressedShape = navigationShape,
+                            ),
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(40.dp)
@@ -164,26 +169,11 @@ fun SettingsShell(
                                     right = pageActionRequester
                                 }
                                 .onFocusChanged { focusState ->
-                                    val gainedFocus = focusState.isFocused && !focused
-                                    focused = focusState.isFocused
-                                    if (gainedFocus && selectedRoute != destination.route) {
+                                    if (focusState.isFocused && selectedRoute != destination.route) {
                                         selectedRoute = destination.route
                                         onDestinationChanged(destination)
                                     }
-                                }
-                                .border(
-                                    width = when {
-                                        focused -> 3.dp
-                                        isSelected -> 1.dp
-                                        else -> 0.dp
-                                    },
-                                    color = when {
-                                        focused -> NamazTvTheme.colors.focus
-                                        isSelected -> NamazTvTheme.colors.accentOutline
-                                        else -> Color.Transparent
-                                    },
-                                    shape = RoundedCornerShape(12.dp),
-                                ),
+                                },
                         ) {
                             Text(appString(destination.titleRes))
                         }

@@ -150,6 +150,9 @@ T028 также добавляет отдельный device-local экран п
 HTTPS QR, реквизиты, текст и один из пяти встроенных либо app-local custom
 images. Неполная конфигурация не может заменить расписание, payment processing
 не добавлен, а Settings всегда позволяет вернуть обычный display mode.
+Для T028 `new_main_page_with_setting_icon.png` является авторизованной visual
+spec кнопки Settings: rounded-square glass, белая gear, reference-normalized
+позиция/размер и один gold focus без дополнительной белой рамки.
 
 ## 5. Запрет на гигантскую первую задачу
 

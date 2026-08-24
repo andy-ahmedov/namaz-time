@@ -187,6 +187,11 @@ activation. Compose tests cover the 720p/1080p/4K safe frame, local QR/image/
 details rendering, nine-item Settings reachability and the complete D-pad path
 from donation display through Settings back to schedule mode. The shared asset
 tests import the donation photo into an independent app-private slot.
+The main-display reference contract additionally pins the Settings target to
+3.9–4.4 percent of viewport width, a 1.8–2.4 percent right margin and a
+4.5–5.5 percent top margin at the controlled 960×540 profile. Focus tests pin a
+single gold focus token, no focus scaling, selected semantics and complete
+nine-item D-pad navigation; pixel/runtime review remains separately labelled.
 
 T026 adds token regressions for high-opacity photographic-background surfaces
 and the minimum bounded scrim, while the existing semantic contrast tests guard

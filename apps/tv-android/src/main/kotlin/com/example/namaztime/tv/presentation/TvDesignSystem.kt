@@ -173,7 +173,7 @@ internal val DarkTvColors = TvColorTokens(
     accent = Color(0xFFD6B172),
     accentSoft = Color(0xFF4A3826),
     accentOutline = Color(0xCCC6A76F),
-    focus = Color(0xFFFFFFFF),
+    focus = Color(0xFFD6B172),
     separator = Color(0x1FBCC3CA),
     warning = Color(0xFFD9A767),
 )

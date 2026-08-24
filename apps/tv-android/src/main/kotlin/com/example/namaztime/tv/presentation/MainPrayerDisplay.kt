@@ -211,15 +211,17 @@ internal fun MainPrayerDisplay(
                     }
                     Spacer(Modifier.height(metrics.bottomBreathingRoom))
                 }
-                SettingsButton(
-                    metrics = metrics,
-                    settingsFocusRequester = settingsFocusRequester,
-                    requestInitialFocus = requestInitialFocus,
-                    onOpenSettings = onOpenSettings,
-                    modifier = Modifier.align(Alignment.TopEnd),
-                )
             }
         }
+        SettingsButton(
+            metrics = metrics,
+            settingsFocusRequester = settingsFocusRequester,
+            requestInitialFocus = requestInitialFocus,
+            onOpenSettings = onOpenSettings,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(top = metrics.settingsTopMargin, end = metrics.settingsEndMargin),
+        )
     }
 }
 
@@ -296,6 +298,7 @@ private fun SettingsButton(
     val colors = NamazTvTheme.colors
     val settingsLabel = appString(R.string.open_settings)
     var focused by remember { mutableStateOf(false) }
+    val settingsShape = RoundedCornerShape(metrics.settingsCornerRadius)
     LaunchedEffect(requestInitialFocus, settingsFocusRequester) {
         if (requestInitialFocus) {
             withFrameNanos { }
@@ -306,11 +309,17 @@ private fun SettingsButton(
     Button(
         onClick = onOpenSettings,
         colors = ButtonDefaults.colors(
-            containerColor = colors.surfaceStrong.copy(alpha = 0.56f),
-            contentColor = colors.accent,
-            focusedContainerColor = colors.surfaceStrong.copy(alpha = 0.84f),
-            focusedContentColor = colors.accent,
+            containerColor = colors.surfaceStrong.copy(alpha = 0.46f),
+            contentColor = colors.textPrimary,
+            focusedContainerColor = colors.surfaceStrong.copy(alpha = 0.76f),
+            focusedContentColor = colors.textPrimary,
         ),
+        shape = ButtonDefaults.shape(
+            shape = settingsShape,
+            focusedShape = settingsShape,
+            pressedShape = settingsShape,
+        ),
+        scale = ButtonDefaults.scale(focusedScale = 1f),
         contentPadding = PaddingValues(0.dp),
         modifier = modifier
             .size(metrics.settingsHeight)
@@ -321,11 +330,11 @@ private fun SettingsButton(
             .border(
                 width = if (focused) 2.dp else 0.75.dp,
                 color = if (focused) colors.focus else colors.surfaceOutline,
-                shape = RoundedCornerShape(50),
+                shape = settingsShape,
             ),
     ) {
         SettingsGlyph(
-            tint = colors.accent,
+            tint = colors.textPrimary,
             modifier = Modifier.size(metrics.settingsIconSize),
         )
     }
@@ -1185,6 +1194,9 @@ private data class MainDisplayMetrics(
     val cellPadding: Dp,
     val headerHeight: Dp,
     val settingsHeight: Dp,
+    val settingsTopMargin: Dp,
+    val settingsEndMargin: Dp,
+    val settingsCornerRadius: Dp,
     val clockCardHeight: Dp,
     val iqamahStripHeight: Dp,
     val bottomBreathingRoom: Dp,
@@ -1231,7 +1243,10 @@ private data class MainDisplayMetrics(
                 gridVerticalPadding = 9.dp,
                 cellPadding = 3.dp,
                 headerHeight = 86.dp,
-                settingsHeight = 48.dp,
+                settingsHeight = 40.dp,
+                settingsTopMargin = 27.dp,
+                settingsEndMargin = 20.dp,
+                settingsCornerRadius = 11.dp,
                 clockCardHeight = 128.dp,
                 iqamahStripHeight = 58.dp,
                 bottomBreathingRoom = 0.dp,
@@ -1264,7 +1279,7 @@ private data class MainDisplayMetrics(
                 brandIconSize = 17.dp,
                 prayerIconSize = 22.dp,
                 iqamahIconSize = 24.dp,
-                settingsIconSize = 21.dp,
+                settingsIconSize = 22.dp,
                 calendarIconSize = 34.dp,
                 brandSize = 15.sp,
             )
@@ -1277,7 +1292,10 @@ private data class MainDisplayMetrics(
                 gridVerticalPadding = 12.dp,
                 cellPadding = 5.dp,
                 headerHeight = 108.dp,
-                settingsHeight = 56.dp,
+                settingsHeight = 52.dp,
+                settingsTopMargin = 36.dp,
+                settingsEndMargin = 28.dp,
+                settingsCornerRadius = 14.dp,
                 clockCardHeight = 170.dp,
                 iqamahStripHeight = 68.dp,
                 bottomBreathingRoom = 0.dp,
@@ -1310,7 +1328,7 @@ private data class MainDisplayMetrics(
                 brandIconSize = 21.dp,
                 prayerIconSize = 32.dp,
                 iqamahIconSize = 32.dp,
-                settingsIconSize = 24.dp,
+                settingsIconSize = 29.dp,
                 calendarIconSize = 46.dp,
                 brandSize = 18.sp,
             )

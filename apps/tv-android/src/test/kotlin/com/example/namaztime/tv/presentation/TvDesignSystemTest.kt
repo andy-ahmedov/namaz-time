@@ -2,12 +2,18 @@ package com.example.namaztime.tv.presentation
 
 import androidx.compose.ui.graphics.Color
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertEquals
 import org.junit.Test
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.math.pow
 
 class TvDesignSystemTest {
+    @Test
+    fun focusIndicatorUsesTheSingleGoldAccentToken() {
+        assertEquals(DarkTvColors.accent, DarkTvColors.focus)
+    }
+
     @Test
     fun photographicBackgroundUsesMattePanelsAndABoundedDimTreatment() {
         assertTrue(DarkTvColors.surfaceTop.alpha >= 0.84f)

@@ -133,6 +133,14 @@ ornament under ADR 0014. Neither raw reference is packaged. Custom/remote media 
 outside this device-local pipeline and requires its separately approved signed
 asset pipeline.
 
+T028 uses the separately authorized `new_main_page_with_setting_icon.png` as
+the exact Settings-control specification: at the normalized 960×540 profile it
+is a 40 dp rounded-square glass surface, 20 dp from the right and 27 dp from the
+top, with a white outline gear and a restrained neutral border. D-pad focus
+replaces that border with one gold outline and does not scale the control.
+Settings navigation likewise uses one gold focused fill with no white inner or
+outer frame; selected-but-unfocused state remains a softer gold surface.
+
 The main display uses a centered NamazTime pill, mosque identity, a left
 next-event/countdown and local-clock stack, a right six-row prayer table and a
 bottom iqamah/next-event strip with exceptional status only when required.

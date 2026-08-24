@@ -18,6 +18,13 @@ support icon, corner frame and lower geometric ornament on 2026-08-21. The raw
 reference remains outside Git. The QR center uses the NamazTime mark rather
 than third-party branding and is protected by an explicit decode regression.
 
+For T028 the product owner explicitly directed the implementation on 2026-08-24
+to use the supplied `new_main_page_with_setting_icon.png` as a visual
+specification rather than inspiration. Its SHA-256 is
+`5e90d9c20773ed6708fd0f4be819dc34494fce20051d0e0785457e8aa1a524f7`.
+Only the main-screen Settings control geometry/surface/icon treatment is used;
+the raw reference and its third-party brand remain outside Git.
+
 ## Decision
 
 An explicitly authorized, product-owner-supplied visual reference may be
