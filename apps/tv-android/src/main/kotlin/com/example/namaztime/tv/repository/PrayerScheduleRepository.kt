@@ -121,10 +121,10 @@ data class LocalSnapshotDiagnostics(
 class CorruptLocalSnapshotException(val code: String) : IllegalStateException(code)
 
 fun LocalPrayerSchedule.toTimeEngineInput(
-    operatorIqamahTimes: OperatorIqamahTimes = OperatorIqamahTimes(),
+    operatorIqamahOffsets: OperatorIqamahOffsets = OperatorIqamahOffsets(),
     currentInstant: Instant? = null,
 ): PrayerScheduleInput {
-    val configuredPrayerIds = operatorIqamahTimes.configuredPrayerIds
+    val configuredPrayerIds = operatorIqamahOffsets.configuredPrayerIds
     val appliedPrayerIds = if (currentInstant == null) emptySet() else configuredPrayerIds
     val operatorOverrides = if (appliedPrayerIds.isEmpty() || currentInstant == null) {
         emptyList()
@@ -134,20 +134,21 @@ fun LocalPrayerSchedule.toTimeEngineInput(
             val day = days.firstOrNull { it.localDate == date.toString() }
                 ?: return@flatMap emptyList()
             appliedPrayerIds.mapNotNull { prayerId ->
-                val fixedTime = operatorIqamahTimes.forPrayer(prayerId)
+                val offsetMinutes = operatorIqamahOffsets.forPrayer(prayerId)
                     ?: return@mapNotNull null
                 if (prayerId == "dhuhr" && date.dayOfWeek == DayOfWeek.FRIDAY && hasJumuahOn(date)) {
                     return@mapNotNull null
                 }
                 val adhan = LocalTime.parse(day.adhanFor(prayerId))
-                val iqamah = LocalTime.parse(fixedTime)
-                if (iqamah.isBefore(adhan)) return@mapNotNull null
+                if (adhan.plusMinutes(offsetMinutes.toLong()).isBefore(adhan)) {
+                    return@mapNotNull null
+                }
                 IqamahDateOverrideInput(
                     localDate = date.toString(),
                     prayer = prayerId,
-                    mode = "fixed_time",
-                    fixedTime = fixedTime,
-                    offsetMinutes = null,
+                    mode = "offset_after_adhan",
+                    fixedTime = null,
+                    offsetMinutes = offsetMinutes,
                 )
             }
         }

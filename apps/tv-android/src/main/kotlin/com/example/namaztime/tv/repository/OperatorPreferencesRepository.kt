@@ -5,6 +5,7 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import com.example.namaztime.tv.domain.CampaignEngine
 import com.example.namaztime.tv.domain.CampaignInput
@@ -22,7 +23,7 @@ data class OperatorPreferences(
     val screenRetentionShiftEnabled: Boolean = true,
     val backgroundStyleId: String = DEFAULT_BACKGROUND_STYLE_ID,
     val qrConfiguration: OperatorQrConfiguration = OperatorQrConfiguration(),
-    val iqamahTimes: OperatorIqamahTimes = OperatorIqamahTimes(),
+    val iqamahOffsets: OperatorIqamahOffsets = OperatorIqamahOffsets(),
 )
 
 data class OperatorQrConfiguration(
@@ -34,28 +35,28 @@ data class OperatorQrConfiguration(
         get() = httpsUrl.isBlank() && title.isBlank() && message.isBlank()
 }
 
-data class OperatorIqamahTimes(
-    val fajr: String = "",
-    val dhuhr: String = "",
-    val asr: String = "",
-    val maghrib: String = "",
-    val isha: String = "",
+data class OperatorIqamahOffsets(
+    val fajr: Int? = null,
+    val dhuhr: Int? = null,
+    val asr: Int? = null,
+    val maghrib: Int? = null,
+    val isha: Int? = null,
 ) {
-    fun forPrayer(prayerId: String): String? = when (prayerId) {
+    fun forPrayer(prayerId: String): Int? = when (prayerId) {
         "fajr" -> fajr
         "dhuhr" -> dhuhr
         "asr" -> asr
         "maghrib" -> maghrib
         "isha" -> isha
         else -> null
-    }?.takeIf(String::isNotBlank)
+    }
 
-    fun withPrayer(prayerId: String, time: String): OperatorIqamahTimes = when (prayerId) {
-        "fajr" -> copy(fajr = time)
-        "dhuhr" -> copy(dhuhr = time)
-        "asr" -> copy(asr = time)
-        "maghrib" -> copy(maghrib = time)
-        "isha" -> copy(isha = time)
+    fun withPrayer(prayerId: String, offsetMinutes: Int?): OperatorIqamahOffsets = when (prayerId) {
+        "fajr" -> copy(fajr = offsetMinutes)
+        "dhuhr" -> copy(dhuhr = offsetMinutes)
+        "asr" -> copy(asr = offsetMinutes)
+        "maghrib" -> copy(maghrib = offsetMinutes)
+        "isha" -> copy(isha = offsetMinutes)
         else -> throw IllegalArgumentException("unsupported iqamah prayer")
     }
 
@@ -78,9 +79,9 @@ interface OperatorPreferencesRepository {
 
     suspend fun setQrConfiguration(configuration: OperatorQrConfiguration)
 
-    suspend fun setIqamahTime(prayerId: String, time: String)
+    suspend fun setIqamahOffset(prayerId: String, offsetMinutes: Int?)
 
-    suspend fun setIqamahTimes(times: OperatorIqamahTimes)
+    suspend fun setIqamahOffsets(offsets: OperatorIqamahOffsets)
 }
 
 class DataStoreOperatorPreferencesRepository(
@@ -110,12 +111,12 @@ class DataStoreOperatorPreferencesRepository(
                     title = values[QR_TITLE].orEmpty(),
                     message = values[QR_MESSAGE].orEmpty(),
                 ).takeIf(::isValidQrConfiguration) ?: OperatorQrConfiguration(),
-                iqamahTimes = OperatorIqamahTimes(
-                    fajr = values[IQAMAH_FAJR].validIqamahTimeOrEmpty(),
-                    dhuhr = values[IQAMAH_DHUHR].validIqamahTimeOrEmpty(),
-                    asr = values[IQAMAH_ASR].validIqamahTimeOrEmpty(),
-                    maghrib = values[IQAMAH_MAGHRIB].validIqamahTimeOrEmpty(),
-                    isha = values[IQAMAH_ISHA].validIqamahTimeOrEmpty(),
+                iqamahOffsets = OperatorIqamahOffsets(
+                    fajr = values[IQAMAH_OFFSET_FAJR].validIqamahOffsetOrNull(),
+                    dhuhr = values[IQAMAH_OFFSET_DHUHR].validIqamahOffsetOrNull(),
+                    asr = values[IQAMAH_OFFSET_ASR].validIqamahOffsetOrNull(),
+                    maghrib = values[IQAMAH_OFFSET_MAGHRIB].validIqamahOffsetOrNull(),
+                    isha = values[IQAMAH_OFFSET_ISHA].validIqamahOffsetOrNull(),
                 ),
             )
         }
@@ -151,25 +152,25 @@ class DataStoreOperatorPreferencesRepository(
         }
     }
 
-    override suspend fun setIqamahTime(prayerId: String, time: String) {
+    override suspend fun setIqamahOffset(prayerId: String, offsetMinutes: Int?) {
         require(prayerId in OPERATOR_IQAMAH_PRAYER_IDS) { "unsupported iqamah prayer" }
-        val normalized = time.trim()
-        require(normalized.isEmpty() || IQAMAH_TIME_PATTERN.matches(normalized)) {
-            "invalid iqamah time"
-        }
-        dataStore.edit { values -> values[iqamahKey(prayerId)] = normalized }
-    }
-
-    override suspend fun setIqamahTimes(times: OperatorIqamahTimes) {
-        val normalized = OPERATOR_IQAMAH_PRAYER_IDS.associateWith { prayerId ->
-            times.forPrayer(prayerId).orEmpty().trim().also { value ->
-                require(value.isEmpty() || IQAMAH_TIME_PATTERN.matches(value)) {
-                    "invalid iqamah time"
-                }
-            }
+        require(offsetMinutes == null || offsetMinutes in OPERATOR_IQAMAH_OFFSET_RANGE) {
+            "invalid iqamah offset"
         }
         dataStore.edit { values ->
-            normalized.forEach { (prayerId, value) -> values[iqamahKey(prayerId)] = value }
+            val key = iqamahOffsetKey(prayerId)
+            if (offsetMinutes == null) values.remove(key) else values[key] = offsetMinutes
+        }
+    }
+
+    override suspend fun setIqamahOffsets(offsets: OperatorIqamahOffsets) {
+        require(isValidIqamahOffsets(offsets)) { "invalid iqamah offsets" }
+        dataStore.edit { values ->
+            OPERATOR_IQAMAH_PRAYER_IDS.forEach { prayerId ->
+                val key = iqamahOffsetKey(prayerId)
+                val offset = offsets.forPrayer(prayerId)
+                if (offset == null) values.remove(key) else values[key] = offset
+            }
         }
     }
 
@@ -184,18 +185,18 @@ class DataStoreOperatorPreferencesRepository(
         val QR_HTTPS_URL = stringPreferencesKey("operator_qr_https_url")
         val QR_TITLE = stringPreferencesKey("operator_qr_title")
         val QR_MESSAGE = stringPreferencesKey("operator_qr_message")
-        val IQAMAH_FAJR = stringPreferencesKey("operator_iqamah_fajr")
-        val IQAMAH_DHUHR = stringPreferencesKey("operator_iqamah_dhuhr")
-        val IQAMAH_ASR = stringPreferencesKey("operator_iqamah_asr")
-        val IQAMAH_MAGHRIB = stringPreferencesKey("operator_iqamah_maghrib")
-        val IQAMAH_ISHA = stringPreferencesKey("operator_iqamah_isha")
+        val IQAMAH_OFFSET_FAJR = intPreferencesKey("operator_iqamah_offset_fajr")
+        val IQAMAH_OFFSET_DHUHR = intPreferencesKey("operator_iqamah_offset_dhuhr")
+        val IQAMAH_OFFSET_ASR = intPreferencesKey("operator_iqamah_offset_asr")
+        val IQAMAH_OFFSET_MAGHRIB = intPreferencesKey("operator_iqamah_offset_maghrib")
+        val IQAMAH_OFFSET_ISHA = intPreferencesKey("operator_iqamah_offset_isha")
 
-        fun iqamahKey(prayerId: String) = when (prayerId) {
-            "fajr" -> IQAMAH_FAJR
-            "dhuhr" -> IQAMAH_DHUHR
-            "asr" -> IQAMAH_ASR
-            "maghrib" -> IQAMAH_MAGHRIB
-            "isha" -> IQAMAH_ISHA
+        fun iqamahOffsetKey(prayerId: String) = when (prayerId) {
+            "fajr" -> IQAMAH_OFFSET_FAJR
+            "dhuhr" -> IQAMAH_OFFSET_DHUHR
+            "asr" -> IQAMAH_OFFSET_ASR
+            "maghrib" -> IQAMAH_OFFSET_MAGHRIB
+            "isha" -> IQAMAH_OFFSET_ISHA
             else -> throw IllegalArgumentException("unsupported iqamah prayer")
         }
     }
@@ -219,16 +220,15 @@ internal fun isValidQrConfiguration(configuration: OperatorQrConfiguration): Boo
     return runCatching { OPERATOR_QR_GENERATOR.generate(campaign.campaign.httpsUrl) }.isSuccess
 }
 
-internal fun isValidIqamahTimes(times: OperatorIqamahTimes): Boolean =
+internal fun isValidIqamahOffsets(offsets: OperatorIqamahOffsets): Boolean =
     OPERATOR_IQAMAH_PRAYER_IDS.all { prayerId ->
-        times.forPrayer(prayerId)?.let(IQAMAH_TIME_PATTERN::matches) ?: true
+        offsets.forPrayer(prayerId)?.let(OPERATOR_IQAMAH_OFFSET_RANGE::contains) ?: true
     }
 
-private val IQAMAH_TIME_PATTERN = Regex("(?:[01]\\d|2[0-3]):[0-5]\\d")
 private val OPERATOR_QR_GENERATOR = QrCodeGenerator()
 
-private fun String?.validIqamahTimeOrEmpty(): String =
-    this?.takeIf(IQAMAH_TIME_PATTERN::matches).orEmpty()
+private fun Int?.validIqamahOffsetOrNull(): Int? =
+    this?.takeIf(OPERATOR_IQAMAH_OFFSET_RANGE::contains)
 
 const val DEFAULT_LANGUAGE_TAG = "ru"
 val SUPPORTED_LANGUAGE_TAGS = setOf(DEFAULT_LANGUAGE_TAG, "en")
@@ -240,3 +240,4 @@ val BUILT_IN_BACKGROUND_STYLE_IDS = setOf(
 )
 
 val OPERATOR_IQAMAH_PRAYER_IDS = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")
+val OPERATOR_IQAMAH_OFFSET_RANGE = 0..180

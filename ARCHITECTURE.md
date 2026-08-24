@@ -284,12 +284,16 @@ runs only for provisioned remote mode; 304 or failure never clears Room.
 Small operator UI preferences, including the last focused settings section,
 reduced-motion default, Russian-by-default whole-app language, bounded
 screen-retention shift toggle, one validated local sadaqah QR presentation and
-five device-local fixed iqamah values, use a single Preferences DataStore
+five device-local iqamah offsets, use a single Preferences DataStore
 instance. Signed schedule data never moves into DataStore:
 mosque/source/approval/Jumu'ah/campaign and diagnostics settings project the
 active Room snapshot. Local iqamah is applied only as an ephemeral
-current/next-day time-engine projection and never mutates or acquires the
-provenance of the signed Room snapshot. The local QR similarly has no official
+`offset_after_adhan` override for the current/next mosque-local date;
+legacy device-local `HH:mm` keys are intentionally ignored because they
+cannot be converted without choosing a date and adhan source. An unset offset
+therefore preserves the approved signed policy rather than guessing.
+This projection never mutates or acquires the provenance of the signed Room
+snapshot. The local QR similarly has no official
 or approval claim and takes display precedence only while fully valid.
 Only locally effective actions are interactive; the Compose shell contains no
 network client. Localized resources cover display, settings, safe errors, QR

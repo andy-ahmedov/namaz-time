@@ -197,8 +197,9 @@ Each page:
 
 1. start in Russian with the authenticated preconfigured mosque snapshot;
 2. review mosque, timezone, source approval and coverage in settings;
-3. optionally enter five device-local iqamah values; these remain visibly and
-   architecturally separate from signed snapshot provenance;
+3. optionally set five device-local iqamah offsets using D-pad +/− controls;
+   each means `adhan + N minutes`, Sunrise has none, and these remain visibly
+   and architecturally separate from signed snapshot provenance;
 4. optionally switch the whole UI to English; persist the choice locally;
 5. optionally enter a validated HTTPS QR link, sadaqah purpose and motivation;
 6. return to the main screen with D-pad focus restored.

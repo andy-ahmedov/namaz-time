@@ -1,6 +1,8 @@
 package com.example.namaztime.tv.repository
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
+import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.stringPreferencesKey
 import java.io.File
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.first
@@ -107,31 +109,47 @@ class OperatorPreferencesRepositoryTest {
     }
 
     @Test
-    fun iqamahTimesPersistIndependentlyForEveryCollectivePrayer() = runTest {
+    fun iqamahOffsetsPersistIndependentlyForEveryCollectivePrayer() = runTest {
         val repository = repositoryFor(this)
-        val expected = OperatorIqamahTimes(
-            fajr = "05:30",
-            dhuhr = "13:30",
-            asr = "17:45",
-            maghrib = "20:15",
-            isha = "22:10",
+        val expected = OperatorIqamahOffsets(
+            fajr = 5,
+            dhuhr = 10,
+            asr = 15,
+            maghrib = 7,
+            isha = 20,
         )
 
-        repository.setIqamahTimes(expected)
+        repository.setIqamahOffsets(expected)
 
-        val actual = repository.preferences.first().iqamahTimes
+        val actual = repository.preferences.first().iqamahOffsets
         assertEquals(expected, actual)
         assertNull(actual.forPrayer("sunrise"))
     }
 
     @Test(expected = IllegalArgumentException::class)
-    fun invalidIqamahTimeCannotBeStored() = runTest {
-        repositoryFor(this).setIqamahTime("fajr", "5:75")
+    fun iqamahOffsetOverThreeHoursCannotBeStored() = runTest {
+        repositoryFor(this).setIqamahOffset("fajr", 181)
     }
 
     @Test(expected = IllegalArgumentException::class)
     fun sunriseCannotReceiveIqamah() = runTest {
-        repositoryFor(this).setIqamahTime("sunrise", "06:30")
+        repositoryFor(this).setIqamahOffset("sunrise", 5)
+    }
+
+    @Test
+    fun legacyFixedIqamahTimesAreNotGuessedIntoOffsets() = runTest {
+        val dataStore = PreferenceDataStoreFactory.create(
+            scope = TestScope(UnconfinedTestDispatcher(testScheduler)),
+            produceFile = { File(temporaryFolder.root, "legacy.preferences_pb") },
+        )
+        dataStore.edit { values ->
+            values[stringPreferencesKey("operator_iqamah_fajr")] = "05:30"
+            values[stringPreferencesKey("operator_iqamah_dhuhr")] = "13:30"
+        }
+
+        val preferences = DataStoreOperatorPreferencesRepository(dataStore).preferences.first()
+
+        assertEquals(OperatorIqamahOffsets(), preferences.iqamahOffsets)
     }
 
     @Test(expected = IllegalArgumentException::class)

@@ -41,10 +41,10 @@ import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import com.example.namaztime.tv.R
 import com.example.namaztime.tv.repository.LocalPrayerSchedule
-import com.example.namaztime.tv.repository.OperatorIqamahTimes
+import com.example.namaztime.tv.repository.OperatorIqamahOffsets
 import com.example.namaztime.tv.repository.OperatorPreferences
 import com.example.namaztime.tv.repository.OperatorQrConfiguration
-import com.example.namaztime.tv.repository.isValidIqamahTimes
+import com.example.namaztime.tv.repository.isValidIqamahOffsets
 import com.example.namaztime.tv.repository.isValidQrConfiguration
 
 const val SETTINGS_PAGE_ACTION_TEST_TAG = "settings-page-primary-action"
@@ -69,7 +69,7 @@ fun SettingsShell(
     onBackgroundStyleChanged: ((String) -> Unit)? = null,
     onLanguageChanged: ((String) -> Unit)? = null,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)? = null,
-    onIqamahTimesChanged: ((OperatorIqamahTimes) -> Unit)? = null,
+    onIqamahOffsetsChanged: ((OperatorIqamahOffsets) -> Unit)? = null,
     onOpenSystemSettings: (() -> Unit)? = null,
 ) {
     val navigationRequesters = remember {
@@ -193,7 +193,7 @@ fun SettingsShell(
                     onBackgroundStyleChanged = onBackgroundStyleChanged,
                     onLanguageChanged = onLanguageChanged,
                     onQrConfigurationChanged = onQrConfigurationChanged,
-                    onIqamahTimesChanged = onIqamahTimesChanged,
+                    onIqamahOffsetsChanged = onIqamahOffsetsChanged,
                     onOpenSystemSettings = onOpenSystemSettings,
                     modifier = Modifier.padding(28.dp),
                 )
@@ -225,7 +225,7 @@ private fun SettingsPage(
     onBackgroundStyleChanged: ((String) -> Unit)?,
     onLanguageChanged: ((String) -> Unit)?,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)?,
-    onIqamahTimesChanged: ((OperatorIqamahTimes) -> Unit)?,
+    onIqamahOffsetsChanged: ((OperatorIqamahOffsets) -> Unit)?,
     onOpenSystemSettings: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
@@ -240,23 +240,23 @@ private fun SettingsPage(
     var qrMessage by rememberSaveable(preferences.qrConfiguration.message) {
         mutableStateOf(preferences.qrConfiguration.message)
     }
-    var fajrIqamah by rememberSaveable(preferences.iqamahTimes.fajr) {
-        mutableStateOf(preferences.iqamahTimes.fajr)
+    var fajrIqamah by rememberSaveable(preferences.iqamahOffsets.fajr) {
+        mutableStateOf(preferences.iqamahOffsets.fajr)
     }
-    var dhuhrIqamah by rememberSaveable(preferences.iqamahTimes.dhuhr) {
-        mutableStateOf(preferences.iqamahTimes.dhuhr)
+    var dhuhrIqamah by rememberSaveable(preferences.iqamahOffsets.dhuhr) {
+        mutableStateOf(preferences.iqamahOffsets.dhuhr)
     }
-    var asrIqamah by rememberSaveable(preferences.iqamahTimes.asr) {
-        mutableStateOf(preferences.iqamahTimes.asr)
+    var asrIqamah by rememberSaveable(preferences.iqamahOffsets.asr) {
+        mutableStateOf(preferences.iqamahOffsets.asr)
     }
-    var maghribIqamah by rememberSaveable(preferences.iqamahTimes.maghrib) {
-        mutableStateOf(preferences.iqamahTimes.maghrib)
+    var maghribIqamah by rememberSaveable(preferences.iqamahOffsets.maghrib) {
+        mutableStateOf(preferences.iqamahOffsets.maghrib)
     }
-    var ishaIqamah by rememberSaveable(preferences.iqamahTimes.isha) {
-        mutableStateOf(preferences.iqamahTimes.isha)
+    var ishaIqamah by rememberSaveable(preferences.iqamahOffsets.isha) {
+        mutableStateOf(preferences.iqamahOffsets.isha)
     }
     val qrDraft = OperatorQrConfiguration(qrUrl, qrTitle, qrMessage)
-    val iqamahDraft = OperatorIqamahTimes(
+    val iqamahDraft = OperatorIqamahOffsets(
         fajr = fajrIqamah,
         dhuhr = dhuhrIqamah,
         asr = asrIqamah,
@@ -276,13 +276,13 @@ private fun SettingsPage(
                 ),
             )
         }.orEmpty()
-        SettingsDestination.IQAMAH -> onIqamahTimesChanged?.let { change ->
+        SettingsDestination.IQAMAH -> onIqamahOffsetsChanged?.let { change ->
             listOf(
                 LocalSettingsAction(
                     label = appString(R.string.save_iqamah_settings),
                     invoke = { change(iqamahDraft) },
                     testTag = SETTINGS_IQAMAH_SAVE_TAG,
-                    enabled = isValidIqamahTimes(iqamahDraft),
+                    enabled = isValidIqamahOffsets(iqamahDraft),
                 ),
             )
         }.orEmpty()
@@ -374,8 +374,8 @@ private fun SettingsPage(
                     qrTitle = updated.title
                     qrMessage = updated.message
                 },
-                iqamahTimes = iqamahDraft,
-                onIqamahTimesChange = { updated ->
+                iqamahOffsets = iqamahDraft,
+                onIqamahOffsetsChange = { updated ->
                     fajrIqamah = updated.fajr
                     dhuhrIqamah = updated.dhuhr
                     asrIqamah = updated.asr
@@ -447,8 +447,8 @@ private fun SettingsContent(
     campaignPreview: QrCampaignUiState?,
     qrConfiguration: OperatorQrConfiguration,
     onQrConfigurationChange: (OperatorQrConfiguration) -> Unit,
-    iqamahTimes: OperatorIqamahTimes,
-    onIqamahTimesChange: (OperatorIqamahTimes) -> Unit,
+    iqamahOffsets: OperatorIqamahOffsets,
+    onIqamahOffsetsChange: (OperatorIqamahOffsets) -> Unit,
     entryRequester: FocusRequester,
     saveRequester: FocusRequester,
     compact: Boolean,
@@ -469,8 +469,8 @@ private fun SettingsContent(
     }
     if (destination == SettingsDestination.IQAMAH) {
         IqamahSettingsEditor(
-            times = iqamahTimes,
-            onTimesChange = onIqamahTimesChange,
+            offsets = iqamahOffsets,
+            onOffsetsChange = onIqamahOffsetsChange,
             entryRequester = entryRequester,
             saveRequester = saveRequester,
             compact = compact,

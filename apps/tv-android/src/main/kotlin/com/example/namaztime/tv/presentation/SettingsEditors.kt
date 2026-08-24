@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,10 +40,13 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.tv.material3.Button
+import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import com.example.namaztime.tv.R
 import com.example.namaztime.tv.repository.OPERATOR_IQAMAH_PRAYER_IDS
-import com.example.namaztime.tv.repository.OperatorIqamahTimes
+import com.example.namaztime.tv.repository.OPERATOR_IQAMAH_OFFSET_RANGE
+import com.example.namaztime.tv.repository.OperatorIqamahOffsets
 import com.example.namaztime.tv.repository.OperatorQrConfiguration
 
 const val SETTINGS_QR_URL_FIELD_TAG = "settings-qr-url"
@@ -118,14 +122,17 @@ internal fun QrSettingsEditor(
 
 @Composable
 internal fun IqamahSettingsEditor(
-    times: OperatorIqamahTimes,
-    onTimesChange: (OperatorIqamahTimes) -> Unit,
+    offsets: OperatorIqamahOffsets,
+    onOffsetsChange: (OperatorIqamahOffsets) -> Unit,
     entryRequester: FocusRequester,
     saveRequester: FocusRequester,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    val requesters = remember {
+    val decrementRequesters = remember {
+        OPERATOR_IQAMAH_PRAYER_IDS.associateWith { FocusRequester() }
+    }
+    val incrementRequesters = remember(entryRequester) {
         OPERATOR_IQAMAH_PRAYER_IDS.associateWith { FocusRequester() }.toMutableMap().apply {
             this[OPERATOR_IQAMAH_PRAYER_IDS.first()] = entryRequester
         }
@@ -135,15 +142,26 @@ internal fun IqamahSettingsEditor(
         verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 8.dp),
     ) {
         OPERATOR_IQAMAH_PRAYER_IDS.forEachIndexed { index, prayerId ->
-            val nextRequester = requesters[OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index + 1)]
-                ?: saveRequester
-            IqamahTimeRow(
+            IqamahOffsetRow(
                 prayerId = prayerId,
-                value = times.forPrayer(prayerId).orEmpty(),
-                onValueChange = { value -> onTimesChange(times.withPrayer(prayerId, value.take(5))) },
-                requester = requesters.getValue(prayerId),
-                previousRequester = requesters[OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index - 1)],
-                nextRequester = nextRequester,
+                value = offsets.forPrayer(prayerId),
+                onValueChange = { value ->
+                    onOffsetsChange(offsets.withPrayer(prayerId, value))
+                },
+                decrementRequester = decrementRequesters.getValue(prayerId),
+                incrementRequester = incrementRequesters.getValue(prayerId),
+                previousDecrementRequester = decrementRequesters[
+                    OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index - 1)
+                ],
+                previousIncrementRequester = incrementRequesters[
+                    OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index - 1)
+                ],
+                nextDecrementRequester = decrementRequesters[
+                    OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index + 1)
+                ] ?: saveRequester,
+                nextIncrementRequester = incrementRequesters[
+                    OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index + 1)
+                ] ?: saveRequester,
                 compact = compact,
             )
         }
@@ -158,17 +176,22 @@ internal fun IqamahSettingsEditor(
 }
 
 @Composable
-private fun IqamahTimeRow(
+private fun IqamahOffsetRow(
     prayerId: String,
-    value: String,
-    onValueChange: (String) -> Unit,
-    requester: FocusRequester,
-    previousRequester: FocusRequester?,
-    nextRequester: FocusRequester,
+    value: Int?,
+    onValueChange: (Int?) -> Unit,
+    decrementRequester: FocusRequester,
+    incrementRequester: FocusRequester,
+    previousDecrementRequester: FocusRequester?,
+    previousIncrementRequester: FocusRequester?,
+    nextDecrementRequester: FocusRequester,
+    nextIncrementRequester: FocusRequester,
     compact: Boolean,
 ) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX$prayerId"),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -178,23 +201,82 @@ private fun IqamahTimeRow(
             color = NamazTvTheme.colors.textPrimary,
             fontSize = if (compact) 17.sp else 21.sp,
         )
-        TvSettingsTextField(
-            value = value,
-            onValueChange = onValueChange,
-            label = appString(R.string.iqamah_time_label),
-            placeholder = "HH:mm",
-            requester = requester,
-            previousRequester = previousRequester,
-            nextRequester = nextRequester,
-            modifier = Modifier
-                .width(if (compact) 156.dp else 190.dp)
-                .testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX$prayerId"),
-            keyboardType = KeyboardType.Text,
-            compact = true,
-            monospaced = true,
+        IqamahOffsetButton(
+            label = "−",
+            enabled = value != null,
+            onClick = {
+                onValueChange(value?.minus(IQAMAH_OFFSET_STEP)?.takeIf { it >= 0 })
+            },
+            requester = decrementRequester,
+            leftRequester = null,
+            rightRequester = incrementRequester,
+            upRequester = previousDecrementRequester,
+            downRequester = nextDecrementRequester,
+            modifier = Modifier.testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-decrement"),
+        )
+        Text(
+            text = value?.let { appString(R.string.iqamah_offset_minutes_value, it) }
+                ?: appString(R.string.iqamah_use_schedule_value),
+            modifier = Modifier.width(if (compact) 116.dp else 160.dp),
+            color = NamazTvTheme.colors.textPrimary,
+            fontSize = if (compact) 16.sp else 19.sp,
+            fontFamily = FontFamily.Monospace,
+        )
+        IqamahOffsetButton(
+            label = "+",
+            enabled = value != OPERATOR_IQAMAH_OFFSET_RANGE.last,
+            onClick = {
+                val next = if (value == null) IQAMAH_OFFSET_STEP else value + IQAMAH_OFFSET_STEP
+                onValueChange(next.coerceAtMost(OPERATOR_IQAMAH_OFFSET_RANGE.last))
+            },
+            requester = incrementRequester,
+            leftRequester = decrementRequester,
+            rightRequester = null,
+            upRequester = previousIncrementRequester,
+            downRequester = nextIncrementRequester,
+            modifier = Modifier.testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-increment"),
         )
     }
 }
+
+@Composable
+private fun IqamahOffsetButton(
+    label: String,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    requester: FocusRequester,
+    leftRequester: FocusRequester?,
+    rightRequester: FocusRequester?,
+    upRequester: FocusRequester?,
+    downRequester: FocusRequester,
+    modifier: Modifier = Modifier,
+) {
+    Button(
+        onClick = onClick,
+        enabled = enabled,
+        contentPadding = PaddingValues(0.dp),
+        colors = ButtonDefaults.colors(
+            containerColor = NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.72f),
+            contentColor = NamazTvTheme.colors.textPrimary,
+            focusedContainerColor = NamazTvTheme.colors.accent,
+            focusedContentColor = NamazTvTheme.colors.backgroundBottom,
+        ),
+        modifier = modifier
+            .width(52.dp)
+            .height(40.dp)
+            .focusRequester(requester)
+            .focusProperties {
+                leftRequester?.let { left = it }
+                rightRequester?.let { right = it }
+                upRequester?.let { up = it }
+                down = downRequester
+            },
+    ) {
+        Text(label, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+    }
+}
+
+private const val IQAMAH_OFFSET_STEP = 5
 
 @Composable
 private fun TvSettingsTextField(

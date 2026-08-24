@@ -213,10 +213,10 @@ fun NamazTvApp(
                                     }
                                 }
                             },
-                            onIqamahTimesChanged = { times ->
+                            onIqamahOffsetsChanged = { offsets ->
                                 coroutineScope.launch {
                                     try {
-                                        operatorPreferencesRepository.setIqamahTimes(times)
+                                        operatorPreferencesRepository.setIqamahOffsets(offsets)
                                     } catch (_: IOException) {
                                         // The last valid local iqamah settings remain active.
                                     } catch (_: IllegalArgumentException) {
@@ -315,8 +315,8 @@ internal fun ConnectedDisplayContent(
     val projectionInstant = remember(mosqueLocalDate, mosqueZone) {
         mosqueLocalDate.atStartOfDay(mosqueZone).toInstant()
     }
-    val timeInput = remember(schedule, operatorPreferences.iqamahTimes, projectionInstant) {
-        schedule.toTimeEngineInput(operatorPreferences.iqamahTimes, projectionInstant)
+    val timeInput = remember(schedule, operatorPreferences.iqamahOffsets, projectionInstant) {
+        schedule.toTimeEngineInput(operatorPreferences.iqamahOffsets, projectionInstant)
     }
     val validationCode = remember(timeInput) { engine.validate(timeInput) }
     if (validationCode != null) {

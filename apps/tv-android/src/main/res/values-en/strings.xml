@@ -9,7 +9,7 @@
     <string name="settings_source_title">Prayer source</string>
     <string name="settings_source_description">Provenance and approval are read-only on the TV.</string>
     <string name="settings_iqamah_title">Iqamah</string>
-    <string name="settings_iqamah_description">A separate local iqamah time for every congregational prayer.</string>
+    <string name="settings_iqamah_description">A local iqamah offset in minutes after adhan for every congregational prayer.</string>
     <string name="settings_appearance_title">Appearance</string>
     <string name="settings_appearance_description">Local settings for the unified TV interface.</string>
     <string name="settings_campaigns_title">QR code</string>
@@ -71,8 +71,10 @@
     <string name="qr_message_label">Motivational text</string>
     <string name="qr_message_hint">An ayah, hadith, or invitation to good</string>
     <string name="save_qr_settings">Save QR code</string>
-    <string name="iqamah_time_label">Iqamah time</string>
-    <string name="iqamah_local_override_note">An empty field uses the local schedule value. Manual values are stored only on this device.</string>
+    <string name="iqamah_time_label">Iqamah offset</string>
+    <string name="iqamah_offset_minutes_value">+%1$d min</string>
+    <string name="iqamah_use_schedule_value">Use schedule</string>
+    <string name="iqamah_local_override_note">The value sets iqamah to “adhan + N minutes” and stays only on this device. “Use schedule” keeps the approved base policy.</string>
     <string name="save_iqamah_settings">Save iqamah</string>
     <string name="language_russian">Russian</string>
     <string name="language_english">English</string>

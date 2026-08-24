@@ -9,7 +9,7 @@
     <string name="settings_source_title">Источник расписания</string>
     <string name="settings_source_description">Происхождение и одобрение доступны только для чтения на телевизоре.</string>
     <string name="settings_iqamah_title">Икамат</string>
-    <string name="settings_iqamah_description">Отдельное локальное время икамата для каждого коллективного намаза.</string>
+    <string name="settings_iqamah_description">Локальное смещение икамата в минутах после азана для каждого коллективного намаза.</string>
     <string name="settings_appearance_title">Оформление</string>
     <string name="settings_appearance_description">Локальные параметры единого TV-интерфейса.</string>
     <string name="settings_campaigns_title">QR-код</string>
@@ -71,8 +71,10 @@
     <string name="qr_message_label">Мотивационный текст</string>
     <string name="qr_message_hint">Аят, хадис или призыв к благому</string>
     <string name="save_qr_settings">Сохранить QR-код</string>
-    <string name="iqamah_time_label">Время икамата</string>
-    <string name="iqamah_local_override_note">Пустое поле использует значение из локального расписания. Ручное значение хранится только на этом устройстве.</string>
+    <string name="iqamah_time_label">Смещение икамата</string>
+    <string name="iqamah_offset_minutes_value">+%1$d мин</string>
+    <string name="iqamah_use_schedule_value">По расписанию</string>
+    <string name="iqamah_local_override_note">Значение задаёт икамат как «азан + N минут» и хранится только на этом устройстве. «По расписанию» использует утверждённую базовую policy.</string>
     <string name="save_iqamah_settings">Сохранить икамат</string>
     <string name="language_russian">Русский</string>
     <string name="language_english">Английский</string>

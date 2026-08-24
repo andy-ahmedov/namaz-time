@@ -169,6 +169,13 @@ NamazTime center badge at four raster sizes under high error correction. API
 36 screenshots are bounded runtime evidence; real-phone scan distance and
 physical-TV entry/readability remain `UNKNOWN`.
 
+T028 replaces fixed device-local iqamah clock times with five nullable minute
+offsets. Repository tests pin the bounded values and prove legacy `HH:mm` keys
+are not guessed into offsets. Projection tests prove `adhan + N minutes`,
+approved-policy fallback when unset, Sunrise exclusion and no Room mutation.
+Compose tests drive the five +/− rows by D-pad and verify the resolved displayed
+times.
+
 T026 adds token regressions for high-opacity photographic-background surfaces
 and the minimum bounded scrim, while the existing semantic contrast tests guard
 the muted palette. QR raster tests prove modules are dark navy rather than pure

@@ -569,7 +569,7 @@ class NamazTvAppUiTest {
     @Test
     @OptIn(ExperimentalTestApi::class)
     @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
-    fun iqamahSettingsExposeFiveIndependentTimesWithoutFridayTechnicalCopy() {
+    fun iqamahSettingsExposeFiveIndependentOffsetsWithoutFridayTechnicalCopy() {
         val preferences = FakeOperatorPreferencesRepository()
         compose.setContent {
             NamazTvApp(
@@ -590,18 +590,26 @@ class NamazTvAppUiTest {
         compose.onNodeWithText("Зухр в пятницу").assertDoesNotExist()
         compose.onNodeWithText("Заменён одним намазом Джума").assertDoesNotExist()
         val expected = mapOf(
-            "fajr" to "03:30",
-            "dhuhr" to "12:30",
-            "asr" to "17:10",
-            "maghrib" to "19:10",
-            "isha" to "21:15",
+            "fajr" to (1 to "03:19"),
+            "dhuhr" to (2 to "12:18"),
+            "asr" to (3 to "17:00"),
+            "maghrib" to (4 to "19:11"),
+            "isha" to (5 to "21:23"),
         )
-        expected.forEach { (prayerId, time) ->
+        compose.onNodeWithTag(SettingsDestination.IQAMAH.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+        }
+        expected.entries.forEachIndexed { index, (prayerId, expectation) ->
             compose.onNodeWithTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX$prayerId")
                 .assertIsDisplayed()
-                .performTextReplacement(time)
-        }
-        compose.onNodeWithTag("${SETTINGS_IQAMAH_FIELD_TAG_PREFIX}isha").performKeyInput {
+            compose.onNodeWithTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-increment")
+                .assertIsFocused()
+                .performKeyInput {
+                    repeat(expectation.first) { pressKey(Key.Enter) }
+                    if (index < expected.size - 1) pressKey(Key.DirectionDown)
+                }
+            }
+        compose.onNodeWithTag("${SETTINGS_IQAMAH_FIELD_TAG_PREFIX}isha-increment").performKeyInput {
             pressKey(Key.DirectionDown)
         }
         compose.onNodeWithTag(SETTINGS_IQAMAH_SAVE_TAG)
@@ -613,9 +621,9 @@ class NamazTvAppUiTest {
             .assertIsFocused()
             .performKeyInput { pressKey(Key.Enter) }
 
-        expected.forEach { (prayerId, time) ->
+        expected.forEach { (prayerId, expectation) ->
             compose.onNodeWithTag("$PRAYER_ROW_TEST_TAG_PREFIX$prayerId")
-                .assertTextContains(time)
+                .assertTextContains(expectation.second)
         }
     }
 
@@ -1191,14 +1199,18 @@ private class FakeOperatorPreferencesRepository(
         state.value = state.value.copy(qrConfiguration = configuration)
     }
 
-    override suspend fun setIqamahTime(prayerId: String, time: String) {
+    override suspend fun setIqamahOffset(prayerId: String, offsetMinutes: Int?) {
         if (failWrites) throw IOException("synthetic preference storage failure")
-        state.value = state.value.copy(iqamahTimes = state.value.iqamahTimes.withPrayer(prayerId, time))
+        state.value = state.value.copy(
+            iqamahOffsets = state.value.iqamahOffsets.withPrayer(prayerId, offsetMinutes),
+        )
     }
 
-    override suspend fun setIqamahTimes(times: com.example.namaztime.tv.repository.OperatorIqamahTimes) {
+    override suspend fun setIqamahOffsets(
+        offsets: com.example.namaztime.tv.repository.OperatorIqamahOffsets,
+    ) {
         if (failWrites) throw IOException("synthetic preference storage failure")
-        state.value = state.value.copy(iqamahTimes = times)
+        state.value = state.value.copy(iqamahOffsets = offsets)
     }
 }
 
