@@ -50,6 +50,14 @@ research/private/
 *.zip
 SHA256SUMS.local.txt
 
+# Local visual references and runtime evidence
+/artifacts/
+/current_design.png
+/main_with_qr.png
+/namaztime-t025-qr-final.png
+/new_main_page_with_setting_icon.png
+/qr_page.png
+
 # Python tooling caches
 __pycache__/
 *.py[cod]
