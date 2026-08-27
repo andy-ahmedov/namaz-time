@@ -25,6 +25,15 @@ specification rather than inspiration. Its SHA-256 is
 Only the main-screen Settings control geometry/surface/icon treatment is used;
 the raw reference and its third-party brand remain outside Git.
 
+For T029 the product owner explicitly directed the implementation on 2026-08-27
+to treat the supplied `qr_page.png` as the canonical pixel-accurate visual
+specification for the standalone donation display. Its SHA-256 is
+`fe8625a4e74f4c8baa928b8846f63cb00b729ce7868fafde49ea1d1610ab0bf2`.
+The authorization covers composition, glass surfaces, decorative lines,
+custom-drawn icon silhouettes and wording. NamazTime branding, the locally
+generated QR payload and operator-entered details replace the reference sample
+content. The raw reference remains outside Git; no bitmap icon was extracted.
+
 ## Decision
 
 An explicitly authorized, product-owner-supplied visual reference may be

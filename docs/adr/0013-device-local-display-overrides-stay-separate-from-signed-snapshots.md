@@ -36,10 +36,16 @@ configured. It is explicitly local, has no approval or official-source claim,
 and introduces no network call from Compose or the display reducer.
 
 T028 adds an independent `schedule`/`donation` display preference and a
-donation configuration containing an HTTPS QR target, transfer details,
-localized operator text and an allowlisted image ID. Donation mode can be
-activated only when all text fields and the existing campaign/QR validation
-pass. Invalid or partial persisted content fails closed to schedule mode. Five
+donation configuration containing an HTTPS QR target, local transfer details
+and an allowlisted image ID. T029 replaces the ambiguous transfer-details blob
+with bounded recipient, bank, card-number, SBP/phone and collection-link
+fields. Existing labelled Russian/English blobs are deterministically mapped;
+an unlabelled legacy blob is preserved as recipient text until the operator
+edits and saves it. The former free-form public message is replaced by the
+fixed localized gratitude copy specified for the display. Donation mode can be
+activated only when the HTTPS target, at least one local detail field and the
+existing campaign/QR validation pass. Invalid persisted content fails closed
+to schedule mode. Five
 packaged image choices remain offline; the custom slot uses the same bounded
 document-picker pipeline as Appearance but has a separate app-private file.
 If that file is missing or corrupt, the donation screen renders its packaged
@@ -55,6 +61,8 @@ Positive:
 - five iqamah values remain independent and data-driven;
 - donation mode remains usable without a schedule/network connection and keeps
   a focusable Settings path back to normal schedule mode;
+- transfer-detail columns can be rendered consistently without parsing an
+  operator blob in the display layer;
 - clearing the local values restores the signed snapshot projection.
 
 Costs and limits:

@@ -96,11 +96,26 @@ public display mode.
 T028 additionally provides a standalone donation display mode. It replaces the
 schedule composition only after a complete local configuration passes the same
 HTTPS campaign validation and QR generator used by the optional column. The
-full-screen surface contains the chosen image, locally generated QR,
-operator-entered transfer details and message inside the overscan-safe frame.
-Five packaged image choices and one validated app-local custom-photo slot are
-available. A focused Settings control is always visible; Settings exposes an
-explicit action to return to the prayer schedule. No payment flow is present.
+T029 composition treats the authorized `qr_page.png` as its exact visual
+specification: the chosen image is full bleed; a centered NamazTime glass pill
+and compact top-right gear sit above one tall right-side donation card; a
+separate long glass gratitude panel sits at the bottom. The left side has no
+title/card and remains primarily photographic. The donation card contains the
+localized donation heading and scan instruction, a large locally generated QR,
+a fading gold diamond divider, a details heading and five equal
+`icon → label → value` rows for recipient, bank, card number, SBP/phone and
+collection link. The footer uses the exact localized gratitude sentence. All
+screen-specific icons and ornaments are Compose Canvas/vector drawings;
+decorative lines fade to transparency instead of ending abruptly.
+
+The QR uses dark-navy modules on a rounded warm-white surface, a thin
+champagne frame and a NamazTime center badge while retaining a four-module
+quiet zone, high error correction and decode regressions for the actual badge
+ratio. Runtime values come only from the operator's local fields; sample
+banking values from the reference are never defaults. Five packaged image
+choices and one validated app-local custom-photo slot remain available. A
+focused Settings control is always visible; Settings exposes an explicit
+action to return to the prayer schedule. No payment flow is present.
 
 ## Theme/background
 
@@ -140,6 +155,15 @@ top, with a white outline gear and a restrained neutral border. D-pad focus
 replaces that border with one gold outline and does not scale the control.
 Settings navigation likewise uses one gold focused fill with no white inner or
 outer frame; selected-but-unfocused state remains a softer gold surface.
+
+T029 uses the separately authorized `qr_page.png` for the standalone donation
+screen under ADR 0014. At the controlled 1920×1080 profile the principal
+anchors are approximately: brand `(838,33,242,70)`, Settings visual
+`(1808,29,76,76)`, donation card `(1193,119,590,827)`, QR
+`(1328,250,308,308)`, details rows `(1233,631,510,290)` and footer
+`(194,970,1530,81)`. The same normalized 960×540 coordinate system scales
+uniformly for 720p/1080p/4K. Focus keeps the gear size stable and substitutes a
+thin gold outline/glow rather than a filled yellow surface.
 
 The main display uses a centered NamazTime pill, mosque identity, a left
 next-event/countdown and local-clock stack, a right six-row prayer table and a

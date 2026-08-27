@@ -585,3 +585,44 @@ return action. Controlled API 36/1920×1080 evidence is
 donation configuration/display and restoration of schedule mode. The emulator
 had no document-provider activity, so OEM picker selection and physical-TV
 behavior remain `UNKNOWN`.
+
+## T029 — pixel-accurate standalone donation display
+
+**Goal:** rebuild the standalone donation screen as a measured 1:1 visual
+reproduction of the product-owner-authorized `qr_page.png`, except for
+NamazTime identity, operator-entered details, the local QR payload and the
+selected background.
+
+**In scope:** full-bleed selected donation image; centered NamazTime glass pill;
+compact non-scaling Settings gear; one tall right donation card; localized
+heading/instruction/footer; large dark-navy-on-warm-white QR with a
+reference-scale NamazTime badge; five structured recipient/bank/card/SBP-phone/
+collection-link DataStore fields and Settings editors; deterministic legacy
+blob migration; custom Compose Canvas/vector icons and fade-ended gold
+ornaments; five built-in images plus the independent custom slot; RU/EN, D-pad,
+safe-frame and 720p/1080p/4K tests; repeated 1920×1080 build/install/screenshot
+and full/region overlay/diff evidence.
+
+**Non-goals:** reference banking defaults, a payment flow, network access from
+display composition, mutation of the signed Room snapshot, remote/fleet asset
+publication, bitmap extraction from the screenshot/APK, broad storage
+permissions, physical-TV or real-phone scan claims, push or PR.
+
+**Acceptance:** the normalized brand, Settings visual, right card, QR,
+five-row block and footer anchors remain within the measured 4–8 px tolerance
+at 1920×1080 and scale coherently across the three adaptive profiles; all
+specified icons and fade ornaments are local vectors; Settings persists five
+structured fields without losing an existing legacy blob; sample reference
+banking values never enter runtime defaults; QR rasters decode with the actual
+center-badge obstruction; targeted and repository-wide gates pass; final
+emulator screenshot/50-50 overlay/diff evidence and authorization SHA are
+recorded.
+
+**Result:** completed locally on 2026-08-27. Four installed visual passes after
+the T028 baseline corrected the QR Y/scale, row rhythm/value column, compact
+gear, brand clipping and footer ornaments/text. The final 1920×1080 and region
+overlays pin the reference geometry; runtime Settings exposes the five
+structured fields while retaining the five packaged images and custom picker.
+The signed Room schedule, offline path and QR destination remain unchanged.
+Controlled emulator observations are `CONFIRMED_RUNTIME`; physical-TV/OEM and
+real-phone scan distance remain `UNKNOWN`.

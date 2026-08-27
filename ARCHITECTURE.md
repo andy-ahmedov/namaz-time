@@ -185,8 +185,9 @@ domain boundary accepts only bounded, exact lowercase `https://` targets with
 a host and without user information, validates start-inclusive/end-exclusive
 lifecycle instants, and fails closed when more than one campaign is active.
 The TV generates the QR bitmap locally with a four-module quiet zone and exact
-black/white contrast; it never renders the raw destination URL or requires a
-network permission. Invalid, future, expired, ambiguous or QR-generation
+high contrast; public QR surfaces use dark-navy modules on warm white. It never
+renders the raw destination URL or requires a network permission. Invalid,
+future, expired, ambiguous or QR-generation
 failures hide only the optional panel and cannot replace the prayer display.
 Settings may preview one otherwise valid campaign independently of lifecycle
 and clearly labels it as preview. The audit model stores campaign ID plus a
@@ -299,9 +300,12 @@ cannot be converted without choosing a date and adhan source. An unset offset
 therefore preserves the approved signed policy rather than guessing.
 This projection never mutates or acquires the provenance of the signed Room
 snapshot. The local QR and standalone donation screen similarly have no
-official or approval claim. Donation mode requires complete HTTPS QR/text
-content, reuses the existing QR validation/generator, and fails closed to
-schedule mode when persisted input is invalid. Its five packaged images and
+official or approval claim. Donation mode requires an HTTPS QR target and at
+least one bounded structured local detail (recipient, bank, card number,
+SBP/phone or collection link), reuses the existing QR validation/generator,
+and fails closed to schedule mode when persisted input is invalid. DataStore
+reads deterministically migrate the earlier labelled transfer-details blob;
+the display layer never parses user text. Its five packaged images and
 independent validated app-local custom-photo slot never enter Room; a missing
 custom file falls back to a packaged image. No payment processing or
 display-time network path exists.

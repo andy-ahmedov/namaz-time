@@ -200,6 +200,19 @@ the safe frame. The installed emulator had no document-provider activity, so
 dispatch without a crash is `CONFIRMED_RUNTIME`, while actual OEM document
 selection remains `UNKNOWN` and is not promoted from JVM importer tests.
 
+T029 replaces the donation transfer blob with five bounded DataStore fields.
+Repository tests cover labelled RU/EN legacy mapping, unlabelled preservation,
+structured round-trip persistence, removal of superseded keys, unsafe URL and
+partial-content rejection. Settings/Compose tests pin all five fields and the
+D-pad route through the compact editor. Donation-display tests assert the
+normalized brand, compact Settings visual, right card, QR, five-row block and
+footer bounds at 720p, 1080p and 4K profiles, keep the full image behind the
+safe frame, and verify that the raw QR URL is absent from public text. QR
+raster tests cover dark-navy modules and decode with the actual 44/140 center
+badge obstruction at 128, 192, 360 and 540 pixels. Four controlled
+build/install/screenshot passes use normalized 50/50 full and region overlays;
+this remains bounded emulator evidence, not physical-TV or real-phone proof.
+
 T026 adds token regressions for high-opacity photographic-background surfaces
 and the minimum bounded scrim, while the existing semantic contrast tests guard
 the muted palette. QR raster tests prove modules are dark navy rather than pure
