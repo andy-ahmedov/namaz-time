@@ -267,11 +267,20 @@ private fun SettingsPage(
     var donationUrl by rememberSaveable(preferences.donationConfiguration.httpsUrl) {
         mutableStateOf(preferences.donationConfiguration.httpsUrl)
     }
-    var donationDetails by rememberSaveable(preferences.donationConfiguration.transferDetails) {
-        mutableStateOf(preferences.donationConfiguration.transferDetails)
+    var donationRecipient by rememberSaveable(preferences.donationConfiguration.recipient) {
+        mutableStateOf(preferences.donationConfiguration.recipient)
     }
-    var donationMessage by rememberSaveable(preferences.donationConfiguration.message) {
-        mutableStateOf(preferences.donationConfiguration.message)
+    var donationBank by rememberSaveable(preferences.donationConfiguration.bank) {
+        mutableStateOf(preferences.donationConfiguration.bank)
+    }
+    var donationCardNumber by rememberSaveable(preferences.donationConfiguration.cardNumber) {
+        mutableStateOf(preferences.donationConfiguration.cardNumber)
+    }
+    var donationPhone by rememberSaveable(preferences.donationConfiguration.phone) {
+        mutableStateOf(preferences.donationConfiguration.phone)
+    }
+    var donationCollectionUrl by rememberSaveable(preferences.donationConfiguration.collectionUrl) {
+        mutableStateOf(preferences.donationConfiguration.collectionUrl)
     }
     var donationImageStyleId by rememberSaveable(preferences.donationConfiguration.imageStyleId) {
         mutableStateOf(preferences.donationConfiguration.imageStyleId)
@@ -294,8 +303,11 @@ private fun SettingsPage(
     val qrDraft = OperatorQrConfiguration(qrUrl, qrTitle, qrMessage)
     val donationDraft = OperatorDonationConfiguration(
         httpsUrl = donationUrl,
-        transferDetails = donationDetails,
-        message = donationMessage,
+        recipient = donationRecipient,
+        bank = donationBank,
+        cardNumber = donationCardNumber,
+        phone = donationPhone,
+        collectionUrl = donationCollectionUrl,
         imageStyleId = donationImageStyleId,
     )
     val iqamahDraft = OperatorIqamahOffsets(
@@ -473,8 +485,11 @@ private fun SettingsPage(
                 donationConfiguration = donationDraft,
                 onDonationConfigurationChange = { updated ->
                     donationUrl = updated.httpsUrl
-                    donationDetails = updated.transferDetails
-                    donationMessage = updated.message
+                    donationRecipient = updated.recipient
+                    donationBank = updated.bank
+                    donationCardNumber = updated.cardNumber
+                    donationPhone = updated.phone
+                    donationCollectionUrl = updated.collectionUrl
                     donationImageStyleId = updated.imageStyleId
                 },
                 entryRequester = pageActionRequester,

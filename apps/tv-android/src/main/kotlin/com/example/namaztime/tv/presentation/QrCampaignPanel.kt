@@ -317,7 +317,7 @@ private fun SadaqahBottomOrnament(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun rememberQrBitmap(matrix: QrCodeMatrix, outputSize: Int) =
+internal fun rememberQrBitmap(matrix: QrCodeMatrix, outputSize: Int) =
     remember(matrix, outputSize) {
         Bitmap.createBitmap(outputSize, outputSize, Bitmap.Config.ARGB_8888).apply {
             setPixels(

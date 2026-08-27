@@ -101,8 +101,11 @@ class OperatorPreferencesRepositoryTest {
         val repository = repositoryFor(this)
         val configuration = OperatorDonationConfiguration(
             httpsUrl = "https://example.org/donate",
-            transferDetails = "Получатель: Местная религиозная организация\nСчёт: 0000 0000",
-            message = "Поддержите мечеть",
+            recipient = "Местная религиозная организация",
+            bank = "Тестовый банк",
+            cardNumber = "0000 0000",
+            phone = "+7 000 000-00-00",
+            collectionUrl = "https://example.org/collection",
             imageStyleId = DONATION_IMAGE_LANTERN_STYLE_ID,
         )
 
@@ -138,9 +141,116 @@ class OperatorPreferencesRepositoryTest {
         repositoryFor(this).setDonationConfiguration(
             OperatorDonationConfiguration(
                 httpsUrl = "http://example.org/donate",
-                transferDetails = "Получатель: мечеть",
-                message = "Поддержите мечеть",
+                recipient = "Мечеть",
             ),
+        )
+    }
+
+    @Test
+    fun legacyLabeledDonationBlobMapsIntoStructuredFields() = runTest {
+        val dataStore = PreferenceDataStoreFactory.create(
+            scope = TestScope(UnconfinedTestDispatcher(testScheduler)),
+            produceFile = { File(temporaryFolder.root, "legacy_donation.preferences_pb") },
+        )
+        dataStore.edit { values ->
+            values[stringPreferencesKey("operator_donation_https_url")] =
+                "https://example.org/donate"
+            values[stringPreferencesKey("operator_donation_transfer_details")] = """
+                Получатель: Местная религиозная организация
+                Банк: Тестовый банк
+                Номер карты: 0000 0000
+                СБП / Телефон: +7 000 000-00-00
+                Ссылка на сбор: https://example.org/collection
+            """.trimIndent()
+        }
+
+        val configuration = DataStoreOperatorPreferencesRepository(dataStore)
+            .preferences
+            .first()
+            .donationConfiguration
+
+        assertEquals("Местная религиозная организация", configuration.recipient)
+        assertEquals("Тестовый банк", configuration.bank)
+        assertEquals("0000 0000", configuration.cardNumber)
+        assertEquals("+7 000 000-00-00", configuration.phone)
+        assertEquals("https://example.org/collection", configuration.collectionUrl)
+    }
+
+    @Test
+    fun legacyEnglishDonationLabelsMapIntoStructuredFields() = runTest {
+        val dataStore = PreferenceDataStoreFactory.create(
+            scope = TestScope(UnconfinedTestDispatcher(testScheduler)),
+            produceFile = { File(temporaryFolder.root, "legacy_english_donation.preferences_pb") },
+        )
+        dataStore.edit { values ->
+            values[stringPreferencesKey("operator_donation_https_url")] =
+                "https://example.org/donate"
+            values[stringPreferencesKey("operator_donation_transfer_details")] = """
+                Recipient: Synthetic mosque fixture
+                Bank: Synthetic bank
+                Card number: 0000 0000
+                Phone: +0 000 000-00-00
+                Collection link: https://example.org/collection
+            """.trimIndent()
+        }
+
+        val configuration = DataStoreOperatorPreferencesRepository(dataStore)
+            .preferences
+            .first()
+            .donationConfiguration
+
+        assertEquals("Synthetic mosque fixture", configuration.recipient)
+        assertEquals("Synthetic bank", configuration.bank)
+        assertEquals("0000 0000", configuration.cardNumber)
+        assertEquals("+0 000 000-00-00", configuration.phone)
+        assertEquals("https://example.org/collection", configuration.collectionUrl)
+    }
+
+    @Test
+    fun unlabelledLegacyDonationBlobIsPreservedAsRecipient() = runTest {
+        val dataStore = PreferenceDataStoreFactory.create(
+            scope = TestScope(UnconfinedTestDispatcher(testScheduler)),
+            produceFile = { File(temporaryFolder.root, "legacy_unlabelled_donation.preferences_pb") },
+        )
+        dataStore.edit { values ->
+            values[stringPreferencesKey("operator_donation_https_url")] =
+                "https://example.org/donate"
+            values[stringPreferencesKey("operator_donation_transfer_details")] =
+                "Operator-provided legacy details"
+        }
+
+        val configuration = DataStoreOperatorPreferencesRepository(dataStore)
+            .preferences
+            .first()
+            .donationConfiguration
+
+        assertEquals("Operator-provided legacy details", configuration.recipient)
+        assertEquals("", configuration.bank)
+        assertEquals("", configuration.cardNumber)
+        assertEquals("", configuration.phone)
+        assertEquals("", configuration.collectionUrl)
+    }
+
+    @Test
+    fun savingStructuredDonationFieldsSupersedesLegacyBlob() = runTest {
+        val dataStore = PreferenceDataStoreFactory.create(
+            scope = TestScope(UnconfinedTestDispatcher(testScheduler)),
+            produceFile = { File(temporaryFolder.root, "replace_legacy_donation.preferences_pb") },
+        )
+        dataStore.edit { values ->
+            values[stringPreferencesKey("operator_donation_transfer_details")] = "Legacy details"
+        }
+        val repository = DataStoreOperatorPreferencesRepository(dataStore)
+        val configuration = OperatorDonationConfiguration(
+            httpsUrl = "https://example.org/donate",
+            recipient = "New recipient",
+        )
+
+        repository.setDonationConfiguration(configuration)
+
+        assertEquals(configuration, repository.preferences.first().donationConfiguration)
+        assertNull(
+            dataStore.data.first()[stringPreferencesKey("operator_donation_transfer_details")],
         )
     }
 

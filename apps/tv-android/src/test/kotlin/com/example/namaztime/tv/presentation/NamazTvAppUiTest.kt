@@ -68,8 +68,11 @@ class NamazTvAppUiTest {
     fun donationDisplayKeepsSettingsReachableAndCanReturnToScheduleMode() {
         val configuration = OperatorDonationConfiguration(
             httpsUrl = "https://example.org/donate",
-            transferDetails = "Получатель: Местная религиозная организация\nСчёт: 0000 0000",
-            message = "Поддержите нашу мечеть",
+            recipient = "Местная религиозная организация",
+            bank = "Тестовый банк",
+            cardNumber = "0000 0000",
+            phone = "+7 000 000-00-00",
+            collectionUrl = "https://example.org/collection",
         )
         val preferences = FakeOperatorPreferencesRepository(
             initialPreferences = OperatorPreferences(
@@ -92,9 +95,11 @@ class NamazTvAppUiTest {
             .performKeyInput { pressKey(Key.DirectionRight) }
         compose.onNodeWithTag(SETTINGS_DONATION_URL_FIELD_TAG).assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionDown) }
-        compose.onNodeWithTag(SETTINGS_DONATION_DETAILS_FIELD_TAG).assertIsFocused()
+        compose.onNodeWithTag(SETTINGS_DONATION_RECIPIENT_FIELD_TAG).assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionDown) }
-        compose.onNodeWithTag(SETTINGS_DONATION_MESSAGE_FIELD_TAG).assertIsFocused()
+        compose.onNodeWithTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG).assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionDown) }
         compose.onNodeWithTag(
             "$SETTINGS_DONATION_IMAGE_TAG_PREFIX${DonationImageStyle.MOSQUE.id}",

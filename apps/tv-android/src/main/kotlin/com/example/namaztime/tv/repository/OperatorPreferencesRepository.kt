@@ -40,12 +40,18 @@ enum class OperatorDisplayMode(val id: String) {
 
 data class OperatorDonationConfiguration(
     val httpsUrl: String = "",
-    val transferDetails: String = "",
-    val message: String = "",
+    val recipient: String = "",
+    val bank: String = "",
+    val cardNumber: String = "",
+    val phone: String = "",
+    val collectionUrl: String = "",
     val imageStyleId: String = DEFAULT_DONATION_IMAGE_STYLE_ID,
 ) {
     val isEmpty: Boolean
-        get() = httpsUrl.isBlank() && transferDetails.isBlank() && message.isBlank()
+        get() = httpsUrl.isBlank() && !hasAnyTransferDetail
+
+    val hasAnyTransferDetail: Boolean
+        get() = listOf(recipient, bank, cardNumber, phone, collectionUrl).any(String::isNotBlank)
 }
 
 data class OperatorQrConfiguration(
@@ -214,8 +220,13 @@ class DataStoreOperatorPreferencesRepository(
         require(isValidDonationConfiguration(configuration)) { "invalid donation configuration" }
         dataStore.edit { values ->
             values[DONATION_HTTPS_URL] = configuration.httpsUrl.trim()
-            values[DONATION_TRANSFER_DETAILS] = configuration.transferDetails.trim()
-            values[DONATION_MESSAGE] = configuration.message.trim()
+            values[DONATION_RECIPIENT] = configuration.recipient.trim()
+            values[DONATION_BANK] = configuration.bank.trim()
+            values[DONATION_CARD_NUMBER] = configuration.cardNumber.trim()
+            values[DONATION_PHONE] = configuration.phone.trim()
+            values[DONATION_COLLECTION_URL] = configuration.collectionUrl.trim()
+            values.remove(LEGACY_DONATION_TRANSFER_DETAILS)
+            values.remove(LEGACY_DONATION_MESSAGE)
             values[DONATION_IMAGE_STYLE_ID] = configuration.imageStyleId
             if (configuration.isEmpty) values[DISPLAY_MODE] = OperatorDisplayMode.SCHEDULE.id
         }
@@ -258,8 +269,14 @@ class DataStoreOperatorPreferencesRepository(
         val IQAMAH_OFFSET_ISHA = intPreferencesKey("operator_iqamah_offset_isha")
         val DISPLAY_MODE = stringPreferencesKey("operator_display_mode")
         val DONATION_HTTPS_URL = stringPreferencesKey("operator_donation_https_url")
-        val DONATION_TRANSFER_DETAILS = stringPreferencesKey("operator_donation_transfer_details")
-        val DONATION_MESSAGE = stringPreferencesKey("operator_donation_message")
+        val DONATION_RECIPIENT = stringPreferencesKey("operator_donation_recipient")
+        val DONATION_BANK = stringPreferencesKey("operator_donation_bank")
+        val DONATION_CARD_NUMBER = stringPreferencesKey("operator_donation_card_number")
+        val DONATION_PHONE = stringPreferencesKey("operator_donation_phone")
+        val DONATION_COLLECTION_URL = stringPreferencesKey("operator_donation_collection_url")
+        val LEGACY_DONATION_TRANSFER_DETAILS =
+            stringPreferencesKey("operator_donation_transfer_details")
+        val LEGACY_DONATION_MESSAGE = stringPreferencesKey("operator_donation_message")
         val DONATION_IMAGE_STYLE_ID = stringPreferencesKey("operator_donation_image_style_id")
 
         fun iqamahOffsetKey(prayerId: String) = when (prayerId) {
@@ -271,16 +288,74 @@ class DataStoreOperatorPreferencesRepository(
             else -> throw IllegalArgumentException("unsupported iqamah prayer")
         }
 
-        fun Preferences.toDonationConfiguration() = OperatorDonationConfiguration(
-            httpsUrl = this[DONATION_HTTPS_URL].orEmpty(),
-            transferDetails = this[DONATION_TRANSFER_DETAILS].orEmpty(),
-            message = this[DONATION_MESSAGE].orEmpty(),
-            imageStyleId = this[DONATION_IMAGE_STYLE_ID]
-                ?.takeIf(SELECTABLE_DONATION_IMAGE_STYLE_IDS::contains)
-                ?: DEFAULT_DONATION_IMAGE_STYLE_ID,
-        )
+        fun Preferences.toDonationConfiguration(): OperatorDonationConfiguration {
+            val persistedDetails = OperatorDonationDetails(
+                recipient = this[DONATION_RECIPIENT].orEmpty(),
+                bank = this[DONATION_BANK].orEmpty(),
+                cardNumber = this[DONATION_CARD_NUMBER].orEmpty(),
+                phone = this[DONATION_PHONE].orEmpty(),
+                collectionUrl = this[DONATION_COLLECTION_URL].orEmpty(),
+            )
+            val details = if (persistedDetails.hasAnyValue) {
+                persistedDetails
+            } else {
+                parseLegacyDonationDetails(this[LEGACY_DONATION_TRANSFER_DETAILS].orEmpty())
+            }
+            return OperatorDonationConfiguration(
+                httpsUrl = this[DONATION_HTTPS_URL].orEmpty(),
+                recipient = details.recipient,
+                bank = details.bank,
+                cardNumber = details.cardNumber,
+                phone = details.phone,
+                collectionUrl = details.collectionUrl,
+                imageStyleId = this[DONATION_IMAGE_STYLE_ID]
+                    ?.takeIf(SELECTABLE_DONATION_IMAGE_STYLE_IDS::contains)
+                    ?: DEFAULT_DONATION_IMAGE_STYLE_ID,
+            )
+        }
     }
 }
+
+private data class OperatorDonationDetails(
+    val recipient: String = "",
+    val bank: String = "",
+    val cardNumber: String = "",
+    val phone: String = "",
+    val collectionUrl: String = "",
+) {
+    val hasAnyValue: Boolean
+        get() = listOf(recipient, bank, cardNumber, phone, collectionUrl).any(String::isNotBlank)
+}
+
+private fun parseLegacyDonationDetails(raw: String): OperatorDonationDetails {
+    val value = raw.trim()
+    if (value.isEmpty()) return OperatorDonationDetails()
+    val parsed = mutableMapOf<String, String>()
+    value.lineSequence().map(String::trim).filter(String::isNotEmpty).forEach { line ->
+        LEGACY_DONATION_LABELS.firstOrNull { (labels, _) ->
+            labels.any { label -> line.startsWith("$label:", ignoreCase = true) }
+        }?.let { (labels, field) ->
+            val label = labels.first { line.startsWith("$it:", ignoreCase = true) }
+            parsed[field] = line.substring(label.length + 1).trim()
+        }
+    }
+    if (parsed.isEmpty()) return OperatorDonationDetails(recipient = value)
+    return OperatorDonationDetails(
+        recipient = parsed["recipient"].orEmpty(),
+        bank = parsed["bank"].orEmpty(),
+        cardNumber = parsed["cardNumber"].orEmpty(),
+        phone = parsed["phone"].orEmpty(),
+        collectionUrl = parsed["collectionUrl"].orEmpty(),
+    )
+}
+
+private val LEGACY_DONATION_LABELS = listOf(
+    setOf("Получатель", "Recipient") to "recipient",
+    setOf("Банк", "Bank") to "bank",
+    setOf("Номер карты", "Card number", "Card") to "cardNumber",
+    setOf("СБП / Телефон", "СБП/Телефон", "SBP / Phone", "Phone") to "phone",
+    setOf("Ссылка на сбор", "Collection link", "Fundraiser link") to "collectionUrl",
+)
 
 internal fun OperatorQrConfiguration.toCampaignInput() = CampaignInput(
     id = "operator-local-qr",
@@ -304,7 +379,7 @@ internal fun OperatorDonationConfiguration.toDonationCampaignInput() = CampaignI
     id = "operator-local-donation-screen",
     kind = "donation",
     httpsUrl = httpsUrl.trim(),
-    title = message.trim(),
+    title = recipient.trim().ifEmpty { "donation" },
     subtitle = null,
     startsAt = "2000-01-01T00:00:00Z",
     endsAt = "9999-12-31T23:59:59Z",
@@ -315,10 +390,12 @@ internal fun isValidDonationConfiguration(configuration: OperatorDonationConfigu
     if (configuration.imageStyleId !in SELECTABLE_DONATION_IMAGE_STYLE_IDS) return false
     if (configuration.isEmpty) return true
     if (configuration.httpsUrl.isBlank() ||
-        configuration.transferDetails.isBlank() ||
-        configuration.message.isBlank() ||
-        configuration.transferDetails.length > MAX_DONATION_TRANSFER_DETAILS_LENGTH ||
-        configuration.message.length > MAX_DONATION_MESSAGE_LENGTH
+        !configuration.hasAnyTransferDetail ||
+        configuration.recipient.length > MAX_DONATION_DETAIL_LENGTH ||
+        configuration.bank.length > MAX_DONATION_DETAIL_LENGTH ||
+        configuration.cardNumber.length > MAX_DONATION_DETAIL_LENGTH ||
+        configuration.phone.length > MAX_DONATION_DETAIL_LENGTH ||
+        configuration.collectionUrl.length > MAX_DONATION_COLLECTION_URL_LENGTH
     ) return false
     val campaign = CampaignEngine().preview(configuration.toDonationCampaignInput())
     if (campaign !is CampaignPreview.Valid) return false
@@ -376,5 +453,5 @@ val SELECTABLE_DONATION_IMAGE_STYLE_IDS =
 
 val OPERATOR_IQAMAH_PRAYER_IDS = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")
 val OPERATOR_IQAMAH_OFFSET_RANGE = 0..180
-const val MAX_DONATION_TRANSFER_DETAILS_LENGTH = 1_000
-const val MAX_DONATION_MESSAGE_LENGTH = 160
+const val MAX_DONATION_DETAIL_LENGTH = 160
+const val MAX_DONATION_COLLECTION_URL_LENGTH = 320

@@ -133,7 +133,11 @@ class SettingsShellUiTest {
 
         moveDownFrom(SettingsDestination.CAMPAIGNS)
         compose.onNodeWithTag(SETTINGS_DONATION_URL_FIELD_TAG).assertIsDisplayed()
-        compose.onNodeWithTag(SETTINGS_DONATION_DETAILS_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_RECIPIENT_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_BANK_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_PHONE_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG).assertIsDisplayed()
         DonationImageStyle.entries.forEach { style ->
             compose.onNodeWithTag("$SETTINGS_DONATION_IMAGE_TAG_PREFIX${style.id}")
                 .assertIsDisplayed()

@@ -46,7 +46,7 @@ class QrCampaignRasterTest {
 
         listOf(128, 192, 360, 540).forEach { physicalPixels ->
             val pixels = qrArgbPixels(matrix, physicalPixels)
-            val badgeSize = (physicalPixels * 0.23f).toInt()
+            val badgeSize = (physicalPixels * (44f / 140f)).toInt()
             val badgeStart = (physicalPixels - badgeSize) / 2
             repeat(badgeSize) { badgeY ->
                 repeat(badgeSize) { badgeX ->

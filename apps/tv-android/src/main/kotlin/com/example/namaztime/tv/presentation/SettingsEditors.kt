@@ -66,8 +66,11 @@ const val SETTINGS_QR_SAVE_TAG = "settings-qr-save"
 const val SETTINGS_IQAMAH_FIELD_TAG_PREFIX = "settings-iqamah-"
 const val SETTINGS_IQAMAH_SAVE_TAG = "settings-iqamah-save"
 const val SETTINGS_DONATION_URL_FIELD_TAG = "settings-donation-url"
-const val SETTINGS_DONATION_DETAILS_FIELD_TAG = "settings-donation-details"
-const val SETTINGS_DONATION_MESSAGE_FIELD_TAG = "settings-donation-message"
+const val SETTINGS_DONATION_RECIPIENT_FIELD_TAG = "settings-donation-recipient"
+const val SETTINGS_DONATION_BANK_FIELD_TAG = "settings-donation-bank"
+const val SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG = "settings-donation-card-number"
+const val SETTINGS_DONATION_PHONE_FIELD_TAG = "settings-donation-phone"
+const val SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG = "settings-donation-collection-url"
 const val SETTINGS_DONATION_SAVE_TAG = "settings-donation-save"
 const val SETTINGS_DONATION_PICKER_TAG = "settings-donation-picker"
 const val SETTINGS_DONATION_MODE_TAG = "settings-donation-mode"
@@ -82,8 +85,11 @@ internal fun DonationSettingsEditor(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    val detailsRequester = remember { FocusRequester() }
-    val messageRequester = remember { FocusRequester() }
+    val recipientRequester = remember { FocusRequester() }
+    val bankRequester = remember { FocusRequester() }
+    val cardNumberRequester = remember { FocusRequester() }
+    val phoneRequester = remember { FocusRequester() }
+    val collectionUrlRequester = remember { FocusRequester() }
     val choices = remember {
         DonationImageStyle.entries.map { it.id } + CUSTOM_DONATION_IMAGE_STYLE_ID
     }
@@ -111,34 +117,90 @@ internal fun DonationSettingsEditor(
                 placeholder = "https://",
                 requester = entryRequester,
                 previousRequester = null,
-                nextRequester = detailsRequester,
+                nextRequester = recipientRequester,
                 modifier = Modifier.testTag(SETTINGS_DONATION_URL_FIELD_TAG),
                 keyboardType = KeyboardType.Uri,
+                compact = true,
             )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                TvSettingsTextField(
+                    value = configuration.recipient,
+                    onValueChange = {
+                        onConfigurationChange(configuration.copy(recipient = it.take(160)))
+                    },
+                    label = appString(R.string.donation_recipient_label),
+                    placeholder = appString(R.string.donation_recipient_hint),
+                    requester = recipientRequester,
+                    previousRequester = entryRequester,
+                    nextRequester = cardNumberRequester,
+                    modifier = Modifier.weight(1f).testTag(SETTINGS_DONATION_RECIPIENT_FIELD_TAG),
+                    compact = true,
+                )
+                TvSettingsTextField(
+                    value = configuration.bank,
+                    onValueChange = {
+                        onConfigurationChange(configuration.copy(bank = it.take(160)))
+                    },
+                    label = appString(R.string.donation_bank_label),
+                    placeholder = appString(R.string.donation_bank_hint),
+                    requester = bankRequester,
+                    previousRequester = entryRequester,
+                    nextRequester = phoneRequester,
+                    modifier = Modifier.weight(1f).testTag(SETTINGS_DONATION_BANK_FIELD_TAG),
+                    compact = true,
+                )
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(7.dp),
+            ) {
+                TvSettingsTextField(
+                    value = configuration.cardNumber,
+                    onValueChange = {
+                        onConfigurationChange(configuration.copy(cardNumber = it.take(160)))
+                    },
+                    label = appString(R.string.donation_card_number_label),
+                    placeholder = appString(R.string.donation_card_number_hint),
+                    requester = cardNumberRequester,
+                    previousRequester = recipientRequester,
+                    nextRequester = collectionUrlRequester,
+                    modifier = Modifier.weight(1f).testTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG),
+                    keyboardType = KeyboardType.Number,
+                    compact = true,
+                    monospaced = true,
+                )
+                TvSettingsTextField(
+                    value = configuration.phone,
+                    onValueChange = {
+                        onConfigurationChange(configuration.copy(phone = it.take(160)))
+                    },
+                    label = appString(R.string.donation_phone_label),
+                    placeholder = appString(R.string.donation_phone_hint),
+                    requester = phoneRequester,
+                    previousRequester = bankRequester,
+                    nextRequester = collectionUrlRequester,
+                    modifier = Modifier.weight(1f).testTag(SETTINGS_DONATION_PHONE_FIELD_TAG),
+                    keyboardType = KeyboardType.Phone,
+                    compact = true,
+                    monospaced = true,
+                )
+            }
             TvSettingsTextField(
-                value = configuration.transferDetails,
+                value = configuration.collectionUrl,
                 onValueChange = {
-                    onConfigurationChange(configuration.copy(transferDetails = it.take(1_000)))
+                    onConfigurationChange(configuration.copy(collectionUrl = it.take(320)))
                 },
-                label = appString(R.string.donation_transfer_details_title),
-                placeholder = appString(R.string.donation_transfer_details_hint),
-                requester = detailsRequester,
-                previousRequester = entryRequester,
-                nextRequester = messageRequester,
-                modifier = Modifier.testTag(SETTINGS_DONATION_DETAILS_FIELD_TAG),
-                singleLine = false,
-            )
-            TvSettingsTextField(
-                value = configuration.message,
-                onValueChange = {
-                    onConfigurationChange(configuration.copy(message = it.take(160)))
-                },
-                label = appString(R.string.donation_message_label),
-                placeholder = appString(R.string.donation_message_hint),
-                requester = messageRequester,
-                previousRequester = detailsRequester,
+                label = appString(R.string.donation_collection_url_label),
+                placeholder = appString(R.string.donation_collection_url_hint),
+                requester = collectionUrlRequester,
+                previousRequester = cardNumberRequester,
                 nextRequester = imageRequesters.getValue(choices.first()),
-                modifier = Modifier.testTag(SETTINGS_DONATION_MESSAGE_FIELD_TAG),
+                modifier = Modifier.testTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG),
+                keyboardType = KeyboardType.Uri,
+                compact = true,
             )
         }
         Column(
@@ -188,7 +250,7 @@ internal fun DonationSettingsEditor(
                                         ?.let { right = imageRequesters.getValue(it) }
                                     up = choices.getOrNull(index - 2)
                                         ?.let(imageRequesters::getValue)
-                                        ?: messageRequester
+                                        ?: collectionUrlRequester
                                     down = choices.getOrNull(index + 2)
                                         ?.let(imageRequesters::getValue)
                                         ?: saveRequester
