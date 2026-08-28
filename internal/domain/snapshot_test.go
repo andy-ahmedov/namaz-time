@@ -66,6 +66,21 @@ func TestDecodeSnapshotRejectsMalformedUTF8(t *testing.T) {
 	}
 }
 
+func TestDecodeSnapshotRejectsDuplicateObjectMembers(t *testing.T) {
+	t.Parallel()
+
+	data := readRepositoryFile(t, "examples", "synthetic-prayer-snapshot.json")
+	data = bytes.Replace(
+		data,
+		[]byte(`"snapshot_id": "synthetic-ulsk-demo-2026-08-v1",`),
+		[]byte(`"snapshot_id": "attacker-selected-snapshot", "snapshot_id": "synthetic-ulsk-demo-2026-08-v1",`),
+		1,
+	)
+	if _, err := DecodeSnapshot(data); err == nil {
+		t.Fatal("DecodeSnapshot() accepted duplicate object members")
+	}
+}
+
 func TestDecodeSnapshotRejectsSchemaOnlyShapeDrift(t *testing.T) {
 	t.Parallel()
 

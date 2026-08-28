@@ -321,10 +321,19 @@ As code appears, split into:
 
 ```text
 make test-go
+make test-go-race
 make test-contracts
 make test-android-unit
+make test-android-all          # strict dependency verification + release gates
+make test-postgres             # migrations, integration and clean restore
+make security-go               # pinned govulncheck
+make secret-scan               # complete Git history
 make test-android-instrumented   # device/emulator job
 ```
+
+`test-android-all` disables Gradle/Kotlin build caches and validates dependency
+checksums. Android instrumentation remains a separate hardware/emulator gate;
+it is not implied by the Robolectric unit/Compose suite.
 
 A provider/publication PR cannot merge without fixtures and diff/validation tests.
 

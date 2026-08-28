@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Mosque Prayer TV Synchronization API
-  version: 0.6.0
+  version: 0.6.1
   description: >-
     Draft contract for pairing a television, retrieving a small manifest,
     downloading an immutable signed prayer-time snapshot, and reporting
@@ -26,6 +26,9 @@ paths:
       responses:
         '200':
           description: Device paired
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
           content:
             application/json:
               schema:
@@ -70,8 +73,6 @@ paths:
               schema:
                 type: string
         '401':
-          $ref: '#/components/responses/ErrorResponse'
-        '403':
           $ref: '#/components/responses/ErrorResponse'
         '404':
           $ref: '#/components/responses/ErrorResponse'
@@ -134,6 +135,9 @@ paths:
       responses:
         '204':
           description: Accepted
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
         '400':
           $ref: '#/components/responses/ErrorResponse'
         '401':
@@ -151,6 +155,9 @@ paths:
       responses:
         '200':
           description: Scoped device list without credentials or pairing codes
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
           content:
             application/json:
               schema:
@@ -186,6 +193,9 @@ paths:
       responses:
         '201':
           description: Pairing code created or the identical idempotent result reproduced
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
           content:
             application/json:
               schema:
@@ -219,6 +229,9 @@ paths:
       responses:
         '204':
           description: Device revoked; an identical retry is a no-op
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
         '400':
           $ref: '#/components/responses/ErrorResponse'
         '401':
@@ -248,6 +261,9 @@ paths:
       responses:
         '200':
           description: Durable assignment and manifest version
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
           content:
             application/json:
               schema:
@@ -281,6 +297,9 @@ paths:
       responses:
         '204':
           description: Cohort label changed or an identical retry accepted
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
         '400':
           $ref: '#/components/responses/ErrorResponse'
         '401':
@@ -303,6 +322,9 @@ paths:
       responses:
         '200':
           description: Privacy-safe current device support state
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
           content:
             application/json:
               schema:
@@ -332,6 +354,9 @@ paths:
       responses:
         '200':
           description: Exact durable per-device assignments in deterministic device order
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
           content:
             application/json:
               schema:
@@ -347,6 +372,12 @@ paths:
         '500':
           $ref: '#/components/responses/ErrorResponse'
 components:
+  headers:
+    NoStore:
+      description: Sensitive response must not be stored by shared or private caches.
+      schema:
+        type: string
+        const: no-store
   securitySchemes:
     deviceBearer:
       type: http

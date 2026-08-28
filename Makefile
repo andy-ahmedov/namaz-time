@@ -1,7 +1,8 @@
-.PHONY: docs-check format format-check lint lint-go lint-android security-go test test-go test-go-race test-contracts test-android-unit test-android-all test-postgres test-postgres-restore
+.PHONY: docs-check format format-check lint lint-go lint-android security-go secret-scan test test-go test-go-race test-contracts test-android-unit test-android-all test-postgres test-postgres-restore
 
 GO_FILES := $(shell find cmd internal -type f -name '*.go' 2>/dev/null)
-GRADLE_FLAGS ?= --no-daemon
+GRADLE_FLAGS ?= --no-daemon --no-build-cache
+GITLEAKS_VERSION ?= v8.29.1
 
 docs-check:
 	bash ./scripts/docs-check.sh
@@ -20,6 +21,9 @@ lint-go:
 
 security-go:
 	go tool govulncheck ./...
+
+secret-scan:
+	go run github.com/zricethezav/gitleaks/v8@$(GITLEAKS_VERSION) git --no-banner --redact=100 --log-opts='--all' .
 
 lint-android:
 	./gradlew $(GRADLE_FLAGS) :apps:tv-android:lintDebug

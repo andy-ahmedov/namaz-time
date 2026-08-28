@@ -56,6 +56,7 @@ drill_container_id="${drill_started_container_id}"
 
 database_ready() {
   docker exec "${drill_container_id}" psql \
+    --host 127.0.0.1 \
     --username namaz_time_test \
     --dbname postgres \
     --no-psqlrc \
@@ -72,6 +73,8 @@ done
 
 if ! database_ready; then
   echo "PostgreSQL restore-drill container did not become ready" >&2
+  docker inspect --format 'container-state={{json .State}}' "${drill_container_id}" >&2 || true
+  docker logs --tail 100 "${drill_container_id}" >&2 || true
   exit 1
 fi
 

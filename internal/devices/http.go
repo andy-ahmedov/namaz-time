@@ -2,6 +2,7 @@
 package devices
 
 import (
+	"bytes"
 	"context"
 	"crypto/ed25519"
 	"crypto/rand"
@@ -23,6 +24,7 @@ import (
 
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
+	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
 	"github.com/andy-ahmedov/namaz-time/internal/trust"
 )
 
@@ -314,16 +316,8 @@ type heartbeatRequest struct {
 
 func (s *Service) handlePair(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Cache-Control", "no-store")
-	mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
-	if err != nil || mediaType != "application/json" {
-		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
-		return
-	}
-	request.Body = http.MaxBytesReader(writer, request.Body, maxPairRequestBytes)
-	decoder := json.NewDecoder(request.Body)
-	decoder.DisallowUnknownFields()
 	var input pairRequest
-	if err := decoder.Decode(&input); err != nil || decodeEOF(decoder) != nil || !validPairRequest(input) {
+	if !decodeRequestJSON(writer, request, maxPairRequestBytes, &input) || !validPairRequest(input) {
 		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
 		return
 	}
@@ -438,16 +432,8 @@ func (s *Service) handleHeartbeat(writer http.ResponseWriter, request *http.Requ
 		writeAPIError(writer, http.StatusUnauthorized, "device_unauthorized", false)
 		return
 	}
-	mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
-	if err != nil || mediaType != "application/json" {
-		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
-		return
-	}
-	request.Body = http.MaxBytesReader(writer, request.Body, maxHeartbeatBytes)
-	decoder := json.NewDecoder(request.Body)
-	decoder.DisallowUnknownFields()
 	var input heartbeatRequest
-	if err := decoder.Decode(&input); err != nil || decodeEOF(decoder) != nil || !input.complete() {
+	if !decodeRequestJSON(writer, request, maxHeartbeatBytes, &input) || !input.complete() {
 		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
 		return
 	}
@@ -843,16 +829,26 @@ func (s *Service) authenticateAdminRequest(writer http.ResponseWriter, request *
 }
 
 func decodeAdminJSON(writer http.ResponseWriter, request *http.Request, target any) bool {
-	mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
-	if err != nil || mediaType != "application/json" {
+	if !decodeRequestJSON(writer, request, maxAdminRequestBytes, target) {
 		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
 		return false
 	}
-	request.Body = http.MaxBytesReader(writer, request.Body, maxAdminRequestBytes)
-	decoder := json.NewDecoder(request.Body)
+	return true
+}
+
+func decodeRequestJSON(writer http.ResponseWriter, request *http.Request, maximumBytes int64, target any) bool {
+	mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
+	if err != nil || mediaType != "application/json" {
+		return false
+	}
+	request.Body = http.MaxBytesReader(writer, request.Body, maximumBytes)
+	body, err := io.ReadAll(request.Body)
+	if err != nil || strictjson.RejectDuplicateObjectMembers(body) != nil {
+		return false
+	}
+	decoder := json.NewDecoder(bytes.NewReader(body))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(target); err != nil || decodeEOF(decoder) != nil {
-		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
 		return false
 	}
 	return true

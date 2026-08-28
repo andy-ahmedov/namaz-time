@@ -17,9 +17,9 @@ func RejectDuplicateObjectMembers(data []byte) error {
 	if err := consumeValue(decoder, "$"); err != nil {
 		return err
 	}
-	if token, err := decoder.Token(); err != io.EOF {
+	if _, err := decoder.Token(); err != io.EOF {
 		if err == nil {
-			return fmt.Errorf("unexpected trailing JSON token %v", token)
+			return errors.New("unexpected trailing JSON value")
 		}
 		return fmt.Errorf("decode trailing JSON: %w", err)
 	}

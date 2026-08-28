@@ -1,0 +1,11 @@
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Exact synthetic values documented as non-production fixtures"
+regexTarget = "match"
+regexes = [
+  '''idem-canary-(?:peer|assign)-0001''',
+  '''phase1-fixture-key-2026-08''',
+  '''5b55f00294077efcae22e4ff48fc44aca352f25a26abc68a819caa3593fa674d''',
+]

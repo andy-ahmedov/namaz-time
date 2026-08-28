@@ -54,6 +54,9 @@ func TestDeviceReadPathPairsOnceAndServesCacheableImmutableSnapshot(t *testing.T
 	if pairResponse.StatusCode != http.StatusOK {
 		t.Fatalf("pair status = %d, body = %s", pairResponse.StatusCode, pairResponse.Body)
 	}
+	if pairResponse.Header.Get("Cache-Control") != "no-store" {
+		t.Fatalf("pair Cache-Control = %q", pairResponse.Header.Get("Cache-Control"))
+	}
 	var paired struct {
 		DeviceID    string         `json:"device_id"`
 		DeviceToken string         `json:"device_token"`
@@ -271,6 +274,15 @@ func TestProductionPairingBackendPreservesPublicContractAndFailureBoundaries(t *
 	}
 	server := httptest.NewServer(service.Handler())
 	t.Cleanup(server.Close)
+
+	duplicatePairingCode := request(
+		t, http.MethodPost, server.URL+"/v1/devices/pair",
+		[]byte(`{"pairing_code":"WRONG-CODE","pairing_code":"ABCDEFGHIJKLMNOPQRSTUVWX26","device":{"app_version":"1.0.0","os_version":"35","model":"Android TV"}}`),
+		"", "",
+	)
+	if duplicatePairingCode.StatusCode != http.StatusBadRequest || backend.attempt.Code != "" {
+		t.Fatalf("duplicate pairing code reached backend: status=%d attempt=%#v", duplicatePairingCode.StatusCode, backend.attempt)
+	}
 
 	pairBody := []byte(`{"pairing_code":"ABCDEFGHIJKLMNOPQRSTUVWX26","device":{"app_version":"1.0.0","os_version":"35","model":"Android TV"}}`)
 	paired := request(t, http.MethodPost, server.URL+"/v1/devices/pair", pairBody, "", "")

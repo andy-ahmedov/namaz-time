@@ -20,6 +20,8 @@ jobs:
           go-version-file: go.mod
       - name: Check documentation and Go
         run: make docs-check format-check lint-go test-contracts test-go test-go-race security-go
+      - name: Scan complete Git history for secrets
+        run: make secret-scan
 
   android-unit:
     runs-on: ubuntu-latest

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"io"
 	"unicode/utf8"
+
+	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
 )
 
 // ProviderKind identifies how source data is obtained without coupling the
@@ -169,6 +171,9 @@ type IntegrityMetadata struct {
 func DecodeSnapshot(data []byte) (Snapshot, error) {
 	if !utf8.Valid(data) {
 		return Snapshot{}, fmt.Errorf("decode snapshot: invalid UTF-8")
+	}
+	if err := strictjson.RejectDuplicateObjectMembers(data); err != nil {
+		return Snapshot{}, fmt.Errorf("decode snapshot: ambiguous JSON: %w", err)
 	}
 	if err := validateSnapshotJSONShape(data); err != nil {
 		return Snapshot{}, fmt.Errorf("decode snapshot: %w", err)

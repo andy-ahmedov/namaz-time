@@ -294,10 +294,16 @@ scraping.
 
 ## Supply chain
 
-- pin dependency versions;
+- pin dependency versions and CI actions; Gradle dependencies are accepted only
+  with strict SHA-256 verification metadata;
 - generate SBOM for releases;
 - Dependabot/Renovate or equivalent with reviewed updates;
-- secret scanning;
+- scan the complete Git history for secrets with the repository's narrow
+  synthetic-fixture allowlist;
+- keep Gradle and Kotlin build caches disabled while the supported Kotlin
+  2.0.21 plugin line remains affected by build-cache metadata deserialization;
+  re-enable them only after a coordinated upgrade to a fixed stable line and
+  dependency/build verification;
 - reproducible/traceable builds where practical;
 - verify release signing and store provenance;
 - do not commit competitor APK or extracted proprietary artifacts.
