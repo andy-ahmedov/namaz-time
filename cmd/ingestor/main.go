@@ -16,9 +16,17 @@ import (
 	"github.com/andy-ahmedov/namaz-time/internal/providers/manual"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/officialpdf"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
+	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
 )
 
-const componentName = "ingestor"
+const (
+	componentName               = "ingestor"
+	maxImportManifestBytes      = 64 * 1024
+	maxSourceRecordBytes        = 256 * 1024
+	maxEffectivePolicyBytes     = 256 * 1024
+	maxImportTranscriptionBytes = 5 * 1024 * 1024
+	maxImportArtifactBytes      = 48 * 1024 * 1024
+)
 
 type importManifest struct {
 	DataClassification    domain.DataClassification `json:"data_classification"`
@@ -127,7 +135,7 @@ func inspectEffective(baselineDirectory, overrideDirectory, policyPath string) (
 	if err != nil {
 		return inspection{}, fmt.Errorf("inspect override: %w", err)
 	}
-	policyBytes, err := os.ReadFile(policyPath)
+	policyBytes, err := readBoundedRegularFile(policyPath, maxEffectivePolicyBytes)
 	if err != nil {
 		return inspection{}, fmt.Errorf("read effective policy: %w", err)
 	}
@@ -158,11 +166,14 @@ func inspectEffective(baselineDirectory, overrideDirectory, policyPath string) (
 }
 
 func inspectFixture(directory string) (inspection, error) {
-	manifestData, err := os.ReadFile(filepath.Join(directory, "import.json"))
+	manifestData, err := readContainedRegularFile(directory, "import.json", maxImportManifestBytes)
 	if err != nil {
 		return inspection{}, fmt.Errorf("read import manifest: %w", err)
 	}
 	var manifest importManifest
+	if err := strictjson.RejectDuplicateObjectMembers(manifestData); err != nil {
+		return inspection{}, fmt.Errorf("decode import manifest: %w", err)
+	}
 	decoder := json.NewDecoder(bytes.NewReader(manifestData))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&manifest); err != nil {
@@ -175,16 +186,16 @@ func inspectFixture(directory string) (inspection, error) {
 	if err != nil {
 		return inspection{}, fmt.Errorf("parse artifact_captured_at: %w", err)
 	}
-	sourceData, err := os.ReadFile(filepath.Join(directory, "source-record.json"))
+	sourceData, err := readContainedRegularFile(directory, "source-record.json", maxSourceRecordBytes)
 	if err != nil {
 		return inspection{}, fmt.Errorf("read source record: %w", err)
 	}
-	artifactFile, err := os.Open(filepath.Join(directory, manifest.ArtifactFilename))
+	artifactFile, err := openContainedRegularFile(directory, manifest.ArtifactFilename, maxImportArtifactBytes)
 	if err != nil {
 		return inspection{}, fmt.Errorf("open artifact: %w", err)
 	}
 	defer artifactFile.Close()
-	transcription, err := os.ReadFile(filepath.Join(directory, manifest.TranscriptionFilename))
+	transcription, err := readContainedRegularFile(directory, manifest.TranscriptionFilename, maxImportTranscriptionBytes)
 	if err != nil {
 		return inspection{}, fmt.Errorf("read transcription: %w", err)
 	}
@@ -231,4 +242,53 @@ func inspectFixture(directory string) (inspection, error) {
 		return inspection{}, err
 	}
 	return inspection{Candidate: candidate, Diff: diff}, nil
+}
+
+func readContainedRegularFile(directory, name string, maximumBytes int64) ([]byte, error) {
+	file, err := openContainedRegularFile(directory, name, maximumBytes)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+	data, err := io.ReadAll(io.LimitReader(file, maximumBytes+1))
+	if err != nil {
+		return nil, fmt.Errorf("read contained file %q: %w", name, err)
+	}
+	if int64(len(data)) > maximumBytes {
+		return nil, fmt.Errorf("contained file %q exceeds %d bytes", name, maximumBytes)
+	}
+	return data, nil
+}
+
+func openContainedRegularFile(directory, name string, maximumBytes int64) (*os.File, error) {
+	cleanName := filepath.Clean(name)
+	if maximumBytes <= 0 || cleanName == "." || filepath.IsAbs(name) || filepath.Base(cleanName) != cleanName {
+		return nil, fmt.Errorf("contained file name %q is invalid", name)
+	}
+	path := filepath.Join(directory, cleanName)
+	info, err := os.Lstat(path)
+	if err != nil {
+		return nil, fmt.Errorf("inspect contained file %q: %w", name, err)
+	}
+	if !info.Mode().IsRegular() || info.Size() > maximumBytes {
+		return nil, fmt.Errorf("contained file %q must be a regular file no larger than %d bytes", name, maximumBytes)
+	}
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("open contained file %q: %w", name, err)
+	}
+	openedInfo, err := file.Stat()
+	if err != nil || !openedInfo.Mode().IsRegular() || openedInfo.Size() > maximumBytes {
+		file.Close()
+		return nil, fmt.Errorf("contained file %q changed or exceeds %d bytes", name, maximumBytes)
+	}
+	return file, nil
+}
+
+func readBoundedRegularFile(path string, maximumBytes int64) ([]byte, error) {
+	directory, name := filepath.Split(path)
+	if directory == "" {
+		directory = "."
+	}
+	return readContainedRegularFile(directory, name, maximumBytes)
 }

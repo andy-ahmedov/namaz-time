@@ -24,21 +24,23 @@ import (
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/controlled"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/sourceconfig"
+	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
 )
 
 const (
-	ParserVersion       = "ulyanovsk-official-pdf-csv/v1"
-	CSVHeader           = "date,fajr,recommended_fajr,sunrise,zenith,dhuhr,collective_dhuhr,asr,maghrib,isha,flags"
-	maxArtifactBytes    = 48 * 1024 * 1024
-	maxTranscriptBytes  = 5 * 1024 * 1024
-	expectedSourceID    = "official-rdumul-ulyanovsk-2026"
-	expectedTimezone    = "Europe/Ulyanovsk"
-	expectedCountryCode = "RU"
-	expectedMosqueID    = "second-cathedral-mosque-ulyanovsk"
-	expectedLocality    = "Ульяновск, ул. Дзержинского, 18А"
-	expectedFilename    = "calendar_for_the_year_Ulyanovsk.pdf"
-	expectedArtifactSHA = "82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21"
-	expectedArtifactLen = int64(35078839)
+	ParserVersion        = "ulyanovsk-official-pdf-csv/v1"
+	CSVHeader            = "date,fajr,recommended_fajr,sunrise,zenith,dhuhr,collective_dhuhr,asr,maghrib,isha,flags"
+	maxArtifactBytes     = 48 * 1024 * 1024
+	maxTranscriptBytes   = 5 * 1024 * 1024
+	maxSourceRecordBytes = 256 * 1024
+	expectedSourceID     = "official-rdumul-ulyanovsk-2026"
+	expectedTimezone     = "Europe/Ulyanovsk"
+	expectedCountryCode  = "RU"
+	expectedMosqueID     = "second-cathedral-mosque-ulyanovsk"
+	expectedLocality     = "Ульяновск, ул. Дзержинского, 18А"
+	expectedFilename     = "calendar_for_the_year_Ulyanovsk.pdf"
+	expectedArtifactSHA  = "82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21"
+	expectedArtifactLen  = int64(35078839)
 )
 
 var (
@@ -96,8 +98,11 @@ func CaptureArtifact(filename, contentType string, capturedAt time.Time, reader 
 }
 
 func DecodeSourceRecord(data []byte) (SourceRecord, error) {
-	if !utf8.Valid(data) {
+	if len(data) == 0 || len(data) > maxSourceRecordBytes || !utf8.Valid(data) {
 		return SourceRecord{}, &Error{Op: "decode official PDF source record", Code: "schema_drift", Err: errors.New("source record is not valid UTF-8")}
+	}
+	if err := strictjson.RejectDuplicateObjectMembers(data); err != nil {
+		return SourceRecord{}, &Error{Op: "decode official PDF source record", Code: "schema_drift", Err: err}
 	}
 	var source SourceRecord
 	decoder := json.NewDecoder(bytes.NewReader(data))

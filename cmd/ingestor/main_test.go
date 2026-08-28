@@ -19,6 +19,38 @@ func TestComponentName(t *testing.T) {
 	}
 }
 
+func TestContainedImportFileRejectsTraversalSymlinkAndOversize(t *testing.T) {
+	t.Parallel()
+
+	directory := t.TempDir()
+	outside := filepath.Join(t.TempDir(), "outside.csv")
+	if err := os.WriteFile(outside, []byte("secret"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(directory, "linked.csv")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(directory, "oversized.csv"), bytes.Repeat([]byte("x"), 17), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(directory, "valid.csv"), []byte("valid"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+
+	for _, name := range []string{"../outside.csv", "linked.csv", "oversized.csv"} {
+		if _, err := readContainedRegularFile(directory, name, 16); err == nil {
+			t.Fatalf("readContainedRegularFile(%q) error = nil", name)
+		}
+	}
+	data, err := readContainedRegularFile(directory, "valid.csv", 16)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(data) != "valid" {
+		t.Fatalf("valid data = %q", data)
+	}
+}
+
 func TestInspectPilotFixtureProducesUnapprovedCandidateAndDiff(t *testing.T) {
 	t.Parallel()
 

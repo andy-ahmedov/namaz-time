@@ -124,10 +124,14 @@ the selected snapshot key is `active` in the production trust bundle.
    export its key.
 
    Before signing, the protected KMS wrapper must independently verify the
-   signed approval receipt against the pinned approval trust bundle and match
+   Base64-decoded `approval_receipt_base64` against the separately pinned
+   approval trust root/revision/hash, validate the embedded current and (when
+   present) direct-predecessor approval bundles, and match
    its immutable principal, candidate/diff, warning and prayer-policy hashes to
    the request. `cmd/publisher assemble` performs the same check on the release
-   host, but that is not a substitute for signer-side authorization.
+   host, and `prepare`/`finalize` repeat it, but neither is a substitute for
+   signer-side authorization. A generic KMS raw-sign API exposed to the release
+   host does not satisfy this control.
 
 6. Finalize. For every publication after the first, pass the complete prior
    receipt so its signer attestation is verified before extending the chain.

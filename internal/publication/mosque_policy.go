@@ -89,7 +89,7 @@ func validateMosquePrayerPolicy(policy MosquePrayerPolicy) error {
 		return errors.New("unsupported correction owner")
 	}
 	if policy.DhuhrReplacedByJumuahFriday != (len(policy.JumuahSessions) > 0) {
-		return errors.New("Friday Dhuhr replacement must match Jumuah sessions")
+		return errors.New("friday Dhuhr replacement must match Jumuah sessions")
 	}
 	if len(policy.IqamahRules) > 512 || len(policy.JumuahSessions) > 32 {
 		return errors.New("mosque prayer policy contains too many rules")
@@ -120,7 +120,7 @@ func validateMosquePrayerPolicy(policy MosquePrayerPolicy) error {
 		}
 		if policy.DhuhrReplacedByJumuahFriday && rule.Prayer == "dhuhr" {
 			if _, friday := weekdays[5]; friday {
-				return errors.New("Friday Dhuhr iqamah conflicts with Jumuah replacement")
+				return errors.New("friday Dhuhr iqamah conflicts with Jumuah replacement")
 			}
 		}
 		if rule.Value.Mode != "offset_after_adhan" || rule.Value.OffsetMinutes == nil || *rule.Value.OffsetMinutes < 0 || *rule.Value.OffsetMinutes > 240 || rule.Value.FixedTime != "" || utf8.RuneCountInString(rule.Reason) > 1000 {

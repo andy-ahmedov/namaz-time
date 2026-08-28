@@ -29,6 +29,9 @@
     "approval_trust_revision": { "type": "integer", "minimum": 1, "maximum": 9223372036854775807 },
     "approval_trust_sha256": { "$ref": "#/$defs/sha256" },
     "approval_key_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
+    "approval_receipt_base64": { "type": "string", "minLength": 4, "maxLength": 349528 },
+    "approval_trust_bundle_base64": { "type": "string", "minLength": 4, "maxLength": 349528 },
+    "previous_approval_trust_bundle_base64": { "type": "string", "minLength": 4, "maxLength": 349528 },
     "unsigned_snapshot": {
       "type": "object",
       "description": "A prayer snapshot with an empty signature; the publisher strictly decodes and recomputes it before finalization."
@@ -37,7 +40,7 @@
   "allOf": [
     {
       "if": { "properties": { "environment": { "const": "production" } }, "required": ["environment"] },
-      "then": { "required": ["prayer_policy_sha256", "approval_receipt_sha256", "approval_trust_revision", "approval_trust_sha256", "approval_key_id"] }
+      "then": { "required": ["prayer_policy_sha256", "approval_receipt_sha256", "approval_trust_revision", "approval_trust_sha256", "approval_key_id", "approval_receipt_base64", "approval_trust_bundle_base64"] }
     }
   ],
   "$defs": {

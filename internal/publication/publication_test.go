@@ -6,12 +6,14 @@ import (
 	"crypto/rand"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	approvalauth "github.com/andy-ahmedov/namaz-time/internal/approval"
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/manual"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
@@ -567,10 +569,37 @@ func publishRequest(candidate domain.CandidateSchedule, diff publication.DiffRep
 		}
 		request.MosquePrayerPolicy = policy
 		request.Approval.PrayerPolicySHA256 = policySHA256
-		request.ApprovalEvidence = &publication.ApprovalEvidence{
-			ReceiptSHA256: strings.Repeat("a", 64), TrustRevision: 1,
-			TrustBundleSHA256: strings.Repeat("b", 64), ApprovalKeyID: "production-approval-test-key",
+		approvalPrivateKey := ed25519.NewKeyFromSeed(bytes.Repeat([]byte{0x42}, ed25519.SeedSize))
+		approvalPublicKey := approvalPrivateKey.Public().(ed25519.PublicKey)
+		approvalKeyID := "production-approval-test-key"
+		trustBytes := []byte(fmt.Sprintf(
+			`{"schema_version":"1.0","revision":1,"environment":"production","generated_at":"2024-12-31T00:00:00Z","keys":[{"key_id":%q,"algorithm":"ed25519","approver_identity":%q,"public_key_ed25519_base64":%q,"status":"active","not_before":"2024-12-31T00:00:00Z"}]}`,
+			approvalKeyID,
+			request.Approval.Actor,
+			base64.StdEncoding.EncodeToString(approvalPublicKey),
+		))
+		approvalReceipt, err := approvalauth.Sign(request.Approval, policySHA256, approvalKeyID, approvalPrivateKey)
+		if err != nil {
+			panic(err)
 		}
+		receiptBytes, err := approvalauth.EncodeReceipt(approvalReceipt)
+		if err != nil {
+			panic(err)
+		}
+		approvalPolicy, err := approvalauth.DecodeTrustBundleChain(trustBytes, nil)
+		if err != nil {
+			panic(err)
+		}
+		_, verifiedEvidence, err := approvalauth.Verify(receiptBytes, approvalPolicy, policySHA256)
+		if err != nil {
+			panic(err)
+		}
+		request.ApprovalEvidence = &publication.ApprovalEvidence{
+			ReceiptSHA256: verifiedEvidence.ReceiptSHA256, TrustRevision: verifiedEvidence.TrustRevision,
+			TrustBundleSHA256: verifiedEvidence.TrustBundleSHA256, ApprovalKeyID: verifiedEvidence.KeyID,
+		}
+		request.ApprovalReceiptBase64 = base64.StdEncoding.EncodeToString(receiptBytes)
+		request.ApprovalTrustBundleBase64 = base64.StdEncoding.EncodeToString(trustBytes)
 	}
 	return request
 }

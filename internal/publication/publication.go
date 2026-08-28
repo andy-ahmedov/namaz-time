@@ -1,6 +1,7 @@
 package publication
 
 import (
+	"bytes"
 	"context"
 	"crypto/ed25519"
 	"crypto/sha256"
@@ -13,20 +14,24 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/andy-ahmedov/namaz-time/internal/approval"
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/andy-ahmedov/namaz-time/internal/trust"
 )
 
 type PublishRequest struct {
-	Previous           *domain.CandidateSchedule `json:"previous_candidate,omitempty"`
-	Candidate          domain.CandidateSchedule  `json:"candidate"`
-	Diff               DiffReport                `json:"diff"`
-	Approval           domain.ApprovalDecision   `json:"approval"`
-	ApprovalEvidence   *ApprovalEvidence         `json:"approval_evidence,omitempty"`
-	MosquePrayerPolicy *MosquePrayerPolicy       `json:"mosque_prayer_policy,omitempty"`
-	SnapshotID         string                    `json:"snapshot_id"`
-	GeneratedAt        time.Time                 `json:"generated_at"`
-	SigningKeyID       string                    `json:"signing_key_id"`
+	Previous                          *domain.CandidateSchedule `json:"previous_candidate,omitempty"`
+	Candidate                         domain.CandidateSchedule  `json:"candidate"`
+	Diff                              DiffReport                `json:"diff"`
+	Approval                          domain.ApprovalDecision   `json:"approval"`
+	ApprovalEvidence                  *ApprovalEvidence         `json:"approval_evidence,omitempty"`
+	ApprovalReceiptBase64             string                    `json:"approval_receipt_base64,omitempty"`
+	ApprovalTrustBundleBase64         string                    `json:"approval_trust_bundle_base64,omitempty"`
+	PreviousApprovalTrustBundleBase64 string                    `json:"previous_approval_trust_bundle_base64,omitempty"`
+	MosquePrayerPolicy                *MosquePrayerPolicy       `json:"mosque_prayer_policy,omitempty"`
+	SnapshotID                        string                    `json:"snapshot_id"`
+	GeneratedAt                       time.Time                 `json:"generated_at"`
+	SigningKeyID                      string                    `json:"signing_key_id"`
 }
 
 type ApprovalEvidence struct {
@@ -407,7 +412,10 @@ func validatePublishRequest(request PublishRequest) error {
 		if request.MosquePrayerPolicy == nil || request.ApprovalEvidence == nil || !validSHA256(request.ApprovalEvidence.ReceiptSHA256) || request.ApprovalEvidence.TrustRevision == 0 || !validSHA256(request.ApprovalEvidence.TrustBundleSHA256) || request.ApprovalEvidence.ApprovalKeyID == "" {
 			return newError("publish snapshot", "authenticated_approval_required", errors.New("production publication requires authenticated approval evidence"))
 		}
-	} else if request.ApprovalEvidence != nil {
+		if err := validateAuthenticatedApprovalProof(request); err != nil {
+			return err
+		}
+	} else if request.ApprovalEvidence != nil || request.ApprovalReceiptBase64 != "" || request.ApprovalTrustBundleBase64 != "" || request.PreviousApprovalTrustBundleBase64 != "" {
 		return newError("publish snapshot", "approval_evidence_invalid", errors.New("synthetic publication cannot carry production approval evidence"))
 	}
 	normalizedSHA256, err := domain.CandidateNormalizedSHA256(request.Candidate)
@@ -425,6 +433,58 @@ func validatePublishRequest(request PublishRequest) error {
 		return newError("publish snapshot", "publication_metadata_required", errors.New("snapshot ID, generated time and signing key ID are required"))
 	}
 	return nil
+}
+
+func validateAuthenticatedApprovalProof(request PublishRequest) error {
+	receiptBytes, err := decodeCanonicalApprovalProof(request.ApprovalReceiptBase64, "receipt", true)
+	if err != nil {
+		return err
+	}
+	trustBytes, err := decodeCanonicalApprovalProof(request.ApprovalTrustBundleBase64, "trust bundle", true)
+	if err != nil {
+		return err
+	}
+	previousTrustBytes, err := decodeCanonicalApprovalProof(request.PreviousApprovalTrustBundleBase64, "previous trust bundle", false)
+	if err != nil {
+		return err
+	}
+	policy, err := approval.DecodeTrustBundleChain(trustBytes, previousTrustBytes)
+	if err != nil {
+		return newError("publish snapshot", "approval_proof_invalid", fmt.Errorf("validate approval trust: %w", err))
+	}
+	if policy.Environment() != "production" {
+		return newError("publish snapshot", "approval_proof_invalid", errors.New("approval proof requires a production trust bundle"))
+	}
+	policySHA256, err := MosquePrayerPolicySHA256(*request.MosquePrayerPolicy)
+	if err != nil {
+		return newError("publish snapshot", "approval_proof_invalid", fmt.Errorf("validate prayer policy: %w", err))
+	}
+	decision, evidence, err := approval.Verify(receiptBytes, policy, policySHA256)
+	if err != nil {
+		return newError("publish snapshot", "approval_proof_invalid", fmt.Errorf("verify approval receipt: %w", err))
+	}
+	verifiedDecision, _ := json.Marshal(decision)
+	requestDecision, _ := json.Marshal(request.Approval)
+	if !bytes.Equal(verifiedDecision, requestDecision) || evidence.ReceiptSHA256 != request.ApprovalEvidence.ReceiptSHA256 ||
+		evidence.TrustRevision != request.ApprovalEvidence.TrustRevision || evidence.TrustBundleSHA256 != request.ApprovalEvidence.TrustBundleSHA256 ||
+		evidence.KeyID != request.ApprovalEvidence.ApprovalKeyID {
+		return newError("publish snapshot", "approval_proof_mismatch", errors.New("authenticated approval proof does not match publication request"))
+	}
+	return nil
+}
+
+func decodeCanonicalApprovalProof(encoded, name string, required bool) ([]byte, error) {
+	if encoded == "" {
+		if required {
+			return nil, newError("publish snapshot", "authenticated_approval_required", fmt.Errorf("approval %s is required", name))
+		}
+		return nil, nil
+	}
+	decoded, err := base64.StdEncoding.DecodeString(encoded)
+	if err != nil || base64.StdEncoding.EncodeToString(decoded) != encoded || len(decoded) == 0 || len(decoded) > 256*1024 {
+		return nil, newError("publish snapshot", "approval_proof_invalid", fmt.Errorf("approval %s encoding or size is invalid", name))
+	}
+	return decoded, nil
 }
 
 func buildSnapshot(request PublishRequest) (domain.Snapshot, error) {

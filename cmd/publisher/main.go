@@ -5,6 +5,7 @@ package main
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"flag"
@@ -152,6 +153,7 @@ func runAssemble(args []string, stderr io.Writer) error {
 	var decision domain.ApprovalDecision
 	var evidence *publication.ApprovalEvidence
 	var prayerPolicy *publication.MosquePrayerPolicy
+	var approvalReceiptBase64, approvalTrustBundleBase64, previousApprovalTrustBundleBase64 string
 	if inspection.Candidate.DataClassification == domain.DataClassificationProduction {
 		if *approvalPath != "" || *approvalReceiptPath == "" || *approvalTrustPath == "" || *prayerPolicyPath == "" {
 			return errors.New("production assemble requires signed approval-receipt, approval-trust-bundle and prayer-policy; unsigned -approval is forbidden")
@@ -199,6 +201,11 @@ func runAssemble(args []string, stderr io.Writer) error {
 			TrustBundleSHA256: verifiedEvidence.TrustBundleSHA256, ApprovalKeyID: verifiedEvidence.KeyID,
 		}
 		prayerPolicy = &policy
+		approvalReceiptBase64 = base64.StdEncoding.EncodeToString(receiptBytes)
+		approvalTrustBundleBase64 = base64.StdEncoding.EncodeToString(trustBytes)
+		if len(previousTrustBytes) > 0 {
+			previousApprovalTrustBundleBase64 = base64.StdEncoding.EncodeToString(previousTrustBytes)
+		}
 	} else {
 		if *approvalPath == "" || *approvalReceiptPath != "" || *approvalTrustPath != "" || *previousApprovalTrustPath != "" || *prayerPolicyPath != "" {
 			return errors.New("synthetic assemble requires exactly -approval and no production approval inputs")
@@ -210,7 +217,9 @@ func runAssemble(args []string, stderr io.Writer) error {
 	request := publication.PublishRequest{
 		Previous: inspection.Previous, Candidate: inspection.Candidate, Diff: inspection.Diff, Approval: decision,
 		ApprovalEvidence: evidence, MosquePrayerPolicy: prayerPolicy,
-		SnapshotID: *snapshotID, GeneratedAt: generatedAt, SigningKeyID: *keyID,
+		ApprovalReceiptBase64: approvalReceiptBase64, ApprovalTrustBundleBase64: approvalTrustBundleBase64,
+		PreviousApprovalTrustBundleBase64: previousApprovalTrustBundleBase64,
+		SnapshotID:                        *snapshotID, GeneratedAt: generatedAt, SigningKeyID: *keyID,
 	}
 	data, err := json.MarshalIndent(request, "", "  ")
 	if err != nil {

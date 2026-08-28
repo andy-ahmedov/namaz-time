@@ -18,6 +18,7 @@ import (
 
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/controlled"
+	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
 )
 
 const (
@@ -100,6 +101,9 @@ func CapturePolicyArtifact(filename string, capturedAt time.Time, reader io.Read
 func DecodePolicy(data []byte) (Policy, error) {
 	if len(data) == 0 || len(data) > maxPolicyBytes || !utf8.Valid(data) {
 		return Policy{}, &Error{Op: "decode effective policy", Code: "schema_drift", Err: errors.New("policy must be bounded valid UTF-8")}
+	}
+	if err := strictjson.RejectDuplicateObjectMembers(data); err != nil {
+		return Policy{}, &Error{Op: "decode effective policy", Code: "schema_drift", Err: err}
 	}
 	var policy Policy
 	decoder := json.NewDecoder(bytes.NewReader(data))

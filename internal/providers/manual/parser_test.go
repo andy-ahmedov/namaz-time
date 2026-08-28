@@ -102,6 +102,17 @@ func TestPilotFixturePreservesProvenanceAndSourceSemantics(t *testing.T) {
 	assertDiagnosticCode(t, candidate.Validation.Warnings, "day_to_day_delta")
 }
 
+func TestDecodeSourceRecordRejectsDuplicateMembers(t *testing.T) {
+	t.Parallel()
+
+	data := readFile(t, filepath.Join(repositoryRoot(t), "fixtures", "pilot", "ulyanovsk-2026-08", "source-record.json"))
+	duplicate := bytes.Replace(data, []byte(`"source_id":`), []byte(`"source_id":"shadowed","source_id":`), 1)
+
+	if _, err := manual.DecodeSourceRecord(duplicate); !manual.IsErrorCode(err, "schema_drift") {
+		t.Fatalf("DecodeSourceRecord() error = %v", err)
+	}
+}
+
 func TestPilotSourceRecordMatchesContractSchema(t *testing.T) {
 	t.Parallel()
 

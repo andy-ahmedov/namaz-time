@@ -25,6 +25,43 @@ type protectedSigner struct {
 	called     bool
 }
 
+func TestProductionPrepareRequiresVerifiableApprovalProof(t *testing.T) {
+	t.Parallel()
+
+	candidate := candidate()
+	candidate.DataClassification = domain.DataClassificationProduction
+	if err := domain.FinalizeCandidateIdentity(&candidate); err != nil {
+		t.Fatal(err)
+	}
+	diff, err := publication.Diff(nil, candidate)
+	if err != nil {
+		t.Fatal(err)
+	}
+	request := publishRequest(candidate, diff, approvalFor(candidate, diff))
+	publicKey, _, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	policy := productionPolicy(t, request.SigningKeyID, publicKey)
+
+	missing := request
+	missing.ApprovalReceiptBase64 = ""
+	if _, err := publication.PrepareSigning(missing, policy); !publication.IsErrorCode(err, "authenticated_approval_required") {
+		t.Fatalf("missing approval proof PrepareSigning() error = %v", err)
+	}
+
+	tampered := request
+	receiptBytes, err := base64.StdEncoding.DecodeString(tampered.ApprovalReceiptBase64)
+	if err != nil {
+		t.Fatal(err)
+	}
+	receiptBytes[len(receiptBytes)/2] ^= 1
+	tampered.ApprovalReceiptBase64 = base64.StdEncoding.EncodeToString(receiptBytes)
+	if _, err := publication.PrepareSigning(tampered, policy); !publication.IsErrorCode(err, "approval_proof_invalid") {
+		t.Fatalf("tampered approval proof PrepareSigning() error = %v", err)
+	}
+}
+
 func (signer *protectedSigner) KeyID() string { return signer.keyID }
 
 func (signer *protectedSigner) Sign(_ context.Context, payload []byte) ([]byte, error) {

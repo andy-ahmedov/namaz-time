@@ -152,6 +152,17 @@ func bindPolicy(t *testing.T, request *effective.ComposeRequest) {
 	request.PolicyArtifact = artifact
 }
 
+func TestDecodePolicyRejectsDuplicateMembers(t *testing.T) {
+	t.Parallel()
+
+	data := policyBytes(t)
+	duplicate := bytes.Replace(data, []byte(`"schema_version":`), []byte(`"schema_version":"1.0","schema_version":`), 1)
+
+	if _, err := effective.DecodePolicy(duplicate); !effective.IsErrorCode(err, "schema_drift") {
+		t.Fatalf("DecodePolicy() error=%v", err)
+	}
+}
+
 func TestPolicyDecodeIsStrictAndCaptureBindsExactBytes(t *testing.T) {
 	t.Parallel()
 

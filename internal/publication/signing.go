@@ -27,30 +27,33 @@ const publicationAttestationDomain = "namaz-time/publication-attestation/v1\x00"
 // SigningRequest is public, non-secret material suitable for transfer to an
 // isolated Ed25519 signer. The signer signs CanonicalPayloadBase64 verbatim.
 type SigningRequest struct {
-	SchemaVersion          string          `json:"schema_version"`
-	RequestID              string          `json:"request_id"`
-	Environment            string          `json:"environment"`
-	TrustBundleRevision    uint64          `json:"trust_bundle_revision"`
-	TrustBundleSHA256      string          `json:"trust_bundle_sha256"`
-	SigningKeyID           string          `json:"signing_key_id"`
-	CanonicalSHA256        string          `json:"canonical_sha256"`
-	CanonicalPayloadBase64 string          `json:"canonical_payload_base64"`
-	CandidateID            string          `json:"candidate_id"`
-	RawSHA256              string          `json:"raw_sha256"`
-	TranscriptionSHA256    string          `json:"transcription_sha256"`
-	NormalizedSHA256       string          `json:"normalized_sha256"`
-	DiffSHA256             string          `json:"diff_sha256"`
-	ParserVersion          string          `json:"parser_version"`
-	ApprovalID             string          `json:"approval_id"`
-	ApproverIdentity       string          `json:"approver_identity"`
-	ApprovedAt             string          `json:"approved_at"`
-	ApprovalScope          string          `json:"approval_scope"`
-	PrayerPolicySHA256     string          `json:"prayer_policy_sha256,omitempty"`
-	ApprovalReceiptSHA256  string          `json:"approval_receipt_sha256,omitempty"`
-	ApprovalTrustRevision  uint64          `json:"approval_trust_revision,omitempty"`
-	ApprovalTrustSHA256    string          `json:"approval_trust_sha256,omitempty"`
-	ApprovalKeyID          string          `json:"approval_key_id,omitempty"`
-	Snapshot               domain.Snapshot `json:"unsigned_snapshot"`
+	SchemaVersion                     string          `json:"schema_version"`
+	RequestID                         string          `json:"request_id"`
+	Environment                       string          `json:"environment"`
+	TrustBundleRevision               uint64          `json:"trust_bundle_revision"`
+	TrustBundleSHA256                 string          `json:"trust_bundle_sha256"`
+	SigningKeyID                      string          `json:"signing_key_id"`
+	CanonicalSHA256                   string          `json:"canonical_sha256"`
+	CanonicalPayloadBase64            string          `json:"canonical_payload_base64"`
+	CandidateID                       string          `json:"candidate_id"`
+	RawSHA256                         string          `json:"raw_sha256"`
+	TranscriptionSHA256               string          `json:"transcription_sha256"`
+	NormalizedSHA256                  string          `json:"normalized_sha256"`
+	DiffSHA256                        string          `json:"diff_sha256"`
+	ParserVersion                     string          `json:"parser_version"`
+	ApprovalID                        string          `json:"approval_id"`
+	ApproverIdentity                  string          `json:"approver_identity"`
+	ApprovedAt                        string          `json:"approved_at"`
+	ApprovalScope                     string          `json:"approval_scope"`
+	PrayerPolicySHA256                string          `json:"prayer_policy_sha256,omitempty"`
+	ApprovalReceiptSHA256             string          `json:"approval_receipt_sha256,omitempty"`
+	ApprovalTrustRevision             uint64          `json:"approval_trust_revision,omitempty"`
+	ApprovalTrustSHA256               string          `json:"approval_trust_sha256,omitempty"`
+	ApprovalKeyID                     string          `json:"approval_key_id,omitempty"`
+	ApprovalReceiptBase64             string          `json:"approval_receipt_base64,omitempty"`
+	ApprovalTrustBundleBase64         string          `json:"approval_trust_bundle_base64,omitempty"`
+	PreviousApprovalTrustBundleBase64 string          `json:"previous_approval_trust_bundle_base64,omitempty"`
+	Snapshot                          domain.Snapshot `json:"unsigned_snapshot"`
 }
 
 type SigningResponse struct {
@@ -163,7 +166,10 @@ func PrepareSigning(request PublishRequest, policy *trust.Policy) (SigningReques
 		ApprovalScope: request.Approval.Scope, PrayerPolicySHA256: request.Approval.PrayerPolicySHA256,
 		ApprovalReceiptSHA256: approvalReceiptSHA256, ApprovalTrustRevision: approvalTrustRevision,
 		ApprovalTrustSHA256: approvalTrustSHA256, ApprovalKeyID: approvalKeyID,
-		Snapshot: snapshot,
+		ApprovalReceiptBase64:             request.ApprovalReceiptBase64,
+		ApprovalTrustBundleBase64:         request.ApprovalTrustBundleBase64,
+		PreviousApprovalTrustBundleBase64: request.PreviousApprovalTrustBundleBase64,
+		Snapshot:                          snapshot,
 	}, nil
 }
 

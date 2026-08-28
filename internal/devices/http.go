@@ -584,9 +584,7 @@ func (s *Service) handleAdminIssuePairing(writer http.ResponseWriter, request *h
 		writeAdminOperationError(writer, err)
 		return
 	}
-	writeJSON(writer, http.StatusCreated, adminIssuePairingResponse{
-		DeviceID: issued.DeviceID, Code: issued.Code, ExpiresAt: issued.ExpiresAt,
-	})
+	writeJSON(writer, http.StatusCreated, adminIssuePairingResponse(issued))
 }
 
 func (s *Service) handleAdminListDevices(writer http.ResponseWriter, request *http.Request) {

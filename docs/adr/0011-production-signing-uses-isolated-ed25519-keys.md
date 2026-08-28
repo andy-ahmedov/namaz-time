@@ -68,7 +68,10 @@ Planned rotation is at least annual. Suspected compromise triggers immediate
 revocation, replacement signing and canary rollout.
 
 Publication is two-person and two-step. `publisher prepare` emits non-secret
-canonical bytes and complete binding metadata for an isolated signer. The
+canonical bytes, complete binding metadata, and the exact Base64-encoded signed
+approval receipt plus current/direct-predecessor public approval-trust bundles
+for an isolated signer. Prepare and finalize reverify that proof against the
+candidate, diff and prayer-policy bindings on every production invocation. The
 signer signs both the snapshot and the domain-separated attestation.
 `publisher finalize` reconstructs the request from the original
 candidate/diff/approval, verifies both signatures
@@ -92,6 +95,10 @@ logged or embedded in application/runtime configuration.
   distinct named security/signer operator, authenticated distribution of the
   production snapshot trust bundle and a canary/rollback drill. The named pilot
   approver and approval-signature root are complete locally.
+- The signer wrapper must pin the accepted approval-trust root/revision/hash and
+  reject arbitrary raw signing requests. Carrying public proof in the request
+  makes independent verification possible; it does not make a publisher-
+  supplied trust root authoritative.
 - Revoking a compromised key intentionally makes artifacts signed only by that
   key unavailable for new serving/activation; operators must publish a known-
   good replacement under a non-compromised key.
