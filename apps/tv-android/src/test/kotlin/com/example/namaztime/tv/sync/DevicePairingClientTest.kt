@@ -86,6 +86,26 @@ class DevicePairingClientTest {
             assertEquals(null, store.saved)
         }
     }
+
+    @Test
+    fun oversizedPairingRequestIsRejectedBeforeNetworkIo() = runTest {
+        val cases = listOf(
+            List(129) { index -> "capability-$index" },
+            List(128) { index -> "capability-${index.toString().padStart(3, '0')}-${"x".repeat(113)}" },
+        )
+
+        cases.forEach { capabilities ->
+            val transport = PairingRecordingTransport(SyncHttpResponse(500, emptyMap(), byteArrayOf()))
+            val result = DevicePairingClient(transport, RecordingProvisioningStore()).pair(
+                pairUrl = "https://api.example.invalid/v1/devices/pair",
+                pairingCode = "ULSK-TEST-2026",
+                device = PairingDeviceInfo("0.2.0-shell", "35", "Robolectric", capabilities),
+            )
+
+            assertEquals(PairingResult.Rejected("pairing_request_invalid"), result)
+            assertEquals(null, transport.request)
+        }
+    }
 }
 
 private class PairingRecordingTransport(private val response: SyncHttpResponse) : DeviceSyncTransport {

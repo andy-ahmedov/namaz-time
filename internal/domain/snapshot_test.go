@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -150,6 +151,14 @@ func TestSnapshotValidationRejectsMalformedOptionalSections(t *testing.T) {
 			wantCode: "invalid_https_url",
 		},
 		{
+			name: "campaign URL userinfo",
+			mutate: func(snapshot *Snapshot) {
+				snapshot.Campaigns[0].URL = "https://trusted.example@attacker.example/donate"
+			},
+			wantPath: "campaigns[0].url",
+			wantCode: "invalid_https_url",
+		},
+		{
 			name: "campaign lowercase RFC3339 range",
 			mutate: func(snapshot *Snapshot) {
 				snapshot.Campaigns = []Campaign{{
@@ -181,6 +190,28 @@ func TestSnapshotValidationRejectsMalformedOptionalSections(t *testing.T) {
 			assertValidationError(t, snapshot, test.wantPath, test.wantCode)
 		})
 	}
+}
+
+func TestSnapshotCollectionBoundsMatchSchema(t *testing.T) {
+	t.Parallel()
+
+	snapshot := cloneSnapshot(t, loadSyntheticSnapshot(t))
+	snapshot.PrayerDays[0].Flags = make([]string, 33)
+	for index := range snapshot.PrayerDays[0].Flags {
+		snapshot.PrayerDays[0].Flags[index] = fmt.Sprintf("flag-%02d", index)
+	}
+	data, err := json.Marshal(snapshot)
+	if err != nil {
+		t.Fatalf("marshal snapshot: %v", err)
+	}
+	document, err := jsonschema.UnmarshalJSON(bytes.NewReader(data))
+	if err != nil {
+		t.Fatalf("parse snapshot: %v", err)
+	}
+	if err := compileSnapshotSchema(t).Validate(document); err == nil {
+		t.Fatal("JSON Schema validation error = nil for oversized flags")
+	}
+	assertValidationError(t, snapshot, "prayer_days[0].flags", "too_many_items")
 }
 
 func intPointer(value int) *int { return &value }

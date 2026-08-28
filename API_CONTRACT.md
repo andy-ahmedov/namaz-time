@@ -195,6 +195,9 @@ credential. API startup carries only the least-privileged runtime DSN, opens a
 bounded pgx pool, verifies the exact current migration ledger (v4) without
 changing it, and fails
 closed if the database, exact schema or key is unavailable.
+Remote PostgreSQL endpoints must use certificate and hostname verification
+equivalent to `sslmode=verify-full`; `disable`, `prefer`, `require`, and
+`verify-ca` are rejected outside loopback/local-socket development.
 
 Static T009 assignments are rejected in this mode. A newly authenticated but
 unassigned device receives `404 manifest_not_found` and keeps its local display;

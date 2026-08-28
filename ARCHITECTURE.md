@@ -502,7 +502,8 @@ See [contracts/prayer-snapshot.schema.json](contracts/prayer-snapshot.schema.jso
 5. Import into staging tables in one Room transaction.
 6. Run domain validation and next-event smoke checks.
 7. Atomically switch `active_snapshot_id`.
-8. Keep at least one prior valid snapshot for rollback.
+8. Keep exactly the active snapshot and its immediate prior valid snapshot for
+   rollback; prune the displaced older generation in the same Room transaction.
 9. Report the T013 privacy-safe latest-only heartbeat when provisioned; display remains independent from heartbeat success.
 
 Never erase the active snapshot before the new one is proven valid.

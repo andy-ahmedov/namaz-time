@@ -84,8 +84,8 @@ func validatePostgresEndpointTransport(host string, tlsConfig *tls.Config) error
 	if tlsConfig == nil {
 		return errors.New("remote PostgreSQL endpoint requires authenticated TLS")
 	}
-	if tlsConfig.InsecureSkipVerify && tlsConfig.VerifyPeerCertificate == nil && tlsConfig.VerifyConnection == nil {
-		return errors.New("remote PostgreSQL endpoint requires server certificate verification")
+	if tlsConfig.InsecureSkipVerify {
+		return errors.New("remote PostgreSQL endpoint requires certificate and hostname verification")
 	}
 	return nil
 }

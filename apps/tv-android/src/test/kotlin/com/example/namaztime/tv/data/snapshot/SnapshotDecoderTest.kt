@@ -204,6 +204,14 @@ class SnapshotDecoderTest {
                 "\"authority_name\": \"Synthetic test fixture — not an official authority\"",
                 "\"authority_name\": \"${"a".repeat(241)}\"",
             ) to "invalid_length",
+            fixture.replaceFirst(
+                "https://example.invalid/mosque-demo",
+                "https://trusted.example@attacker.example/donate",
+            ) to "invalid_https_url",
+            fixture.replaceFirst(
+                "\"flags\": [\"synthetic\"]",
+                "\"flags\": [${List(33) { index -> "\"flag-$index\"" }.joinToString()}]",
+            ) to "too_many_items",
         )
 
         cases.forEach { (corrupt, expectedCode) ->

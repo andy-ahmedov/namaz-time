@@ -824,6 +824,7 @@ components:
           maxLength: 240
         capabilities:
           type: array
+          maxItems: 128
           uniqueItems: true
           items:
             type: string

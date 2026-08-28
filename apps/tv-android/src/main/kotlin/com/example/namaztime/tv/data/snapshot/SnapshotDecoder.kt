@@ -19,6 +19,12 @@ class SnapshotValidationException(
 ) : IllegalArgumentException("$path: $code", cause)
 
 object SnapshotDecoder {
+    private const val MAX_PRAYER_DAYS = 400
+    private const val MAX_IQAMAH_RULES = 512
+    private const val MAX_IQAMAH_OVERRIDES = 2_000
+    private const val MAX_JUMUAH_SESSIONS = 64
+    private const val MAX_CAMPAIGNS = 128
+    private const val MAX_PRAYER_DAY_FLAGS = 32
     private val json = Json {
         ignoreUnknownKeys = false
         isLenient = false
@@ -95,9 +101,17 @@ object SnapshotDecoder {
             "outside_source_effective_range",
         )
         validatePrayerDays(snapshot.prayerDays, coverageFrom, coverageTo)
+        requireValue(snapshot.iqamahRules.size <= MAX_IQAMAH_RULES, "iqamah_rules", "too_many_items")
         snapshot.iqamahRules.forEachIndexed(::validateIqamahRule)
+        requireValue(
+            snapshot.iqamahDateOverrides.size <= MAX_IQAMAH_OVERRIDES,
+            "iqamah_date_overrides",
+            "too_many_items",
+        )
         snapshot.iqamahDateOverrides.forEachIndexed(::validateIqamahOverride)
+        requireValue(snapshot.jumuahSessions.size <= MAX_JUMUAH_SESSIONS, "jumuah_sessions", "too_many_items")
         snapshot.jumuahSessions.forEachIndexed(::validateJumuah)
+        requireValue(snapshot.campaigns.size <= MAX_CAMPAIGNS, "campaigns", "too_many_items")
         snapshot.campaigns.forEachIndexed(::validateCampaign)
         snapshot.theme?.let {
             text(it.themeId, "theme.theme_id", 1, 128)
@@ -151,6 +165,7 @@ object SnapshotDecoder {
         coverageTo: LocalDate,
     ) {
         requireValue(days.isNotEmpty(), "prayer_days", "required")
+        requireValue(days.size <= MAX_PRAYER_DAYS, "prayer_days", "too_many_items")
         val expectedCount = ChronoUnit.DAYS.between(coverageFrom, coverageTo) + 1
         requireValue(days.size.toLong() == expectedCount, "prayer_days", "coverage_mismatch")
         val seen = mutableSetOf<String>()
@@ -177,6 +192,11 @@ object SnapshotDecoder {
                 day.flags.distinct().size == day.flags.size,
                 "prayer_days[$index].flags",
                 "duplicate_value",
+            )
+            requireValue(
+                day.flags.size <= MAX_PRAYER_DAY_FLAGS,
+                "prayer_days[$index].flags",
+                "too_many_items",
             )
             day.flags.forEachIndexed { flagIndex, flag ->
                 maxLength(flag, "prayer_days[$index].flags[$flagIndex]", 128)
@@ -248,7 +268,8 @@ object SnapshotDecoder {
             fail("campaigns[$index].url", "invalid_https_url", error)
         }
         requireValue(
-            uri.scheme == "https" && !uri.host.isNullOrBlank(),
+            uri.scheme == "https" && !uri.host.isNullOrBlank() && uri.rawUserInfo == null &&
+                SnapshotFormatValidation.codePointLength(campaign.url) <= 2_048,
             "campaigns[$index].url",
             "invalid_https_url",
         )

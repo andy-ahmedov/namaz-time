@@ -263,6 +263,25 @@ class SnapshotImporterTest {
     }
 
     @Test
+    fun thirdActivationPrunesSnapshotOlderThanImmediateRollbackTarget() = runTest {
+        val first = SnapshotDecoder.decode(syntheticFixture())
+        val second = first.copy(snapshotId = "synthetic-ulsk-demo-2026-08-v2")
+        val third = first.copy(snapshotId = "synthetic-ulsk-demo-2026-08-v3")
+        val importer = SnapshotImporter(database)
+        importer.importAndActivate(first)
+        importer.importAndActivate(second)
+
+        val result = importer.importAndActivate(third)
+
+        assertEquals(SnapshotImportResult.Activated(third.snapshotId, second.snapshotId), result)
+        assertEquals(third.snapshotId, dao.getSelection()?.activeSnapshotId)
+        assertEquals(second.snapshotId, dao.getSelection()?.previousSnapshotId)
+        assertEquals(2, dao.countSnapshots())
+        assertFalse(dao.snapshotExists(first.snapshotId))
+        assertEquals(0, dao.countPrayerDays(first.snapshotId))
+    }
+
+    @Test
     fun rollbackInterruptionLeavesCurrentActiveAndPreviousUntouchedAfterReopen() = runTest {
         database.close()
         val context = ApplicationProvider.getApplicationContext<Context>()

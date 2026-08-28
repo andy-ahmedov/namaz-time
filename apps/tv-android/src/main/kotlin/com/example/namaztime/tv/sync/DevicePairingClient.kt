@@ -57,6 +57,9 @@ class DevicePairingClient(
         val body = pairingJson.encodeToString(
             PairRequest(pairingCode = pairingCode, device = device),
         ).encodeToByteArray()
+        if (body.size > MAX_PAIRING_REQUEST_BYTES) {
+            return PairingResult.Rejected("pairing_request_invalid")
+        }
         val response = try {
             transport.execute(
                 SyncHttpRequest(
@@ -140,9 +143,13 @@ private fun validPairingInput(code: String, device: PairingDeviceInfo): Boolean 
     if (code.length !in 6..32 || device.appVersion.length !in 1..64 ||
         device.osVersion.length !in 1..128 || device.model.length !in 1..240
     ) return false
-    return device.capabilities.size == device.capabilities.distinct().size &&
+    return device.capabilities.size <= MAX_PAIRING_CAPABILITIES &&
+        device.capabilities.size == device.capabilities.distinct().size &&
         device.capabilities.all { it.length in 1..128 }
 }
+
+private const val MAX_PAIRING_CAPABILITIES = 128
+private const val MAX_PAIRING_REQUEST_BYTES = 16 * 1024
 
 private fun validPairingResponse(response: PairResponse): Boolean =
     response.deviceId.length in 8..128 && response.deviceToken.length in 16..4096 &&

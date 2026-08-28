@@ -20,7 +20,9 @@ class SnapshotSyncWorker(
     override suspend fun doWork(): Result {
         val runner = (applicationContext as? SnapshotSyncRunnerProvider)
             ?.snapshotSyncRunner()
-            ?: return Result.success()
+            ?: return Result.failure(
+                workDataOf(SYNC_CODE_OUTPUT to "sync_runner_unavailable"),
+            )
         return when (val result = runner.run()) {
             is SnapshotSyncResult.Updated,
             is SnapshotSyncResult.NotModified,

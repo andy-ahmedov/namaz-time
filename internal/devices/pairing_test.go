@@ -258,6 +258,7 @@ func TestPostgresTransportPolicyRejectsUnauthenticatedRemoteTLS(t *testing.T) {
 		{"remote disable", "postgres://user:pass@db.example.test:5432/db?sslmode=disable", true},
 		{"remote default prefer fallback", "postgres://user:pass@db.example.test:5432/db", true},
 		{"remote encryption without server authentication", "postgres://user:pass@db.example.test:5432/db?sslmode=require", true},
+		{"remote CA verification without hostname verification", "postgres://user:pass@db.example.test:5432/db?sslmode=verify-ca", true},
 		{"remote verified TLS", "postgres://user:pass@db.example.test:5432/db?sslmode=verify-full", false},
 	}
 	for _, testCase := range cases {

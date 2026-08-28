@@ -22,6 +22,15 @@ var (
 
 const localDateLayout = "2006-01-02"
 
+const (
+	maxSnapshotPrayerDays      = 400
+	maxSnapshotIqamahRules     = 512
+	maxSnapshotIqamahOverrides = 2000
+	maxSnapshotJumuahSessions  = 64
+	maxSnapshotCampaigns       = 128
+	maxSnapshotPrayerDayFlags  = 32
+)
+
 // ValidationError is a stable machine-readable domain validation failure.
 type ValidationError struct {
 	Path    string
@@ -106,6 +115,10 @@ func (s Snapshot) Validate() error {
 }
 
 func validateIqamahRules(result *ValidationErrors, rules []IqamahRule) {
+	if len(rules) > maxSnapshotIqamahRules {
+		result.Items = append(result.Items, ValidationError{"iqamah_rules", "too_many_items", "must contain at most 512 rules"})
+		return
+	}
 	for index, rule := range rules {
 		path := fmt.Sprintf("iqamah_rules[%d]", index)
 		validateText(result, path+".id", rule.ID, 1, 128)
@@ -139,6 +152,10 @@ func validateIqamahRules(result *ValidationErrors, rules []IqamahRule) {
 }
 
 func validateIqamahOverrides(result *ValidationErrors, overrides []IqamahOverride) {
+	if len(overrides) > maxSnapshotIqamahOverrides {
+		result.Items = append(result.Items, ValidationError{"iqamah_date_overrides", "too_many_items", "must contain at most 2000 overrides"})
+		return
+	}
 	for index, override := range overrides {
 		path := fmt.Sprintf("iqamah_date_overrides[%d]", index)
 		validateDate(result, path+".date", override.Date)
@@ -170,6 +187,10 @@ func validateIqamahValue(result *ValidationErrors, path string, value IqamahValu
 }
 
 func validateJumuahSessions(result *ValidationErrors, sessions []JumuahSession) {
+	if len(sessions) > maxSnapshotJumuahSessions {
+		result.Items = append(result.Items, ValidationError{"jumuah_sessions", "too_many_items", "must contain at most 64 sessions"})
+		return
+	}
 	for index, session := range sessions {
 		path := fmt.Sprintf("jumuah_sessions[%d]", index)
 		validateText(result, path+".id", session.ID, 1, 128)
@@ -185,6 +206,10 @@ func validateJumuahSessions(result *ValidationErrors, sessions []JumuahSession) 
 }
 
 func validateCampaigns(result *ValidationErrors, campaigns []Campaign) {
+	if len(campaigns) > maxSnapshotCampaigns {
+		result.Items = append(result.Items, ValidationError{"campaigns", "too_many_items", "must contain at most 128 campaigns"})
+		return
+	}
 	for index, campaign := range campaigns {
 		path := fmt.Sprintf("campaigns[%d]", index)
 		validateText(result, path+".id", campaign.ID, 1, 128)
@@ -192,7 +217,7 @@ func validateCampaigns(result *ValidationErrors, campaigns []Campaign) {
 			result.Items = append(result.Items, ValidationError{path + ".kind", "unsupported_value", "unsupported campaign kind"})
 		}
 		parsedURL, err := url.ParseRequestURI(campaign.URL)
-		if err != nil || parsedURL.Scheme != "https" || parsedURL.Host == "" {
+		if err != nil || parsedURL.Scheme != "https" || parsedURL.Host == "" || parsedURL.User != nil || len([]rune(campaign.URL)) > 2048 {
 			result.Items = append(result.Items, ValidationError{path + ".url", "invalid_https_url", "must be an absolute HTTPS URL"})
 		}
 		validateText(result, path+".title", campaign.Title, 1, 160)
@@ -335,6 +360,10 @@ func validatePrayerDays(result *ValidationErrors, days []PrayerDay, coverageFrom
 		result.Items = append(result.Items, ValidationError{"prayer_days", "required", "must contain at least one day"})
 		return
 	}
+	if len(days) > maxSnapshotPrayerDays {
+		result.Items = append(result.Items, ValidationError{"prayer_days", "too_many_items", "must contain at most 400 days"})
+		return
+	}
 
 	seen := make(map[string]struct{}, len(days))
 	parsedDates := make([]time.Time, len(days))
@@ -348,6 +377,10 @@ func validatePrayerDays(result *ValidationErrors, days []PrayerDay, coverageFrom
 			seen[day.Date] = struct{}{}
 		}
 		validatePrayerTimes(result, index, day)
+		if len(day.Flags) > maxSnapshotPrayerDayFlags {
+			result.Items = append(result.Items, ValidationError{fmt.Sprintf("prayer_days[%d].flags", index), "too_many_items", "must contain at most 32 flags"})
+			continue
+		}
 		seenFlags := make(map[string]struct{}, len(day.Flags))
 		for flagIndex, flag := range day.Flags {
 			path := fmt.Sprintf("prayer_days[%d].flags[%d]", index, flagIndex)

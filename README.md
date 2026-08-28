@@ -32,7 +32,7 @@
 
 1. Прочитать [START_HERE.md](START_HERE.md).
 2. Заполнить блокирующие решения в [DECISIONS.md](DECISIONS.md).
-3. Установить Go 1.24, JDK 17 и Android SDK 35.
+3. Установить Go 1.26.7 или новее, JDK 17 и Android SDK 35.
 4. Выполнить проверки каркаса:
 
    ```bash

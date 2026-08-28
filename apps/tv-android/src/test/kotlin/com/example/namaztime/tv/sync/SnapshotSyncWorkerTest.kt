@@ -47,14 +47,19 @@ class SnapshotSyncWorkerTest {
     }
 
     @Test
-    fun missingRemoteProvisioningIsAQuietNoOpForLocalOnlyMode() = runTest {
+    fun missingRemoteProvisioningFailsClosedWithSafeDiagnostic() = runTest {
         SyncWorkerTestApplication.runner = null
         val worker = TestListenableWorkerBuilder.from(
             context(),
             SnapshotSyncWorker::class.java,
         ).build()
 
-        assertEquals(ListenableWorker.Result.success(), worker.doWork())
+        assertEquals(
+            ListenableWorker.Result.failure(
+                androidx.work.workDataOf(SYNC_CODE_OUTPUT to "sync_runner_unavailable"),
+            ),
+            worker.doWork(),
+        )
     }
 
     private fun context(): Context = ApplicationProvider.getApplicationContext()

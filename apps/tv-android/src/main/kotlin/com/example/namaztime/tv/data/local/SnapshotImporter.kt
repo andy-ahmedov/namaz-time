@@ -63,6 +63,8 @@ class SnapshotImporter(
         return database.withTransaction {
             val dao = database.snapshotDao()
             val selection = dao.getSelection()
+            val stalePreviousSnapshotId = selection?.previousSnapshotId
+                ?.takeIf { it != snapshot.snapshotId }
             val replacedSnapshotId = replaceableActiveSnapshotIds?.let { replaceableIds ->
                 val activeSnapshotId = selection?.activeSnapshotId
                 if (activeSnapshotId !in replaceableIds) {
@@ -174,6 +176,7 @@ class SnapshotImporter(
                 ),
             )
             replacedSnapshotId?.let { dao.deleteSnapshot(it) }
+            stalePreviousSnapshotId?.let { dao.deleteSnapshot(it) }
             SnapshotImportResult.Activated(snapshot.snapshotId, previous)
         }
     }
