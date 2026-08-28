@@ -59,14 +59,17 @@ internal/domain/              source-independent domain rules
 internal/providers/           source adapters
 internal/publication/         validation, approval and snapshot building
 internal/devices/             pairing, manifests and heartbeats
-web/admin/                    operator/approver UI
+web/admin/                    reserved for the blocked browser-admin decision
 contracts/                    OpenAPI and JSON Schemas
 examples/                     synthetic fixtures only
 docs/adr/                     architecture decisions
 research/                     sanitized evidence and research notes
 ```
 
-The code directories are intentionally empty in this docs-first package. Codex creates them through bounded tasks in [CODEX_TASKS.md](CODEX_TASKS.md).
+The Go control plane and Android TV client are implemented. `web/admin/` is not
+present because the browser identity/session model remains blocked by D-008;
+the authenticated admin HTTP surface is implemented without claiming a visual
+admin portal.
 
 ## Backend style
 

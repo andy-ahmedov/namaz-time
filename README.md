@@ -24,7 +24,8 @@
 - **TV-клиент:** Kotlin, Jetpack Compose for TV, Room/SQLite, DataStore, WorkManager.
 - **Backend и ingest:** Go, сначала модульный монолит.
 - **БД backend:** PostgreSQL.
-- **Админ-панель:** сначала server-rendered Go UI.
+- **Администрирование:** защищённый Go HTTP API реализован; browser UI не
+  реализован и заблокирован до решения D-008 об identity/session model.
 - **Доставка на TV:** подписанные версионированные snapshots, ETag, last-known-good и локальный кэш.
 - **Fallback-расчёт:** проверенная библиотека, но только как явно одобренный источник, а не скрытая замена официальной таблицы.
 

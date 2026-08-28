@@ -63,7 +63,7 @@
 - `cmd/migrate/` — short-lived explicit-target PostgreSQL schema migration
   command; schema-owner credentials never enter the API process.
 - `internal/devices/` — strict pairing fixture, production pairing/admin
-  managers, PostgreSQL v1/v2/v3/v4 migrations/repositories, mosque-scoped fleet
+  managers, PostgreSQL v1/v2/v3/v4/v5 migrations/repositories, mosque-scoped fleet
   administration, bearer-scoped manifest/snapshot service and signed immutable
   registry validation, latest-only privacy-safe device health and bounded
   canary rollout cohorts, plus a no-store bounded support projection.
@@ -97,6 +97,8 @@
 - `SECURITY_PRIVACY.md`
 - `OPERATIONS.md`
 - `BACKUP_RESTORE_RUNBOOK.md`
+- `docs/reviews/2026-08-28-engineering-security-review.md` — independent
+  repository-wide findings, remediation evidence and readiness verdict.
 - `SOURCE_PARTNERSHIP_CHECKLIST.md`
 - `CONTRIBUTING.md`
 - `scripts/docs-check.sh`
