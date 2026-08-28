@@ -60,8 +60,30 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 	if err := tx.Commit(t.Context()); err != nil {
 		t.Fatalf("commit v1 fixture: %v", err)
 	}
+	if err := repository.MigrateTo(t.Context(), 4); err != nil {
+		t.Fatalf("upgrade v1 to v4: %v", err)
+	}
+	if _, err := pool.Exec(t.Context(), `
+		INSERT INTO mosques (id, name, timezone_id, status, created_at, updated_at)
+		VALUES ('mosque-migration-0001', 'Migration fixture', 'Europe/Moscow', 'active', clock_timestamp(), clock_timestamp());
+		INSERT INTO admin_actors (id, display_name, status, created_at)
+		VALUES ('actor-migration-0001', 'Migration fixture', 'active', clock_timestamp());
+		INSERT INTO admin_requests (
+			idempotency_hash, request_hash, actor_id, mosque_id, operation, resource_id,
+			response, created_at, expires_at
+		) VALUES
+			(decode(repeat('41', 32), 'hex'), decode(repeat('42', 32), 'hex'),
+			 'actor-migration-0001', 'mosque-migration-0001', 'assign_device',
+			 'device-migration-0001', NULL, clock_timestamp(), clock_timestamp() + interval '1 day'),
+			(decode(repeat('43', 32), 'hex'), decode(repeat('44', 32), 'hex'),
+			 'actor-migration-0001', 'mosque-migration-0001', 'assign_device',
+			 'rollout-migration-01',
+			 '{"rollout_group":"rollout-migration-01","snapshot_id":"snapshot-migration-01","device_count":0,"assignments":[]}'::jsonb,
+			 clock_timestamp(), clock_timestamp() + interval '1 day')`, pgx.QueryExecModeSimpleProtocol); err != nil {
+		t.Fatalf("seed v4 admin request provenance: %v", err)
+	}
 	if err := repository.MigrateUp(t.Context()); err != nil {
-		t.Fatalf("upgrade v1 to current: %v", err)
+		t.Fatalf("upgrade v4 to current: %v", err)
 	}
 	var versions int
 	var adminTable, healthTable, rolloutColumn bool
@@ -83,6 +105,19 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 	}
 	if versions != PairingSchemaVersion || !adminTable || !healthTable || !rolloutColumn {
 		t.Fatalf("upgraded schema: versions=%d admin_table=%v health_table=%v rollout_column=%v", versions, adminTable, healthTable, rolloutColumn)
+	}
+	var setGroupOperations, assignGroupOperations int
+	if err := pool.QueryRow(t.Context(), `
+		SELECT
+			count(*) FILTER (WHERE operation = 'set_rollout_group'),
+			count(*) FILTER (WHERE operation = 'assign_rollout_group')
+		FROM admin_requests WHERE actor_id = 'actor-migration-0001'`).Scan(
+		&setGroupOperations, &assignGroupOperations,
+	); err != nil {
+		t.Fatalf("inspect migrated admin request provenance: %v", err)
+	}
+	if setGroupOperations != 1 || assignGroupOperations != 1 {
+		t.Fatalf("migrated operations: set=%d assign=%d", setGroupOperations, assignGroupOperations)
 	}
 	if err := repository.VerifySchema(t.Context()); err != nil {
 		t.Fatalf("VerifySchema(current) error = %v", err)

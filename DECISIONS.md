@@ -298,7 +298,7 @@ These are proposals until accepted by the product owner:
 - `PROPOSAL` — archive SHA-256 and byte count are corruption evidence, not
   source authenticity. Production RPO/RTO and point-in-time recovery remain
   deployment decisions and cannot be inferred from a local logical restore.
-- `CONFIRMED_RUNTIME` — exact v4 schema, linked fleet state, device/admin
+- `CONFIRMED_RUNTIME` — exact v5 schema, linked fleet state, device/admin
   authentication and append-only triggers were restored locally from an intact
   PostgreSQL 18 custom archive; a truncated archive was rejected. This is not a
   production-data restore or disaster-recovery timing claim.

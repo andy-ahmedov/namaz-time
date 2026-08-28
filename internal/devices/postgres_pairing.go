@@ -22,7 +22,7 @@ var pairingMigrations embed.FS
 
 // PairingSchemaVersion is the exact PostgreSQL schema version required by the
 // current API binary.
-const PairingSchemaVersion = 4
+const PairingSchemaVersion = 5
 
 const postgresRollbackTimeout = 2 * time.Second
 
@@ -632,6 +632,8 @@ func pairingMigrationPath(version int, direction string) string {
 		name = "device_health"
 	} else if version == 4 {
 		name = "rollout_groups"
+	} else if version == 5 {
+		name = "admin_request_provenance"
 	}
 	return fmt.Sprintf("migrations/%06d_%s.%s.sql", version, name, direction)
 }

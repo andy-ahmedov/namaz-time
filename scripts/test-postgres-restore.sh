@@ -47,7 +47,7 @@ drill_started_container_id="$(docker run --rm --detach \
   --env POSTGRES_DB=postgres \
   --env POSTGRES_USER=namaz_time_test \
   --env POSTGRES_PASSWORD=local-integration-only \
-  postgres:18-alpine)"
+  postgres@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15)"
 if [[ ! "${drill_started_container_id}" =~ ^[0-9a-f]{64}$ ]]; then
   echo "Docker did not return a valid restore-drill container ID" >&2
   exit 1
@@ -87,7 +87,7 @@ docker exec "${drill_container_id}" createdb \
 export NAMAZ_RESTORE_DRILL_MIGRATION_URL="postgres://namaz_time_test:local-integration-only@127.0.0.1:${drill_mapped_port}/${drill_source_database}?sslmode=disable"
 go run ./cmd/migrate \
   -database-url-env NAMAZ_RESTORE_DRILL_MIGRATION_URL \
-  -target-version 4
+  -target-version 5
 
 docker cp "${drill_fixture}" "${drill_container_id}:/tmp/namaz-time-restore-seed.sql" >/dev/null
 docker exec "${drill_container_id}" psql \

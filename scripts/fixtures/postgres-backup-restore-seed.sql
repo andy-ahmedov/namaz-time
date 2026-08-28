@@ -136,7 +136,7 @@ INSERT INTO admin_requests (
     'device-restore-0001',
     '{"manifest_version":7,"snapshot_id":"snapshot-restore-0001"}'::jsonb,
     '2026-08-20T12:10:00Z',
-    '2026-08-21T12:10:00Z'
+    '2099-01-01T00:00:00Z'
 );
 
 COMMIT;

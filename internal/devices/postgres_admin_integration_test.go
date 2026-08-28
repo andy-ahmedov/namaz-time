@@ -492,7 +492,27 @@ func TestPostgresAdminFleetLifecycleAndIsolation(t *testing.T) {
 	if rolloutGroupAuditCount != 2 {
 		t.Fatalf("rollout group audit count = %d", rolloutGroupAuditCount)
 	}
+	var setGroupRequests, assignGroupRequests int
+	if err := pool.QueryRow(t.Context(), `
+		SELECT
+			count(*) FILTER (WHERE operation = 'set_rollout_group'),
+			count(*) FILTER (WHERE operation = 'assign_rollout_group')
+		FROM admin_requests WHERE actor_id = $1`, local.ActorID).Scan(
+		&setGroupRequests, &assignGroupRequests,
+	); err != nil {
+		t.Fatalf("inspect rollout request provenance: %v", err)
+	}
+	if setGroupRequests != 2 || assignGroupRequests < 1 {
+		t.Fatalf("rollout request provenance: set=%d assign=%d", setGroupRequests, assignGroupRequests)
+	}
+	if _, err := pool.Exec(t.Context(), `
+		UPDATE devices SET capabilities = to_jsonb(ARRAY(
+			SELECT 'capability-' || value FROM generate_series(1, 129) AS value
+		)) WHERE id = $1`, canaryPeer.DeviceID); err == nil {
+		t.Fatal("devices accepted more than 128 capabilities")
+	}
 	assertAdminRequestsAreAppendOnly(t, pool)
+	assertExpiredAdminRequestRetention(t, pool, local.ActorID, "mosque-ulyanovsk-0001")
 }
 
 func rolloutResultsEqual(left, right RolloutAssignmentResult) bool {
@@ -551,6 +571,39 @@ func assertAdminRequestsAreAppendOnly(t *testing.T, pool *pgxpool.Pool) {
 	}
 	if _, err := pool.Exec(t.Context(), `TRUNCATE admin_requests`); err == nil {
 		t.Fatal("admin_requests accepted a TRUNCATE")
+	}
+}
+
+func assertExpiredAdminRequestRetention(t *testing.T, pool *pgxpool.Pool, actorID, mosqueID string) {
+	t.Helper()
+	if _, err := pool.Exec(t.Context(), `
+		INSERT INTO admin_requests (
+			idempotency_hash, request_hash, actor_id, mosque_id, operation, resource_id,
+			created_at, expires_at
+		) VALUES
+			(decode(repeat('61', 32), 'hex'), decode(repeat('62', 32), 'hex'), $1, $2,
+			 'issue_pairing', 'expired-old-resource-01', clock_timestamp() - interval '10 days', clock_timestamp() - interval '9 days'),
+			(decode(repeat('63', 32), 'hex'), decode(repeat('64', 32), 'hex'), $1, $2,
+			 'issue_pairing', 'expired-new-resource-01', clock_timestamp() - interval '2 days', clock_timestamp() - interval '1 day')`,
+		actorID, mosqueID); err != nil {
+		t.Fatalf("seed expired admin requests: %v", err)
+	}
+	if _, err := pool.Exec(t.Context(), `DELETE FROM admin_requests WHERE resource_id = 'expired-new-resource-01'`); err == nil {
+		t.Fatal("admin_requests deleted evidence inside retention period")
+	}
+	if _, err := pool.Exec(t.Context(), `DELETE FROM admin_requests WHERE resource_id = 'expired-old-resource-01'`); err != nil {
+		t.Fatalf("prune expired admin request after retention: %v", err)
+	}
+	var oldRows, newRows int
+	if err := pool.QueryRow(t.Context(), `
+		SELECT
+			count(*) FILTER (WHERE resource_id = 'expired-old-resource-01'),
+			count(*) FILTER (WHERE resource_id = 'expired-new-resource-01')
+		FROM admin_requests`).Scan(&oldRows, &newRows); err != nil {
+		t.Fatalf("inspect expired admin request retention: %v", err)
+	}
+	if oldRows != 0 || newRows != 1 {
+		t.Fatalf("expired admin request retention rows: old=%d new=%d", oldRows, newRows)
 	}
 }
 

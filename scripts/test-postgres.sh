@@ -19,7 +19,7 @@ started_container_id="$(docker run --rm --detach \
   --env POSTGRES_DB=namaz_time_test \
   --env POSTGRES_USER=namaz_time_test \
   --env POSTGRES_PASSWORD=local-integration-only \
-  postgres:18-alpine)"
+  postgres@sha256:9a8afca54e7861fd90fab5fdf4c42477a6b1cb7d293595148e674e0a3181de15)"
 if [[ ! "${started_container_id}" =~ ^[0-9a-f]{64}$ ]]; then
   echo "Docker did not return a valid PostgreSQL integration container ID" >&2
   exit 1

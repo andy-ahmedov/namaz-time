@@ -383,8 +383,16 @@ joins only the latest row through the existing mosque RBAC boundary. Android
 constructs the endpoint from the provisioned manifest origin/path. A wrapper
 may report after sync, but ignores every non-cancellation reporting failure and
 returns the original sync result, keeping display and activation independent.
-T014 advances the current API's exact-schema check to v4; lower, gapped and
+T030 advances the current API's exact-schema check to v5; lower, gapped and
 future ledgers all fail startup.
+
+Migration v5 separates `set_rollout_group` and `assign_rollout_group` from
+ordinary device assignment in durable idempotency provenance, including a
+deterministic v4 backfill. It also caps device capability arrays at 128 in the
+database. Admin request rows remain immutable while active and for seven days
+after expiry; only a database identity with explicit `DELETE` privilege can
+prune older expired rows. The API runtime role has no such privilege, and
+update/truncate are always rejected.
 
 ### Bounded canary rollout cohorts (T014)
 

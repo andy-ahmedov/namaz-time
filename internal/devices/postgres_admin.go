@@ -538,7 +538,7 @@ func (repository *PostgresPairingRepository) SetAdminDeviceRolloutGroup(
 		}
 	}
 	if err := insertAdminRequest(
-		ctx, tx, mutation.Scope, "assign_device", mutation.Command.DeviceID,
+		ctx, tx, mutation.Scope, "set_rollout_group", mutation.Command.DeviceID,
 		mutation.IdempotencyHash, mutation.RequestHash, nil,
 	); err != nil {
 		return err
@@ -560,7 +560,7 @@ func (repository *PostgresPairingRepository) ReadAdminRolloutAssignmentRetry(
 		return RolloutAssignmentResult{}, false, err
 	}
 	resourceID, response, found, err := readAdminRequest(
-		ctx, tx, scope, "assign_device", idempotencyHash, requestHash,
+		ctx, tx, scope, "assign_rollout_group", idempotencyHash, requestHash,
 	)
 	if err != nil {
 		return RolloutAssignmentResult{}, false, err
@@ -598,7 +598,7 @@ func (repository *PostgresPairingRepository) AssignAdminRolloutGroup(
 		return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: lock idempotency: %w", err)
 	}
 	resourceID, response, found, err := readAdminRequest(
-		ctx, tx, mutation.Scope, "assign_device", mutation.IdempotencyHash, mutation.RequestHash,
+		ctx, tx, mutation.Scope, "assign_rollout_group", mutation.IdempotencyHash, mutation.RequestHash,
 	)
 	if err != nil {
 		return RolloutAssignmentResult{}, err
@@ -719,7 +719,7 @@ func (repository *PostgresPairingRepository) AssignAdminRolloutGroup(
 		return RolloutAssignmentResult{}, fmt.Errorf("admin assign rollout group: encode response: %w", err)
 	}
 	if err := insertAdminRequest(
-		ctx, tx, mutation.Scope, "assign_device", mutation.Command.RolloutGroup,
+		ctx, tx, mutation.Scope, "assign_rollout_group", mutation.Command.RolloutGroup,
 		mutation.IdempotencyHash, mutation.RequestHash, response,
 	); err != nil {
 		return RolloutAssignmentResult{}, err

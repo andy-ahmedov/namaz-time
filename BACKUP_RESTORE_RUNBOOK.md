@@ -36,7 +36,10 @@ archive with fail-fast single-transaction semantics. The final Go check proves:
 - linked mosque/device/admin/pairing/assignment/latest-health state;
 - device and admin credential verification from restored hashes;
 - current assignment and health projection;
-- audit and idempotency update/delete/truncate rejection.
+- audit mutation rejection and idempotency update/truncate/recent-delete
+  rejection;
+- owner-only pruning of idempotency rows after the seven-day post-expiry
+  retention floor.
 
 The container and archive are removed on exit. A passing local drill does not
 measure a production recovery time or prove production storage durability.
@@ -79,6 +82,22 @@ pg_restore --list /secure/encrypted-volume/namaz-fleet.dump >/dev/null
 The archive includes hashed credentials and tenant/assignment/audit data and is
 therefore sensitive even without plaintext bearer tokens.
 
+## Expired idempotency maintenance
+
+`admin_requests` guarantees exact retries for 24 hours and retains the evidence
+for at least seven additional days. The API runtime role must not have `DELETE`.
+A scheduled database-owner maintenance job may prune only rows beyond that
+floor:
+
+```sql
+DELETE FROM admin_requests
+WHERE expires_at <= clock_timestamp() - interval '7 days';
+```
+
+The row trigger rejects earlier deletion, every update and every truncate. Log
+the deleted row count and job outcome without recording request/response JSON.
+This cleanup is separate from `audit_events`, which remain fully append-only.
+
 ## Restore procedure
 
 1. Declare an incident/change window, stop fleet writers for a production
@@ -97,7 +116,9 @@ therefore sensitive even without plaintext bearer tokens.
    migration-owner or backup credential.
 6. Run exact migration-ledger verification through the current runtime binary.
    Check linked mosque/device/assignment/latest-health records and explicitly
-   prove audit/idempotency update, delete and truncate are rejected.
+   prove audit mutation and idempotency update/truncate/recent-delete are
+   rejected. If pruning is configured, prove only rows beyond the retention
+   floor are removed.
 7. Verify that every current assignment references an available, immutable,
    hash/signature-valid snapshot and that the trust configuration matches the
    recovered release. Recover raw sources and publication signing keys through

@@ -3,6 +3,18 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
+for raw_reference in \
+  design.png \
+  current_design.png \
+  main_with_qr.png \
+  new_main_page_with_setting_icon.png \
+  qr_page.png; do
+  if git ls-files --error-unmatch -- "$raw_reference" >/dev/null 2>&1; then
+    echo "Raw visual reference must remain outside Git: $raw_reference" >&2
+    exit 1
+  fi
+done
+
 python3 - <<'PYDOCS'
 from pathlib import Path
 import hashlib
