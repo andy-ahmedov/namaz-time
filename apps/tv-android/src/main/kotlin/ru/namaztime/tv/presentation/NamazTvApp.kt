@@ -206,18 +206,7 @@ fun NamazTvApp(
                     modifier = Modifier.fillMaxSize(),
                 ) {
                     composable(DISPLAY_ROUTE) {
-                        if (preferences.displayMode == OperatorDisplayMode.DONATION &&
-                            donationQrState != null
-                        ) {
-                            DisplayKeepAwakeEffect()
-                            DonationDisplayScreen(
-                                configuration = preferences.donationConfiguration,
-                                qrState = donationQrState!!,
-                                customAssetVersion = donationAssetVersion,
-                                onOpenSettings = { navController.navigate(SETTINGS_ROUTE) },
-                            )
-                        } else {
-                            DisplayRoute(
+                        DisplayRoute(
                             schedule =
                                 (observedSchedule as? DisplayScheduleState.Available)?.schedule,
                             localDiagnostic =
@@ -228,11 +217,12 @@ fun NamazTvApp(
                             campaignEngine = campaignEngine,
                             qrCodeGenerator = qrCodeGenerator,
                             operatorPreferences = preferences,
+                            donationQrState = donationQrState,
+                            donationAssetVersion = donationAssetVersion,
                             screenRetentionShiftEnabled =
                                 preferences.screenRetentionShiftEnabled,
                             onOpenSettings = { navController.navigate(SETTINGS_ROUTE) },
-                            )
-                        }
+                        )
                     }
                     composable(SETTINGS_ROUTE) {
                         SettingsShell(
@@ -382,6 +372,8 @@ private fun DisplayRoute(
     campaignEngine: CampaignEngine,
     qrCodeGenerator: QrCodeGenerator,
     operatorPreferences: OperatorPreferences,
+    donationQrState: QrCampaignUiState?,
+    donationAssetVersion: Long,
     screenRetentionShiftEnabled: Boolean,
     onOpenSettings: () -> Unit,
 ) {
@@ -405,6 +397,8 @@ private fun DisplayRoute(
             campaignEngine = campaignEngine,
             qrCodeGenerator = qrCodeGenerator,
             operatorPreferences = operatorPreferences,
+            donationQrState = donationQrState,
+            donationAssetVersion = donationAssetVersion,
             screenRetentionShiftEnabled = screenRetentionShiftEnabled,
             onOpenSettings = onOpenSettings,
         )
@@ -430,6 +424,8 @@ internal fun ConnectedDisplayContent(
     campaignEngine: CampaignEngine,
     qrCodeGenerator: QrCodeGenerator,
     operatorPreferences: OperatorPreferences = OperatorPreferences(),
+    donationQrState: QrCampaignUiState? = null,
+    donationAssetVersion: Long = 0L,
     screenRetentionShiftEnabled: Boolean = true,
     onOpenSettings: () -> Unit,
 ) {
@@ -502,17 +498,34 @@ internal fun ConnectedDisplayContent(
         }
     }
     val recoveryCode = (bootstrapState as? SnapshotBootstrapState.Ready)?.recoveryCode
-    MainPrayerDisplay(
-        state = schedule.toPrayerDisplayUiState(
-            resolution = resolution as PrayerTimeResolution.Available,
-            strings = strings,
-            displayIdentity = schedule.toMosqueDisplayIdentity(
-                operatorPreferences.mosquePresentationIdentity,
+    val displayState = schedule.toPrayerDisplayUiState(
+        resolution = resolution as PrayerTimeResolution.Available,
+        strings = strings,
+        displayIdentity = schedule.toMosqueDisplayIdentity(
+            operatorPreferences.mosquePresentationIdentity,
+        ),
+    ).copy(supportCode = recoveryCode, campaign = campaign)
+    if (operatorPreferences.displayMode == OperatorDisplayMode.DONATION && donationQrState != null) {
+        DonationDisplayScreen(
+            configuration = operatorPreferences.donationConfiguration,
+            qrState = donationQrState,
+            status = DonationStatusUiState(
+                dateLabel = displayState.dateLabel,
+                weekdayLabel = displayState.weekdayLabel,
+                mosqueLocalTime = displayState.mosqueLocalTime.take(5),
+                currentPrayerLabel = displayState.currentPrayerLabel,
             ),
-        ).copy(supportCode = recoveryCode, campaign = campaign),
-        retentionOffset = retentionOffset,
-        onOpenSettings = onOpenSettings,
-    )
+            customAssetVersion = donationAssetVersion,
+            retentionOffset = retentionOffset,
+            onOpenSettings = onOpenSettings,
+        )
+    } else {
+        MainPrayerDisplay(
+            state = displayState,
+            retentionOffset = retentionOffset,
+            onOpenSettings = onOpenSettings,
+        )
+    }
 }
 
 @Composable

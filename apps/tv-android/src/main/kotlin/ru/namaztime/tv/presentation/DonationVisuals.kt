@@ -13,6 +13,7 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.graphics.drawscope.scale
 
 internal enum class DonationDetailIcon {
     RECIPIENT,
@@ -273,6 +274,111 @@ internal fun DonationFooterOrnament(
             strokeWidth = size.height * 0.055f,
         )
     }
+}
+
+@Composable
+internal fun DonationArchLanternGlyph(
+    modifier: Modifier = Modifier,
+    mirrored: Boolean = false,
+    tint: Color = NamazTvTheme.colors.accent,
+) {
+    Canvas(modifier) {
+        if (mirrored) {
+            scale(scaleX = -1f, scaleY = 1f, pivot = center) {
+                drawDonationArchLantern(tint)
+            }
+        } else {
+            drawDonationArchLantern(tint)
+        }
+    }
+}
+
+private fun DrawScope.drawDonationArchLantern(tint: Color) {
+    val strokeWidth = size.minDimension * 0.022f
+    val stroke = Stroke(strokeWidth, cap = StrokeCap.Round)
+    val arch = Path().apply {
+        moveTo(size.width * 0.12f, size.height * 0.92f)
+        lineTo(size.width * 0.12f, size.height * 0.48f)
+        cubicTo(
+            size.width * 0.12f,
+            size.height * 0.35f,
+            size.width * 0.34f,
+            size.height * 0.33f,
+            size.width * 0.50f,
+            size.height * 0.10f,
+        )
+        cubicTo(
+            size.width * 0.66f,
+            size.height * 0.33f,
+            size.width * 0.88f,
+            size.height * 0.35f,
+            size.width * 0.88f,
+            size.height * 0.48f,
+        )
+        lineTo(size.width * 0.88f, size.height * 0.92f)
+    }
+    drawPath(
+        path = arch,
+        color = tint.copy(alpha = 0.18f),
+        style = Stroke(strokeWidth * 3.6f, cap = StrokeCap.Round),
+    )
+    drawPath(path = arch, color = tint.copy(alpha = 0.9f), style = stroke)
+
+    drawLine(
+        color = tint.copy(alpha = 0.9f),
+        start = Offset(size.width * 0.50f, size.height * 0.12f),
+        end = Offset(size.width * 0.50f, size.height * 0.42f),
+        strokeWidth = strokeWidth,
+        cap = StrokeCap.Round,
+    )
+    drawCircle(
+        color = tint.copy(alpha = 0.9f),
+        radius = strokeWidth * 1.1f,
+        center = Offset(size.width * 0.50f, size.height * 0.37f),
+    )
+    val lantern = Path().apply {
+        moveTo(size.width * 0.50f, size.height * 0.40f)
+        lineTo(size.width * 0.38f, size.height * 0.50f)
+        lineTo(size.width * 0.34f, size.height * 0.76f)
+        lineTo(size.width * 0.42f, size.height * 0.84f)
+        lineTo(size.width * 0.50f, size.height * 0.89f)
+        lineTo(size.width * 0.58f, size.height * 0.84f)
+        lineTo(size.width * 0.66f, size.height * 0.76f)
+        lineTo(size.width * 0.62f, size.height * 0.50f)
+        close()
+    }
+    drawPath(
+        path = lantern,
+        color = tint.copy(alpha = 0.14f),
+    )
+    drawPath(path = lantern, color = tint.copy(alpha = 0.95f), style = stroke)
+    listOf(0.43f, 0.57f).forEach { paneX ->
+        drawLine(
+            color = tint.copy(alpha = 0.72f),
+            start = Offset(size.width * paneX, size.height * 0.53f),
+            end = Offset(size.width * paneX, size.height * 0.77f),
+            strokeWidth = strokeWidth * 0.72f,
+            cap = StrokeCap.Round,
+        )
+    }
+    drawLine(
+        color = tint.copy(alpha = 0.88f),
+        start = Offset(size.width * 0.37f, size.height * 0.58f),
+        end = Offset(size.width * 0.63f, size.height * 0.58f),
+        strokeWidth = strokeWidth,
+        cap = StrokeCap.Round,
+    )
+    drawLine(
+        brush = Brush.horizontalGradient(
+            0f to Color.Transparent,
+            0.28f to tint.copy(alpha = 0.56f),
+            1f to tint.copy(alpha = 0.08f),
+        ),
+        start = Offset(size.width * 0.02f, size.height * 0.94f),
+        end = Offset(size.width * 0.46f, size.height * 0.94f),
+        strokeWidth = strokeWidth * 0.75f,
+        cap = StrokeCap.Round,
+    )
 }
 
 @Composable

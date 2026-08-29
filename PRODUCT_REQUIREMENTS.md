@@ -70,6 +70,10 @@ Maintains sources and devices without being able to silently publish unapproved 
 - `FR-TV-010`: allow a bounded device-local donation gratitude message; blank
   uses the current UI language's standard fallback and never changes schedule
   provenance.
+- `FR-TV-011`: the standalone donation display shows mosque-local date, time
+  and current prayer from the same active Room schedule and `PrayerTimeEngine`
+  projection as the prayer display; absence or invalidity of that local
+  schedule fails closed to the normal unavailable state.
 
 ### QR campaigns and announcements
 

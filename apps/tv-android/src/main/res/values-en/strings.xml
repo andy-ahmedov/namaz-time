@@ -114,7 +114,7 @@
     <string name="show_donation_screen">Enable screen</string>
     <string name="show_prayer_schedule">Show prayer schedule</string>
     <string name="donation_display_title">Donations</string>
-    <string name="donation_display_subtitle">Scan the QR code to make a donation</string>
+    <string name="donation_display_subtitle">Scan to donate</string>
     <string name="donation_footer_thanks">May Allah reward you for your generosity and kind heart</string>
     <string name="iqamah_time_label">Iqamah offset</string>
     <string name="iqamah_offset_minutes_value">+%1$d min</string>
@@ -146,6 +146,7 @@
     <string name="prayer_asr">Asr</string>
     <string name="prayer_maghrib">Maghrib</string>
     <string name="prayer_isha">Isha</string>
+    <string name="prayer_jumuah">Jumu’ah</string>
     <string name="event_iqamah_label">%1$s · iqamah</string>
     <string name="event_jumuah_label">Jumu’ah · %1$s</string>
     <string name="event_tomorrow_label">%1$s · tomorrow</string>

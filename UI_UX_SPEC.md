@@ -96,7 +96,7 @@ public display mode.
 T028 additionally provides a standalone donation display mode. It replaces the
 schedule composition only after a complete local configuration passes the same
 HTTPS campaign validation and QR generator used by the optional column. The
-T029 composition treats the authorized `qr_page.png` as its exact visual
+historical T029 composition treated the authorized `qr_page.png` as its exact visual
 specification: the chosen image is full bleed; a centered NamazTime glass pill
 and compact top-right gear sit above one tall right-side donation card; a
 separate long glass gratitude panel sits at the bottom. The left side has no
@@ -109,6 +109,21 @@ non-blank; blank uses the exact localized gratitude sentence for the active
 RU/EN UI language. All
 screen-specific icons and ornaments are Compose Canvas/vector drawings;
 decorative lines fade to transparency instead of ending abruptly.
+
+T033 supersedes that historical T029 block composition with the
+owner-authorized `layout_of_blocks_on_the_donation_screen.png`. The portrait
+coordinates are not copied to 16:9. Instead, the selected image remains full
+bleed behind three TV-safe relationships: one long top status block containing
+localized date/weekday, a vertical divider, mosque-local `HH:mm`, a second
+divider and the current prayer; a separate equal-height Settings gear-card; one
+wide central navy/champagne glass card containing title, fading diamond line,
+scan instruction, shared framed QR and five transfer rows; and one wide bottom
+gratitude card with mirrored arch/lantern drawings. The old NamazTime top pill
+is absent. Date, time and current prayer are projected from the same active
+Room schedule and `PrayerTimeEngine` resolution as the prayer display. Donation
+mode performs no independent calculation and fails closed to the unavailable
+screen when no valid active schedule exists; it remains network-free and
+offline-capable with the last-known-good Room snapshot.
 
 The QR uses dark-navy modules on a rounded warm-white surface, a thin
 champagne frame and a NamazTime center badge while retaining a four-module
@@ -168,7 +183,7 @@ replaces that border with one gold outline and does not scale the control.
 Settings navigation likewise uses one gold focused fill with no white inner or
 outer frame; selected-but-unfocused state remains a softer gold surface.
 
-T029 uses the separately authorized `qr_page.png` for the standalone donation
+T029 used the separately authorized `qr_page.png` for the historical standalone donation
 screen under ADR 0014. At the controlled 1920×1080 profile the principal
 anchors are approximately: brand `(838,33,242,70)`, Settings visual
 `(1808,29,76,76)`, donation card `(1193,119,590,827)`, QR
@@ -176,6 +191,14 @@ anchors are approximately: brand `(838,33,242,70)`, Settings visual
 `(194,970,1530,81)`. The same normalized 960×540 coordinate system scales
 uniformly for 720p/1080p/4K. Focus keeps the gear size stable and substitutes a
 thin gold outline/glow rather than a filled yellow surface.
+
+T033 replaces those T029 anchors. At normalized 960×540 its standalone
+donation anchors are: status `(43,28,798,64)`, Settings visual
+`(853,28,64,64)`, central card `(43,105,874,319)`, shared QR
+`(154,178,218,218)`, transfer rows `(440,184,410,210)` and gratitude block
+`(43,438,874,74)`. Geometry tests allow 4 dp, or 6 dp around QR/row internals,
+across the 720p, 1080p-density and 4K-density profiles. The bounded ±2 dp
+retention shift is additive and remains within the screen-safe margins.
 
 The main display uses a centered NamazTime pill, mosque identity, a left
 next-event/countdown and local-clock stack, a right six-row prayer table and a

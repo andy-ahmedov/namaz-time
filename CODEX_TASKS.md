@@ -673,4 +673,9 @@ and five controlled 1920×1080 component-review iterations pass.
 Checkpoint 5 applies the built-in-only filmstrip to five donation images and
 adds a bounded persisted gratitude override with render-time RU/EN fallback;
 DataStore/Compose tests and three emulator component-review passes succeed.
-Checkpoint 6 and final gates/reviews are in progress.
+Checkpoint 6 translates the new portrait composition into a measured 16:9
+status/gear, central-card and gratitude-block layout. Its current-prayer label
+comes from the existing active Room schedule and `PrayerTimeEngine`; missing
+schedule state fails closed. Adaptive/state/app tests and three controlled API
+36 component-review passes succeed. Final gates, builds and reviews are in
+progress.

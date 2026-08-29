@@ -44,6 +44,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Button
@@ -62,6 +63,7 @@ import ru.namaztime.tv.repository.OperatorImageSlot
 const val DONATION_DISPLAY_TAG = "donation-display"
 const val DONATION_DISPLAY_SAFE_CONTENT_TAG = "donation-display-safe-content"
 const val DONATION_DISPLAY_IMAGE_TAG = "donation-display-image"
+const val DONATION_DISPLAY_STATUS_TAG = "donation-display-status"
 const val DONATION_DISPLAY_DETAILS_TAG = "donation-display-details"
 const val DONATION_DISPLAY_SETTINGS_TAG = "donation-display-settings"
 const val DONATION_DISPLAY_SETTINGS_VISUAL_TAG = "donation-display-settings-visual"
@@ -112,36 +114,45 @@ internal enum class DonationImageStyle(
 private data class DonationDisplayMetrics(val scale: Float) {
     fun dp(value: Float): Dp = (value * scale).dp
 
-    val safeLeft = dp(9.5f)
-    val safeTop = dp(9.5f)
-    val safeWidth = dp(941f)
-    val safeHeight = dp(521f)
-    val brandTop = dp(16.5f)
-    val brandWidth = dp(121f)
-    val brandHeight = dp(35f)
-    val cardLeft = dp(596.5f)
-    val cardTop = dp(59.5f)
-    val cardWidth = dp(295f)
-    val cardHeight = dp(413.5f)
-    val cardRadius = dp(20f)
-    val footerLeft = dp(97f)
-    val footerTop = dp(485f)
-    val footerWidth = dp(765f)
-    val footerHeight = dp(40.5f)
-    val settingsVisualSize = dp(38f)
-    val settingsHitSize = dp(48f)
-    val settingsTop = dp(14.5f)
-    val settingsEnd = dp(13.5f)
+    val safeLeft = dp(31f)
+    val safeTop = dp(18f)
+    val safeWidth = dp(898f)
+    val safeHeight = dp(504f)
+    val statusLeft = dp(43f)
+    val statusTop = dp(28f)
+    val statusWidth = dp(798f)
+    val topBlockHeight = dp(64f)
+    val settingsLeft = dp(853f)
+    val cardLeft = dp(43f)
+    val cardTop = dp(105f)
+    val cardWidth = dp(874f)
+    val cardHeight = dp(319f)
+    val cardRadius = dp(22f)
+    val footerLeft = dp(43f)
+    val footerTop = dp(438f)
+    val footerWidth = dp(874f)
+    val footerHeight = dp(74f)
+    val settingsVisualSize = topBlockHeight
+    val settingsHitSize = topBlockHeight
 }
+
+internal data class DonationStatusUiState(
+    val dateLabel: String,
+    val weekdayLabel: String,
+    val mosqueLocalTime: String,
+    val currentPrayerLabel: String,
+)
 
 @Composable
 internal fun DonationDisplayScreen(
     configuration: OperatorDonationConfiguration,
     qrState: QrCampaignUiState,
+    status: DonationStatusUiState,
     customAssetVersion: Long,
     onOpenSettings: () -> Unit,
     modifier: Modifier = Modifier,
     requestInitialFocus: Boolean = true,
+    retentionOffset: DpOffset = DpOffset.Zero,
 ) {
     val settingsRequester = remember { FocusRequester() }
     val style = DonationImageStyle.fromId(configuration.imageStyleId)
@@ -168,70 +179,113 @@ internal fun DonationDisplayScreen(
                 .size(metrics.safeWidth, metrics.safeHeight)
                 .testTag(DONATION_DISPLAY_SAFE_CONTENT_TAG),
         )
-        DonationBrandPill(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = metrics.brandTop)
-                .size(metrics.brandWidth, metrics.brandHeight)
-                .testTag(DONATION_DISPLAY_BRAND_TAG),
-            scale = scale,
+        Box(Modifier.fillMaxSize().offset(retentionOffset.x, retentionOffset.y)) {
+            DonationStatusBlock(
+                status = status,
+                metrics = metrics,
+                modifier = Modifier
+                    .offset(metrics.statusLeft, metrics.statusTop)
+                    .size(metrics.statusWidth, metrics.topBlockHeight)
+                    .testTag(DONATION_DISPLAY_STATUS_TAG),
+            )
+            DonationCard(
+                configuration = configuration,
+                qrState = qrState,
+                metrics = metrics,
+                modifier = Modifier
+                    .offset(metrics.cardLeft, metrics.cardTop)
+                    .size(metrics.cardWidth, metrics.cardHeight)
+                    .testTag(DONATION_DISPLAY_DETAILS_TAG),
+            )
+            DonationFooter(
+                text = configuration.gratitudeMessage.trim().ifEmpty {
+                    appString(R.string.donation_footer_thanks)
+                },
+                metrics = metrics,
+                modifier = Modifier
+                    .offset(metrics.footerLeft, metrics.footerTop)
+                    .size(metrics.footerWidth, metrics.footerHeight)
+                    .testTag(DONATION_DISPLAY_FOOTER_TAG),
+            )
+            DonationSettingsButton(
+                requester = settingsRequester,
+                requestInitialFocus = requestInitialFocus,
+                onOpenSettings = onOpenSettings,
+                metrics = metrics,
+                modifier = Modifier.offset(metrics.settingsLeft, metrics.statusTop),
+            )
+        }
+    }
+}
+
+@Composable
+private fun DonationStatusBlock(
+    status: DonationStatusUiState,
+    metrics: DonationDisplayMetrics,
+    modifier: Modifier = Modifier,
+) {
+    val colors = NamazTvTheme.colors
+    val shape = RoundedCornerShape(metrics.dp(22f))
+    Row(
+        modifier = modifier
+            .clip(shape)
+            .background(Brush.verticalGradient(listOf(DONATION_STATUS_TOP, DONATION_STATUS_BOTTOM)))
+            .border(metrics.dp(0.8f), colors.accentOutline.copy(alpha = 0.82f), shape)
+            .padding(horizontal = metrics.dp(22f)),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(
+            modifier = Modifier.weight(1.25f),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            Text(
+                text = status.dateLabel,
+                color = colors.textPrimary,
+                fontSize = (17f * metrics.scale).sp,
+                fontWeight = FontWeight.Light,
+                maxLines = 1,
+            )
+            Text(
+                text = status.weekdayLabel,
+                color = colors.textPrimary,
+                fontSize = (15f * metrics.scale).sp,
+                fontWeight = FontWeight.Light,
+                maxLines = 1,
+            )
+        }
+        DonationStatusDivider(metrics)
+        Text(
+            text = status.mosqueLocalTime,
+            modifier = Modifier.weight(0.9f),
+            color = colors.textPrimary,
+            fontSize = (29f * metrics.scale).sp,
+            fontWeight = FontWeight.Medium,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
         )
-        DonationCard(
-            configuration = configuration,
-            qrState = qrState,
-            metrics = metrics,
-            modifier = Modifier
-                .offset(metrics.cardLeft, metrics.cardTop)
-                .size(metrics.cardWidth, metrics.cardHeight)
-                .testTag(DONATION_DISPLAY_DETAILS_TAG),
-        )
-        DonationFooter(
-            text = configuration.gratitudeMessage.trim().ifEmpty {
-                appString(R.string.donation_footer_thanks)
-            },
-            metrics = metrics,
-            modifier = Modifier
-                .offset(metrics.footerLeft, metrics.footerTop)
-                .size(metrics.footerWidth, metrics.footerHeight)
-                .testTag(DONATION_DISPLAY_FOOTER_TAG),
-        )
-        DonationSettingsButton(
-            requester = settingsRequester,
-            requestInitialFocus = requestInitialFocus,
-            onOpenSettings = onOpenSettings,
-            metrics = metrics,
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .padding(top = metrics.settingsTop, end = metrics.settingsEnd),
+        DonationStatusDivider(metrics)
+        Text(
+            text = status.currentPrayerLabel,
+            modifier = Modifier.weight(0.85f),
+            color = colors.textPrimary,
+            fontSize = (24f * metrics.scale).sp,
+            fontWeight = FontWeight.Normal,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
     }
 }
 
 @Composable
-private fun DonationBrandPill(
-    scale: Float,
-    modifier: Modifier = Modifier,
-) {
-    val colors = NamazTvTheme.colors
-    val shape = RoundedCornerShape((13f * scale).dp)
-    Row(
-        modifier = modifier
-            .clip(shape)
-            .background(colors.surfaceStrong.copy(alpha = 0.64f))
-            .border((0.55f * scale).dp, colors.accentOutline.copy(alpha = 0.58f), shape)
-            .padding(horizontal = (8f * scale).dp),
-        horizontalArrangement = Arrangement.spacedBy((5f * scale).dp),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        DonationBrandMark(Modifier.size((18f * scale).dp))
-        Text(
-            text = appString(R.string.app_name),
-            color = colors.textPrimary,
-            fontSize = (13.5f * scale).sp,
-            fontWeight = FontWeight.Light,
-            maxLines = 1,
-        )
-    }
+private fun DonationStatusDivider(metrics: DonationDisplayMetrics) {
+    Box(
+        Modifier
+            .width(metrics.dp(0.8f))
+            .height(metrics.dp(42f))
+            .background(NamazTvTheme.colors.textSecondary.copy(alpha = 0.58f)),
+    )
 }
 
 @Composable
@@ -247,27 +301,38 @@ private fun DonationCard(
         modifier = modifier
             .clip(shape)
             .background(Brush.verticalGradient(listOf(DONATION_CARD_TOP, DONATION_CARD_BOTTOM)))
-            .border(metrics.dp(0.65f), colors.accentOutline.copy(alpha = 0.78f), shape),
+            .border(metrics.dp(0.8f), colors.accentOutline.copy(alpha = 0.82f), shape),
     ) {
-        DonationSectionHeading(
+        Text(
             text = appString(R.string.donation_display_title),
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .offset(y = metrics.dp(17f))
-                .width(metrics.dp(238f))
-                .height(metrics.dp(24f))
+                .offset(y = metrics.dp(13f))
+                .width(metrics.dp(360f))
+                .height(metrics.dp(32f))
                 .testTag(DONATION_DISPLAY_TITLE_TAG),
-            scale = metrics.scale,
-            title = true,
+            color = colors.accent,
+            fontSize = (24f * metrics.scale).sp,
+            fontWeight = FontWeight.Normal,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
+        )
+        TvFadingDiamondDivider(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .offset(y = metrics.dp(47f))
+                .width(metrics.dp(330f))
+                .height(metrics.dp(8f)),
+            tint = colors.accentOutline,
         )
         Text(
             text = appString(R.string.donation_display_subtitle),
             modifier = Modifier
                 .align(Alignment.TopCenter)
-                .offset(y = metrics.dp(45f))
-                .width(metrics.dp(260f)),
+                .offset(y = metrics.dp(58f))
+                .width(metrics.dp(500f)),
             color = colors.textPrimary.copy(alpha = 0.92f),
-            fontSize = (11f * metrics.scale).sp,
+            fontSize = (16f * metrics.scale).sp,
             fontWeight = FontWeight.Light,
             textAlign = TextAlign.Center,
             maxLines = 1,
@@ -276,69 +341,19 @@ private fun DonationCard(
         DonationQrSurface(
             state = qrState,
             modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(x = metrics.dp(-3f), y = metrics.dp(65.5f))
-                .size(metrics.dp(154f))
+                .offset(x = metrics.dp(111f), y = metrics.dp(73f))
+                .size(metrics.dp(218f))
                 .testTag(DONATION_DISPLAY_QR_TAG),
             scale = metrics.scale,
-        )
-        TvFadingDiamondDivider(
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = metrics.dp(224f))
-                .width(metrics.dp(260f))
-                .height(metrics.dp(7f)),
-            tint = colors.accentOutline,
-        )
-        DonationSectionHeading(
-            text = appString(R.string.donation_transfer_details_title),
-            modifier = Modifier
-                .align(Alignment.TopCenter)
-                .offset(y = metrics.dp(236f))
-                .width(metrics.dp(170f))
-                .height(metrics.dp(22f)),
-            scale = metrics.scale,
-            title = false,
         )
         DonationDetailsRows(
             configuration = configuration,
             modifier = Modifier
-                .offset(x = metrics.dp(20f), y = metrics.dp(256f))
-                .width(metrics.dp(255f))
-                .height(metrics.dp(145f))
+                .offset(x = metrics.dp(397f), y = metrics.dp(79f))
+                .width(metrics.dp(410f))
+                .height(metrics.dp(210f))
                 .testTag(DONATION_DISPLAY_ROWS_TAG),
             scale = metrics.scale,
-        )
-    }
-}
-
-@Composable
-private fun DonationSectionHeading(
-    text: String,
-    scale: Float,
-    title: Boolean,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        DonationHeadingFlourish(
-            reverse = false,
-            modifier = Modifier.width((35f * scale).dp).height((13f * scale).dp),
-        )
-        Text(
-            text = text,
-            modifier = Modifier.padding(horizontal = (6f * scale).dp),
-            color = NamazTvTheme.colors.accent,
-            fontSize = ((if (title) 21.3f else 17.2f) * scale).sp,
-            fontWeight = FontWeight.Normal,
-            maxLines = 1,
-        )
-        DonationHeadingFlourish(
-            reverse = true,
-            modifier = Modifier.width((35f * scale).dp).height((13f * scale).dp),
         )
     }
 }
@@ -351,8 +366,8 @@ private fun DonationQrSurface(
 ) {
     ReferenceQrCode(
         state = state,
-        qrSize = (140f * scale).dp,
-        framePadding = (7f * scale).dp,
+        qrSize = (198f * scale).dp,
+        framePadding = (10f * scale).dp,
         modifier = modifier
             .testTag(QR_ELEGANT_FRAME_TAG),
     )
@@ -375,7 +390,7 @@ private fun DonationDetailsRows(
         rows.forEachIndexed { index, row ->
             DonationDetailsRow(
                 row = row,
-                modifier = Modifier.width((255f * scale).dp).height((29f * scale).dp),
+                modifier = Modifier.width((410f * scale).dp).height((42f * scale).dp),
                 scale = scale,
                 showSeparator = index != rows.lastIndex,
             )
@@ -400,15 +415,15 @@ private fun DonationDetailsRow(
     val colors = NamazTvTheme.colors
     Box(modifier) {
         Row(
-            modifier = Modifier.fillMaxSize().padding(start = (5f * scale).dp),
+            modifier = Modifier.fillMaxSize().padding(horizontal = (4f * scale).dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            DonationDetailGlyph(icon = row.icon, modifier = Modifier.size((17f * scale).dp))
+            DonationDetailGlyph(icon = row.icon, modifier = Modifier.size((24f * scale).dp))
             Text(
-                text = appString(row.labelRes),
-                modifier = Modifier.padding(start = (14f * scale).dp).width((92.5f * scale).dp),
+                text = "${appString(row.labelRes)}:",
+                modifier = Modifier.padding(start = (15f * scale).dp).width((127f * scale).dp),
                 color = colors.textSecondary.copy(alpha = 0.86f),
-                fontSize = (11f * scale).sp,
+                fontSize = (15f * scale).sp,
                 fontWeight = FontWeight.Light,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -417,7 +432,7 @@ private fun DonationDetailsRow(
                 text = row.value,
                 modifier = Modifier.weight(1f),
                 color = if (row.accentValue) colors.accent else colors.textPrimary,
-                fontSize = (12f * scale).sp,
+                fontSize = (16f * scale).sp,
                 fontWeight = FontWeight.Normal,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -442,40 +457,33 @@ private fun DonationFooter(
     modifier: Modifier = Modifier,
 ) {
     val colors = NamazTvTheme.colors
-    val shape = RoundedCornerShape(metrics.dp(20f))
+    val shape = RoundedCornerShape(metrics.dp(22f))
     Row(
         modifier = modifier
             .clip(shape)
-            .background(DONATION_FOOTER_SURFACE)
-            .border(metrics.dp(0.55f), colors.accentOutline.copy(alpha = 0.75f), shape)
-            .padding(horizontal = metrics.dp(82f)),
+            .background(Brush.verticalGradient(listOf(DONATION_STATUS_TOP, DONATION_FOOTER_SURFACE)))
+            .border(metrics.dp(0.8f), colors.accentOutline.copy(alpha = 0.82f), shape)
+            .padding(horizontal = metrics.dp(18f)),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center,
     ) {
-        DonationMosqueGlyph(Modifier.size(metrics.dp(27f)))
-        DonationFooterOrnament(
-            modifier = Modifier
-                .padding(start = metrics.dp(40f), end = metrics.dp(26f))
-                .width(metrics.dp(16f))
-                .height(metrics.dp(12f)),
+        DonationArchLanternGlyph(
+            modifier = Modifier.size(metrics.dp(62f)),
         )
         Text(
             text = text,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).padding(horizontal = metrics.dp(24f)),
             color = colors.textPrimary,
-            fontSize = (13.4f * metrics.scale).sp,
+            fontSize = (18f * metrics.scale).sp,
             fontWeight = FontWeight.Light,
             textAlign = TextAlign.Center,
-            maxLines = 1,
+            lineHeight = (23f * metrics.scale).sp,
+            maxLines = 2,
             overflow = TextOverflow.Ellipsis,
         )
-        DonationFooterOrnament(
-            modifier = Modifier
-                .padding(start = metrics.dp(26f), end = metrics.dp(40f))
-                .width(metrics.dp(16f))
-                .height(metrics.dp(12f)),
+        DonationArchLanternGlyph(
+            mirrored = true,
+            modifier = Modifier.size(metrics.dp(62f)),
         )
-        DonationMosqueGlyph(Modifier.size(metrics.dp(27f)))
     }
 }
 
@@ -490,6 +498,7 @@ private fun DonationSettingsButton(
     var focused by remember { mutableStateOf(false) }
     val colors = NamazTvTheme.colors
     val label = appString(R.string.open_settings)
+    val shape = RoundedCornerShape(metrics.dp(22f))
     LaunchedEffect(requestInitialFocus, requester) {
         if (requestInitialFocus) {
             withFrameNanos { }
@@ -506,6 +515,11 @@ private fun DonationSettingsButton(
             focusedContainerColor = Color.Transparent,
             focusedContentColor = colors.textPrimary,
         ),
+        shape = ButtonDefaults.shape(
+            shape = shape,
+            focusedShape = shape,
+            pressedShape = shape,
+        ),
         scale = ButtonDefaults.scale(focusedScale = 1f),
         modifier = modifier
             .size(metrics.settingsHitSize)
@@ -514,14 +528,13 @@ private fun DonationSettingsButton(
             .semantics { contentDescription = label }
             .testTag(DONATION_DISPLAY_SETTINGS_TAG),
     ) {
-        val shape = RoundedCornerShape(metrics.dp(11f))
         Box(
             modifier = Modifier
                 .size(metrics.settingsVisualSize)
                 .clip(shape)
-                .background(colors.surfaceStrong.copy(alpha = 0.68f))
+                .background(Brush.verticalGradient(listOf(DONATION_STATUS_TOP, DONATION_STATUS_BOTTOM)))
                 .border(
-                    width = if (focused) metrics.dp(0.75f) else metrics.dp(0.55f),
+                    width = if (focused) metrics.dp(1.25f) else metrics.dp(0.8f),
                     color = if (focused) colors.focus.copy(alpha = 0.85f) else colors.accentOutline.copy(alpha = 0.58f),
                     shape = shape,
                 )
@@ -530,7 +543,7 @@ private fun DonationSettingsButton(
         ) {
             DonationSettingsGlyph(
                 tint = colors.textPrimary,
-                modifier = Modifier.size(metrics.dp(21f)),
+                modifier = Modifier.size(metrics.dp(30f)),
             )
         }
     }
@@ -538,7 +551,9 @@ private fun DonationSettingsButton(
 
 private const val REFERENCE_WIDTH_DP = 960f
 private const val REFERENCE_HEIGHT_DP = 540f
-private val DONATION_BACKGROUND_SCRIM = Color(0x3D061322)
-private val DONATION_CARD_TOP = Color(0xEE243143)
-private val DONATION_CARD_BOTTOM = Color(0xF21A2533)
-private val DONATION_FOOTER_SURFACE = Color(0xE6182638)
+private val DONATION_BACKGROUND_SCRIM = Color(0x52061322)
+private val DONATION_STATUS_TOP = Color(0xE5233042)
+private val DONATION_STATUS_BOTTOM = Color(0xED192536)
+private val DONATION_CARD_TOP = Color(0xED243143)
+private val DONATION_CARD_BOTTOM = Color(0xF2192433)
+private val DONATION_FOOTER_SURFACE = Color(0xF0182638)

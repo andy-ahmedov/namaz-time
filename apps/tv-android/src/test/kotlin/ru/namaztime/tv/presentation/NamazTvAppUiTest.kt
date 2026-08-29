@@ -47,6 +47,7 @@ import java.time.ZoneOffset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOf
 import org.junit.Rule
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -80,8 +81,20 @@ class NamazTvAppUiTest {
                 displayMode = OperatorDisplayMode.DONATION,
             ),
         )
-        compose.setContent { NamazTvApp(preferences, tickIntervalMillis = null) }
+        val schedule = schedule()
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = preferences,
+                prayerScheduleRepository = FakePrayerScheduleRepository(schedule),
+                bootstrapState = flowOf(SnapshotBootstrapState.Ready(schedule.snapshotId)),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
 
+        compose.onNodeWithText("20 августа 2026").assertIsDisplayed()
+        compose.onNodeWithText("03:20").assertIsDisplayed()
+        compose.onNodeWithText("Фаджр").assertIsDisplayed()
         compose.onNodeWithTag(DONATION_DISPLAY_SETTINGS_TAG)
             .assertIsFocused()
             .performKeyInput { pressKey(Key.Enter) }
@@ -120,8 +133,34 @@ class NamazTvAppUiTest {
         compose.waitForIdle()
 
         compose.onNodeWithTag(DONATION_DISPLAY_TAG).assertDoesNotExist()
-        compose.onNodeWithTag(DISPLAY_UNAVAILABLE_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG).assertIsDisplayed()
         compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun donationDisplayFailsClosedWithoutAnActiveLocalSchedule() {
+        val configuration = OperatorDonationConfiguration(
+            httpsUrl = "https://example.org/donate",
+            recipient = "Местная религиозная организация",
+        )
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(
+                    initialPreferences = OperatorPreferences(
+                        donationConfiguration = configuration,
+                        displayMode = OperatorDisplayMode.DONATION,
+                    ),
+                ),
+                prayerScheduleRepository = FakePrayerScheduleRepository(null),
+                bootstrapState = flowOf(SnapshotBootstrapState.Diagnostic("NO_LOCAL_SNAPSHOT")),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        compose.onNodeWithTag(DONATION_DISPLAY_TAG).assertDoesNotExist()
+        compose.onNodeWithTag(DISPLAY_UNAVAILABLE_TAG).assertIsDisplayed()
     }
 
     @Test

@@ -119,6 +119,7 @@ class DonationDisplayUiTest {
                     DonationDisplayScreen(
                         configuration = configuration,
                         qrState = qrState(configuration),
+                        status = status(),
                         customAssetVersion = 0L,
                         onOpenSettings = {},
                     )
@@ -153,7 +154,7 @@ class DonationDisplayUiTest {
             .assertIsDisplayed()
             .getUnclippedBoundsInRoot()
         listOf(
-            DONATION_DISPLAY_BRAND_TAG,
+            DONATION_DISPLAY_STATUS_TAG,
             DONATION_DISPLAY_DETAILS_TAG,
             DONATION_DISPLAY_FOOTER_TAG,
             DONATION_DISPLAY_SETTINGS_VISUAL_TAG,
@@ -171,6 +172,11 @@ class DonationDisplayUiTest {
         assert(safe.left > root.left && safe.right < root.right)
         assert(safe.top > root.top && safe.bottom < root.bottom)
         assertEquals(root, compose.onNodeWithTag(DONATION_DISPLAY_IMAGE_TAG).getUnclippedBoundsInRoot())
+        compose.onNodeWithTag(DONATION_DISPLAY_BRAND_TAG).assertDoesNotExist()
+        compose.onNodeWithText("20 августа 2026").assertIsDisplayed()
+        compose.onNodeWithText("Четверг").assertIsDisplayed()
+        compose.onNodeWithText("15:23").assertIsDisplayed()
+        compose.onNodeWithText("Аср").assertIsDisplayed()
         compose.onNodeWithTag(QR_CODE_IMAGE_TAG).assertIsDisplayed()
         compose.onNodeWithText(configuration.recipient).assertIsDisplayed()
         compose.onNodeWithText(configuration.bank).assertIsDisplayed()
@@ -181,12 +187,25 @@ class DonationDisplayUiTest {
         compose.onNodeWithTag(DONATION_DISPLAY_SETTINGS_TAG).assertIsFocused()
 
         val scale = (root.right - root.left).value / 960f
-        assertReferenceBounds(DONATION_DISPLAY_BRAND_TAG, 419f, 16.5f, 121f, 35f, scale)
-        assertReferenceBounds(DONATION_DISPLAY_SETTINGS_VISUAL_TAG, 903.5f, 14.5f, 38f, 38f, scale)
-        assertReferenceBounds(DONATION_DISPLAY_DETAILS_TAG, 596.5f, 59.5f, 295f, 413.5f, scale)
-        assertReferenceBounds(DONATION_DISPLAY_QR_TAG, 664f, 125f, 154f, 154f, scale, tolerance = 6f)
-        assertReferenceBounds(DONATION_DISPLAY_ROWS_TAG, 616.5f, 315.5f, 255f, 145f, scale, tolerance = 6f)
-        assertReferenceBounds(DONATION_DISPLAY_FOOTER_TAG, 97f, 485f, 765f, 40.5f, scale)
+        assertReferenceBounds(DONATION_DISPLAY_STATUS_TAG, 43f, 28f, 798f, 64f, scale)
+        assertReferenceBounds(DONATION_DISPLAY_SETTINGS_VISUAL_TAG, 853f, 28f, 64f, 64f, scale)
+        assertReferenceBounds(DONATION_DISPLAY_DETAILS_TAG, 43f, 105f, 874f, 319f, scale)
+        assertReferenceBounds(DONATION_DISPLAY_QR_TAG, 154f, 178f, 218f, 218f, scale, tolerance = 6f)
+        assertReferenceBounds(DONATION_DISPLAY_ROWS_TAG, 440f, 184f, 410f, 210f, scale, tolerance = 6f)
+        assertReferenceBounds(DONATION_DISPLAY_FOOTER_TAG, 43f, 438f, 874f, 74f, scale)
+
+        val statusBounds = compose.onNodeWithTag(DONATION_DISPLAY_STATUS_TAG)
+            .getUnclippedBoundsInRoot()
+        val settingsBounds = compose.onNodeWithTag(
+            DONATION_DISPLAY_SETTINGS_VISUAL_TAG,
+            useUnmergedTree = true,
+        ).getUnclippedBoundsInRoot()
+        assertNear(
+            (statusBounds.bottom - statusBounds.top).value,
+            (settingsBounds.bottom - settingsBounds.top).value,
+            1f * scale,
+            "top block heights",
+        )
     }
 
     private fun setDonationDisplayContent(configuration: OperatorDonationConfiguration) {
@@ -195,6 +214,7 @@ class DonationDisplayUiTest {
                 DonationDisplayScreen(
                     configuration = configuration,
                     qrState = qrState(configuration),
+                    status = status(),
                     customAssetVersion = 0L,
                     onOpenSettings = {},
                 )
@@ -209,6 +229,13 @@ class DonationDisplayUiTest {
         subtitle = null,
         qrCode = QrCodeGenerator().generate(configuration.httpsUrl),
         preview = false,
+    )
+
+    private fun status() = DonationStatusUiState(
+        dateLabel = "20 августа 2026",
+        weekdayLabel = "Четверг",
+        mosqueLocalTime = "15:23",
+        currentPrayerLabel = "Аср",
     )
 
     private fun assertReferenceBounds(

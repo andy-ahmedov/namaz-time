@@ -65,7 +65,12 @@ to schedule mode. Five packaged image choices remain offline in a built-in-only
 D-pad filmstrip; the custom image is a separate action using the same bounded
 document-picker pipeline as Appearance and has a separate app-private file.
 If that file is missing or corrupt, the donation screen renders its packaged
-default. The screen performs no payment processing and does not write Room.
+default. As amended by T033, the standalone screen's date, mosque-local time
+and current-prayer label are a presentation projection of the same active Room
+schedule and `PrayerTimeEngine` resolution used by the prayer display. It does
+not calculate prayer times independently. If the active schedule is absent or
+invalid, the screen fails closed to the existing unavailable state. The screen
+performs no payment processing and does not write Room.
 
 ## Consequences
 
@@ -76,8 +81,9 @@ Positive:
 - invalid or partial QR configuration cannot reach the public display;
 - four offset controls and the linked Dhuhr/Jumu'ah time remain explicit and
   data-driven;
-- donation mode remains usable without a schedule/network connection and keeps
-  a focusable Settings path back to normal schedule mode;
+- donation mode remains network-free and usable with the last-known-good active
+  Room schedule, fails closed without one, and keeps a focusable Settings path
+  back to normal schedule mode;
 - transfer-detail columns can be rendered consistently without parsing an
   operator blob in the display layer;
 - clearing the local values restores the signed snapshot projection;

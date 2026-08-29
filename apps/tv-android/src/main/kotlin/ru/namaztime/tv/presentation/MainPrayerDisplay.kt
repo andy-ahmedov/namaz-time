@@ -119,6 +119,7 @@ internal data class PrayerDisplayUiState(
     val dateLabel: String,
     val weekdayLabel: String,
     val mosqueLocalTime: String,
+    val currentPrayerLabel: String,
     val nextPrayerLabel: String,
     val nextEventKindLabel: String,
     val nextEventTime: String,
@@ -1124,6 +1125,7 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
         dateLabel = dateLabel,
         weekdayLabel = weekdayLabel,
         mosqueLocalTime = resolution.localTime.format(CLOCK_FORMAT),
+        currentPrayerLabel = resolution.currentPrayerLabel(strings),
         nextPrayerLabel = nextEvent?.let { event ->
             val label = resolution.eventLabel(event, strings)
             if (event.localDate != resolution.localDate) {
@@ -1157,6 +1159,40 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
         },
         rows = day.toDisplayRows(resolution, strings),
     )
+}
+
+private fun PrayerTimeResolution.Available.currentPrayerLabel(strings: AppStrings): String {
+    data class PrayerAnchor(
+        val time: java.time.LocalTime,
+        val tieBreakPriority: Int,
+        val label: String,
+    )
+
+    val anchors = buildList {
+        prayers.values.forEach { prayer ->
+            add(
+                PrayerAnchor(
+                    time = prayer.adhan,
+                    tieBreakPriority = 0,
+                    label = prayerLabel(prayer.id, strings),
+                ),
+            )
+        }
+        jumuahSessions.forEach { session ->
+            add(
+                PrayerAnchor(
+                    time = session.salahTime,
+                    tieBreakPriority = 1,
+                    label = strings.get(R.string.prayer_jumuah),
+                ),
+            )
+        }
+    }
+    return anchors
+        .filter { anchor -> !anchor.time.isAfter(localTime) }
+        .maxWithOrNull(compareBy<PrayerAnchor>({ it.time }, { it.tieBreakPriority }))
+        ?.label
+        ?: prayerLabel("isha", strings)
 }
 
 private fun PrayerTimeResolution.Available.nextIqamahSummary(strings: AppStrings): IqamahSummaryUiState? {

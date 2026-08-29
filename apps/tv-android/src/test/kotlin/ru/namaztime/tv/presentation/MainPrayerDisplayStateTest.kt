@@ -206,12 +206,63 @@ class MainPrayerDisplayStateTest {
 
         assertEquals("20 August 2026", state.dateLabel)
         assertEquals("Thursday", state.weekdayLabel)
+        assertEquals("Fajr", state.currentPrayerLabel)
         assertEquals("Fajr · iqamah", state.nextPrayerLabel)
         assertEquals("Until iqamah", state.nextEventKindLabel)
         assertEquals("Iqamah · Fajr", state.iqamahSummary?.label)
         assertEquals("in 00:19:00", state.iqamahSummary?.countdownLabel)
         assertEquals("Fajr", state.rows.first().label)
         assertEquals("TEST DATA", state.sourceLabel)
+    }
+
+    @Test
+    fun currentPrayerLabelComesFromTheResolvedPrayerTimeline() {
+        val schedule = schedule()
+        val cases = listOf(
+            "2026-08-19T22:00:00Z" to "Иша",
+            "2026-08-19T23:20:00Z" to "Фаджр",
+            "2026-08-20T09:00:00Z" to "Зухр",
+            "2026-08-20T13:00:00Z" to "Аср",
+            "2026-08-20T15:00:00Z" to "Магриб",
+            "2026-08-20T18:00:00Z" to "Иша",
+        )
+
+        cases.forEach { (instant, expectedLabel) ->
+            val resolution = PrayerTimeEngine().resolve(
+                schedule.toTimeEngineInput(),
+                Instant.parse(instant),
+            ) as PrayerTimeResolution.Available
+
+            assertEquals(
+                expectedLabel,
+                schedule.toPrayerDisplayUiState(resolution, strings()).currentPrayerLabel,
+            )
+        }
+    }
+
+    @Test
+    fun currentPrayerLabelUsesResolvedFridaySessionAfterItsSalah() {
+        val schedule = schedule().copy(
+            jumuahSessions = listOf(
+                LocalJumuahSession(
+                    id = "first",
+                    label = "Первая",
+                    khutbahTime = "12:40",
+                    salahTime = "13:00",
+                    validFrom = "2026-08-01",
+                    validTo = "2026-08-31",
+                ),
+            ),
+        )
+        val resolution = PrayerTimeEngine().resolve(
+            schedule.toTimeEngineInput(),
+            Instant.parse("2026-08-21T09:30:00Z"),
+        ) as PrayerTimeResolution.Available
+
+        assertEquals(
+            "Джума",
+            schedule.toPrayerDisplayUiState(resolution, strings()).currentPrayerLabel,
+        )
     }
 
     private fun strings(language: AppLanguage = AppLanguage.RUSSIAN): AppStrings =
