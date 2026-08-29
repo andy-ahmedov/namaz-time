@@ -112,7 +112,8 @@
     <string name="iqamah_time_label">Iqamah offset</string>
     <string name="iqamah_offset_minutes_value">+%1$d min</string>
     <string name="iqamah_use_schedule_value">Use schedule</string>
-    <string name="iqamah_local_override_note">The value sets iqamah to “adhan + N minutes” and stays only on this device. “Use schedule” keeps the approved base policy.</string>
+    <string name="iqamah_use_schedule_time_value">Use schedule · %1$s</string>
+    <string name="iqamah_local_override_note">Fajr, Asr, Maghrib, and Isha use “adhan + N minutes”. Dhuhr uses one local time that also changes Jumu’ah. Settings stay only on this device.</string>
     <string name="save_iqamah_settings">Save iqamah</string>
     <string name="language_russian">Russian</string>
     <string name="language_english">English</string>

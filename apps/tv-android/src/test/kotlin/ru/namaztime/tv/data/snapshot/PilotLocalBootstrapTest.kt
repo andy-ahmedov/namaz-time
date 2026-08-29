@@ -55,7 +55,7 @@ class PilotLocalBootstrapTest {
         bootstrapper.bootstrapIfNeeded()
 
         assertEquals(
-            SnapshotBootstrapState.Ready("ulyanovsk-second-cathedral-2026-pilot-local-v1"),
+            SnapshotBootstrapState.Ready(PILOT_LOCAL_SNAPSHOT_ID),
             bootstrapper.state.value,
         )
         val schedule = RoomPrayerScheduleRepository(database.snapshotDao())
@@ -64,9 +64,19 @@ class PilotLocalBootstrapTest {
         assertEquals("Вторая Соборная мечеть Ульяновска", schedule.mosqueName)
         assertEquals("Europe/Ulyanovsk", schedule.timezoneId)
         assertEquals(365, schedule.days.size)
-        assertEquals("13:15", schedule.days.single { it.localDate == "2026-08-20" }.dhuhr)
-        assertEquals("13:53", schedule.days.single { it.localDate == "2026-08-24" }.dhuhr)
-        assertEquals(listOf(5, 5, 5, 5, 5), schedule.iqamahRules.map { it.offsetMinutes })
+        assertEquals("12:49", schedule.days.single { it.localDate == "2026-08-20" }.dhuhr)
+        assertEquals("12:48", schedule.days.single { it.localDate == "2026-08-24" }.dhuhr)
+        assertEquals(
+            listOf(5, null, 5, 5, 5),
+            schedule.iqamahRules.map { it.offsetMinutes },
+        )
+        assertEquals(
+            "13:15",
+            schedule.iqamahRules.single { it.prayer == "dhuhr" }.fixedTime,
+        )
+        assertTrue(
+            schedule.iqamahRules.single { it.prayer == "dhuhr" }.weekdaysMask and (1 shl 4) != 0,
+        )
         assertEquals("13:15", schedule.jumuahSessions.single().salahTime)
         assertEquals("approved", schedule.diagnostics?.approvalStatus)
         assertEquals("production", schedule.diagnostics?.dataClassification)
@@ -134,7 +144,7 @@ class PilotLocalBootstrapTest {
         val tampered = AndroidSnapshotAssetSource(context, PILOT_LOCAL_SNAPSHOT_ASSET)
             .read()
             .decodeToString()
-            .replaceFirst("\"dhuhr\": \"13:53\"", "\"dhuhr\": \"13:54\"")
+            .replaceFirst("\"dhuhr\": \"12:49\"", "\"dhuhr\": \"12:50\"")
             .encodeToByteArray()
         val bootstrapper = BundledSnapshotBootstrapper(
             selectionGuard = SnapshotSelectionGuard(database, verifier.selectionTrust()),

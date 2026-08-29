@@ -23,7 +23,7 @@ data class OperatorPreferences(
     val screenRetentionShiftEnabled: Boolean = true,
     val backgroundStyleId: String = DEFAULT_BACKGROUND_STYLE_ID,
     val qrConfiguration: OperatorQrConfiguration = OperatorQrConfiguration(),
-    val iqamahOffsets: OperatorIqamahOffsets = OperatorIqamahOffsets(),
+    val iqamahConfiguration: OperatorIqamahConfiguration = OperatorIqamahConfiguration(),
     val donationConfiguration: OperatorDonationConfiguration = OperatorDonationConfiguration(),
     val displayMode: OperatorDisplayMode = OperatorDisplayMode.SCHEDULE,
 )
@@ -63,33 +63,39 @@ data class OperatorQrConfiguration(
         get() = httpsUrl.isBlank() && title.isBlank() && message.isBlank()
 }
 
-data class OperatorIqamahOffsets(
-    val fajr: Int? = null,
-    val dhuhr: Int? = null,
-    val asr: Int? = null,
-    val maghrib: Int? = null,
-    val isha: Int? = null,
+data class OperatorIqamahConfiguration(
+    val fajrOffsetMinutes: Int? = null,
+    val dhuhrFixedTimeMinutes: Int? = null,
+    val asrOffsetMinutes: Int? = null,
+    val maghribOffsetMinutes: Int? = null,
+    val ishaOffsetMinutes: Int? = null,
 ) {
-    fun forPrayer(prayerId: String): Int? = when (prayerId) {
-        "fajr" -> fajr
-        "dhuhr" -> dhuhr
-        "asr" -> asr
-        "maghrib" -> maghrib
-        "isha" -> isha
+    fun offsetForPrayer(prayerId: String): Int? = when (prayerId) {
+        "fajr" -> fajrOffsetMinutes
+        "asr" -> asrOffsetMinutes
+        "maghrib" -> maghribOffsetMinutes
+        "isha" -> ishaOffsetMinutes
         else -> null
     }
 
-    fun withPrayer(prayerId: String, offsetMinutes: Int?): OperatorIqamahOffsets = when (prayerId) {
-        "fajr" -> copy(fajr = offsetMinutes)
-        "dhuhr" -> copy(dhuhr = offsetMinutes)
-        "asr" -> copy(asr = offsetMinutes)
-        "maghrib" -> copy(maghrib = offsetMinutes)
-        "isha" -> copy(isha = offsetMinutes)
+    fun editorValueForPrayer(prayerId: String): Int? = when (prayerId) {
+        "dhuhr" -> dhuhrFixedTimeMinutes
+        else -> offsetForPrayer(prayerId)
+    }
+
+    fun withEditorValue(prayerId: String, value: Int?): OperatorIqamahConfiguration = when (prayerId) {
+        "fajr" -> copy(fajrOffsetMinutes = value)
+        "dhuhr" -> copy(dhuhrFixedTimeMinutes = value)
+        "asr" -> copy(asrOffsetMinutes = value)
+        "maghrib" -> copy(maghribOffsetMinutes = value)
+        "isha" -> copy(ishaOffsetMinutes = value)
         else -> throw IllegalArgumentException("unsupported iqamah prayer")
     }
 
     val configuredPrayerIds: Set<String>
-        get() = OPERATOR_IQAMAH_PRAYER_IDS.filterTo(linkedSetOf()) { forPrayer(it) != null }
+        get() = OPERATOR_IQAMAH_PRAYER_IDS.filterTo(linkedSetOf()) {
+            editorValueForPrayer(it) != null
+        }
 }
 
 interface OperatorPreferencesRepository {
@@ -109,7 +115,7 @@ interface OperatorPreferencesRepository {
 
     suspend fun setIqamahOffset(prayerId: String, offsetMinutes: Int?)
 
-    suspend fun setIqamahOffsets(offsets: OperatorIqamahOffsets)
+    suspend fun setIqamahConfiguration(configuration: OperatorIqamahConfiguration)
 
     suspend fun setDonationConfiguration(configuration: OperatorDonationConfiguration)
 
@@ -151,12 +157,14 @@ class DataStoreOperatorPreferencesRepository(
                     title = values[QR_TITLE].orEmpty(),
                     message = values[QR_MESSAGE].orEmpty(),
                 ).takeIf(::isValidQrConfiguration) ?: OperatorQrConfiguration(),
-                iqamahOffsets = OperatorIqamahOffsets(
-                    fajr = values[IQAMAH_OFFSET_FAJR].validIqamahOffsetOrNull(),
-                    dhuhr = values[IQAMAH_OFFSET_DHUHR].validIqamahOffsetOrNull(),
-                    asr = values[IQAMAH_OFFSET_ASR].validIqamahOffsetOrNull(),
-                    maghrib = values[IQAMAH_OFFSET_MAGHRIB].validIqamahOffsetOrNull(),
-                    isha = values[IQAMAH_OFFSET_ISHA].validIqamahOffsetOrNull(),
+                iqamahConfiguration = OperatorIqamahConfiguration(
+                    fajrOffsetMinutes = values[IQAMAH_OFFSET_FAJR].validIqamahOffsetOrNull(),
+                    dhuhrFixedTimeMinutes = values[DHUHR_FIXED_TIME_MINUTES]
+                        .validDhuhrFixedTimeOrNull(),
+                    asrOffsetMinutes = values[IQAMAH_OFFSET_ASR].validIqamahOffsetOrNull(),
+                    maghribOffsetMinutes = values[IQAMAH_OFFSET_MAGHRIB]
+                        .validIqamahOffsetOrNull(),
+                    ishaOffsetMinutes = values[IQAMAH_OFFSET_ISHA].validIqamahOffsetOrNull(),
                 ),
                 donationConfiguration = donationConfiguration,
                 displayMode = displayMode,
@@ -195,7 +203,7 @@ class DataStoreOperatorPreferencesRepository(
     }
 
     override suspend fun setIqamahOffset(prayerId: String, offsetMinutes: Int?) {
-        require(prayerId in OPERATOR_IQAMAH_PRAYER_IDS) { "unsupported iqamah prayer" }
+        require(prayerId in OPERATOR_IQAMAH_OFFSET_PRAYER_IDS) { "unsupported iqamah prayer" }
         require(offsetMinutes == null || offsetMinutes in OPERATOR_IQAMAH_OFFSET_RANGE) {
             "invalid iqamah offset"
         }
@@ -205,14 +213,17 @@ class DataStoreOperatorPreferencesRepository(
         }
     }
 
-    override suspend fun setIqamahOffsets(offsets: OperatorIqamahOffsets) {
-        require(isValidIqamahOffsets(offsets)) { "invalid iqamah offsets" }
+    override suspend fun setIqamahConfiguration(configuration: OperatorIqamahConfiguration) {
+        require(isValidIqamahConfiguration(configuration)) { "invalid iqamah configuration" }
         dataStore.edit { values ->
-            OPERATOR_IQAMAH_PRAYER_IDS.forEach { prayerId ->
+            OPERATOR_IQAMAH_OFFSET_PRAYER_IDS.forEach { prayerId ->
                 val key = iqamahOffsetKey(prayerId)
-                val offset = offsets.forPrayer(prayerId)
+                val offset = configuration.offsetForPrayer(prayerId)
                 if (offset == null) values.remove(key) else values[key] = offset
             }
+            configuration.dhuhrFixedTimeMinutes?.let { values[DHUHR_FIXED_TIME_MINUTES] = it }
+                ?: values.remove(DHUHR_FIXED_TIME_MINUTES)
+            values.remove(LEGACY_IQAMAH_OFFSET_DHUHR)
         }
     }
 
@@ -263,7 +274,8 @@ class DataStoreOperatorPreferencesRepository(
         val QR_TITLE = stringPreferencesKey("operator_qr_title")
         val QR_MESSAGE = stringPreferencesKey("operator_qr_message")
         val IQAMAH_OFFSET_FAJR = intPreferencesKey("operator_iqamah_offset_fajr")
-        val IQAMAH_OFFSET_DHUHR = intPreferencesKey("operator_iqamah_offset_dhuhr")
+        val LEGACY_IQAMAH_OFFSET_DHUHR = intPreferencesKey("operator_iqamah_offset_dhuhr")
+        val DHUHR_FIXED_TIME_MINUTES = intPreferencesKey("operator_dhuhr_fixed_time_minutes")
         val IQAMAH_OFFSET_ASR = intPreferencesKey("operator_iqamah_offset_asr")
         val IQAMAH_OFFSET_MAGHRIB = intPreferencesKey("operator_iqamah_offset_maghrib")
         val IQAMAH_OFFSET_ISHA = intPreferencesKey("operator_iqamah_offset_isha")
@@ -281,7 +293,6 @@ class DataStoreOperatorPreferencesRepository(
 
         fun iqamahOffsetKey(prayerId: String) = when (prayerId) {
             "fajr" -> IQAMAH_OFFSET_FAJR
-            "dhuhr" -> IQAMAH_OFFSET_DHUHR
             "asr" -> IQAMAH_OFFSET_ASR
             "maghrib" -> IQAMAH_OFFSET_MAGHRIB
             "isha" -> IQAMAH_OFFSET_ISHA
@@ -402,15 +413,20 @@ internal fun isValidDonationConfiguration(configuration: OperatorDonationConfigu
     return runCatching { OPERATOR_QR_GENERATOR.generate(campaign.campaign.httpsUrl) }.isSuccess
 }
 
-internal fun isValidIqamahOffsets(offsets: OperatorIqamahOffsets): Boolean =
-    OPERATOR_IQAMAH_PRAYER_IDS.all { prayerId ->
-        offsets.forPrayer(prayerId)?.let(OPERATOR_IQAMAH_OFFSET_RANGE::contains) ?: true
-    }
+internal fun isValidIqamahConfiguration(configuration: OperatorIqamahConfiguration): Boolean =
+    OPERATOR_IQAMAH_OFFSET_PRAYER_IDS.all { prayerId ->
+        configuration.offsetForPrayer(prayerId)
+            ?.let(OPERATOR_IQAMAH_OFFSET_RANGE::contains) ?: true
+    } && configuration.dhuhrFixedTimeMinutes
+        ?.let(OPERATOR_DHUHR_FIXED_TIME_RANGE::contains) != false
 
 private val OPERATOR_QR_GENERATOR = QrCodeGenerator()
 
 private fun Int?.validIqamahOffsetOrNull(): Int? =
     this?.takeIf(OPERATOR_IQAMAH_OFFSET_RANGE::contains)
+
+private fun Int?.validDhuhrFixedTimeOrNull(): Int? =
+    this?.takeIf(OPERATOR_DHUHR_FIXED_TIME_RANGE::contains)
 
 const val DEFAULT_LANGUAGE_TAG = "ru"
 val SUPPORTED_LANGUAGE_TAGS = setOf(DEFAULT_LANGUAGE_TAG, "en")
@@ -452,6 +468,8 @@ val SELECTABLE_DONATION_IMAGE_STYLE_IDS =
     BUILT_IN_DONATION_IMAGE_STYLE_IDS + CUSTOM_DONATION_IMAGE_STYLE_ID
 
 val OPERATOR_IQAMAH_PRAYER_IDS = listOf("fajr", "dhuhr", "asr", "maghrib", "isha")
+val OPERATOR_IQAMAH_OFFSET_PRAYER_IDS = listOf("fajr", "asr", "maghrib", "isha")
 val OPERATOR_IQAMAH_OFFSET_RANGE = 0..180
+val OPERATOR_DHUHR_FIXED_TIME_RANGE = (12 * 60)..(16 * 60)
 const val MAX_DONATION_DETAIL_LENGTH = 160
 const val MAX_DONATION_COLLECTION_URL_LENGTH = 320

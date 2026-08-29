@@ -8,9 +8,7 @@ import ru.namaztime.tv.domain.IqamahRuleInput
 import ru.namaztime.tv.domain.JumuahSessionInput
 import ru.namaztime.tv.domain.PrayerDayInput
 import ru.namaztime.tv.domain.PrayerScheduleInput
-import java.time.DayOfWeek
 import java.time.Instant
-import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -121,24 +119,43 @@ data class LocalSnapshotDiagnostics(
 class CorruptLocalSnapshotException(val code: String) : IllegalStateException(code)
 
 fun LocalPrayerSchedule.toTimeEngineInput(
-    operatorIqamahOffsets: OperatorIqamahOffsets = OperatorIqamahOffsets(),
+    operatorIqamahConfiguration: OperatorIqamahConfiguration = OperatorIqamahConfiguration(),
     currentInstant: Instant? = null,
 ): PrayerScheduleInput {
-    val configuredPrayerIds = operatorIqamahOffsets.configuredPrayerIds
-    val appliedPrayerIds = if (currentInstant == null) emptySet() else configuredPrayerIds
+    val projectedDates = currentInstant?.let { instant ->
+        val currentDate = instant.atZone(ZoneId.of(timezoneId)).toLocalDate()
+        listOf(currentDate, currentDate.plusDays(1))
+    }.orEmpty()
+    val dhuhrFixedTime = operatorIqamahConfiguration.dhuhrFixedTimeMinutes?.toLocalTime()
+    val canApplyDhuhr = dhuhrFixedTime != null && projectedDates.all { date ->
+        days.firstOrNull { it.localDate == date.toString() }
+            ?.let { !dhuhrFixedTime.isBefore(LocalTime.parse(it.dhuhr)) }
+            ?: true
+    }
+    val appliedPrayerIds = if (currentInstant == null) {
+        emptySet()
+    } else {
+        operatorIqamahConfiguration.configuredPrayerIds
+            .filterTo(linkedSetOf()) { it != "dhuhr" || canApplyDhuhr }
+    }
     val operatorOverrides = if (appliedPrayerIds.isEmpty() || currentInstant == null) {
         emptyList()
     } else {
-        val currentDate = currentInstant.atZone(ZoneId.of(timezoneId)).toLocalDate()
-        listOf(currentDate, currentDate.plusDays(1)).flatMap { date ->
+        projectedDates.flatMap { date ->
             val day = days.firstOrNull { it.localDate == date.toString() }
                 ?: return@flatMap emptyList()
             appliedPrayerIds.mapNotNull { prayerId ->
-                val offsetMinutes = operatorIqamahOffsets.forPrayer(prayerId)
-                    ?: return@mapNotNull null
-                if (prayerId == "dhuhr" && date.dayOfWeek == DayOfWeek.FRIDAY && hasJumuahOn(date)) {
-                    return@mapNotNull null
+                if (prayerId == "dhuhr") {
+                    return@mapNotNull IqamahDateOverrideInput(
+                        localDate = date.toString(),
+                        prayer = prayerId,
+                        mode = "fixed_time",
+                        fixedTime = requireNotNull(dhuhrFixedTime).toString(),
+                        offsetMinutes = null,
+                    )
                 }
+                val offsetMinutes = operatorIqamahConfiguration.offsetForPrayer(prayerId)
+                    ?: return@mapNotNull null
                 val adhan = LocalTime.parse(day.adhanFor(prayerId))
                 if (adhan.plusMinutes(offsetMinutes.toLong()).isBefore(adhan)) {
                     return@mapNotNull null
@@ -195,13 +212,19 @@ fun LocalPrayerSchedule.toTimeEngineInput(
                 id = session.id,
                 label = session.label,
                 khutbahTime = session.khutbahTime,
-                salahTime = session.salahTime,
+                salahTime = if ("dhuhr" in appliedPrayerIds) {
+                    requireNotNull(dhuhrFixedTime).toString()
+                } else {
+                    session.salahTime
+                },
                 validFrom = session.validFrom,
                 validTo = session.validTo,
             )
         },
     )
 }
+
+private fun Int.toLocalTime(): LocalTime = LocalTime.of(this / 60, this % 60)
 
 private fun LocalPrayerDay.adhanFor(prayerId: String): String = when (prayerId) {
     "fajr" -> fajr
@@ -210,10 +233,6 @@ private fun LocalPrayerDay.adhanFor(prayerId: String): String = when (prayerId) 
     "maghrib" -> maghrib
     "isha" -> isha
     else -> throw IllegalArgumentException("unsupported iqamah prayer")
-}
-
-private fun LocalPrayerSchedule.hasJumuahOn(date: LocalDate): Boolean = jumuahSessions.any { session ->
-    !date.isBefore(LocalDate.parse(session.validFrom)) && !date.isAfter(LocalDate.parse(session.validTo))
 }
 
 fun LocalPrayerSchedule.toCampaignInputs(): List<CampaignInput> = campaigns.mapNotNull { campaign ->

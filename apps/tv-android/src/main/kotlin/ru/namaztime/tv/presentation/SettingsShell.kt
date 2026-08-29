@@ -49,14 +49,14 @@ import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import ru.namaztime.tv.R
 import ru.namaztime.tv.repository.LocalPrayerSchedule
-import ru.namaztime.tv.repository.OperatorIqamahOffsets
+import ru.namaztime.tv.repository.OperatorIqamahConfiguration
 import ru.namaztime.tv.repository.OperatorDisplayMode
 import ru.namaztime.tv.repository.OperatorDonationConfiguration
 import ru.namaztime.tv.repository.OperatorPreferences
 import ru.namaztime.tv.repository.OperatorQrConfiguration
 import ru.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.OperatorImageSlot
-import ru.namaztime.tv.repository.isValidIqamahOffsets
+import ru.namaztime.tv.repository.isValidIqamahConfiguration
 import ru.namaztime.tv.repository.isValidDonationConfiguration
 import ru.namaztime.tv.repository.isValidQrConfiguration
 
@@ -84,7 +84,7 @@ fun SettingsShell(
     onBackgroundStyleChanged: ((String) -> Unit)? = null,
     onLanguageChanged: ((String) -> Unit)? = null,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)? = null,
-    onIqamahOffsetsChanged: ((OperatorIqamahOffsets) -> Unit)? = null,
+    onIqamahConfigurationChanged: ((OperatorIqamahConfiguration) -> Unit)? = null,
     onDonationConfigurationChanged: ((OperatorDonationConfiguration) -> Unit)? = null,
     onDonationDisplayModeChanged: ((OperatorDonationConfiguration, OperatorDisplayMode) -> Unit)? = null,
     onPickCustomBackground: (() -> Unit)? = null,
@@ -205,7 +205,7 @@ fun SettingsShell(
                     onBackgroundStyleChanged = onBackgroundStyleChanged,
                     onLanguageChanged = onLanguageChanged,
                     onQrConfigurationChanged = onQrConfigurationChanged,
-                    onIqamahOffsetsChanged = onIqamahOffsetsChanged,
+                    onIqamahConfigurationChanged = onIqamahConfigurationChanged,
                     onDonationConfigurationChanged = onDonationConfigurationChanged,
                     onDonationDisplayModeChanged = onDonationDisplayModeChanged,
                     onPickCustomBackground = onPickCustomBackground,
@@ -243,7 +243,7 @@ private fun SettingsPage(
     onBackgroundStyleChanged: ((String) -> Unit)?,
     onLanguageChanged: ((String) -> Unit)?,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)?,
-    onIqamahOffsetsChanged: ((OperatorIqamahOffsets) -> Unit)?,
+    onIqamahConfigurationChanged: ((OperatorIqamahConfiguration) -> Unit)?,
     onDonationConfigurationChanged: ((OperatorDonationConfiguration) -> Unit)?,
     onDonationDisplayModeChanged: ((OperatorDonationConfiguration, OperatorDisplayMode) -> Unit)?,
     onPickCustomBackground: (() -> Unit)?,
@@ -285,20 +285,20 @@ private fun SettingsPage(
     var donationImageStyleId by rememberSaveable(preferences.donationConfiguration.imageStyleId) {
         mutableStateOf(preferences.donationConfiguration.imageStyleId)
     }
-    var fajrIqamah by rememberSaveable(preferences.iqamahOffsets.fajr) {
-        mutableStateOf(preferences.iqamahOffsets.fajr)
+    var fajrIqamah by rememberSaveable(preferences.iqamahConfiguration.fajrOffsetMinutes) {
+        mutableStateOf(preferences.iqamahConfiguration.fajrOffsetMinutes)
     }
-    var dhuhrIqamah by rememberSaveable(preferences.iqamahOffsets.dhuhr) {
-        mutableStateOf(preferences.iqamahOffsets.dhuhr)
+    var dhuhrIqamah by rememberSaveable(preferences.iqamahConfiguration.dhuhrFixedTimeMinutes) {
+        mutableStateOf(preferences.iqamahConfiguration.dhuhrFixedTimeMinutes)
     }
-    var asrIqamah by rememberSaveable(preferences.iqamahOffsets.asr) {
-        mutableStateOf(preferences.iqamahOffsets.asr)
+    var asrIqamah by rememberSaveable(preferences.iqamahConfiguration.asrOffsetMinutes) {
+        mutableStateOf(preferences.iqamahConfiguration.asrOffsetMinutes)
     }
-    var maghribIqamah by rememberSaveable(preferences.iqamahOffsets.maghrib) {
-        mutableStateOf(preferences.iqamahOffsets.maghrib)
+    var maghribIqamah by rememberSaveable(preferences.iqamahConfiguration.maghribOffsetMinutes) {
+        mutableStateOf(preferences.iqamahConfiguration.maghribOffsetMinutes)
     }
-    var ishaIqamah by rememberSaveable(preferences.iqamahOffsets.isha) {
-        mutableStateOf(preferences.iqamahOffsets.isha)
+    var ishaIqamah by rememberSaveable(preferences.iqamahConfiguration.ishaOffsetMinutes) {
+        mutableStateOf(preferences.iqamahConfiguration.ishaOffsetMinutes)
     }
     val qrDraft = OperatorQrConfiguration(qrUrl, qrTitle, qrMessage)
     val donationDraft = OperatorDonationConfiguration(
@@ -310,12 +310,12 @@ private fun SettingsPage(
         collectionUrl = donationCollectionUrl,
         imageStyleId = donationImageStyleId,
     )
-    val iqamahDraft = OperatorIqamahOffsets(
-        fajr = fajrIqamah,
-        dhuhr = dhuhrIqamah,
-        asr = asrIqamah,
-        maghrib = maghribIqamah,
-        isha = ishaIqamah,
+    val iqamahDraft = OperatorIqamahConfiguration(
+        fajrOffsetMinutes = fajrIqamah,
+        dhuhrFixedTimeMinutes = dhuhrIqamah,
+        asrOffsetMinutes = asrIqamah,
+        maghribOffsetMinutes = maghribIqamah,
+        ishaOffsetMinutes = ishaIqamah,
     )
     val isEditor = destination == SettingsDestination.CAMPAIGNS ||
         destination == SettingsDestination.IQAMAH ||
@@ -331,13 +331,13 @@ private fun SettingsPage(
                 ),
             )
         }.orEmpty()
-        SettingsDestination.IQAMAH -> onIqamahOffsetsChanged?.let { change ->
+        SettingsDestination.IQAMAH -> onIqamahConfigurationChanged?.let { change ->
             listOf(
                 LocalSettingsAction(
                     label = appString(R.string.save_iqamah_settings),
                     invoke = { change(iqamahDraft) },
                     testTag = SETTINGS_IQAMAH_SAVE_TAG,
-                    enabled = isValidIqamahOffsets(iqamahDraft),
+                    enabled = isValidIqamahConfiguration(iqamahDraft),
                 ),
             )
         }.orEmpty()
@@ -474,13 +474,13 @@ private fun SettingsPage(
                     qrTitle = updated.title
                     qrMessage = updated.message
                 },
-                iqamahOffsets = iqamahDraft,
-                onIqamahOffsetsChange = { updated ->
-                    fajrIqamah = updated.fajr
-                    dhuhrIqamah = updated.dhuhr
-                    asrIqamah = updated.asr
-                    maghribIqamah = updated.maghrib
-                    ishaIqamah = updated.isha
+                iqamahConfiguration = iqamahDraft,
+                onIqamahConfigurationChange = { updated ->
+                    fajrIqamah = updated.fajrOffsetMinutes
+                    dhuhrIqamah = updated.dhuhrFixedTimeMinutes
+                    asrIqamah = updated.asrOffsetMinutes
+                    maghribIqamah = updated.maghribOffsetMinutes
+                    ishaIqamah = updated.ishaOffsetMinutes
                 },
                 donationConfiguration = donationDraft,
                 onDonationConfigurationChange = { updated ->
@@ -593,8 +593,8 @@ private fun SettingsContent(
     campaignPreview: QrCampaignUiState?,
     qrConfiguration: OperatorQrConfiguration,
     onQrConfigurationChange: (OperatorQrConfiguration) -> Unit,
-    iqamahOffsets: OperatorIqamahOffsets,
-    onIqamahOffsetsChange: (OperatorIqamahOffsets) -> Unit,
+    iqamahConfiguration: OperatorIqamahConfiguration,
+    onIqamahConfigurationChange: (OperatorIqamahConfiguration) -> Unit,
     donationConfiguration: OperatorDonationConfiguration,
     onDonationConfigurationChange: (OperatorDonationConfiguration) -> Unit,
     entryRequester: FocusRequester,
@@ -620,8 +620,9 @@ private fun SettingsContent(
     }
     if (destination == SettingsDestination.IQAMAH) {
         IqamahSettingsEditor(
-            offsets = iqamahOffsets,
-            onOffsetsChange = onIqamahOffsetsChange,
+            configuration = iqamahConfiguration,
+            onConfigurationChange = onIqamahConfigurationChange,
+            approvedDhuhrTimeMinutes = schedule.approvedDhuhrFixedTimeMinutes(),
             entryRequester = entryRequester,
             saveRequester = saveRequester,
             compact = compact,
@@ -723,6 +724,20 @@ private fun SettingsContent(
         details.forEach { (label, value) -> SettingsDetail(appString(label), value, compact) }
     }
 }
+
+private fun LocalPrayerSchedule?.approvedDhuhrFixedTimeMinutes(): Int? = this
+    ?.iqamahRules
+    ?.asSequence()
+    ?.filter { it.prayer == "dhuhr" && it.mode == "fixed_time" }
+    ?.mapNotNull { rule ->
+        rule.fixedTime?.split(':')?.takeIf { it.size == 2 }?.let { parts ->
+            val hour = parts[0].toIntOrNull() ?: return@let null
+            val minute = parts[1].toIntOrNull() ?: return@let null
+            (hour * 60 + minute).takeIf { hour in 0..23 && minute in 0..59 }
+        }
+    }
+    ?.distinct()
+    ?.singleOrNull()
 
 @Composable
 private fun SettingsDetail(label: String, value: String, compact: Boolean) {

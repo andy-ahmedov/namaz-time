@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -189,7 +190,7 @@ func TestPublicationDoesNotPromoteCollectiveDhuhrWithoutMosqueIqamahDecision(t *
 	}
 }
 
-func TestApprovedMosquePolicyUsesCollectiveDhuhrAsAdhanAndPublishesIqamahAndJumuah(t *testing.T) {
+func TestApprovedMosquePolicyKeepsDhuhrOnsetAndPublishesFixedDhuhrIqamahAndJumuah(t *testing.T) {
 	t.Parallel()
 
 	candidate := candidate()
@@ -207,13 +208,20 @@ func TestApprovedMosquePolicyUsesCollectiveDhuhrAsAdhanAndPublishesIqamahAndJumu
 	policy := &publication.MosquePrayerPolicy{
 		SchemaVersion: "1.0", PolicyID: "pilot-policy-2026", MosqueID: candidate.Mosque.ID,
 		ValidFrom: candidate.Coverage.From, ValidTo: candidate.Coverage.To,
-		DhuhrAdhanSource:            "dhuhr_congregation",
+		DhuhrAdhanSource:            publication.DhuhrAdhanFromOnset,
 		DhuhrReplacedByJumuahFriday: true,
-		IqamahRules: []domain.IqamahRule{{
-			ID: "all-prayers-plus-five", Prayer: "fajr", ValidFrom: candidate.Coverage.From,
-			ValidTo: candidate.Coverage.To, Weekdays: []int{1, 2, 3, 4, 5, 6, 7}, Priority: 100,
-			Value: domain.IqamahValue{Mode: "offset_after_adhan", OffsetMinutes: &offset},
-		}},
+		IqamahRules: []domain.IqamahRule{
+			{
+				ID: "fajr-plus-five", Prayer: "fajr", ValidFrom: candidate.Coverage.From,
+				ValidTo: candidate.Coverage.To, Weekdays: []int{1, 2, 3, 4, 5, 6, 7}, Priority: 100,
+				Value: domain.IqamahValue{Mode: "offset_after_adhan", OffsetMinutes: &offset},
+			},
+			{
+				ID: "dhuhr-fixed-1315", Prayer: "dhuhr", ValidFrom: candidate.Coverage.From,
+				ValidTo: candidate.Coverage.To, Weekdays: []int{1, 2, 3, 4, 5, 6, 7}, Priority: 100,
+				Value: domain.IqamahValue{Mode: "fixed_time", FixedTime: "13:15"},
+			},
+		},
 		JumuahSessions: []domain.JumuahSession{{
 			ID: "friday-1315", Label: "Джума", SalahTime: "13:15",
 			ValidFrom: candidate.Coverage.From, ValidTo: candidate.Coverage.To,
@@ -235,11 +243,14 @@ func TestApprovedMosquePolicyUsesCollectiveDhuhrAsAdhanAndPublishesIqamahAndJumu
 	if err != nil {
 		t.Fatal(err)
 	}
-	if result.Snapshot.PrayerDays[0].Dhuhr != "12:15" {
+	if result.Snapshot.PrayerDays[0].Dhuhr != "12:00" {
 		t.Fatalf("Dhuhr adhan = %q", result.Snapshot.PrayerDays[0].Dhuhr)
 	}
-	if len(result.Snapshot.IqamahRules) != 1 || len(result.Snapshot.JumuahSessions) != 1 {
+	if len(result.Snapshot.IqamahRules) != 2 || len(result.Snapshot.JumuahSessions) != 1 {
 		t.Fatalf("policy not published: iqamah=%#v jumuah=%#v", result.Snapshot.IqamahRules, result.Snapshot.JumuahSessions)
+	}
+	if got := result.Snapshot.IqamahRules[1]; got.Value.Mode != "fixed_time" || got.Value.FixedTime != "13:15" || !slices.Contains(got.Weekdays, 5) {
+		t.Fatalf("Dhuhr fixed-time policy = %#v", got)
 	}
 
 	tampered := request
@@ -253,25 +264,28 @@ func TestApprovedMosquePolicyUsesCollectiveDhuhrAsAdhanAndPublishesIqamahAndJumu
 	}
 }
 
-func TestMosquePrayerPolicyRejectsJumuahReplacementContradictions(t *testing.T) {
+func TestMosquePrayerPolicyAllowsFridayDhuhrIqamahAlongsideJumuah(t *testing.T) {
 	t.Parallel()
 
-	offset := 5
 	policy := publication.MosquePrayerPolicy{
 		SchemaVersion: "1.0", PolicyID: "pilot-policy-2026", MosqueID: "pilot-mosque",
 		ValidFrom: "2026-01-01", ValidTo: "2026-12-31",
-		DhuhrAdhanSource:            publication.DhuhrAdhanFromCongregation,
+		DhuhrAdhanSource:            publication.DhuhrAdhanFromOnset,
 		DhuhrReplacedByJumuahFriday: true,
 		IqamahRules: []domain.IqamahRule{{
-			ID: "dhuhr-plus-five", Prayer: "dhuhr", ValidFrom: "2026-01-01", ValidTo: "2026-12-31",
+			ID: "dhuhr-fixed-1315", Prayer: "dhuhr", ValidFrom: "2026-01-01", ValidTo: "2026-12-31",
 			Weekdays: []int{5}, Priority: 100,
-			Value: domain.IqamahValue{Mode: "offset_after_adhan", OffsetMinutes: &offset},
+			Value: domain.IqamahValue{Mode: "fixed_time", FixedTime: "13:15"},
+		}},
+		JumuahSessions: []domain.JumuahSession{{
+			ID: "friday-1315", Label: "Jumuah", SalahTime: "13:15",
+			ValidFrom: "2026-01-01", ValidTo: "2026-12-31",
 		}},
 	}
-	if _, err := publication.MosquePrayerPolicySHA256(policy); err == nil {
-		t.Fatal("Friday Dhuhr iqamah was accepted while Jumuah replaces Dhuhr")
+	if _, err := publication.MosquePrayerPolicySHA256(policy); err != nil {
+		t.Fatalf("Friday Dhuhr iqamah was rejected alongside Jumuah: %v", err)
 	}
-	policy.IqamahRules = nil
+	policy.JumuahSessions = nil
 	if _, err := publication.MosquePrayerPolicySHA256(policy); err == nil {
 		t.Fatal("Jumuah replacement was accepted without a Jumuah session")
 	}

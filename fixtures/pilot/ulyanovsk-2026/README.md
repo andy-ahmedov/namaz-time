@@ -124,17 +124,17 @@ approver. Stable identity:
 `approver:ulyanovsk-mosques:akhmedov-elmaddin-fazil-ogly`.
 
 - `mosque-prayer-policy.json` canonical SHA-256:
-  `8803f54236cd9191a3362c2bdb0e1921f6225350434ca671e9f3f961f3fd4416`;
+  `6b8ce3c01001d41162f18d5fb26d6a68251ce2d60a5f7598c5c96b06b51aa629`;
 - `approver-trust-bundle.json` raw SHA-256:
   `29ab69e969e75bee879cbe5f73993e711c160da754f4182653c32cb058ad2974`;
 - `approval-receipt.json` raw SHA-256:
-  `b1e3baea680fe84887d9978bf9f2ab7fa85b3221a548fcb33e61a9001b3a6cd5`.
+  `36e889022c2db28ffa8221e1d104631f4a64f1c0d0211f89e942e4527453186c`.
 
 The private approval key is not in the repository. It is stored under the
 local operator account with mode `0600`; production custody backup/transfer is
-still an operator responsibility. The signed receipt approves the exact
-candidate/diff/warnings, selects `dhuhr_congregation` as mosque Dhuhr adhan,
-adds +5-minute iqamah rules for all daily prayers (excluding Friday Dhuhr), and
-adds one Friday Jumuah at 13:15. No Ramadan or holiday exception is invented.
-The raw PDF/photo/CSV values remain unchanged; notably 24 August Dhuhr adhan is
-the explicitly accepted photo value `13:53`.
+still an operator responsibility. The signed v2 receipt approves the exact
+candidate/diff/warnings, selects `dhuhr_onset` as Dhuhr adhan, assigns fixed
+Dhuhr iqamah `13:15` on all seven weekdays and the same Friday Jumu'ah time,
+and keeps Fajr/Asr/Maghrib/Isha at adhan +5 minutes. No Ramadan or holiday
+exception is invented. The raw PDF/photo/CSV and collective-Dhuhr evidence are
+unchanged; 24 August Dhuhr adhan is the accepted photo onset value `12:48`.

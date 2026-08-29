@@ -223,6 +223,13 @@ than centered column arrangements. The shared QR primitive uses the same four
 corners and crescent/two-star center glyph on main and standalone donation
 screens.
 
+T033 also changes the Iqamah editor contract. Fajr, Asr, Maghrib and Isha show
+bounded `adhan + N minutes` values; Dhuhr shows a fixed mosque-local `HH:mm`
+value from the signed 13:15 base policy. Every +/− press changes one minute.
+Changing Dhuhr updates both its iqamah (including Friday) and Jumu'ah as one
+local setting. Sunrise remains absent. Returning to “Use schedule” clears only
+the device-local projection and reveals the signed base policy.
+
 For mosque ID `second-cathedral-mosque-ulyanovsk`, the public main display and
 Mosque settings summary use the concise presentation identity `Вторая Соборная
 Мечеть` / `Ульяновск`. This is a UI-only alias: the canonical signed snapshot,
@@ -257,9 +264,10 @@ Each page:
 
 1. start in Russian with the authenticated preconfigured mosque snapshot;
 2. review mosque, timezone, source approval and coverage in settings;
-3. optionally set five device-local iqamah offsets using D-pad +/− controls;
-   each means `adhan + N minutes`, Sunrise has none, and these remain visibly
-   and architecturally separate from signed snapshot provenance;
+3. optionally set four device-local `adhan + N minutes` offsets and one linked
+   fixed Dhuhr/Jumu'ah time using one-minute D-pad +/− controls; Sunrise has
+   none, and every value remains visibly and architecturally separate from
+   signed snapshot provenance;
 4. optionally switch the whole UI to English; persist the choice locally;
 5. optionally enter a validated HTTPS QR link, sadaqah purpose and motivation;
 6. return to the main screen with D-pad focus restored.

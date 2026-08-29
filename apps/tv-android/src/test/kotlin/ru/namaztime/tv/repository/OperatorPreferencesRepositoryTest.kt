@@ -2,6 +2,7 @@ package ru.namaztime.tv.repository
 
 import androidx.datastore.preferences.core.PreferenceDataStoreFactory
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import java.io.File
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -279,21 +280,21 @@ class OperatorPreferencesRepositoryTest {
     }
 
     @Test
-    fun iqamahOffsetsPersistIndependentlyForEveryCollectivePrayer() = runTest {
+    fun iqamahConfigurationPersistsOffsetsAndFixedDhuhrTimeIndependently() = runTest {
         val repository = repositoryFor(this)
-        val expected = OperatorIqamahOffsets(
-            fajr = 5,
-            dhuhr = 10,
-            asr = 15,
-            maghrib = 7,
-            isha = 20,
+        val expected = OperatorIqamahConfiguration(
+            fajrOffsetMinutes = 5,
+            dhuhrFixedTimeMinutes = 13 * 60 + 15,
+            asrOffsetMinutes = 15,
+            maghribOffsetMinutes = 7,
+            ishaOffsetMinutes = 20,
         )
 
-        repository.setIqamahOffsets(expected)
+        repository.setIqamahConfiguration(expected)
 
-        val actual = repository.preferences.first().iqamahOffsets
+        val actual = repository.preferences.first().iqamahConfiguration
         assertEquals(expected, actual)
-        assertNull(actual.forPrayer("sunrise"))
+        assertNull(actual.offsetForPrayer("sunrise"))
     }
 
     @Test(expected = IllegalArgumentException::class)
@@ -307,7 +308,7 @@ class OperatorPreferencesRepositoryTest {
     }
 
     @Test
-    fun legacyFixedIqamahTimesAreNotGuessedIntoOffsets() = runTest {
+    fun legacyDhuhrOffsetAndLegacyFixedTimesAreNotReinterpreted() = runTest {
         val dataStore = PreferenceDataStoreFactory.create(
             scope = TestScope(UnconfinedTestDispatcher(testScheduler)),
             produceFile = { File(temporaryFolder.root, "legacy.preferences_pb") },
@@ -315,11 +316,12 @@ class OperatorPreferencesRepositoryTest {
         dataStore.edit { values ->
             values[stringPreferencesKey("operator_iqamah_fajr")] = "05:30"
             values[stringPreferencesKey("operator_iqamah_dhuhr")] = "13:30"
+            values[intPreferencesKey("operator_iqamah_offset_dhuhr")] = 10
         }
 
         val preferences = DataStoreOperatorPreferencesRepository(dataStore).preferences.first()
 
-        assertEquals(OperatorIqamahOffsets(), preferences.iqamahOffsets)
+        assertEquals(OperatorIqamahConfiguration(), preferences.iqamahConfiguration)
     }
 
     @Test(expected = IllegalArgumentException::class)

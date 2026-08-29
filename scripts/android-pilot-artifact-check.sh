@@ -72,6 +72,7 @@ unzip -Z1 "$APK_PATH" > "$TMP_DIR/entries.txt"
 for required_asset in \
   assets/pilot-local-ulyanovsk-2026-snapshot.json \
   assets/pilot-local-production-trust-bundle.json \
+  assets/pilot-local-production-trust-bundle-previous.json \
   assets/pilot-local-staging-trust-bundle.json \
   assets/pilot-local-test-trust-bundle.json; do
   grep -Fxq "$required_asset" "$TMP_DIR/entries.txt" ||

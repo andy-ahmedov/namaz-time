@@ -1,22 +1,21 @@
 {
   "schema_version": "1.0",
-  "revision": 3,
+  "revision": 2,
   "environment": "production",
-  "generated_at": "2026-08-29T12:14:00Z",
+  "generated_at": "2026-08-29T12:13:00Z",
   "keys": [
     {
       "key_id": "pilot-local-schedule-2026-01",
       "algorithm": "ed25519",
       "public_key_ed25519_base64": "NhaEy4cRzL0faAjE/tF6pj+yfXqDq1jHDAO1BBKRCKc=",
-      "status": "retired",
-      "not_before": "2026-08-20T14:50:00Z",
-      "not_after": "2026-08-29T12:14:00Z"
+      "status": "active",
+      "not_before": "2026-08-20T14:50:00Z"
     },
     {
       "key_id": "pilot-local-schedule-2026-02",
       "algorithm": "ed25519",
       "public_key_ed25519_base64": "DPqxadivvhWubbaoZxYEi0OVpp8iUv3RoGblp5QMJSQ=",
-      "status": "active",
+      "status": "scheduled",
       "not_before": "2026-08-29T12:13:00Z"
     }
   ]

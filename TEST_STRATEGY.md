@@ -237,6 +237,14 @@ difference review. They are `CONFIRMED_RUNTIME` emulator evidence; physical-TV
 overscan, panel behavior and representative-distance phone scanning remain
 `UNKNOWN`.
 
+T033 Checkpoint 2 adds publication tests that keep source Dhuhr onset while
+accepting a fixed-time Dhuhr rule on Friday alongside Jumu'ah. Android
+projection tests prove one operator Dhuhr value changes both resolved Dhuhr
+iqamah and Jumu'ah without mutating Room, while the other four prayers remain
+adhan-relative. DataStore tests pin the new fixed-minutes key, bounded default,
+and deliberate non-migration of the legacy Dhuhr offset. Compose input tests
+press + repeatedly and assert one-minute results.
+
 T027 pins the concise public display identity for the Ulyanovsk pilot mosque
 on both the main screen and Mosque settings page. A non-pilot passthrough
 assertion and the authenticated pilot bootstrap test prove the presentation
@@ -262,9 +270,10 @@ the shifted shared safe frame at 720p, 1080p-density and 4K-density while the
 D-pad tests continue to pin initial focus and display/settings return. These
 tests prove deterministic layout bounds, not burn-in prevention on a panel.
 
-T022 pins the pilot-local asset SHA-256, snapshot/approval identity, 365-day
-coverage, exact August 20/24 Dhuhr selection, all five +5-minute iqamah rules
-and one Friday 13:15 Jumu'ah session. The same test path performs real Android
+The current pilot-local successor pins the asset SHA-256, v2 snapshot/approval
+identity, 365-day coverage, exact source-onset Dhuhr values on August 20/24,
+four +5-minute rules, fixed Dhuhr 13:15 on all weekdays and one Friday 13:15
+Jumu'ah session. The same test path performs real Android
 canonical/signature/trust validation before Room activation, rejects tampering
 without changing selection, and proves D-014 returns
 `SCHEDULE_DATE_OUTSIDE_COVERAGE` on 2027-01-01. These are local
@@ -372,9 +381,9 @@ reject policy/hash/range/field drift, rewrite only the two resolved review flags
 and preserve the D-009 warning. The effective candidate remains `needs_review`
 as provider output; publication rejects it without the exact signed named
 approval. Approval receipt/trust lifecycle tests bind the candidate, diff,
-warnings and mosque policy. Publication regressions prove the collective Dhuhr
-field changes only through that explicit policy, becomes Dhuhr adhan rather
-than iqamah, and emits the approved +5 rules and Friday Jumu'ah. This is
+warnings and mosque policy. Publication regressions prove source Dhuhr onset
+remains the adhan, the separate collective field is not promoted, and the
+approved fixed Dhuhr/+5/Jumu'ah policy is emitted. This is
 static/local evidence, not physical TV or production signer evidence.
 
 T009 adds real HTTP-handler tests for one-use pairing, bearer isolation,

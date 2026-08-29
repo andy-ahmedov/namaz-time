@@ -12,14 +12,14 @@ class OperatorIqamahProjectionTest {
     private val now = Instant.parse("2026-08-20T00:00:00Z")
 
     @Test
-    fun operatorOffsetsProjectFromEachAdhanWithoutMutatingTheLocalSnapshot() {
+    fun operatorConfigurationKeepsOffsetsButUsesOneFixedDhuhrAndJumuahTime() {
         val schedule = schedule()
-        val settings = OperatorIqamahOffsets(
-            fajr = 5,
-            dhuhr = 10,
-            asr = 15,
-            maghrib = 7,
-            isha = 20,
+        val settings = OperatorIqamahConfiguration(
+            fajrOffsetMinutes = 5,
+            dhuhrFixedTimeMinutes = 13 * 60 + 20,
+            asrOffsetMinutes = 15,
+            maghribOffsetMinutes = 7,
+            ishaOffsetMinutes = 20,
         )
 
         val resolution = engine.resolve(
@@ -28,17 +28,26 @@ class OperatorIqamahProjectionTest {
         ) as PrayerTimeResolution.Available
 
         assertEquals("04:05", resolution.prayers.getValue("fajr").iqamah.toString())
-        assertEquals("13:10", resolution.prayers.getValue("dhuhr").iqamah.toString())
+        assertEquals("13:20", resolution.prayers.getValue("dhuhr").iqamah.toString())
         assertEquals("18:15", resolution.prayers.getValue("asr").iqamah.toString())
         assertEquals("20:07", resolution.prayers.getValue("maghrib").iqamah.toString())
         assertEquals("22:20", resolution.prayers.getValue("isha").iqamah.toString())
         assertTrue(schedule.iqamahRules.isEmpty())
         assertTrue(schedule.iqamahDateOverrides.isEmpty())
+
+        val friday = Instant.parse("2026-08-21T10:00:00Z")
+        val fridayResolution = engine.resolve(
+            schedule.toTimeEngineInput(settings, friday),
+            friday,
+        ) as PrayerTimeResolution.Available
+        assertEquals("13:00", fridayResolution.prayers.getValue("dhuhr").adhan.toString())
+        assertEquals("13:20", fridayResolution.prayers.getValue("dhuhr").iqamah.toString())
+        assertEquals("13:20", fridayResolution.jumuahSessions.single().salahTime.toString())
     }
 
     @Test
     fun absentOperatorOffsetLeavesApprovedBasePolicyActive() {
-        val input = scheduleWithBasePolicy().toTimeEngineInput(OperatorIqamahOffsets(), now)
+        val input = scheduleWithBasePolicy().toTimeEngineInput(OperatorIqamahConfiguration(), now)
         val result = engine.resolve(input, now)
 
         assertTrue(result is PrayerTimeResolution.Available)
@@ -62,6 +71,18 @@ class OperatorIqamahProjectionTest {
                 offsetMinutes = 5,
                 reason = "approved policy",
             ),
+            LocalIqamahRule(
+                id = "approved-dhuhr",
+                prayer = "dhuhr",
+                validFrom = "2026-08-20",
+                validTo = "2026-08-21",
+                weekdaysMask = 127,
+                priority = 1,
+                mode = "fixed_time",
+                fixedTime = "13:15",
+                offsetMinutes = null,
+                reason = "approved policy",
+            ),
         ),
     )
 
@@ -77,6 +98,16 @@ class OperatorIqamahProjectionTest {
         days = listOf(
             day("2026-08-20"),
             day("2026-08-21"),
+        ),
+        jumuahSessions = listOf(
+            LocalJumuahSession(
+                id = "friday-1315",
+                label = "Jumuah",
+                khutbahTime = null,
+                salahTime = "13:15",
+                validFrom = "2026-08-20",
+                validTo = "2026-08-21",
+            ),
         ),
     )
 

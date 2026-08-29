@@ -26,13 +26,14 @@ class PilotLocalAssetContractTest {
 
         assertTrue(PILOT_LOCAL_SNAPSHOT_ASSET in packagedAssets)
         assertTrue(PILOT_LOCAL_PRODUCTION_TRUST_ASSET in packagedAssets)
+        assertTrue(PILOT_LOCAL_PREVIOUS_PRODUCTION_TRUST_ASSET in packagedAssets)
         assertTrue(PILOT_LOCAL_STAGING_TRUST_ASSET in packagedAssets)
         assertTrue(PILOT_LOCAL_TEST_TRUST_ASSET in packagedAssets)
         assertFalse(BUNDLED_SNAPSHOT_ASSET in packagedAssets)
 
         val snapshotBytes = context.assets.open(PILOT_LOCAL_SNAPSHOT_ASSET).use { it.readBytes() }
         val root = Json.parseToJsonElement(snapshotBytes.decodeToString()).jsonObject
-        assertEquals("ulyanovsk-second-cathedral-2026-pilot-local-v1", root.getValue("snapshot_id").jsonPrimitive.content)
+        assertEquals(PILOT_LOCAL_SNAPSHOT_ID, root.getValue("snapshot_id").jsonPrimitive.content)
         assertEquals("production", root.getValue("data_classification").jsonPrimitive.content)
         assertEquals("2026-01-01", root.getValue("coverage").jsonObject.getValue("from").jsonPrimitive.content)
         assertEquals("2026-12-31", root.getValue("coverage").jsonObject.getValue("to").jsonPrimitive.content)

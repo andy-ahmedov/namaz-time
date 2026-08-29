@@ -719,12 +719,29 @@ class NamazTvAppUiTest {
     @Test
     @OptIn(ExperimentalTestApi::class)
     @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
-    fun iqamahSettingsExposeFiveIndependentOffsetsWithoutFridayTechnicalCopy() {
+    fun iqamahSettingsUseOneMinuteStepsAndOneFixedDhuhrJumuahSetting() {
         val preferences = FakeOperatorPreferencesRepository()
         compose.setContent {
             NamazTvApp(
                 operatorPreferencesRepository = preferences,
-                prayerScheduleRepository = FakePrayerScheduleRepository(schedule()),
+                prayerScheduleRepository = FakePrayerScheduleRepository(
+                    schedule().copy(
+                        iqamahRules = listOf(
+                            ru.namaztime.tv.repository.LocalIqamahRule(
+                                id = "approved-dhuhr-1315",
+                                prayer = "dhuhr",
+                                validFrom = "2026-08-19",
+                                validTo = "2026-08-21",
+                                weekdaysMask = 127,
+                                priority = 100,
+                                mode = "fixed_time",
+                                fixedTime = "13:15",
+                                offsetMinutes = null,
+                                reason = "synthetic approved policy",
+                            ),
+                        ),
+                    ),
+                ),
                 bootstrapState = MutableStateFlow(
                     SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
                 ),
@@ -740,11 +757,11 @@ class NamazTvAppUiTest {
         compose.onNodeWithText("Зухр в пятницу").assertDoesNotExist()
         compose.onNodeWithText("Заменён одним намазом Джума").assertDoesNotExist()
         val expected = mapOf(
-            "fajr" to (1 to "03:19"),
-            "dhuhr" to (2 to "12:18"),
-            "asr" to (3 to "17:00"),
-            "maghrib" to (4 to "19:11"),
-            "isha" to (5 to "21:23"),
+            "fajr" to (1 to "03:15"),
+            "dhuhr" to (2 to "13:17"),
+            "asr" to (3 to "16:48"),
+            "maghrib" to (4 to "18:55"),
+            "isha" to (5 to "21:03"),
         )
         compose.onNodeWithTag(SettingsDestination.IQAMAH.navigationTestTag).performKeyInput {
             pressKey(Key.DirectionRight)
@@ -1370,15 +1387,16 @@ private class FakeOperatorPreferencesRepository(
     override suspend fun setIqamahOffset(prayerId: String, offsetMinutes: Int?) {
         if (failWrites) throw IOException("synthetic preference storage failure")
         state.value = state.value.copy(
-            iqamahOffsets = state.value.iqamahOffsets.withPrayer(prayerId, offsetMinutes),
+            iqamahConfiguration = state.value.iqamahConfiguration
+                .withEditorValue(prayerId, offsetMinutes),
         )
     }
 
-    override suspend fun setIqamahOffsets(
-        offsets: ru.namaztime.tv.repository.OperatorIqamahOffsets,
+    override suspend fun setIqamahConfiguration(
+        configuration: ru.namaztime.tv.repository.OperatorIqamahConfiguration,
     ) {
         if (failWrites) throw IOException("synthetic preference storage failure")
-        state.value = state.value.copy(iqamahOffsets = offsets)
+        state.value = state.value.copy(iqamahConfiguration = configuration)
     }
 
     override suspend fun setDonationConfiguration(

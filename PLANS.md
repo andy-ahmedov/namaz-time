@@ -55,9 +55,10 @@ produces normalized SHA-256
 `e7bcc16ad55d00f136cbfc5629e2680babf3f71b331dd33ca4f6e1b1207dbf77`.
 All twelve numeric differences remain visible and policy-resolved. Named
 approver `approver:ulyanovsk-mosques:akhmedov-elmaddin-fazil-ogly` signed the
-exact candidate/diff/warnings and policy SHA-256. D-009 maps the approved
-collective-Dhuhr source value to Dhuhr adhan, applies iqamah +5 minutes, omits
-Friday Dhuhr iqamah and publishes one Jumuah at 13:15. D-013 is accepted and locally implemented: production code
+exact candidate/diff/warnings and policy SHA-256. The T033 signed successor
+keeps source Dhuhr onset as adhan, fixes Dhuhr iqamah at 13:15 on all weekdays,
+keeps the other four collective prayers at adhan +5 and publishes one Friday
+Jumuah at the same 13:15 mosque-local time. D-013 is accepted and locally implemented: production code
 accepts only an isolated signer interface/two-signature response, Go/API
 and Android consume the same `scheduled`/`active`/`retired`/`revoked` public
 trust model with direct-predecessor transition checks, and finalization emits a
@@ -137,7 +138,7 @@ backend or current Robolectric evidence labels.
 | T030 independent production-readiness engineering/security review | DONE | [independent report](docs/reviews/2026-08-28-engineering-security-review.md) records 0 CRITICAL, 4 HIGH, 12 MEDIUM, 2 LOW and 2 CLEANUP findings. Checkpoints `888f534`, `7a6e5b8`, `26cfbd0`, `2346fb8` and follow-up `a1e05d8` close every locally actionable material issue, including the AGP 9.3/KSP migration. The second pass found no new CRITICAL or unblocked HIGH. D-015 now separates a conditionally ready offline USB pilot from the still-not-ready future remote-managed mode. |
 | T031 permanent Android pilot identity | DONE | checkpoint `27bf040`; D-005 accepts `ru.namaztime.tv`; Android namespace, application ID, Kotlin packages, Room schema export path and identity regression now use it. The old T001 placeholder remains only in historical evidence and cannot be upgraded in place because Android treats the accepted ID as a separate app. |
 | T032 signed offline pilot artifact | DONE | checkpoint `7767f46`; a dedicated non-debuggable `pilot` variant packages the authenticated local schedule, requires an external PKCS12 keystore, and fails without it. Debug uses `ru.namaztime.tv.debug`. `make build-android-pilot` verifies exact package ID, APK signature, pinned public certificate and required assets; the permanent key exists outside Git/APK with mode 0600. Two operator-chosen offline backups and physical-TV acceptance remain external actions. |
-| T033 pilot UI fidelity and operator customization (requested as T030) | IN PROGRESS | Checkpoint 1 implements the `new_reference.png` main-display contract: normalized region anchors, original prayer/collective/support glyphs, detailed arch/lantern watermark, full-row highlight with left accent, explicit next/date rhythm and one shared symmetric four-corner QR/glyph primitive for main and donation displays. Targeted Compose/QR tests and three API 36 build/install/normalize/side-by-side refinements pass. Checkpoints 2–6, full gates and final reviews remain. |
+| T033 pilot UI fidelity and operator customization (requested as T030) | IN PROGRESS | Checkpoint 1 implements the measured `new_reference.png` main-display contract and shared symmetric QR primitive. Checkpoint 2 keeps source Dhuhr onset, publishes signed fixed 13:15 Dhuhr/Jumu'ah policy through approval/receipt/trust rotation, and adds one-minute local controls with a new non-ambiguous DataStore key; targeted Go, projection, persistence and Compose tests pass. Checkpoints 3–6, full gates and final reviews remain. |
 
 The independent local Phase 4 queue is complete through T029. After T029, the
 remaining matrix below requires physical hardware, OEM behavior or an open

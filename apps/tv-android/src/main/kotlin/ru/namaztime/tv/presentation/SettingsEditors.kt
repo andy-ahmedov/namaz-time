@@ -51,9 +51,10 @@ import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import ru.namaztime.tv.R
+import ru.namaztime.tv.repository.OPERATOR_DHUHR_FIXED_TIME_RANGE
 import ru.namaztime.tv.repository.OPERATOR_IQAMAH_PRAYER_IDS
 import ru.namaztime.tv.repository.OPERATOR_IQAMAH_OFFSET_RANGE
-import ru.namaztime.tv.repository.OperatorIqamahOffsets
+import ru.namaztime.tv.repository.OperatorIqamahConfiguration
 import ru.namaztime.tv.repository.CUSTOM_DONATION_IMAGE_STYLE_ID
 import ru.namaztime.tv.repository.OperatorDonationConfiguration
 import ru.namaztime.tv.repository.OperatorImageSlot
@@ -370,8 +371,9 @@ internal fun QrSettingsEditor(
 
 @Composable
 internal fun IqamahSettingsEditor(
-    offsets: OperatorIqamahOffsets,
-    onOffsetsChange: (OperatorIqamahOffsets) -> Unit,
+    configuration: OperatorIqamahConfiguration,
+    onConfigurationChange: (OperatorIqamahConfiguration) -> Unit,
+    approvedDhuhrTimeMinutes: Int?,
     entryRequester: FocusRequester,
     saveRequester: FocusRequester,
     modifier: Modifier = Modifier,
@@ -392,9 +394,10 @@ internal fun IqamahSettingsEditor(
         OPERATOR_IQAMAH_PRAYER_IDS.forEachIndexed { index, prayerId ->
             IqamahOffsetRow(
                 prayerId = prayerId,
-                value = offsets.forPrayer(prayerId),
+                value = configuration.editorValueForPrayer(prayerId),
+                approvedDhuhrTimeMinutes = approvedDhuhrTimeMinutes,
                 onValueChange = { value ->
-                    onOffsetsChange(offsets.withPrayer(prayerId, value))
+                    onConfigurationChange(configuration.withEditorValue(prayerId, value))
                 },
                 decrementRequester = decrementRequesters.getValue(prayerId),
                 incrementRequester = incrementRequesters.getValue(prayerId),
@@ -427,6 +430,7 @@ internal fun IqamahSettingsEditor(
 private fun IqamahOffsetRow(
     prayerId: String,
     value: Int?,
+    approvedDhuhrTimeMinutes: Int?,
     onValueChange: (Int?) -> Unit,
     decrementRequester: FocusRequester,
     incrementRequester: FocusRequester,
@@ -436,6 +440,15 @@ private fun IqamahOffsetRow(
     nextIncrementRequester: FocusRequester,
     compact: Boolean,
 ) {
+    val isDhuhr = prayerId == "dhuhr"
+    val range = if (isDhuhr) OPERATOR_DHUHR_FIXED_TIME_RANGE else OPERATOR_IQAMAH_OFFSET_RANGE
+    val baseValue = if (isDhuhr) approvedDhuhrTimeMinutes else 0
+    val effectiveValue = value ?: baseValue
+    fun updateBy(delta: Int) {
+        val current = effectiveValue ?: return
+        val updated = (current + delta).coerceIn(range)
+        onValueChange(updated.takeUnless { isDhuhr && it == approvedDhuhrTimeMinutes })
+    }
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -451,10 +464,8 @@ private fun IqamahOffsetRow(
         )
         IqamahOffsetButton(
             label = "−",
-            enabled = value != null,
-            onClick = {
-                onValueChange(value?.minus(IQAMAH_OFFSET_STEP)?.takeIf { it >= 0 })
-            },
+            enabled = effectiveValue != null && effectiveValue > range.first,
+            onClick = { updateBy(-IQAMAH_OFFSET_STEP) },
             requester = decrementRequester,
             leftRequester = null,
             rightRequester = incrementRequester,
@@ -463,8 +474,15 @@ private fun IqamahOffsetRow(
             modifier = Modifier.testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-decrement"),
         )
         Text(
-            text = value?.let { appString(R.string.iqamah_offset_minutes_value, it) }
-                ?: appString(R.string.iqamah_use_schedule_value),
+            text = when {
+                isDhuhr && effectiveValue != null && value == null -> appString(
+                    R.string.iqamah_use_schedule_time_value,
+                    effectiveValue.asClockText(),
+                )
+                isDhuhr && effectiveValue != null -> effectiveValue.asClockText()
+                value != null -> appString(R.string.iqamah_offset_minutes_value, value)
+                else -> appString(R.string.iqamah_use_schedule_value)
+            },
             modifier = Modifier.width(if (compact) 116.dp else 160.dp),
             color = NamazTvTheme.colors.textPrimary,
             fontSize = if (compact) 16.sp else 19.sp,
@@ -472,10 +490,13 @@ private fun IqamahOffsetRow(
         )
         IqamahOffsetButton(
             label = "+",
-            enabled = value != OPERATOR_IQAMAH_OFFSET_RANGE.last,
+            enabled = effectiveValue == null || effectiveValue < range.last,
             onClick = {
-                val next = if (value == null) IQAMAH_OFFSET_STEP else value + IQAMAH_OFFSET_STEP
-                onValueChange(next.coerceAtMost(OPERATOR_IQAMAH_OFFSET_RANGE.last))
+                if (effectiveValue == null) {
+                    onValueChange(IQAMAH_OFFSET_STEP)
+                } else {
+                    updateBy(IQAMAH_OFFSET_STEP)
+                }
             },
             requester = incrementRequester,
             leftRequester = decrementRequester,
@@ -524,7 +545,9 @@ private fun IqamahOffsetButton(
     }
 }
 
-private const val IQAMAH_OFFSET_STEP = 5
+private fun Int.asClockText(): String = "%02d:%02d".format(this / 60, this % 60)
+
+private const val IQAMAH_OFFSET_STEP = 1
 
 @Composable
 private fun TvSettingsTextField(

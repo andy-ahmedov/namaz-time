@@ -1,10 +1,10 @@
 {
   "schema_version": "1.0",
-  "policy_id": "second-cathedral-mosque-ulyanovsk-2026-v1",
+  "policy_id": "second-cathedral-mosque-ulyanovsk-2026-v2",
   "mosque_id": "second-cathedral-mosque-ulyanovsk",
   "valid_from": "2026-01-01",
   "valid_to": "2026-12-31",
-  "dhuhr_adhan_source": "dhuhr_congregation",
+  "dhuhr_adhan_source": "dhuhr_onset",
   "dhuhr_replaced_by_jumuah_friday": true,
   "iqamah_rules": [
     {
@@ -21,17 +21,17 @@
       "reason": "Approved mosque policy: iqamah is five minutes after adhan."
     },
     {
-      "id": "dhuhr-plus-five-except-friday-2026",
+      "id": "dhuhr-fixed-1315-2026",
       "prayer": "dhuhr",
       "valid_from": "2026-01-01",
       "valid_to": "2026-12-31",
-      "weekdays": [1, 2, 3, 4, 6, 7],
+      "weekdays": [1, 2, 3, 4, 5, 6, 7],
       "priority": 100,
       "value": {
-        "mode": "offset_after_adhan",
-        "offset_minutes": 5
+        "mode": "fixed_time",
+        "fixed_time": "13:15"
       },
-      "reason": "Approved mosque policy: Friday Dhuhr congregation is replaced by one Jumuah session."
+      "reason": "Approved mosque-local policy: Dhuhr iqamah is 13:15 every day; on Friday the same setting also controls Jumuah."
     },
     {
       "id": "asr-plus-five-2026",

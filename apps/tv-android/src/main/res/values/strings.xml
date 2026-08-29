@@ -112,7 +112,8 @@
     <string name="iqamah_time_label">Смещение икамата</string>
     <string name="iqamah_offset_minutes_value">+%1$d мин</string>
     <string name="iqamah_use_schedule_value">По расписанию</string>
-    <string name="iqamah_local_override_note">Значение задаёт икамат как «азан + N минут» и хранится только на этом устройстве. «По расписанию» использует утверждённую базовую policy.</string>
+    <string name="iqamah_use_schedule_time_value">По расписанию · %1$s</string>
+    <string name="iqamah_local_override_note">Для Фаджра, Асра, Магриба и Иша значение задаёт «азан + N минут». Для Зухра задаётся локальное время; оно также меняет Джума. Настройки хранятся только на этом устройстве.</string>
     <string name="save_iqamah_settings">Сохранить икамат</string>
     <string name="language_russian">Русский</string>
     <string name="language_english">Английский</string>

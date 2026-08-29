@@ -12,7 +12,7 @@ Second Cathedral Mosque has approved the schedule.
 | Organizational name | `CONFIRMED_PUBLIC` | Printed authority name is recorded verbatim in `source-record.json`. |
 | Named contact and role | `PROPOSAL` | Product owner identifies Ахмедов Эльмаддин Фазил Оглы, representative of Ulyanovsk mosques; stable signed identity is retained. Public third-party role verification is not claimed. |
 | Territory/locality | `CONFIRMED_PUBLIC` | Calendar cover and all monthly tables are for `г. Ульяновск`. |
-| Adhan vs congregation semantics | `PROPOSAL` | The named mosque approver states that the collective-Dhuhr column is Dhuhr adhan for Ulyanovsk mosques; iqamah is independently derived as adhan +5. This does not rewrite the source text. |
+| Adhan vs congregation semantics | `PROPOSAL` | Signed policy v2 keeps the source Dhuhr-onset column as adhan. Mosque-local Dhuhr iqamah and Friday Jumu'ah share the fixed 13:15 default; Fajr/Asr/Maghrib/Isha remain adhan +5. The source collective-Dhuhr column remains provenance evidence and is not relabelled. |
 | Madhab / regional rules | `CONFIRMED_PUBLIC` | Hanafi Asr and Astrakhan-analogy summer Fajr/Isha rules are printed and regression-tested. |
 | Ramadan / exceptional-day policy | `PROPOSAL` | Approver states that no separate Ramadan or holiday rule is currently defined; no exception is invented. |
 | Final correction authority | `PROPOSAL` | Corrections are assigned to the admin workflow; exact stale/fallback policy remains D-014. |
