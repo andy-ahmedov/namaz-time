@@ -245,6 +245,11 @@ adhan-relative. DataStore tests pin the new fixed-minutes key, bounded default,
 and deliberate non-migration of the legacy Dhuhr offset. Compose input tests
 press + repeatedly and assert one-minute results.
 
+T033 Checkpoint 3 adds DataStore tests for trimmed blank fallback, Unicode
+length bounds and control-character rejection. State and Compose tests prove
+the two local labels reach the main display while the schedule's mosque ID,
+canonical name, locality and IANA timezone remain unchanged.
+
 T027 pins the concise public display identity for the Ulyanovsk pilot mosque
 on both the main screen and Mosque settings page. A non-pilot passthrough
 assertion and the authenticated pilot bootstrap test prove the presentation

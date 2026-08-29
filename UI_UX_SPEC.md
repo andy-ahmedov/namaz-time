@@ -258,6 +258,11 @@ Each page:
 - unsaved changes are visible;
 - back either saves explicitly or asks, never silently discards critical time changes.
 
+The Mosque/location page provides two explicit local fields for the displayed
+mosque name and displayed address. Blank means the canonical/pilot fallback.
+The canonical source locality and IANA timezone are shown as read-only context;
+there are no city, timezone, mosque-ID or provenance editing controls.
+
 ## First-run flows
 
 ### Local pilot mode

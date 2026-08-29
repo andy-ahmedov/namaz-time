@@ -42,6 +42,49 @@ class OperatorPreferencesRepositoryTest {
     }
 
     @Test
+    fun localMosquePresentationIdentityPersistsWithoutCanonicalIdentifiers() = runTest {
+        val repository = repositoryFor(this)
+        val expected = OperatorMosquePresentationIdentity(
+            displayName = "Мечеть нашего района",
+            displayAddress = "ул. Мира, 10",
+        )
+
+        repository.setMosquePresentationIdentity(expected)
+
+        assertEquals(expected, repository.preferences.first().mosquePresentationIdentity)
+    }
+
+    @Test
+    fun blankMosquePresentationIdentityIsTheSafeFallbackDefault() = runTest {
+        val repository = repositoryFor(this)
+
+        repository.setMosquePresentationIdentity(
+            OperatorMosquePresentationIdentity(displayName = "   ", displayAddress = " "),
+        )
+
+        assertEquals(
+            OperatorMosquePresentationIdentity(),
+            repository.preferences.first().mosquePresentationIdentity,
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun controlCharactersCannotBeStoredInMosquePresentationIdentity() = runTest {
+        repositoryFor(this).setMosquePresentationIdentity(
+            OperatorMosquePresentationIdentity(displayName = "Mosque\nInjected"),
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun overlongMosquePresentationNameCannotBeStored() = runTest {
+        repositoryFor(this).setMosquePresentationIdentity(
+            OperatorMosquePresentationIdentity(
+                displayName = "М".repeat(MAX_MOSQUE_DISPLAY_NAME_LENGTH + 1),
+            ),
+        )
+    }
+
+    @Test
     fun imageBackgroundHasAnExplicitSafeDefault() = runTest {
         val preferences = repositoryFor(this).preferences.first()
 

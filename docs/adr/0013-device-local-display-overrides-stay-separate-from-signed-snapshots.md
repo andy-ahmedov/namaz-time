@@ -41,6 +41,14 @@ The operator QR takes display precedence over a snapshot campaign while it is
 configured. It is explicitly local, has no approval or official-source claim,
 and introduces no network call from Compose or the display reducer.
 
+T033 also permits two bounded presentation-only identity fields: displayed
+mosque name (80 Unicode code points) and displayed address (160). They are
+trimmed, reject control characters and live only in Preferences DataStore.
+Blank values restore the canonical/pilot display identity. The projection does
+not and cannot change `mosqueId`, signed mosque/locality fields, source scope,
+timezone, approval, provenance or Room snapshot bytes; canonical locality and
+timezone remain visible as read-only context in Settings.
+
 T028 adds an independent `schedule`/`donation` display preference and a
 donation configuration containing an HTTPS QR target, local transfer details
 and an allowlisted image ID. T029 replaces the ambiguous transfer-details blob
@@ -70,7 +78,9 @@ Positive:
   a focusable Settings path back to normal schedule mode;
 - transfer-detail columns can be rendered consistently without parsing an
   operator blob in the display layer;
-- clearing the local values restores the signed snapshot projection.
+- clearing the local values restores the signed snapshot projection;
+- local identity customization cannot be mistaken for a source or timezone
+  edit because those values remain read-only and separately presented;
 
 Costs and limits:
 

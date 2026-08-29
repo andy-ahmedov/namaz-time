@@ -659,9 +659,12 @@ each checkpoint has a local commit; final `make test`, `make lint`,
 `make docs-check`, Android gates, debug/pilot builds, four runtime screenshots
 and independent code/visual reviews pass with a clean worktree.
 
-**Progress:** Checkpoints 1 and 2 are implemented. Checkpoint 1 passed targeted
+**Progress:** Checkpoints 1–3 are implemented. Checkpoint 1 passed targeted
 tests and three controlled API 36 build/install/normalize/refine passes.
 Checkpoint 2 keeps source Dhuhr onset, publishes the authenticated 13:15
 Dhuhr/Jumu'ah successor through approval/receipt/trust rotation, and adds
 one-minute local controls with explicit fixed-Dhuhr persistence/projection.
+Checkpoint 3 adds bounded local display-name/address preferences, blank pilot
+fallback and read-only canonical locality/timezone context without touching
+Room identity or provenance.
 Remaining checkpoints are in progress.

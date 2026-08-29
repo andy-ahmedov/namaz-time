@@ -10,6 +10,7 @@ import ru.namaztime.tv.repository.LocalPrayerDay
 import ru.namaztime.tv.repository.LocalPrayerSchedule
 import ru.namaztime.tv.repository.LocalSnapshotDiagnostics
 import ru.namaztime.tv.repository.toTimeEngineInput
+import ru.namaztime.tv.repository.OperatorMosquePresentationIdentity
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -58,6 +59,49 @@ class MainPrayerDisplayStateTest {
 
         assertEquals("Вторая Соборная Мечеть", state.mosqueName)
         assertEquals("Ульяновск", state.location)
+    }
+
+    @Test
+    fun localPresentationIdentityOverridesOnlyDisplayedNameAndAddress() {
+        val schedule = schedule().copy(
+            mosqueId = "second-cathedral-mosque-ulyanovsk",
+            mosqueName = "Вторая Соборная мечеть Ульяновска",
+            locality = "Ульяновск, ул. Дзержинского, 18А",
+        )
+        val resolution = PrayerTimeEngine().resolve(
+            schedule.toTimeEngineInput(),
+            Instant.parse("2026-08-19T23:20:00Z"),
+        ) as PrayerTimeResolution.Available
+
+        val state = schedule.toPrayerDisplayUiState(
+            resolution,
+            strings(),
+            schedule.toMosqueDisplayIdentity(
+                OperatorMosquePresentationIdentity(
+                    displayName = "Мечеть Аль-Ихлас",
+                    displayAddress = "ул. Мира, 10",
+                ),
+            ),
+        )
+
+        assertEquals("Мечеть Аль-Ихлас", state.mosqueName)
+        assertEquals("ул. Мира, 10", state.location)
+        assertEquals("second-cathedral-mosque-ulyanovsk", schedule.mosqueId)
+        assertEquals("Europe/Ulyanovsk", schedule.timezoneId)
+    }
+
+    @Test
+    fun blankLocalPresentationIdentityFallsBackToPilotIdentity() {
+        val schedule = schedule().copy(
+            mosqueId = "second-cathedral-mosque-ulyanovsk",
+            mosqueName = "Вторая Соборная мечеть Ульяновска",
+            locality = "Ульяновск, ул. Дзержинского, 18А",
+        )
+
+        val identity = schedule.toMosqueDisplayIdentity(OperatorMosquePresentationIdentity())
+
+        assertEquals("Вторая Соборная Мечеть", identity.name)
+        assertEquals("Ульяновск", identity.locality)
     }
 
     @Test

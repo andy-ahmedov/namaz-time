@@ -296,6 +296,59 @@ class NamazTvAppUiTest {
     }
 
     @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun mosqueSettingsChangeOnlyLocalDisplayedNameAndAddress() {
+        val approved = schedule().copy(
+            mosqueId = "second-cathedral-mosque-ulyanovsk",
+            mosqueName = "Вторая Соборная мечеть Ульяновска",
+            locality = "Ульяновск, ул. Дзержинского, 18А",
+            diagnostics = schedule().diagnostics?.copy(dataClassification = "production"),
+        )
+        val preferences = FakeOperatorPreferencesRepository()
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = preferences,
+                prayerScheduleRepository = FakePrayerScheduleRepository(approved),
+                bootstrapState = MutableStateFlow(SnapshotBootstrapState.Ready(approved.snapshotId)),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        openSettingsDestination(SettingsDestination.MOSQUE)
+        compose.onNodeWithTag(SettingsDestination.MOSQUE.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+        }
+        compose.onNodeWithTag(SETTINGS_MOSQUE_NAME_FIELD_TAG)
+            .assertIsFocused()
+            .performTextReplacement("Мечеть Аль-Ихлас")
+        compose.onNodeWithTag(SETTINGS_MOSQUE_NAME_FIELD_TAG)
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_MOSQUE_ADDRESS_FIELD_TAG)
+            .assertIsFocused()
+            .performTextReplacement("ул. Мира, 10")
+        compose.onNodeWithTag(SETTINGS_MOSQUE_ADDRESS_FIELD_TAG)
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_MOSQUE_IDENTITY_SAVE_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        compose.onNodeWithTag(SETTINGS_MOSQUE_IDENTITY_SAVE_TAG).performKeyInput {
+            pressKey(Key.DirectionDown)
+        }
+        compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+
+        compose.onNodeWithText("Мечеть Аль-Ихлас").assertIsDisplayed()
+        compose.onNodeWithText("ул. Мира, 10").assertIsDisplayed()
+        assertEquals("second-cathedral-mosque-ulyanovsk", approved.mosqueId)
+        assertEquals("Europe/Ulyanovsk", approved.timezoneId)
+        assertEquals("Вторая Соборная мечеть Ульяновска", approved.mosqueName)
+    }
+
+    @Test
     fun redesignedDisplayExposesBrandPrayerAndIqamahVisualAnchors() {
         compose.setContent {
             NamazTvApp(
@@ -1372,6 +1425,13 @@ private class FakeOperatorPreferencesRepository(
     override suspend fun setScreenRetentionShiftEnabled(enabled: Boolean) {
         if (failWrites) throw IOException("synthetic preference storage failure")
         state.value = state.value.copy(screenRetentionShiftEnabled = enabled)
+    }
+
+    override suspend fun setMosquePresentationIdentity(
+        identity: ru.namaztime.tv.repository.OperatorMosquePresentationIdentity,
+    ) {
+        if (failWrites) throw IOException("synthetic preference storage failure")
+        state.value = state.value.copy(mosquePresentationIdentity = identity)
     }
 
     override suspend fun setBackgroundStyleId(styleId: String) {

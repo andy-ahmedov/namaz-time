@@ -51,6 +51,8 @@ import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import ru.namaztime.tv.R
+import ru.namaztime.tv.repository.MAX_MOSQUE_DISPLAY_ADDRESS_LENGTH
+import ru.namaztime.tv.repository.MAX_MOSQUE_DISPLAY_NAME_LENGTH
 import ru.namaztime.tv.repository.OPERATOR_DHUHR_FIXED_TIME_RANGE
 import ru.namaztime.tv.repository.OPERATOR_IQAMAH_PRAYER_IDS
 import ru.namaztime.tv.repository.OPERATOR_IQAMAH_OFFSET_RANGE
@@ -58,9 +60,13 @@ import ru.namaztime.tv.repository.OperatorIqamahConfiguration
 import ru.namaztime.tv.repository.CUSTOM_DONATION_IMAGE_STYLE_ID
 import ru.namaztime.tv.repository.OperatorDonationConfiguration
 import ru.namaztime.tv.repository.OperatorImageSlot
+import ru.namaztime.tv.repository.OperatorMosquePresentationIdentity
 import ru.namaztime.tv.repository.OperatorQrConfiguration
 
 const val SETTINGS_QR_URL_FIELD_TAG = "settings-qr-url"
+const val SETTINGS_MOSQUE_NAME_FIELD_TAG = "settings-mosque-display-name"
+const val SETTINGS_MOSQUE_ADDRESS_FIELD_TAG = "settings-mosque-display-address"
+const val SETTINGS_MOSQUE_IDENTITY_SAVE_TAG = "settings-mosque-identity-save"
 const val SETTINGS_QR_TITLE_FIELD_TAG = "settings-qr-title"
 const val SETTINGS_QR_MESSAGE_FIELD_TAG = "settings-qr-message"
 const val SETTINGS_QR_SAVE_TAG = "settings-qr-save"
@@ -75,6 +81,73 @@ const val SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG = "settings-donation-collec
 const val SETTINGS_DONATION_SAVE_TAG = "settings-donation-save"
 const val SETTINGS_DONATION_PICKER_TAG = "settings-donation-picker"
 const val SETTINGS_DONATION_MODE_TAG = "settings-donation-mode"
+
+@Composable
+internal fun MosqueIdentitySettingsEditor(
+    identity: OperatorMosquePresentationIdentity,
+    onIdentityChange: (OperatorMosquePresentationIdentity) -> Unit,
+    fallbackIdentity: MosqueDisplayIdentity,
+    canonicalLocality: String?,
+    timezoneId: String,
+    entryRequester: FocusRequester,
+    saveRequester: FocusRequester,
+    modifier: Modifier = Modifier,
+    compact: Boolean = false,
+) {
+    val addressRequester = remember { FocusRequester() }
+    Column(
+        modifier = modifier.fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
+    ) {
+        TvSettingsTextField(
+            value = identity.displayName,
+            onValueChange = {
+                onIdentityChange(
+                    identity.copy(
+                        displayName = it.takeCodePoints(MAX_MOSQUE_DISPLAY_NAME_LENGTH),
+                    ),
+                )
+            },
+            label = appString(R.string.mosque_display_name_label),
+            placeholder = fallbackIdentity.name,
+            requester = entryRequester,
+            previousRequester = null,
+            nextRequester = addressRequester,
+            modifier = Modifier.testTag(SETTINGS_MOSQUE_NAME_FIELD_TAG),
+        )
+        TvSettingsTextField(
+            value = identity.displayAddress,
+            onValueChange = {
+                onIdentityChange(
+                    identity.copy(
+                        displayAddress = it.takeCodePoints(MAX_MOSQUE_DISPLAY_ADDRESS_LENGTH),
+                    ),
+                )
+            },
+            label = appString(R.string.mosque_display_address_label),
+            placeholder = fallbackIdentity.locality.orEmpty(),
+            requester = addressRequester,
+            previousRequester = entryRequester,
+            nextRequester = saveRequester,
+            modifier = Modifier.testTag(SETTINGS_MOSQUE_ADDRESS_FIELD_TAG),
+        )
+        Text(
+            text = appString(R.string.mosque_identity_local_only_note),
+            color = NamazTvTheme.colors.textSecondary,
+            fontSize = if (compact) 14.sp else 16.sp,
+        )
+        Text(
+            text = appString(
+                R.string.mosque_canonical_location_and_timezone,
+                canonicalLocality ?: appString(R.string.value_not_available),
+                timezoneId,
+            ),
+            color = NamazTvTheme.colors.textSecondary,
+            fontSize = if (compact) 14.sp else 16.sp,
+            maxLines = 2,
+        )
+    }
+}
 
 @Composable
 internal fun DonationSettingsEditor(
@@ -546,6 +619,12 @@ private fun IqamahOffsetButton(
 }
 
 private fun Int.asClockText(): String = "%02d:%02d".format(this / 60, this % 60)
+
+private fun String.takeCodePoints(maximum: Int): String {
+    val count = codePointCount(0, length)
+    if (count <= maximum) return this
+    return substring(0, offsetByCodePoints(0, maximum))
+}
 
 private const val IQAMAH_OFFSET_STEP = 1
 

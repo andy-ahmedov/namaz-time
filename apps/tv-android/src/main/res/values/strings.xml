@@ -5,11 +5,11 @@
     <string name="settings_title">Настройки</string>
     <string name="return_to_display">Вернуться к расписанию</string>
     <string name="settings_mosque_title">Мечеть и местоположение</string>
-    <string name="settings_mosque_description">Утверждённая локальная идентичность мечети и часовой пояс.</string>
+    <string name="settings_mosque_description">Локальное отображаемое название и адрес; источник и часовой пояс не изменяются.</string>
     <string name="settings_source_title">Источник расписания</string>
     <string name="settings_source_description">Происхождение и одобрение доступны только для чтения на телевизоре.</string>
     <string name="settings_iqamah_title">Икамат</string>
-    <string name="settings_iqamah_description">Локальное смещение икамата в минутах после азана для каждого коллективного намаза.</string>
+    <string name="settings_iqamah_description">Локальные смещения после азана и единое время Зухра/Джума.</string>
     <string name="settings_appearance_title">Оформление</string>
     <string name="settings_appearance_description">Локальные параметры единого TV-интерфейса.</string>
     <string name="settings_campaigns_title">QR-код</string>
@@ -26,6 +26,11 @@
     <string name="field_location">Адрес</string>
     <string name="field_timezone">Часовой пояс</string>
     <string name="field_coverage">Покрытие</string>
+    <string name="mosque_display_name_label">Отображаемое название мечети</string>
+    <string name="mosque_display_address_label">Отображаемый адрес</string>
+    <string name="save_mosque_identity_settings">Сохранить название и адрес</string>
+    <string name="mosque_identity_local_only_note">Пустое поле использует утверждённое значение. Эти поля меняют только подписи на этом телевизоре.</string>
+    <string name="mosque_canonical_location_and_timezone">Источник: %1$s · часовой пояс: %2$s (только чтение)</string>
     <string name="field_authority">Ответственный источник</string>
     <string name="field_source_type">Тип источника</string>
     <string name="field_approval">Одобрение</string>

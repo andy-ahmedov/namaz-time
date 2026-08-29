@@ -266,6 +266,18 @@ fun NamazTvApp(
                                     }
                                 }
                             },
+                            onMosquePresentationIdentityChanged = { identity ->
+                                coroutineScope.launch {
+                                    try {
+                                        operatorPreferencesRepository
+                                            .setMosquePresentationIdentity(identity)
+                                    } catch (_: IOException) {
+                                        // The last valid local display identity remains active.
+                                    } catch (_: IllegalArgumentException) {
+                                        // Invalid local labels never replace canonical fallbacks.
+                                    }
+                                }
+                            },
                             onBackgroundStyleChanged = { styleId ->
                                 coroutineScope.launch {
                                     try {
@@ -494,6 +506,9 @@ internal fun ConnectedDisplayContent(
         state = schedule.toPrayerDisplayUiState(
             resolution = resolution as PrayerTimeResolution.Available,
             strings = strings,
+            displayIdentity = schedule.toMosqueDisplayIdentity(
+                operatorPreferences.mosquePresentationIdentity,
+            ),
         ).copy(supportCode = recoveryCode, campaign = campaign),
         retentionOffset = retentionOffset,
         onOpenSettings = onOpenSettings,

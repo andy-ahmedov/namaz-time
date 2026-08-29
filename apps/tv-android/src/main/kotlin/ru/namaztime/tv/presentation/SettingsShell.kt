@@ -50,6 +50,7 @@ import androidx.tv.material3.Text
 import ru.namaztime.tv.R
 import ru.namaztime.tv.repository.LocalPrayerSchedule
 import ru.namaztime.tv.repository.OperatorIqamahConfiguration
+import ru.namaztime.tv.repository.OperatorMosquePresentationIdentity
 import ru.namaztime.tv.repository.OperatorDisplayMode
 import ru.namaztime.tv.repository.OperatorDonationConfiguration
 import ru.namaztime.tv.repository.OperatorPreferences
@@ -57,6 +58,7 @@ import ru.namaztime.tv.repository.OperatorQrConfiguration
 import ru.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.OperatorImageSlot
 import ru.namaztime.tv.repository.isValidIqamahConfiguration
+import ru.namaztime.tv.repository.isValidMosquePresentationIdentity
 import ru.namaztime.tv.repository.isValidDonationConfiguration
 import ru.namaztime.tv.repository.isValidQrConfiguration
 
@@ -81,6 +83,7 @@ fun SettingsShell(
     appVersion: String = "",
     pilotLocalRuntime: Boolean = false,
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)? = null,
+    onMosquePresentationIdentityChanged: ((OperatorMosquePresentationIdentity) -> Unit)? = null,
     onBackgroundStyleChanged: ((String) -> Unit)? = null,
     onLanguageChanged: ((String) -> Unit)? = null,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)? = null,
@@ -202,6 +205,7 @@ fun SettingsShell(
                     appVersion = appVersion,
                     pilotLocalRuntime = pilotLocalRuntime,
                     onScreenRetentionShiftChanged = onScreenRetentionShiftChanged,
+                    onMosquePresentationIdentityChanged = onMosquePresentationIdentityChanged,
                     onBackgroundStyleChanged = onBackgroundStyleChanged,
                     onLanguageChanged = onLanguageChanged,
                     onQrConfigurationChanged = onQrConfigurationChanged,
@@ -240,6 +244,7 @@ private fun SettingsPage(
     appVersion: String,
     pilotLocalRuntime: Boolean,
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)?,
+    onMosquePresentationIdentityChanged: ((OperatorMosquePresentationIdentity) -> Unit)?,
     onBackgroundStyleChanged: ((String) -> Unit)?,
     onLanguageChanged: ((String) -> Unit)?,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)?,
@@ -255,6 +260,16 @@ private fun SettingsPage(
 ) {
     val language = AppLanguage.fromTag(preferences.languageTag)
     val backgroundStyle = TvBackgroundStyle.fromId(preferences.backgroundStyleId)
+    var mosqueDisplayName by rememberSaveable(
+        preferences.mosquePresentationIdentity.displayName,
+    ) {
+        mutableStateOf(preferences.mosquePresentationIdentity.displayName)
+    }
+    var mosqueDisplayAddress by rememberSaveable(
+        preferences.mosquePresentationIdentity.displayAddress,
+    ) {
+        mutableStateOf(preferences.mosquePresentationIdentity.displayAddress)
+    }
     var qrUrl by rememberSaveable(preferences.qrConfiguration.httpsUrl) {
         mutableStateOf(preferences.qrConfiguration.httpsUrl)
     }
@@ -300,6 +315,10 @@ private fun SettingsPage(
     var ishaIqamah by rememberSaveable(preferences.iqamahConfiguration.ishaOffsetMinutes) {
         mutableStateOf(preferences.iqamahConfiguration.ishaOffsetMinutes)
     }
+    val mosqueIdentityDraft = OperatorMosquePresentationIdentity(
+        displayName = mosqueDisplayName,
+        displayAddress = mosqueDisplayAddress,
+    )
     val qrDraft = OperatorQrConfiguration(qrUrl, qrTitle, qrMessage)
     val donationDraft = OperatorDonationConfiguration(
         httpsUrl = donationUrl,
@@ -317,10 +336,21 @@ private fun SettingsPage(
         maghribOffsetMinutes = maghribIqamah,
         ishaOffsetMinutes = ishaIqamah,
     )
-    val isEditor = destination == SettingsDestination.CAMPAIGNS ||
+    val isEditor = (destination == SettingsDestination.MOSQUE && schedule != null) ||
+        destination == SettingsDestination.CAMPAIGNS ||
         destination == SettingsDestination.IQAMAH ||
         destination == SettingsDestination.DONATION
     val localActions = when (destination) {
+        SettingsDestination.MOSQUE -> if (schedule == null) emptyList() else onMosquePresentationIdentityChanged?.let { change ->
+            listOf(
+                LocalSettingsAction(
+                    label = appString(R.string.save_mosque_identity_settings),
+                    invoke = { change(mosqueIdentityDraft) },
+                    testTag = SETTINGS_MOSQUE_IDENTITY_SAVE_TAG,
+                    enabled = isValidMosquePresentationIdentity(mosqueIdentityDraft),
+                ),
+            )
+        }.orEmpty()
         SettingsDestination.CAMPAIGNS -> onQrConfigurationChanged?.let { change ->
             listOf(
                 LocalSettingsAction(
@@ -468,6 +498,11 @@ private fun SettingsPage(
                 appVersion = appVersion,
                 pilotLocalRuntime = pilotLocalRuntime,
                 campaignPreview = campaignPreview,
+                mosquePresentationIdentity = mosqueIdentityDraft,
+                onMosquePresentationIdentityChange = { updated ->
+                    mosqueDisplayName = updated.displayName
+                    mosqueDisplayAddress = updated.displayAddress
+                },
                 qrConfiguration = qrDraft,
                 onQrConfigurationChange = { updated ->
                     qrUrl = updated.httpsUrl
@@ -591,6 +626,8 @@ private fun SettingsContent(
     appVersion: String,
     pilotLocalRuntime: Boolean,
     campaignPreview: QrCampaignUiState?,
+    mosquePresentationIdentity: OperatorMosquePresentationIdentity,
+    onMosquePresentationIdentityChange: (OperatorMosquePresentationIdentity) -> Unit,
     qrConfiguration: OperatorQrConfiguration,
     onQrConfigurationChange: (OperatorQrConfiguration) -> Unit,
     iqamahConfiguration: OperatorIqamahConfiguration,
@@ -606,6 +643,20 @@ private fun SettingsContent(
     modifier: Modifier,
 ) {
     val backgroundStyle = TvBackgroundStyle.fromId(preferences.backgroundStyleId)
+    if (destination == SettingsDestination.MOSQUE && schedule != null) {
+        MosqueIdentitySettingsEditor(
+            identity = mosquePresentationIdentity,
+            onIdentityChange = onMosquePresentationIdentityChange,
+            fallbackIdentity = schedule.toMosqueDisplayIdentity(),
+            canonicalLocality = schedule.locality,
+            timezoneId = schedule.timezoneId,
+            entryRequester = entryRequester,
+            saveRequester = saveRequester,
+            compact = compact,
+            modifier = modifier,
+        )
+        return
+    }
     if (destination == SettingsDestination.CAMPAIGNS) {
         QrSettingsEditor(
             configuration = qrConfiguration,

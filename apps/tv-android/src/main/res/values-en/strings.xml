@@ -5,11 +5,11 @@
     <string name="settings_title">Settings</string>
     <string name="return_to_display">Return to schedule</string>
     <string name="settings_mosque_title">Mosque and location</string>
-    <string name="settings_mosque_description">Approved local mosque identity and timezone.</string>
+    <string name="settings_mosque_description">Local display name and address; source identity and timezone do not change.</string>
     <string name="settings_source_title">Prayer source</string>
     <string name="settings_source_description">Provenance and approval are read-only on the TV.</string>
     <string name="settings_iqamah_title">Iqamah</string>
-    <string name="settings_iqamah_description">A local iqamah offset in minutes after adhan for every congregational prayer.</string>
+    <string name="settings_iqamah_description">Local adhan offsets and one shared Dhuhr/Jumu’ah time.</string>
     <string name="settings_appearance_title">Appearance</string>
     <string name="settings_appearance_description">Local settings for the unified TV interface.</string>
     <string name="settings_campaigns_title">QR code</string>
@@ -26,6 +26,11 @@
     <string name="field_location">Address</string>
     <string name="field_timezone">Timezone</string>
     <string name="field_coverage">Coverage</string>
+    <string name="mosque_display_name_label">Displayed mosque name</string>
+    <string name="mosque_display_address_label">Displayed address</string>
+    <string name="save_mosque_identity_settings">Save name and address</string>
+    <string name="mosque_identity_local_only_note">A blank field uses the approved value. These fields change labels only on this TV.</string>
+    <string name="mosque_canonical_location_and_timezone">Source: %1$s · timezone: %2$s (read-only)</string>
     <string name="field_authority">Responsible source</string>
     <string name="field_source_type">Source type</string>
     <string name="field_approval">Approval</string>

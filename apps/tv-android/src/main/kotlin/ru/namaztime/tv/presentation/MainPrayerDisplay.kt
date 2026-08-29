@@ -1094,6 +1094,7 @@ private fun IqamahStatusStrip(
 internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
     resolution: PrayerTimeResolution.Available,
     strings: AppStrings,
+    displayIdentity: MosqueDisplayIdentity = toMosqueDisplayIdentity(),
 ): PrayerDisplayUiState {
     val day = requireNotNull(days.firstOrNull { it.localDate == resolution.localDate.toString() }) {
         "resolved date is outside the local snapshot"
@@ -1117,7 +1118,6 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
         diagnostics.dataClassification != "production" ||
         sourceKind == "calculation_profile"
     val nextEvent = resolution.nextEvent
-    val displayIdentity = toMosqueDisplayIdentity()
     return PrayerDisplayUiState(
         mosqueName = displayIdentity.name,
         location = displayIdentity.locality,

@@ -21,11 +21,18 @@ data class OperatorPreferences(
     val reducedMotion: Boolean = true,
     val languageTag: String = DEFAULT_LANGUAGE_TAG,
     val screenRetentionShiftEnabled: Boolean = true,
+    val mosquePresentationIdentity: OperatorMosquePresentationIdentity =
+        OperatorMosquePresentationIdentity(),
     val backgroundStyleId: String = DEFAULT_BACKGROUND_STYLE_ID,
     val qrConfiguration: OperatorQrConfiguration = OperatorQrConfiguration(),
     val iqamahConfiguration: OperatorIqamahConfiguration = OperatorIqamahConfiguration(),
     val donationConfiguration: OperatorDonationConfiguration = OperatorDonationConfiguration(),
     val displayMode: OperatorDisplayMode = OperatorDisplayMode.SCHEDULE,
+)
+
+data class OperatorMosquePresentationIdentity(
+    val displayName: String = "",
+    val displayAddress: String = "",
 )
 
 enum class OperatorDisplayMode(val id: String) {
@@ -109,6 +116,8 @@ interface OperatorPreferencesRepository {
 
     suspend fun setScreenRetentionShiftEnabled(enabled: Boolean)
 
+    suspend fun setMosquePresentationIdentity(identity: OperatorMosquePresentationIdentity)
+
     suspend fun setBackgroundStyleId(styleId: String)
 
     suspend fun setQrConfiguration(configuration: OperatorQrConfiguration)
@@ -149,6 +158,11 @@ class DataStoreOperatorPreferencesRepository(
                     ?.takeIf(SUPPORTED_LANGUAGE_TAGS::contains)
                     ?: DEFAULT_LANGUAGE_TAG,
                 screenRetentionShiftEnabled = values[SCREEN_RETENTION_SHIFT_ENABLED] ?: true,
+                mosquePresentationIdentity = OperatorMosquePresentationIdentity(
+                    displayName = values[MOSQUE_DISPLAY_NAME].orEmpty(),
+                    displayAddress = values[MOSQUE_DISPLAY_ADDRESS].orEmpty(),
+                ).takeIf(::isValidMosquePresentationIdentity)
+                    ?: OperatorMosquePresentationIdentity(),
                 backgroundStyleId = values[BACKGROUND_STYLE_ID]
                     ?.takeIf(SELECTABLE_BACKGROUND_STYLE_IDS::contains)
                     ?: DEFAULT_BACKGROUND_STYLE_ID,
@@ -186,6 +200,22 @@ class DataStoreOperatorPreferencesRepository(
 
     override suspend fun setScreenRetentionShiftEnabled(enabled: Boolean) {
         dataStore.edit { it[SCREEN_RETENTION_SHIFT_ENABLED] = enabled }
+    }
+
+    override suspend fun setMosquePresentationIdentity(
+        identity: OperatorMosquePresentationIdentity,
+    ) {
+        require(isValidMosquePresentationIdentity(identity)) {
+            "invalid mosque presentation identity"
+        }
+        dataStore.edit { values ->
+            val displayName = identity.displayName.trim()
+            val displayAddress = identity.displayAddress.trim()
+            if (displayName.isEmpty()) values.remove(MOSQUE_DISPLAY_NAME)
+            else values[MOSQUE_DISPLAY_NAME] = displayName
+            if (displayAddress.isEmpty()) values.remove(MOSQUE_DISPLAY_ADDRESS)
+            else values[MOSQUE_DISPLAY_ADDRESS] = displayAddress
+        }
     }
 
     override suspend fun setBackgroundStyleId(styleId: String) {
@@ -269,6 +299,8 @@ class DataStoreOperatorPreferencesRepository(
         val SCREEN_RETENTION_SHIFT_ENABLED = booleanPreferencesKey(
             "screen_retention_shift_enabled",
         )
+        val MOSQUE_DISPLAY_NAME = stringPreferencesKey("operator_mosque_display_name")
+        val MOSQUE_DISPLAY_ADDRESS = stringPreferencesKey("operator_mosque_display_address")
         val BACKGROUND_STYLE_ID = stringPreferencesKey("background_style_id")
         val QR_HTTPS_URL = stringPreferencesKey("operator_qr_https_url")
         val QR_TITLE = stringPreferencesKey("operator_qr_title")
@@ -420,6 +452,17 @@ internal fun isValidIqamahConfiguration(configuration: OperatorIqamahConfigurati
     } && configuration.dhuhrFixedTimeMinutes
         ?.let(OPERATOR_DHUHR_FIXED_TIME_RANGE::contains) != false
 
+internal fun isValidMosquePresentationIdentity(
+    identity: OperatorMosquePresentationIdentity,
+): Boolean = isValidDisplayIdentityField(identity.displayName, MAX_MOSQUE_DISPLAY_NAME_LENGTH) &&
+    isValidDisplayIdentityField(identity.displayAddress, MAX_MOSQUE_DISPLAY_ADDRESS_LENGTH)
+
+private fun isValidDisplayIdentityField(value: String, maximumCodePoints: Int): Boolean {
+    val trimmed = value.trim()
+    return trimmed.codePointCount(0, trimmed.length) <= maximumCodePoints &&
+        value.none(Char::isISOControl)
+}
+
 private val OPERATOR_QR_GENERATOR = QrCodeGenerator()
 
 private fun Int?.validIqamahOffsetOrNull(): Int? =
@@ -471,5 +514,7 @@ val OPERATOR_IQAMAH_PRAYER_IDS = listOf("fajr", "dhuhr", "asr", "maghrib", "isha
 val OPERATOR_IQAMAH_OFFSET_PRAYER_IDS = listOf("fajr", "asr", "maghrib", "isha")
 val OPERATOR_IQAMAH_OFFSET_RANGE = 0..180
 val OPERATOR_DHUHR_FIXED_TIME_RANGE = (12 * 60)..(16 * 60)
+const val MAX_MOSQUE_DISPLAY_NAME_LENGTH = 80
+const val MAX_MOSQUE_DISPLAY_ADDRESS_LENGTH = 160
 const val MAX_DONATION_DETAIL_LENGTH = 160
 const val MAX_DONATION_COLLECTION_URL_LENGTH = 320
