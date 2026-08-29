@@ -7,12 +7,13 @@ cloud KMS.
 
 ## One-time choices before the first mosque installation
 
-1. Choose the final Android application ID in D-005. Do this before installing
-   the first retained mosque copy: a different ID is a different Android app.
+1. Use the accepted application ID `ru.namaztime.tv`. Do not change it after
+   installing the first retained mosque copy: a different ID is a different
+   Android app.
 2. Generate one Android APK signing keystore outside this repository. Keep its
    password outside shell history and Git. Store two offline backups in
    different places. Every later APK must use this same key.
-3. Configure a dedicated signed `pilot` build after D-005. Do not deploy the
+3. Configure a dedicated signed `pilot` build. Do not deploy the
    ordinary debug key as the long-term mosque identity.
 4. Record the APK certificate SHA-256, APK SHA-256, application ID,
    `versionCode`, schedule snapshot ID and installation date in the handover

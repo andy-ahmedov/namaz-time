@@ -61,10 +61,10 @@ mosque policy. `cmd/approver` проверяет их до продолжени�
 `cmd/publisher`; keygen/sign/assemble/prepare/finalize/verify описаны в
 [PUBLICATION_SIGNING_RUNBOOK.md](PUBLICATION_SIGNING_RUNBOOK.md).
 
-Gradle запускается через репозиторный wrapper. Android application ID
-`com.example.namaztime.tv` является временным значением T001 и должен быть
-заменён после окончательного решения D-005; принятое отображаемое название —
-`NamazTime`.
+Gradle запускается через репозиторный wrapper. Постоянный Android application
+ID — `ru.namaztime.tv`; отображаемое название — `NamazTime`. Смена этого ID
+после первой установки создала бы отдельное Android-приложение и не является
+поддерживаемым путём обновления.
 
 ## Карта документов
 

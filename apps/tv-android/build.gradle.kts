@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.namaztime.tv"
+    namespace = "ru.namaztime.tv"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.namaztime.tv"
+        applicationId = "ru.namaztime.tv"
         minSdk = 28
         targetSdk = 35
         versionCode = 3

@@ -10,7 +10,7 @@ Record product decisions here before converting stable architecture choices into
 | D-002 | Canonical prayer-time authority/source | ACCEPTED | Product owner | before real publication | 2026 baseline is the retained RDUM Ulyanovsk annual PDF; for every field present in the retained August 2026 photo, the photo has priority throughout August. Named approval and D-009 are recorded separately and cryptographically bound to the effective candidate. |
 | D-003 | Written permission and attribution | ACCEPTED | Product owner/source | before real data commit/publication | product owner confirmed project use on 2026-08-20; preserve the exact raw SHA-256 and printed attribution |
 | D-004 | Pilot TV/box model and Android version | OPEN | Installer | before performance/autostart promises | Android Studio TV Emulator API 36 / 1920×1080 is the current controlled runtime; physical TV/box remains unselected and emulator evidence is not an OEM support promise |
-| D-005 | Product name and Android application ID | OPEN | Product owner | before distributable build | product name accepted as `NamazTime`; shortlist: `ru.namaztime.tv` (recommended), `ru.namaztime.display`, `ru.namaztime.mosque`, `com.github.andyahmedov.namaztime.tv`. Exact public searches found no indexed use on 2026-08-29, but only Play/Android Developer Console can definitively register availability. |
+| D-005 | Product name and Android application ID | ACCEPTED | Product owner | before distributable build | product name `NamazTime` and permanent application ID `ru.namaztime.tv`; confirmed 2026-08-29. The ID must not change after the first retained mosque installation. |
 | D-006 | Repository software license | ACCEPTED | Product owner | current repository | closed/proprietary; confirmed 2026-08-29; third-party and source-data permissions remain separate |
 | D-007 | Required languages for pilot | ACCEPTED | Product owner / mosque | T022 | Russian is the default; Russian and English are selectable for the whole TV UI and the choice persists locally. Confirmed 2026-08-20. |
 | D-008 | Local-only vs remote admin in MVP | OPEN | Product owner | before remote administration | T003 implements only the reversible local-first settings shell; it does not choose the final administration mode |
@@ -41,7 +41,8 @@ These are proposals until accepted by the product owner:
 - `PROPOSAL` — Android uses JDK 17, compile/target SDK 35 and min SDK 28 until
   D-004 selects the pilot hardware.
 - `PROPOSAL` — `com.example.namaztime.tv` is deliberately non-production and
-  does not settle D-005.
+  did not settle D-005; it was superseded by accepted `ru.namaztime.tv` before
+  the first distributable pilot build.
 - `PROPOSAL` — the T001 launcher contains no network, schedule, Room, Compose,
   analytics, identifiers or broad Android permissions.
 
@@ -52,8 +53,8 @@ These are proposals until accepted by the product owner:
 - `PROPOSAL` — Room schema version 1 is the migration baseline for immutable
   snapshots, prayer days, iqamah/Jumu'ah/campaign configuration and an atomic
   active/previous selection pointer.
-- `PROPOSAL` — the temporary T001 product name/application ID remains in use;
-  T003 is not a distributable product-identity decision.
+- `PROPOSAL` — T003 originally retained the temporary T001 application ID;
+  accepted D-005 later replaced it with `ru.namaztime.tv` before distribution.
 
 ## T004 bundled snapshot record
 
