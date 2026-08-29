@@ -76,8 +76,8 @@ const val SETTINGS_DONATION_IMAGE_TAG_PREFIX = "settings-donation-image-"
 
 internal enum class DonationImageStyle(
     val id: String,
-    @DrawableRes val drawableRes: Int,
-    @StringRes val labelRes: Int,
+    @param:DrawableRes val drawableRes: Int,
+    @param:StringRes val labelRes: Int,
 ) {
     MOSQUE(
         DEFAULT_DONATION_IMAGE_STYLE_ID,
@@ -420,7 +420,7 @@ private fun DonationDetailsRows(
 
 private data class DonationDetailRow(
     val icon: DonationDetailIcon,
-    @StringRes val labelRes: Int,
+    @param:StringRes val labelRes: Int,
     val value: String,
     val accentValue: Boolean = false,
 )

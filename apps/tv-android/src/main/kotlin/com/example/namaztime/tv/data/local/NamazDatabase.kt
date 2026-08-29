@@ -41,25 +41,25 @@ abstract class NamazDatabase : RoomDatabase() {
 }
 
 val MIGRATION_1_2 = object : Migration(1, 2) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL(
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL(
             "ALTER TABLE prayer_days ADD COLUMN flagsJson TEXT NOT NULL DEFAULT '[]'",
         )
     }
 }
 
 val MIGRATION_2_3 = object : Migration(2, 3) {
-    override fun migrate(database: SupportSQLiteDatabase) {
-        database.execSQL("ALTER TABLE snapshots ADD COLUMN authorityBranch TEXT")
-        database.execSQL("ALTER TABLE snapshots ADD COLUMN canonicalUrl TEXT")
-        database.execSQL("ALTER TABLE snapshots ADD COLUMN calculationProfile TEXT")
-        database.execSQL("ALTER TABLE snapshots ADD COLUMN licenseReference TEXT")
-        database.execSQL("ALTER TABLE snapshots ADD COLUMN attribution TEXT")
-        database.execSQL(
+    override fun migrate(db: SupportSQLiteDatabase) {
+        db.execSQL("ALTER TABLE snapshots ADD COLUMN authorityBranch TEXT")
+        db.execSQL("ALTER TABLE snapshots ADD COLUMN canonicalUrl TEXT")
+        db.execSQL("ALTER TABLE snapshots ADD COLUMN calculationProfile TEXT")
+        db.execSQL("ALTER TABLE snapshots ADD COLUMN licenseReference TEXT")
+        db.execSQL("ALTER TABLE snapshots ADD COLUMN attribution TEXT")
+        db.execSQL(
             "ALTER TABLE snapshots ADD COLUMN approvalStatus TEXT NOT NULL DEFAULT 'approved'",
         )
-        database.execSQL("ALTER TABLE snapshots ADD COLUMN approvalNote TEXT")
-        database.execSQL("ALTER TABLE themes ADD COLUMN landscapeAssetJson TEXT")
-        database.execSQL("ALTER TABLE themes ADD COLUMN portraitAssetJson TEXT")
+        db.execSQL("ALTER TABLE snapshots ADD COLUMN approvalNote TEXT")
+        db.execSQL("ALTER TABLE themes ADD COLUMN landscapeAssetJson TEXT")
+        db.execSQL("ALTER TABLE themes ADD COLUMN portraitAssetJson TEXT")
     }
 }

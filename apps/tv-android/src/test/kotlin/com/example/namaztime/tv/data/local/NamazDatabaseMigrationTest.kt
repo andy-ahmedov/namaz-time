@@ -122,12 +122,12 @@ class NamazDatabaseMigrationTest {
             .name(DATABASE_NAME)
             .callback(
                 object : SupportSQLiteOpenHelper.Callback(version) {
-                    override fun onCreate(database: SupportSQLiteDatabase) {
-                        schemaQueries(version).forEach(database::execSQL)
+                    override fun onCreate(db: SupportSQLiteDatabase) {
+                        schemaQueries(version).forEach(db::execSQL)
                     }
 
                     override fun onUpgrade(
-                        database: SupportSQLiteDatabase,
+                        db: SupportSQLiteDatabase,
                         oldVersion: Int,
                         newVersion: Int,
                     ) = Unit

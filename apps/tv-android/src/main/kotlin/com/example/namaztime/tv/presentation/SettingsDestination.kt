@@ -5,8 +5,8 @@ import com.example.namaztime.tv.R
 
 enum class SettingsDestination(
     val route: String,
-    @StringRes val titleRes: Int,
-    @StringRes val descriptionRes: Int,
+    @param:StringRes val titleRes: Int,
+    @param:StringRes val descriptionRes: Int,
 ) {
     MOSQUE(
         route = "mosque",

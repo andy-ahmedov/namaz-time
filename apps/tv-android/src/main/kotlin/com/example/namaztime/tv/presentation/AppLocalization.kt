@@ -15,7 +15,7 @@ import java.util.Locale
 
 enum class AppLanguage(
     val tag: String,
-    @StringRes val displayNameRes: Int,
+    @param:StringRes val displayNameRes: Int,
 ) {
     RUSSIAN("ru", R.string.language_russian),
     ENGLISH("en", R.string.language_english),

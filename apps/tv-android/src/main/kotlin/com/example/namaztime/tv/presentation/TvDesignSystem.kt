@@ -69,8 +69,8 @@ const val TV_BACKGROUND_STYLE_TAG_PREFIX = "tv-background-style-"
 
 internal enum class TvBackgroundStyle(
     val id: String,
-    @DrawableRes val drawableRes: Int,
-    @StringRes val labelRes: Int,
+    @param:DrawableRes val drawableRes: Int,
+    @param:StringRes val labelRes: Int,
     val scrimAlpha: Float,
 ) {
     GOLDEN_DUSK(
