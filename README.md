@@ -66,6 +66,16 @@ ID — `ru.namaztime.tv`; отображаемое название — `NamazTi
 после первой установки создала бы отдельное Android-приложение и не является
 поддерживаемым путём обновления.
 
+Подписываемая offline-pilot сборка создаётся только с внешним keystore:
+
+```bash
+NAMAZTIME_PILOT_SIGNING_PROPERTIES=/home/andy/.config/namaztime/pilot-signing.properties \
+make build-android-pilot
+```
+
+Подробности установки, обновления и резервного копирования ключа находятся в
+[PILOT_SIDELOAD_RUNBOOK.md](PILOT_SIDELOAD_RUNBOOK.md).
+
 ## Карта документов
 
 | Документ | Назначение |

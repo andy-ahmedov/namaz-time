@@ -5,7 +5,9 @@ execution is not physical-TV or emulator `CONFIRMED_RUNTIME` evidence.
 
 This directory records the public audit side of the T022 build-only Android
 pilot fixture. The snapshot itself is packaged only from
-`apps/tv-android/src/debug/assets/pilot-local-ulyanovsk-2026-snapshot.json`.
+`apps/tv-android/src/pilot/assets/pilot-local-ulyanovsk-2026-snapshot.json`.
+Debug tests consume the same directory explicitly; the ordinary release source
+set does not package these assets.
 It was assembled from the exact effective inspection, signed approval receipt
 and mosque prayer policy already retained in the parent fixture directory.
 

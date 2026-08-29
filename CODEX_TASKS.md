@@ -413,8 +413,9 @@ user-visible literals; Android unit/build and repository gates pass.
 **Result:** completed locally on 2026-08-20. An ephemeral, disjoint pilot-local
 Ed25519 key signed the exact approval-bound publication request and was then
 discarded. Only the immutable snapshot, public trust bundles and local audit
-evidence remain. The debug pilot-local source set authenticates the asset with
-the existing lifecycle-aware verifier, imports it through the existing Room
+evidence remain. The dedicated pilot source set (also consumed by debug tests)
+authenticates the asset with the existing lifecycle-aware verifier, imports it
+through the existing Room
 transaction and reuses trust-aware startup selection. Tampering fails before
 activation; release has no bundled schedule path. Room exposes mosque,
 provenance, approval, iqamah/Jumu'ah, campaigns and bounded diagnostics to the

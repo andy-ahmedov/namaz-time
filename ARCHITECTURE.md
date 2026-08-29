@@ -135,7 +135,8 @@ order.
 The original T004 synthetic example is now test-only. In the explicitly
 offline T022 pilot-local build, first launch reads an immutable approved
 Ulyanovsk 2026 snapshot plus public-only, disjoint local trust bundles from the
-debug source set. It verifies the canonical hash/Ed25519 signature and exact
+dedicated `pilot` source set, which debug tests also consume. It verifies the
+canonical hash/Ed25519 signature and exact
 trust environment separation before persistence, imports all supported child records in
 one transaction and only then changes the display pointer. A corrupt asset
 leaves Room without an active schedule and exposes a bounded support code.
@@ -154,6 +155,13 @@ Startup may replace only a known predecessor or the dedicated pilot snapshot
 family, requires monotonic signed `generated_at`, and preserves last-known-good
 on rejection. Remote-managed release builds remain separate and depend on
 pairing/T009 plus ADR 0011 deployment controls.
+
+The distributable offline variant uses permanent application ID
+`ru.namaztime.tv` and an external PKCS12 signing configuration. Gradle refuses
+to assemble it without that configuration, and the repository artifact gate
+verifies the package ID, APK signature, pinned public certificate and bundled
+authenticated assets. Debug uses `ru.namaztime.tv.debug`, preventing a debug
+key installation from blocking later signed pilot updates.
 
 T005 replaces the launch placeholder with a responsive, built-in offline main
 display. It renders the six daily adhan rows from immutable Room-backed local

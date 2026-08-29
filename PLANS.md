@@ -135,7 +135,8 @@ backend or current Robolectric evidence labels.
 | T028 local TV operator UX and alternate display modes | DONE | five checkpoint commits replace ambiguous fixed `HH:mm` preferences with bounded `adhan + N minutes` offsets and approved-policy fallback; add eight offline built-in backgrounds plus validated app-private background/donation image imports; add a persisted, fail-closed donation display with the existing local QR generator, transfer text, five packaged images and explicit Settings/schedule D-pad exits; remove the Settings white/double frame and match the authorized main reference with a normalized rounded-square glass target, white gear and one gold non-scaling focus outline. Repository/projection/import/Compose/adaptive tests, `make test`, `make lint` and a controlled API 36/1920×1080 runtime loop cover the completed scope. The emulator had no document-provider activity, so OEM picker selection and physical-TV behavior remain `UNKNOWN`; signed Room data is unchanged. |
 | T029 pixel-accurate standalone donation display | DONE | local implementation commit `80c7200` replaces the three-column donation layout with the authorized `qr_page.png` full-bleed composition; adds one right card, exact localized footer, custom vector icons/fade ornaments, reference-scale decodable QR and compact gold-outline gear; replaces the transfer blob with five bounded DataStore/Settings fields plus deterministic RU/EN/unlabelled legacy preservation. 720p/1080p/4K geometry and actual-badge QR decode tests plus four API 36/1920×1080 build/install/full-and-region overlay loops pass. Final runtime values remain operator-local; signed Room data is unchanged. Physical-TV/OEM and real-phone scan distance remain `UNKNOWN`. |
 | T030 independent production-readiness engineering/security review | DONE | [independent report](docs/reviews/2026-08-28-engineering-security-review.md) records 0 CRITICAL, 4 HIGH, 12 MEDIUM, 2 LOW and 2 CLEANUP findings. Checkpoints `888f534`, `7a6e5b8`, `26cfbd0`, `2346fb8` and follow-up `a1e05d8` close every locally actionable material issue, including the AGP 9.3/KSP migration. The second pass found no new CRITICAL or unblocked HIGH. D-015 now separates a conditionally ready offline USB pilot from the still-not-ready future remote-managed mode. |
-| T031 permanent Android pilot identity | DONE | D-005 accepts `ru.namaztime.tv`; Android namespace, application ID, Kotlin packages, Room schema export path and identity regression now use it. The old T001 placeholder remains only in historical evidence and cannot be upgraded in place because Android treats the accepted ID as a separate app. |
+| T031 permanent Android pilot identity | DONE | checkpoint `27bf040`; D-005 accepts `ru.namaztime.tv`; Android namespace, application ID, Kotlin packages, Room schema export path and identity regression now use it. The old T001 placeholder remains only in historical evidence and cannot be upgraded in place because Android treats the accepted ID as a separate app. |
+| T032 signed offline pilot artifact | DONE | checkpoint `7767f46`; a dedicated non-debuggable `pilot` variant packages the authenticated local schedule, requires an external PKCS12 keystore, and fails without it. Debug uses `ru.namaztime.tv.debug`. `make build-android-pilot` verifies exact package ID, APK signature, pinned public certificate and required assets; the permanent key exists outside Git/APK with mode 0600. Two operator-chosen offline backups and physical-TV acceptance remain external actions. |
 
 The independent local Phase 4 queue is complete through T029. After T029, the
 remaining matrix below requires physical hardware, OEM behavior or an open
@@ -172,11 +173,11 @@ Do not begin until the first pilot is stable.
 
 ## Current offline-pilot blockers
 
-- create and back up one offline APK-signing keystore, then wire the dedicated
-  signed pilot build. This is a local key, not a cloud/KMS project;
-- install the resulting current build on the available emulator and then record
-  physical TV/box acceptance at the mosque. Emulator evidence cannot prove OEM
-  boot, overscan, storage-provider or long-soak behavior;
+- copy the generated offline APK-signing keystore/properties to two
+  operator-chosen offline backup locations before the first mosque install;
+- the signed current build is installed and reinstalled in place on the API 36
+  emulator; record physical TV/box acceptance at the mosque. Emulator evidence
+  cannot prove OEM boot, overscan, storage-provider or long-soak behavior;
 - pilot source precedence, named mosque approver, exact signed approval and D-009 mosque policy are accepted; organizational role verification is based on the product-owner statement and public third-party verification is not claimed;
 - the official 2026 annual PDF now supplies full-year pilot coverage through T010; its daily Hijri values are absent and therefore remain unset rather than invented;
 - abrupt OS process-kill/journal-recovery remains a future instrumentation/ADB

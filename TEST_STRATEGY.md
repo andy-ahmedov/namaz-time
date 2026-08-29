@@ -97,6 +97,10 @@ No live external site is required for normal CI. A separate scheduled canary may
 - explicit synthetic tests import their fixture directly from `examples/`;
 - pilot-local first install authenticates and imports the approved 365-day
   Ulyanovsk snapshot, while release packages no local schedule/trust assets;
+- the signed pilot artifact gate requires exact application ID
+  `ru.namaztime.tv`, a valid APK signature, the pinned certificate fingerprint
+  and all four authenticated snapshot/trust assets; assembly without external
+  signing configuration fails;
 - cold launch offline;
 - Room migration preserves active snapshot;
 - WorkManager sync with 200/304/401/404/500/timeout;

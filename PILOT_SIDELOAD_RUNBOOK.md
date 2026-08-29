@@ -25,12 +25,36 @@ Ed25519 schedule key to prove that the bundled schedule is the reviewed one.
 For this offline pilot both keys may be files kept offline; neither requires a
 cloud KMS. Neither private key may be committed or copied into the APK.
 
+The current build workstation stores the generated keystore and its protected
+Gradle properties outside the repository under `/home/andy/.config/namaztime/`.
+Its public certificate SHA-256 is
+`da463b2e623024c49c833a1f23c289fd64753e83d3d1e5eea46e973838472be9`.
+This is `CONFIRMED_RUNTIME` local workstation evidence, not evidence that two
+offline backups exist. Before the first mosque installation, copy the keystore
+and properties file together to two access-controlled offline locations.
+
+Build and verify the installable APK with:
+
+```bash
+NAMAZTIME_PILOT_SIGNING_PROPERTIES=/home/andy/.config/namaztime/pilot-signing.properties \
+make build-android-pilot
+```
+
+The verified output is
+`apps/tv-android/build/outputs/apk/pilot/tv-android-pilot.apk`. The build fails
+closed when the external signing file is absent. Debug uses the separate
+`ru.namaztime.tv.debug` application ID and debug key, so it cannot accidentally
+occupy the retained mosque application's identity.
+
 ## First installation
 
-1. Build the signed pilot APK and verify its SHA-256 and signing certificate.
+1. Run `make build-android-pilot`; it verifies the application ID, Android
+   signature, certificate fingerprint and all four authenticated schedule/trust
+   assets, then prints the APK SHA-256.
 2. Copy that exact APK to the USB drive.
-3. Install it without another NamazTime package using the selected application
-   ID already present.
+3. For the first install, confirm that `ru.namaztime.tv` is not already present.
+   For an intentional update, keep the existing app and use the update flow
+   below.
 4. Open NamazTime, verify the mosque name, timezone, snapshot ID, coverage end,
    approval state and several known dates against the approved source.
 5. Reboot the TV/box and confirm that the local schedule still renders without

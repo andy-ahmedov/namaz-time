@@ -18,7 +18,8 @@ a3f3e0e7c14f40094ace8cffedc3067878767eed4add346e8c66a9a3d2d3557f  ./BLACK_BOX_VA
 9203d8b85d9ab992f9c0e97b372435c4e6f74b4cacf377412ef361f9a22688b2  ./MAWAQIT_API_RESEARCH.md
 cbaa5165632463f8f9509e6eb50b5b5e19e1ba2fae5fbbce3d24ec68298f5574  ./Makefile
 73755cf4bb7aa2e9c0c13724a350c0859a977445fed5fbd9c136adcc40ebcd5d  ./OPERATIONS.md
-078a57062ac66892aa4fde81f22cf4ec257c022e59f98467ff76874acff35a0f  ./PLANS.md
+6eb84b13ce1c6de1909b4224213bacd07a76a70c3894e35b2b420126ad6fbd86  ./PILOT_SIDELOAD_RUNBOOK.md
+fe524308b920e898bed0aaf916d7054d66385a3edc832c40b53e038e1acd6bdb  ./PLANS.md
 3812ebfa2cedf27ca04f1ed998dece49dfd8a15d30f7da4148d10f0725d89345  ./PRAYER_TIMES_DATA.md
 69faa46becf4ef7371c5b17f36199c031e72759cea801ac86a5cc6ab956d9394  ./PRAYER_TIME_SOURCE_PATTERNS.md
 d8044ca5664494782488b3b04c60c63dd7c7bb562af26db3f0657c28270441d3  ./PRODUCT_REQUIREMENTS.md
@@ -110,12 +111,14 @@ e7a7f9163cb83492ec35b9ef3b75b943054f9746497a92f0903b152efff3eed9  ./docs/adr/000
 5cadb2a6386bdc71693363525c1a59efe1598cab57ba0b9d334926d11fc5af5f  ./docs/adr/0003-canonical-snapshot-signatures.md
 9741bb67138833230ad22531707f14b1902222ec605a6b5be4a8d1258cad2ada  ./docs/adr/0004-production-pairing-and-fleet-scope.md
 4ff66a6a92451cd9d9c3f0f3d5b6150256dbb374d341292c5af5d0dbde5a1f6c  ./docs/adr/README.md
+49714d5d8b875f671f5126db835eb45257bb092e950363264e72f147ca2e0068  ./docs/reviews/2026-08-28-engineering-security-review.md
 e923c72885329eca530fba86a3d7ca2a72c8d12696e8a7c5d8f237beb745ed98  ./examples/synthetic-prayer-snapshot.json
 01de46702fe104633a256efe0171e2b06122b09edf4629396039dd97073986ed  ./fixtures/pilot/ulyanovsk-2026-08/README.md
 72f72bab5a90b9efd9255a74b46cb37161b857658146e854c8e02b5937126b4c  ./fixtures/pilot/ulyanovsk-2026-08/import.json
 29c2f62f8eb9da8f984f4e26e81325033bef1499175e24512e569fe534d2f745  ./fixtures/pilot/ulyanovsk-2026-08/schedule.csv
 9b0f6a9a276208715b4931f6c02053e2544e1a77b68ce2d29d2bec400460899c  ./fixtures/pilot/ulyanovsk-2026-08/source-record.json
 11b4aaaa4765b486103e6532fb560bde9dec6617215fad9c462bd9253cba993c  ./fixtures/pilot/ulyanovsk-2026-08/time-namaz.jpg
+1a7c2e1a0afc63859a602c587147ca9fbab57f4eef7f240db46dd234b263c66a  ./fixtures/pilot/ulyanovsk-2026/pilot-local/README.md
 97a2f8210e8e8f600924d15a4468dd2bc1ef8607bdf3b1e48ce9349764b7bd06  ./fixtures/synthetic/README.md
 61d3722203f0c6774c54404575e64c30121f392f1eefdae8115568792f5c8eb5  ./fixtures/synthetic/manual-annual-2025.csv
 f403fe94a566a2dbf928bbda13e1161f748a14026c2722a5048f26ae60b26626  ./fixtures/verification/README.md
@@ -158,6 +161,7 @@ a2941f49bffe25c26d931ad30f5282a4442a04fe7dc002fb9f4eadef1ad82de9  ./internal/pub
 24cce690b9440b5e8fba586af24d54aab8aca892d29b38831d2ed2e1550b166a  ./internal/publication/publication_test.go
 b6304b4adf218c50b229c4d2ad5c3b8acf3403fced332312a1f85006503b4f0d  ./research/README.md
 24c9aec749008a4da1b2b39e083d4cdeead32852436762540f641fe9378ba2a4  ./research/evidence/islamapp-1.6.2-static-summary.json
+731fe17ce045d20caf3a46893e7c316363d570c0ecef621e6153f93b902b1c1a  ./research/evidence/namaztime-offline-pilot-emulator-2026-08-29.md
 261eca45d7ef2d6e76e40e56fc7a60f17af513fca8d2e4d30b68bb5b4ae5d345  ./scripts/android-pilot-artifact-check.sh
 4c20e92211bf2c8d0b0db6e31156be3d178468379b98c180737988446bdc77bc  ./scripts/android-tv-evidence.sh
 f618b1fd2a74557a712e93df71e5d5511d47393c0ce0e2d0e43ee94e6892caa7  ./scripts/docs-check.sh

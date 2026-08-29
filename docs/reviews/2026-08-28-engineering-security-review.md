@@ -4,12 +4,12 @@ Date: 2026-08-28
 
 Review baseline: `edd3f34` plus its parent history. Remediation checkpoints:
 `888f534`, `7a6e5b8`, `26cfbd0`, `2346fb8`, and follow-up Android toolchain
-checkpoint `a1e05d8`.
+checkpoint `a1e05d8`. Post-review offline-pilot readiness checkpoints are
+`27bf040` (permanent identity) and `7767f46` (signed pilot variant).
 
 ## Verdict
 
-**CONDITIONALLY READY** for the product-owner-selected offline USB pilot, once
-D-005 is chosen and the APK is built with a stable offline signing key.
+**CONDITIONALLY READY** for the product-owner-selected offline USB pilot.
 
 **NOT READY** for the separate remote-managed production mode.
 
@@ -17,9 +17,11 @@ The locally testable backend, database, contracts and Android components have no
 unblocked `CRITICAL` or `HIGH` defect in the selected offline mode. D-015 now
 defines that mode as a signed APK with an approved signed bundled snapshot,
 manually installed and updated by USB. It requires no domain, API, pairing,
-Google Play or cloud KMS. The remaining immediate actions are a permanent
-application ID, an offline APK-signing key with backups, a dedicated signed
-pilot variant and physical-TV acceptance.
+Google Play or cloud KMS. Follow-up T031/T032 accepted permanent application ID
+`ru.namaztime.tv`, generated the offline key outside Git/APK and added a
+fail-closed signed pilot variant plus artifact verification. The remaining
+immediate actions are two operator-controlled offline key backups and
+physical-TV acceptance.
 
 The release application still has no remote provisioning/sync composition, and
 the repository cannot prove a separately deployed remote signer boundary. Those

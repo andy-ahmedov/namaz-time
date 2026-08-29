@@ -103,6 +103,7 @@
 - `CONTRIBUTING.md`
 - `scripts/docs-check.sh`
 - `scripts/android-tv-evidence.sh` — read-only ADB evidence helper for owned test hardware.
+- `scripts/android-pilot-artifact-check.sh` — fail-closed signed offline-pilot APK identity/signature/asset verification.
 - `scripts/test-postgres.sh` — disposable PostgreSQL pairing/RBAC/admin integration gate.
 - `scripts/test-postgres-restore.sh` — disposable clean-database backup/restore gate.
 - `scripts/fixtures/postgres-backup-restore-seed.sql` — synthetic linked fleet
