@@ -135,11 +135,18 @@ action to return to the prayer schedule. No payment flow is present.
 - no video background in MVP.
 
 The Phase 4 built-in backgrounds are eight original/project-derived static
-landscape WebP images. Appearance renders a D-pad preview gallery and persists
-only allowlisted IDs. A ninth custom slot imports JPEG/PNG/WebP through the
-system document picker into a validated app-local copy without broad storage
-permissions. Missing/corrupt custom media and unknown persisted IDs fall back
-to Golden dusk; all backgrounds use the same bounded dark scrim. For the T024 main-display pass, the
+landscape WebP images. T033 replaces the old three-column gallery with the
+owner-authorized `design_item_in_the_menu.png` hierarchy: one large 16:9 preview
+of the selected background followed by one horizontally scrolling filmstrip of
+the eight built-in choices. Left/right moves thumbnail focus, the selected or
+focused thumbnail has a restrained champagne outline, and focus-driven
+scrolling keeps all eight entries reachable. The custom image is not a ninth
+thumbnail. `Choose image from TV` is an explicit action below the filmstrip and
+continues to use the system document picker. Only allowlisted IDs are persisted.
+The picker imports bounded JPEG/PNG/WebP into a validated app-local copy without
+broad storage permissions. Missing/corrupt custom media and unknown persisted
+IDs fall back to Golden dusk; all backgrounds use the same bounded dark scrim.
+For the T024 main-display pass, the
 product-owner-supplied `design.png` is the geometric visual specification for
 composition, proportion, hierarchy, spacing and decorative rhythm. T025 also
 uses the explicitly authorized product-owner-supplied `main_with_qr.png` as the

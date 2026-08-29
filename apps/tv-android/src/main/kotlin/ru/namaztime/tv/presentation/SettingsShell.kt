@@ -1,8 +1,10 @@
 package ru.namaztime.tv.presentation
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -15,6 +17,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.runtime.Composable
@@ -31,6 +35,7 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
@@ -65,6 +70,8 @@ import ru.namaztime.tv.repository.isValidQrConfiguration
 const val SETTINGS_PAGE_ACTION_TEST_TAG = "settings-page-primary-action"
 const val SETTINGS_LOCAL_ACTION_TEST_TAG = "settings-page-local-action"
 const val SETTINGS_BACKGROUND_ACTION_TEST_TAG = "settings-background-action"
+const val SETTINGS_BACKGROUND_SELECTED_PREVIEW_TAG = "settings-background-selected-preview"
+const val SETTINGS_BACKGROUND_FILMSTRIP_TAG = "settings-background-filmstrip"
 const val SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX = "settings-background-preview-"
 const val SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG = "settings-custom-background-picker"
 const val SETTINGS_SHELL_TAG = "settings-shell"
@@ -372,6 +379,15 @@ private fun SettingsPage(
             )
         }.orEmpty()
         SettingsDestination.APPEARANCE -> buildList {
+            onPickCustomBackground?.let { pick ->
+                add(
+                    LocalSettingsAction(
+                        label = appString(R.string.action_choose_custom_background),
+                        invoke = pick,
+                        testTag = SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG,
+                    ),
+                )
+            }
             onScreenRetentionShiftChanged?.let { change ->
                 add(
                     LocalSettingsAction(
@@ -383,15 +399,6 @@ private fun SettingsPage(
                             },
                         ),
                         invoke = { change(!preferences.screenRetentionShiftEnabled) },
-                    ),
-                )
-            }
-            onPickCustomBackground?.let { pick ->
-                add(
-                    LocalSettingsAction(
-                        label = appString(R.string.action_choose_custom_background),
-                        invoke = pick,
-                        testTag = SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG,
                     ),
                 )
             }
@@ -486,9 +493,21 @@ private fun SettingsPage(
             Text(
                 text = appString(destination.descriptionRes),
                 color = NamazTvTheme.colors.textSecondary,
-                fontSize = if (compactPreview) 19.sp else 24.sp,
-                lineHeight = if (compactPreview) 24.sp else 32.sp,
-                maxLines = 2,
+                fontSize = if (destination == SettingsDestination.APPEARANCE && compactPreview) {
+                    17.sp
+                } else if (compactPreview) {
+                    19.sp
+                } else {
+                    24.sp
+                },
+                lineHeight = if (destination == SettingsDestination.APPEARANCE && compactPreview) {
+                    22.sp
+                } else if (compactPreview) {
+                    24.sp
+                } else {
+                    32.sp
+                },
+                maxLines = if (destination == SettingsDestination.APPEARANCE && compactPreview) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
             )
             SettingsContent(
@@ -535,7 +554,7 @@ private fun SettingsPage(
                 compact = compactPreview,
                 modifier = Modifier.weight(1f),
             )
-            if (destination == SettingsDestination.DONATION) {
+            if (destination == SettingsDestination.DONATION || destination == SettingsDestination.APPEARANCE) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -551,7 +570,15 @@ private fun SettingsPage(
                                 focusedContentColor = NamazTvTheme.colors.backgroundBottom,
                             ),
                             modifier = Modifier
-                                .weight(1f)
+                                .weight(
+                                    if (destination == SettingsDestination.APPEARANCE && index == 0) {
+                                        1.2f
+                                    } else if (destination == SettingsDestination.APPEARANCE) {
+                                        0.8f
+                                    } else {
+                                        1f
+                                    },
+                                )
                                 .testTag(action.testTag)
                                 .focusRequester(actionRequesters[index])
                                 .focusProperties {
@@ -561,7 +588,16 @@ private fun SettingsPage(
                                     down = returnActionRequester
                                 },
                         ) {
-                            Text(action.label, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            Text(
+                                text = action.label,
+                                fontSize = if (destination == SettingsDestination.APPEARANCE && compactPreview) {
+                                    16.sp
+                                } else {
+                                    18.sp
+                                },
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis,
+                            )
                         }
                     }
                 }
@@ -826,121 +862,184 @@ private fun AppearanceBackgroundGallery(
     compact: Boolean,
     modifier: Modifier = Modifier,
 ) {
-    val choices = remember {
-        TvBackgroundStyle.entries.map { it.id } + CUSTOM_BACKGROUND_STYLE_ID
-    }
+    val choices = remember { TvBackgroundStyle.entries.map { it.id } }
     val requesters = remember(entryRequester) {
         choices.associateWith { FocusRequester() }.toMutableMap().apply {
             this[choices.first()] = entryRequester
         }
     }
+    val listState = rememberLazyListState()
+    var focusedIndex by rememberSaveable {
+        mutableStateOf(choices.indexOf(selectedStyleId).coerceAtLeast(0))
+    }
     val customImage = rememberOperatorImageBitmap(
         slot = OperatorImageSlot.BACKGROUND,
         assetVersion = customAssetVersion,
     )
+
+    LaunchedEffect(focusedIndex) {
+        listState.animateScrollToItem(focusedIndex)
+    }
+
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
     ) {
-        choices.chunked(BACKGROUND_GALLERY_COLUMNS).forEachIndexed { rowIndex, rowChoices ->
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(if (compact) 160.dp else 250.dp)
+                .testTag(SETTINGS_BACKGROUND_SELECTED_PREVIEW_TAG),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .aspectRatio(16f / 9f)
+                    .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                    .background(NamazTvTheme.colors.backgroundBottom)
+                    .border(
+                        width = 1.dp,
+                        color = NamazTvTheme.colors.surfaceOutline,
+                        shape = RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp),
+                    ),
             ) {
-                rowChoices.forEach { styleId ->
-                    val index = choices.indexOf(styleId)
-                    val style = TvBackgroundStyle.entries.firstOrNull { it.id == styleId }
-                    val selected = selectedStyleId == styleId
-                    val enabled = onStyleSelected != null &&
-                        (styleId != CUSTOM_BACKGROUND_STYLE_ID || customImage != null)
-                    Button(
-                        onClick = { onStyleSelected?.invoke(styleId) },
-                        enabled = enabled,
-                        contentPadding = PaddingValues(0.dp),
-                        colors = ButtonDefaults.colors(
-                            containerColor = NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.78f),
-                            contentColor = NamazTvTheme.colors.textPrimary,
-                            focusedContainerColor = NamazTvTheme.colors.accentSoft,
-                            focusedContentColor = NamazTvTheme.colors.textPrimary,
+                val selectedStyle = TvBackgroundStyle.entries.firstOrNull { it.id == selectedStyleId }
+                if (selectedStyleId == CUSTOM_BACKGROUND_STYLE_ID && customImage != null) {
+                    Image(
+                        painter = BitmapPainter(customImage),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(
+                            (selectedStyle ?: TvBackgroundStyle.entries.first()).drawableRes,
                         ),
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(if (compact) 68.dp else 88.dp)
-                            .testTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX$styleId")
-                            .semantics { this.selected = selected }
-                            .focusRequester(requesters.getValue(styleId))
-                            .focusProperties {
-                                choices.getOrNull(index - 1)
-                                    ?.takeIf { index % BACKGROUND_GALLERY_COLUMNS != 0 }
-                                    ?.let { left = requesters.getValue(it) }
-                                choices.getOrNull(index + 1)
-                                    ?.takeIf { (index + 1) % BACKGROUND_GALLERY_COLUMNS != 0 }
-                                    ?.let { right = requesters.getValue(it) }
-                                choices.getOrNull(index - BACKGROUND_GALLERY_COLUMNS)
-                                    ?.let { up = requesters.getValue(it) }
-                                down = choices.getOrNull(index + BACKGROUND_GALLERY_COLUMNS)
-                                    ?.let(requesters::getValue)
-                                    ?: nextRequester
-                            }
-                            .border(
-                                width = if (selected) 2.dp else 0.5.dp,
-                                color = if (selected) {
-                                    NamazTvTheme.colors.accent
-                                } else {
-                                    NamazTvTheme.colors.surfaceOutline
-                                },
-                                shape = RoundedCornerShape(12.dp),
-                            ),
-                    ) {
-                        Column(
-                            modifier = Modifier.fillMaxSize(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                        ) {
-                            if (style != null) {
-                                Image(
-                                    painter = painterResource(style.drawableRes),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxWidth().weight(1f),
-                                )
-                            } else if (customImage != null) {
-                                Image(
-                                    painter = BitmapPainter(customImage),
-                                    contentDescription = null,
-                                    contentScale = ContentScale.Crop,
-                                    modifier = Modifier.fillMaxWidth().weight(1f),
-                                )
-                            } else {
-                                Box(
-                                    modifier = Modifier.fillMaxWidth().weight(1f),
-                                    contentAlignment = Alignment.Center,
-                                ) {
-                                    Text("+", color = NamazTvTheme.colors.accent, fontSize = 24.sp)
-                                }
-                            }
-                            Text(
-                                text = if (style != null) {
-                                    appString(style.labelRes)
-                                } else {
-                                    appString(R.string.value_background_custom)
-                                },
-                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 2.dp),
-                                fontSize = if (compact) 11.sp else 14.sp,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                        }
-                    }
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
                 }
-                repeat(BACKGROUND_GALLERY_COLUMNS - rowChoices.size) {
-                    Spacer(Modifier.weight(1f))
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(NamazTvTheme.colors.backgroundTop.copy(alpha = 0.2f)),
+                )
+                AppearancePreviewChrome(compact = compact)
+            }
+        }
+
+        LazyRow(
+            state = listState,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(if (compact) 58.dp else 78.dp)
+                .clip(RoundedCornerShape(bottomStart = 16.dp, bottomEnd = 16.dp))
+                .background(NamazTvTheme.colors.surfaceTop.copy(alpha = 0.72f))
+                .testTag(SETTINGS_BACKGROUND_FILMSTRIP_TAG),
+            contentPadding = PaddingValues(horizontal = if (compact) 8.dp else 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            items(
+                count = choices.size,
+                key = { choices[it] },
+            ) {
+                val styleId = choices[it]
+                val style = TvBackgroundStyle.entries.first { style -> style.id == styleId }
+                val selected = selectedStyleId == styleId
+                val focused = focusedIndex == it
+                Button(
+                    onClick = { onStyleSelected?.invoke(styleId) },
+                    enabled = onStyleSelected != null,
+                    contentPadding = PaddingValues(0.dp),
+                    colors = ButtonDefaults.colors(
+                        containerColor = Color.Transparent,
+                        contentColor = Color.White,
+                        focusedContainerColor = Color.Transparent,
+                        focusedContentColor = Color.White,
+                    ),
+                    scale = ButtonDefaults.scale(focusedScale = 1f),
+                    shape = ButtonDefaults.shape(shape = RoundedCornerShape(9.dp)),
+                    modifier = Modifier
+                        .width(if (compact) 96.dp else 132.dp)
+                        .height(if (compact) 50.dp else 68.dp)
+                        .testTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX$styleId")
+                        .semantics { this.selected = selected }
+                        .focusRequester(requesters.getValue(styleId))
+                        .focusProperties {
+                            choices.getOrNull(it - 1)?.let { left = requesters.getValue(it) }
+                            choices.getOrNull(it + 1)?.let { right = requesters.getValue(it) }
+                            down = nextRequester
+                        }
+                        .onFocusChanged { state ->
+                            if (state.isFocused) focusedIndex = it
+                        }
+                        .border(
+                            width = if (selected || focused) 3.dp else 1.dp,
+                            color = if (selected || focused) {
+                                NamazTvTheme.colors.accent
+                            } else {
+                                NamazTvTheme.colors.surfaceOutline
+                            },
+                            shape = RoundedCornerShape(9.dp),
+                        ),
+                ) {
+                    Image(
+                        painter = painterResource(style.drawableRes),
+                        contentDescription = appString(style.labelRes),
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(8.dp)),
+                    )
                 }
             }
         }
     }
 }
 
-private const val BACKGROUND_GALLERY_COLUMNS = 3
+@Composable
+private fun AppearancePreviewChrome(compact: Boolean) {
+    val radius = if (compact) 5.dp else 8.dp
+    Column(
+        modifier = Modifier.fillMaxSize().padding(if (compact) 12.dp else 18.dp),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 7.dp else 10.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .width(if (compact) 86.dp else 118.dp)
+                .height(if (compact) 18.dp else 25.dp)
+                .background(NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.76f), RoundedCornerShape(50)),
+        )
+        Row(
+            modifier = Modifier.fillMaxSize(),
+            horizontalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
+        ) {
+            Column(
+                modifier = Modifier.weight(0.36f).fillMaxHeight(),
+                verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 9.dp),
+            ) {
+                repeat(2) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .background(NamazTvTheme.colors.surfaceTop.copy(alpha = 0.78f), RoundedCornerShape(radius))
+                            .border(0.5.dp, NamazTvTheme.colors.surfaceOutline, RoundedCornerShape(radius)),
+                    )
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .weight(0.64f)
+                    .fillMaxHeight()
+                    .background(NamazTvTheme.colors.surfaceTop.copy(alpha = 0.78f), RoundedCornerShape(radius))
+                    .border(0.5.dp, NamazTvTheme.colors.surfaceOutline, RoundedCornerShape(radius)),
+            )
+        }
+    }
+}
 
 @Composable
 private fun sourceKindLabel(kind: String): String = appString(

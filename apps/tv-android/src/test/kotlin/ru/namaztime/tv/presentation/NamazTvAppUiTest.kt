@@ -546,14 +546,26 @@ class NamazTvAppUiTest {
         compose.setContent { NamazTvApp(FakeOperatorPreferencesRepository()) }
 
         openSettingsDestination(SettingsDestination.APPEARANCE)
-        ru.namaztime.tv.repository.BUILT_IN_BACKGROUND_STYLE_IDS.forEach { styleId ->
+        compose.onNodeWithTag(SETTINGS_BACKGROUND_SELECTED_PREVIEW_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_BACKGROUND_FILMSTRIP_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SettingsDestination.APPEARANCE.navigationTestTag)
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        val builtInStyles = ru.namaztime.tv.repository.BUILT_IN_BACKGROUND_STYLE_IDS.toList()
+        builtInStyles.forEachIndexed { index, styleId ->
             compose.onNodeWithTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX$styleId")
                 .assertIsDisplayed()
+                .assertIsFocused()
+            if (index < builtInStyles.lastIndex) {
+                compose.onNodeWithTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX$styleId")
+                    .performKeyInput { pressKey(Key.DirectionRight) }
+            }
         }
         compose.onNodeWithTag(
             "$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX${ru.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID}",
-        ).assertIsDisplayed()
-        compose.onNodeWithTag(SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG).assertExists()
+        ).assertDoesNotExist()
+        compose.onNodeWithTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX${builtInStyles.last()}")
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG).assertIsFocused()
     }
 
     @Test

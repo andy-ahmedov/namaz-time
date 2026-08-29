@@ -113,12 +113,16 @@ class SettingsShellUiTest {
         compose.onNodeWithText("Зухр в пятницу").assertDoesNotExist()
 
         moveDownFrom(SettingsDestination.IQAMAH)
+        compose.onNodeWithTag(SETTINGS_BACKGROUND_SELECTED_PREVIEW_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_BACKGROUND_FILMSTRIP_TAG).assertIsDisplayed()
         compose.onNodeWithTag("${SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX}golden_dusk")
             .assertIsDisplayed()
         compose.onNodeWithTag(SettingsDestination.APPEARANCE.navigationTestTag).performKeyInput {
             pressKey(Key.DirectionRight)
-            repeat(3) { pressKey(Key.DirectionDown) }
         }
+        compose.onNodeWithTag("${SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX}golden_dusk")
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
         compose.onNodeWithTag(SETTINGS_LOCAL_ACTION_TEST_TAG)
             .assertIsFocused()
             .performKeyInput { pressKey(Key.Enter) }

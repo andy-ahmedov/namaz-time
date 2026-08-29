@@ -149,7 +149,7 @@ visual evidence; they do not establish physical-TV overscan, scan distance or
 panel behavior.
 
 T028 expands the Appearance regression to eight built-in previews and a custom
-slot. JVM tests reject oversized, unsupported, corrupt and undersized documents,
+import. JVM tests reject oversized, unsupported, corrupt and undersized documents,
 preserve the previous app-local copy on rejection, and verify a missing custom
 copy renders the packaged default. The manifest regression forbids both legacy
 storage permissions and `READ_MEDIA_IMAGES`; picker behavior and OEM document
@@ -249,6 +249,18 @@ T033 Checkpoint 3 adds DataStore tests for trimmed blank fallback, Unicode
 length bounds and control-character rejection. State and Compose tests prove
 the two local labels reach the main display while the schedule's mosque ID,
 canonical name, locality and IANA timezone remain unchanged.
+
+T033 Checkpoint 4 pins one large selected-background preview and one D-pad
+LazyRow containing only the eight built-in IDs. The Compose regression traverses
+all eight thumbnails left-to-right so off-screen entries must scroll into view,
+asserts that no custom thumbnail exists, and verifies Down from the filmstrip
+reaches the separate system-picker action. Existing importer MIME, decoded
+dimensions, byte/pixel bounds, atomic app-private copy, corrupt fallback and
+no-storage-permission tests remain unchanged. Five API 36/1920×1080
+build/install/component-review passes corrected a clipped filmstrip, restored
+16:9 preview/thumbnail proportions, and made the picker label fully visible.
+This is `CONFIRMED_RUNTIME` emulator evidence; OEM picker availability and
+physical-TV focus/readability remain `UNKNOWN`.
 
 T027 pins the concise public display identity for the Ulyanovsk pilot mosque
 on both the main screen and Mosque settings page. A non-pilot passthrough
