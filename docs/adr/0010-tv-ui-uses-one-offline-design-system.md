@@ -33,7 +33,10 @@ force.
 
 All public-display content stays a projection of immutable local state. Room
 supplies mosque, snapshot and daily values; the T006 engine supplies the
-mosque-local date/time, event kind/time, resolved iqamah/Jumu'ah and countdown.
+mosque-local date/time, current prayer identity, event kind/time, resolved
+iqamah/Jumu'ah and countdown. Sunrise may participate in an explicitly enabled
+next-event countdown, but it is never a current prayer; presentation code only
+localizes the engine's resolved prayer identity.
 The UI does not reconstruct an iqamah countdown from wall time: it displays
 that countdown only when T006 identifies iqamah as the next event. Missing
 iqamah remains visibly unset.

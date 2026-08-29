@@ -207,6 +207,79 @@ func TestSnapshotValidationRejectsMalformedOptionalSections(t *testing.T) {
 	}
 }
 
+func TestSnapshotValidationRejectsUnmaterializableIqamahApplications(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name     string
+		mutate   func(*Snapshot)
+		wantPath string
+		wantCode string
+	}{
+		{
+			name: "fixed iqamah before adhan",
+			mutate: func(snapshot *Snapshot) {
+				snapshot.IqamahRules[1].Value.FixedTime = "11:59"
+			},
+			wantPath: "iqamah_rules[1].value.fixed_time",
+			wantCode: "before_adhan",
+		},
+		{
+			name: "offset crosses local date",
+			mutate: func(snapshot *Snapshot) {
+				offset := 240
+				snapshot.IqamahRules = append(snapshot.IqamahRules, IqamahRule{
+					ID: "iqamah-isha-crossing", Prayer: "isha",
+					ValidFrom: "2026-08-19", ValidTo: "2026-08-21",
+					Weekdays: []int{1, 2, 3, 4, 5, 6, 7}, Priority: 100,
+					Value: IqamahValue{Mode: "offset_after_adhan", OffsetMinutes: &offset},
+				})
+			},
+			wantPath: "iqamah_rules[2].value.offset_minutes",
+			wantCode: "crosses_local_date",
+		},
+		{
+			name: "equal priority rules are ambiguous",
+			mutate: func(snapshot *Snapshot) {
+				snapshot.IqamahRules = append(snapshot.IqamahRules, IqamahRule{
+					ID: "iqamah-dhuhr-ambiguous", Prayer: "dhuhr",
+					ValidFrom: "2026-08-19", ValidTo: "2026-08-21",
+					Weekdays: []int{1, 2, 3, 4, 5, 6, 7}, Priority: 100,
+					Value: IqamahValue{Mode: "fixed_time", FixedTime: "13:15"},
+				})
+			},
+			wantPath: "prayer_days[0].dhuhr",
+			wantCode: "ambiguous_iqamah_rule",
+		},
+		{
+			name: "duplicate date override",
+			mutate: func(snapshot *Snapshot) {
+				snapshot.IqamahOverrides = []IqamahOverride{
+					{
+						Date: "2026-08-20", Prayer: "dhuhr",
+						Value: IqamahValue{Mode: "fixed_time", FixedTime: "13:00"},
+					},
+					{
+						Date: "2026-08-20", Prayer: "dhuhr",
+						Value: IqamahValue{Mode: "fixed_time", FixedTime: "13:15"},
+					},
+				}
+			},
+			wantPath: "iqamah_date_overrides[1]",
+			wantCode: "duplicate_application",
+		},
+	}
+	for _, test := range tests {
+		test := test
+		t.Run(test.name, func(t *testing.T) {
+			t.Parallel()
+			snapshot := cloneSnapshot(t, loadSyntheticSnapshot(t))
+			test.mutate(&snapshot)
+			assertValidationError(t, snapshot, test.wantPath, test.wantCode)
+		})
+	}
+}
+
 func TestSnapshotCollectionBoundsMatchSchema(t *testing.T) {
 	t.Parallel()
 

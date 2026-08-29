@@ -505,7 +505,7 @@ func buildSnapshot(request PublishRequest) (domain.Snapshot, error) {
 		iqamahRules = append([]domain.IqamahRule(nil), request.MosquePrayerPolicy.IqamahRules...)
 		jumuahSessions = append([]domain.JumuahSession(nil), request.MosquePrayerPolicy.JumuahSessions...)
 	}
-	return domain.Snapshot{
+	snapshot := domain.Snapshot{
 		SchemaVersion:      "1.0",
 		SnapshotID:         request.SnapshotID,
 		DataClassification: candidate.DataClassification,
@@ -539,5 +539,9 @@ func buildSnapshot(request PublishRequest) (domain.Snapshot, error) {
 			SigningKeyID:           request.SigningKeyID,
 			SignatureEd25519Base64: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
 		},
-	}, nil
+	}
+	if err := snapshot.ValidateIqamahApplications(); err != nil {
+		return domain.Snapshot{}, newError("publish snapshot", "prayer_policy_invalid", err)
+	}
+	return snapshot, nil
 }

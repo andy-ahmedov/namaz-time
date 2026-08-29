@@ -109,6 +109,59 @@ func TestProductionPublicationUsesProtectedSignerAndCreatesAuditReceipt(t *testi
 	}
 }
 
+func TestPublicationRejectsUnmaterializableIqamahPolicyBeforeProtectedSigner(t *testing.T) {
+	t.Parallel()
+
+	candidate := candidate()
+	diff, err := publication.Diff(nil, candidate)
+	if err != nil {
+		t.Fatal(err)
+	}
+	approval := approvalFor(candidate, diff)
+	policyDocument := &publication.MosquePrayerPolicy{
+		SchemaVersion: "1.0", PolicyID: "invalid-before-adhan", MosqueID: candidate.Mosque.ID,
+		ValidFrom: candidate.Coverage.From, ValidTo: candidate.Coverage.To,
+		DhuhrAdhanSource: publication.DhuhrAdhanFromOnset,
+		IqamahRules: []domain.IqamahRule{{
+			ID: "dhuhr-before-adhan", Prayer: "dhuhr",
+			ValidFrom: candidate.Coverage.From, ValidTo: candidate.Coverage.To,
+			Weekdays: []int{1, 2, 3, 4, 5, 6, 7}, Priority: 100,
+			Value: domain.IqamahValue{Mode: "fixed_time", FixedTime: "11:59"},
+		}},
+	}
+	policySHA256, err := publication.MosquePrayerPolicySHA256(*policyDocument)
+	if err != nil {
+		t.Fatal(err)
+	}
+	approval.PrayerPolicySHA256 = policySHA256
+	request := publishRequest(candidate, diff, approval)
+	request.MosquePrayerPolicy = policyDocument
+	publicKey, privateKey, err := ed25519.GenerateKey(rand.Reader)
+	if err != nil {
+		t.Fatal(err)
+	}
+	trustPolicy := environmentPolicy(t, "test", request.SigningKeyID, publicKey)
+	signer := &protectedSigner{keyID: request.SigningKeyID, privateKey: privateKey}
+
+	_, _, err = publication.PublishWithSigner(
+		context.Background(),
+		request,
+		signer,
+		trustPolicy,
+		publication.AuditMetadata{
+			SignerIdentity:     "kms://test/schedule-signer",
+			PublishedAt:        request.GeneratedAt.Add(time.Minute),
+			ChainGenesisReason: "invalid policy must not reach signer",
+		},
+	)
+	if !publication.IsErrorCode(err, "prayer_policy_invalid") {
+		t.Fatalf("PublishWithSigner() error = %v", err)
+	}
+	if signer.called {
+		t.Fatal("protected signer was called for an unmaterializable iqamah policy")
+	}
+}
+
 func TestProductionPublicationRejectsRawPrivateKeyAndSignerMismatch(t *testing.T) {
 	t.Parallel()
 

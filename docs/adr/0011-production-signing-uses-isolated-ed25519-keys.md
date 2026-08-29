@@ -73,6 +73,13 @@ approval receipt plus current/direct-predecessor public approval-trust bundles
 for an isolated signer. Prepare and finalize reverify that proof against the
 candidate, diff and prayer-policy bindings on every production invocation. The
 signer signs both the snapshot and the domain-separated attestation.
+Before canonicalization or any protected-signing call, the publisher
+materializes the effective iqamah rule or date override for every covered day
+and prayer. Equal highest-priority rules, duplicate date/prayer overrides,
+fixed times before that day's adhan and offsets crossing the mosque-local date
+fail closed. Signed-snapshot validation repeats the same semantic checks so an
+artifact accepted by the publication boundary is also deployable by the TV
+engine.
 `publisher finalize` reconstructs the request from the original
 candidate/diff/approval, verifies both signatures
 under the active public policy, and creates immutable snapshot bytes plus a

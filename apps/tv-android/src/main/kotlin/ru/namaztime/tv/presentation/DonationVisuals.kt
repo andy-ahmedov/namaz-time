@@ -24,44 +24,6 @@ internal enum class DonationDetailIcon {
 }
 
 @Composable
-internal fun DonationBrandMark(
-    modifier: Modifier = Modifier,
-    tint: Color = NamazTvTheme.colors.accent,
-) {
-    Canvas(modifier) {
-        val stroke = Stroke(size.minDimension * 0.055f, cap = StrokeCap.Round)
-        drawArc(
-            color = tint,
-            startAngle = 58f,
-            sweepAngle = 245f,
-            useCenter = false,
-            topLeft = Offset(size.width * 0.07f, size.height * 0.07f),
-            size = Size(size.width * 0.72f, size.height * 0.72f),
-            style = stroke,
-        )
-        drawArc(
-            color = tint.copy(alpha = 0.42f),
-            startAngle = 58f,
-            sweepAngle = 245f,
-            useCenter = false,
-            topLeft = Offset(size.width * 0.10f, size.height * 0.10f),
-            size = Size(size.width * 0.66f, size.height * 0.66f),
-            style = Stroke(stroke.width * 0.45f, cap = StrokeCap.Round),
-        )
-        drawFourPointStar(
-            center = Offset(size.width * 0.78f, size.height * 0.24f),
-            radius = size.minDimension * 0.085f,
-            color = tint,
-        )
-        drawCircle(
-            color = tint,
-            radius = size.minDimension * 0.025f,
-            center = Offset(size.width * 0.89f, size.height * 0.12f),
-        )
-    }
-}
-
-@Composable
 internal fun DonationSettingsGlyph(
     modifier: Modifier = Modifier,
     tint: Color = NamazTvTheme.colors.textPrimary,
@@ -215,68 +177,6 @@ internal fun DonationDetailGlyph(
 }
 
 @Composable
-internal fun DonationHeadingFlourish(
-    reverse: Boolean,
-    modifier: Modifier = Modifier,
-    tint: Color = NamazTvTheme.colors.accent,
-) {
-    Canvas(modifier) {
-        val starX = if (reverse) size.width * 0.28f else size.width * 0.72f
-        val lineStart = if (reverse) size.width else 0f
-        val lineEnd = if (reverse) starX + size.height * 0.55f else starX - size.height * 0.55f
-        val brush = Brush.horizontalGradient(
-            colorStops = if (reverse) {
-                arrayOf(0f to Color.Transparent, 0.56f to tint.copy(alpha = 0.58f), 1f to tint.copy(alpha = 0.12f))
-            } else {
-                arrayOf(0f to tint.copy(alpha = 0.12f), 0.44f to tint.copy(alpha = 0.58f), 1f to Color.Transparent)
-            },
-        )
-        drawLine(
-            brush = brush,
-            start = Offset(lineStart, size.height / 2f),
-            end = Offset(lineEnd, size.height / 2f),
-            strokeWidth = size.height * 0.045f,
-            cap = StrokeCap.Round,
-        )
-        drawFourPointStar(
-            center = Offset(starX, size.height / 2f),
-            radius = size.height * 0.34f,
-            color = tint,
-            strokeWidth = size.height * 0.045f,
-        )
-    }
-}
-
-@Composable
-internal fun DonationFooterOrnament(
-    modifier: Modifier = Modifier,
-    tint: Color = NamazTvTheme.colors.accent,
-) {
-    Canvas(modifier) {
-        val axisY = size.height / 2f
-        drawLine(
-            brush = Brush.horizontalGradient(
-                0f to Color.Transparent,
-                0.36f to tint.copy(alpha = 0.44f),
-                0.5f to tint.copy(alpha = 0.78f),
-                0.64f to tint.copy(alpha = 0.44f),
-                1f to Color.Transparent,
-            ),
-            start = Offset(0f, axisY),
-            end = Offset(size.width, axisY),
-            strokeWidth = size.height * 0.045f,
-            cap = StrokeCap.Round,
-        )
-        drawFourPointStar(
-            center = Offset(size.width / 2f, axisY),
-            radius = size.height * 0.42f,
-            color = tint,
-            strokeWidth = size.height * 0.055f,
-        )
-    }
-}
-
-@Composable
 internal fun DonationArchLanternGlyph(
     modifier: Modifier = Modifier,
     mirrored: Boolean = false,
@@ -379,66 +279,4 @@ private fun DrawScope.drawDonationArchLantern(tint: Color) {
         strokeWidth = strokeWidth * 0.75f,
         cap = StrokeCap.Round,
     )
-}
-
-@Composable
-internal fun DonationMosqueGlyph(
-    modifier: Modifier = Modifier,
-    tint: Color = NamazTvTheme.colors.accent,
-) {
-    Canvas(modifier) {
-        val width = size.minDimension * 0.045f
-        val stroke = Stroke(width, cap = StrokeCap.Round)
-        val dome = Path().apply {
-            moveTo(size.width * 0.23f, size.height * 0.48f)
-            cubicTo(size.width * 0.25f, size.height * 0.27f, size.width * 0.39f, size.height * 0.20f, size.width * 0.50f, size.height * 0.20f)
-            cubicTo(size.width * 0.61f, size.height * 0.20f, size.width * 0.75f, size.height * 0.27f, size.width * 0.77f, size.height * 0.48f)
-        }
-        drawPath(dome, tint, style = stroke)
-        drawLine(tint, Offset(size.width * 0.19f, size.height * 0.50f), Offset(size.width * 0.81f, size.height * 0.50f), width, StrokeCap.Round)
-        drawLine(tint, Offset(size.width * 0.23f, size.height * 0.52f), Offset(size.width * 0.23f, size.height * 0.88f), width, StrokeCap.Round)
-        drawLine(tint, Offset(size.width * 0.77f, size.height * 0.52f), Offset(size.width * 0.77f, size.height * 0.88f), width, StrokeCap.Round)
-        listOf(0.33f, 0.50f, 0.67f).forEach { x ->
-            drawArc(
-                color = tint,
-                startAngle = 180f,
-                sweepAngle = 180f,
-                useCenter = false,
-                topLeft = Offset(size.width * (x - 0.075f), size.height * 0.61f),
-                size = Size(size.width * 0.15f, size.height * 0.22f),
-                style = stroke,
-            )
-            drawLine(tint, Offset(size.width * (x - 0.075f), size.height * 0.72f), Offset(size.width * (x - 0.075f), size.height * 0.88f), width)
-            drawLine(tint, Offset(size.width * (x + 0.075f), size.height * 0.72f), Offset(size.width * (x + 0.075f), size.height * 0.88f), width)
-        }
-        drawLine(tint, Offset(size.width * 0.13f, size.height * 0.90f), Offset(size.width * 0.87f, size.height * 0.90f), width, StrokeCap.Round)
-        drawLine(tint, Offset(size.width * 0.50f, size.height * 0.20f), Offset(size.width * 0.50f, size.height * 0.08f), width, StrokeCap.Round)
-        drawArc(
-            color = tint,
-            startAngle = 60f,
-            sweepAngle = 240f,
-            useCenter = false,
-            topLeft = Offset(size.width * 0.45f, size.height * 0.015f),
-            size = Size(size.width * 0.10f, size.height * 0.10f),
-            style = stroke,
-        )
-    }
-}
-
-private fun DrawScope.drawFourPointStar(
-    center: Offset,
-    radius: Float,
-    color: Color,
-    strokeWidth: Float = radius * 0.14f,
-) {
-    val star = Path().apply {
-        moveTo(center.x, center.y - radius)
-        cubicTo(center.x + radius * 0.14f, center.y - radius * 0.20f, center.x + radius * 0.20f, center.y - radius * 0.14f, center.x + radius, center.y)
-        cubicTo(center.x + radius * 0.20f, center.y + radius * 0.14f, center.x + radius * 0.14f, center.y + radius * 0.20f, center.x, center.y + radius)
-        cubicTo(center.x - radius * 0.14f, center.y + radius * 0.20f, center.x - radius * 0.20f, center.y + radius * 0.14f, center.x - radius, center.y)
-        cubicTo(center.x - radius * 0.20f, center.y - radius * 0.14f, center.x - radius * 0.14f, center.y - radius * 0.20f, center.x, center.y - radius)
-        close()
-    }
-    drawPath(star, color.copy(alpha = 0.12f))
-    drawPath(star, color, style = Stroke(strokeWidth, cap = StrokeCap.Round))
 }

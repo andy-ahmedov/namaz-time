@@ -101,6 +101,7 @@ func (s Snapshot) Validate() error {
 	validatePrayerDays(&result, s.PrayerDays, coverageFrom, coverageTo, coverageFromOK && coverageToOK)
 	validateIqamahRules(&result, s.IqamahRules)
 	validateIqamahOverrides(&result, s.IqamahOverrides)
+	validateIqamahApplications(&result, s)
 	validateJumuahSessions(&result, s.JumuahSessions)
 	validateCampaigns(&result, s.Campaigns)
 	if s.Theme != nil {
@@ -183,6 +184,189 @@ func validateIqamahValue(result *ValidationErrors, path string, value IqamahValu
 		}
 	default:
 		result.Items = append(result.Items, ValidationError{path + ".mode", "unsupported_value", "must be fixed_time or offset_after_adhan"})
+	}
+}
+
+// ValidateIqamahApplications materializes the effective iqamah value for every
+// covered prayer day without requiring a signed integrity envelope. Publication
+// uses this before invoking a signer; Snapshot.Validate repeats it when staging
+// signed snapshots so producer and consumer fail closed on the same semantics.
+func (s Snapshot) ValidateIqamahApplications() error {
+	var result ValidationErrors
+	validateIqamahApplications(&result, s)
+	if len(result.Items) > 0 {
+		return &result
+	}
+	return nil
+}
+
+func validateIqamahApplications(result *ValidationErrors, snapshot Snapshot) {
+	seenOverrides := make(map[string]int, len(snapshot.IqamahOverrides))
+	for index, override := range snapshot.IqamahOverrides {
+		if override.Date == "" || override.Prayer == "" {
+			continue
+		}
+		key := override.Date + "\x00" + override.Prayer
+		if previous, duplicate := seenOverrides[key]; duplicate {
+			result.Items = append(result.Items, ValidationError{
+				Path:    fmt.Sprintf("iqamah_date_overrides[%d]", index),
+				Code:    "duplicate_application",
+				Message: fmt.Sprintf("duplicates iqamah_date_overrides[%d] for %s %s", previous, override.Date, override.Prayer),
+			})
+			continue
+		}
+		seenOverrides[key] = index
+	}
+
+	prayers := []string{"fajr", "dhuhr", "asr", "maghrib", "isha"}
+	for dayIndex, day := range snapshot.PrayerDays {
+		date, err := time.Parse(localDateLayout, day.Date)
+		if err != nil || !localDatePattern.MatchString(day.Date) {
+			continue
+		}
+		weekday := int(date.Weekday())
+		if weekday == 0 {
+			weekday = 7
+		}
+		for _, prayer := range prayers {
+			adhan, ok := prayerClockMinutes(day, prayer)
+			if !ok {
+				continue
+			}
+
+			selectedValue := IqamahValue{}
+			selectedPath := ""
+			overrideCount := 0
+			for overrideIndex, override := range snapshot.IqamahOverrides {
+				if override.Date == day.Date && override.Prayer == prayer {
+					overrideCount++
+					selectedValue = override.Value
+					selectedPath = fmt.Sprintf("iqamah_date_overrides[%d].value", overrideIndex)
+				}
+			}
+			if overrideCount > 1 {
+				continue
+			}
+
+			if overrideCount == 0 {
+				highestPriority := -1
+				winnerIndexes := make([]int, 0, 1)
+				for ruleIndex, rule := range snapshot.IqamahRules {
+					if rule.Prayer != prayer || !ruleMatchesDate(rule, date, weekday) {
+						continue
+					}
+					if rule.Priority > highestPriority {
+						highestPriority = rule.Priority
+						winnerIndexes = []int{ruleIndex}
+					} else if rule.Priority == highestPriority {
+						winnerIndexes = append(winnerIndexes, ruleIndex)
+					}
+				}
+				if len(winnerIndexes) > 1 {
+					result.Items = append(result.Items, ValidationError{
+						Path:    fmt.Sprintf("prayer_days[%d].%s", dayIndex, prayer),
+						Code:    "ambiguous_iqamah_rule",
+						Message: fmt.Sprintf("multiple highest-priority iqamah rules apply on %s", day.Date),
+					})
+					continue
+				}
+				if len(winnerIndexes) == 0 {
+					continue
+				}
+				winnerIndex := winnerIndexes[0]
+				selectedValue = snapshot.IqamahRules[winnerIndex].Value
+				selectedPath = fmt.Sprintf("iqamah_rules[%d].value", winnerIndex)
+			}
+
+			validateMaterializedIqamahValue(
+				result,
+				selectedPath,
+				day.Date,
+				prayer,
+				adhan,
+				selectedValue,
+			)
+		}
+	}
+}
+
+func ruleMatchesDate(rule IqamahRule, date time.Time, weekday int) bool {
+	from, fromErr := time.Parse(localDateLayout, rule.ValidFrom)
+	to, toErr := time.Parse(localDateLayout, rule.ValidTo)
+	if fromErr != nil || toErr != nil || date.Before(from) || date.After(to) {
+		return false
+	}
+	for _, candidate := range rule.Weekdays {
+		if candidate == weekday {
+			return true
+		}
+	}
+	return false
+}
+
+func prayerClockMinutes(day PrayerDay, prayer string) (int, bool) {
+	value := ""
+	switch prayer {
+	case "fajr":
+		value = day.Fajr
+	case "dhuhr":
+		value = day.Dhuhr
+	case "asr":
+		value = day.Asr
+	case "maghrib":
+		value = day.Maghrib
+	case "isha":
+		value = day.Isha
+	default:
+		return 0, false
+	}
+	return clockMinutes(value)
+}
+
+func clockMinutes(value string) (int, bool) {
+	if !localTimePattern.MatchString(value) {
+		return 0, false
+	}
+	hour, hourErr := strconv.Atoi(value[:2])
+	minute, minuteErr := strconv.Atoi(value[3:])
+	if hourErr != nil || minuteErr != nil {
+		return 0, false
+	}
+	return hour*60 + minute, true
+}
+
+func validateMaterializedIqamahValue(
+	result *ValidationErrors,
+	path string,
+	date string,
+	prayer string,
+	adhan int,
+	value IqamahValue,
+) {
+	switch value.Mode {
+	case "fixed_time":
+		fixed, ok := clockMinutes(value.FixedTime)
+		if !ok || value.OffsetMinutes != nil {
+			return
+		}
+		if fixed < adhan {
+			result.Items = append(result.Items, ValidationError{
+				Path:    path + ".fixed_time",
+				Code:    "before_adhan",
+				Message: fmt.Sprintf("effective iqamah for %s on %s must not be before adhan", prayer, date),
+			})
+		}
+	case "offset_after_adhan":
+		if value.OffsetMinutes == nil || value.FixedTime != "" || *value.OffsetMinutes < 0 || *value.OffsetMinutes > 240 {
+			return
+		}
+		if adhan+(*value.OffsetMinutes) >= 24*60 {
+			result.Items = append(result.Items, ValidationError{
+				Path:    path + ".offset_minutes",
+				Code:    "crosses_local_date",
+				Message: fmt.Sprintf("effective iqamah for %s on %s must remain on the same local date", prayer, date),
+			})
+		}
 	}
 }
 

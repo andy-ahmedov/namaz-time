@@ -71,17 +71,27 @@ class DonationDisplayUiTest {
 
         compose.onNodeWithTag(SettingsDestination.DONATION.navigationTestTag)
             .performKeyInput { pressKey(Key.DirectionRight) }
-        listOf(
-            SETTINGS_DONATION_URL_FIELD_TAG,
-            SETTINGS_DONATION_RECIPIENT_FIELD_TAG,
-            SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG,
-            SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG,
-            SETTINGS_DONATION_GRATITUDE_FIELD_TAG,
-        ).forEach { tag ->
-            compose.onNodeWithTag(tag)
-                .assertIsFocused()
-                .performKeyInput { pressKey(Key.DirectionDown) }
-        }
+        compose.onNodeWithTag(SETTINGS_DONATION_URL_FIELD_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_RECIPIENT_FIELD_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag(SETTINGS_DONATION_BANK_FIELD_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_PHONE_FIELD_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionLeft) }
+        compose.onNodeWithTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_GRATITUDE_FIELD_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
         DonationImageStyle.entries.forEachIndexed { index, style ->
             compose.onNodeWithTag("$SETTINGS_DONATION_IMAGE_TAG_PREFIX${style.id}")
                 .assertIsDisplayed()

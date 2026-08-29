@@ -225,6 +225,7 @@ internal fun DonationSettingsEditor(
                     requester = recipientRequester,
                     previousRequester = entryRequester,
                     nextRequester = cardNumberRequester,
+                    rightRequester = bankRequester,
                     modifier = Modifier.weight(1f).testTag(SETTINGS_DONATION_RECIPIENT_FIELD_TAG),
                     compact = true,
                 )
@@ -238,6 +239,7 @@ internal fun DonationSettingsEditor(
                     requester = bankRequester,
                     previousRequester = entryRequester,
                     nextRequester = phoneRequester,
+                    leftRequester = recipientRequester,
                     modifier = Modifier.weight(1f).testTag(SETTINGS_DONATION_BANK_FIELD_TAG),
                     compact = true,
                 )
@@ -256,6 +258,7 @@ internal fun DonationSettingsEditor(
                     requester = cardNumberRequester,
                     previousRequester = recipientRequester,
                     nextRequester = collectionUrlRequester,
+                    rightRequester = phoneRequester,
                     modifier = Modifier.weight(1f).testTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG),
                     keyboardType = KeyboardType.Number,
                     compact = true,
@@ -271,6 +274,7 @@ internal fun DonationSettingsEditor(
                     requester = phoneRequester,
                     previousRequester = bankRequester,
                     nextRequester = collectionUrlRequester,
+                    leftRequester = cardNumberRequester,
                     modifier = Modifier.weight(1f).testTag(SETTINGS_DONATION_PHONE_FIELD_TAG),
                     keyboardType = KeyboardType.Phone,
                     compact = true,
@@ -685,6 +689,8 @@ private fun TvSettingsTextField(
     requester: FocusRequester,
     previousRequester: FocusRequester?,
     nextRequester: FocusRequester,
+    leftRequester: FocusRequester? = null,
+    rightRequester: FocusRequester? = null,
     modifier: Modifier = Modifier,
     keyboardType: KeyboardType = KeyboardType.Text,
     singleLine: Boolean = true,
@@ -709,6 +715,8 @@ private fun TvSettingsTextField(
             .focusProperties {
                 previousRequester?.let { up = it }
                 down = nextRequester
+                leftRequester?.let { left = it }
+                rightRequester?.let { right = it }
             }
             .onPreviewKeyEvent { event ->
                 if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
@@ -718,6 +726,14 @@ private fun TvSettingsTextField(
                         true
                     }
                     Key.DirectionUp -> previousRequester?.let {
+                        it.requestFocus()
+                        true
+                    } ?: false
+                    Key.DirectionLeft -> leftRequester?.let {
+                        it.requestFocus()
+                        true
+                    } ?: false
+                    Key.DirectionRight -> rightRequester?.let {
                         it.requestFocus()
                         true
                     } ?: false

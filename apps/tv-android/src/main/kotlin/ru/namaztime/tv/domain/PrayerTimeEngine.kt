@@ -98,6 +98,7 @@ sealed interface PrayerTimeResolution {
         val localTime: LocalTime,
         val prayers: Map<String, ResolvedPrayer>,
         val jumuahSessions: List<ResolvedJumuahSession>,
+        val currentPrayer: String,
         val nextEvent: PrayerEvent?,
         val countdownSeconds: Long?,
     ) : PrayerTimeResolution
@@ -173,9 +174,44 @@ class PrayerTimeEngine(
             localTime = zonedNow.toLocalTime().withNano(0),
             prayers = prayers,
             jumuahSessions = jumuah,
+            currentPrayer = resolveCurrentPrayer(zonedNow.toLocalTime(), prayers, jumuah),
             nextEvent = next,
             countdownSeconds = countdownSeconds,
         )
+    }
+
+    private fun resolveCurrentPrayer(
+        localTime: LocalTime,
+        prayers: Map<String, ResolvedPrayer>,
+        jumuahSessions: List<ResolvedJumuahSession>,
+    ): String {
+        data class PrayerAnchor(
+            val time: LocalTime,
+            val tieBreakPriority: Int,
+            val prayer: String,
+        )
+
+        val anchors = buildList {
+            prayers.values
+                .filterNot { prayer -> prayer.id == "sunrise" }
+                .forEach { prayer ->
+                    add(
+                        PrayerAnchor(
+                            time = prayer.adhan,
+                            tieBreakPriority = 0,
+                            prayer = prayer.id,
+                        ),
+                    )
+                }
+            jumuahSessions.forEach { session ->
+                add(PrayerAnchor(session.salahTime, tieBreakPriority = 1, prayer = "jumuah"))
+            }
+        }
+        return anchors
+            .filter { anchor -> !anchor.time.isAfter(localTime) }
+            .maxWithOrNull(compareBy<PrayerAnchor>({ it.time }, { it.tieBreakPriority }))
+            ?.prayer
+            ?: "isha"
     }
 
     private fun validateStructure(schedule: PrayerScheduleInput) {

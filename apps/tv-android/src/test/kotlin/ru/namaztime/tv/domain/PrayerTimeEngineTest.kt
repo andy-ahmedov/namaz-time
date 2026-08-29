@@ -66,6 +66,16 @@ class PrayerTimeEngineTest {
     }
 
     @Test
+    fun `sunrise never becomes the current prayer`() {
+        val result = engine.resolve(
+            schedule = schedule(days = listOf(day("2026-08-20"))),
+            now = Instant.parse("2026-08-20T06:00:00Z"),
+        ).available()
+
+        assertEquals("fajr", result.currentPrayer)
+    }
+
+    @Test
     fun `exact override beats matching weekday range and base rules`() {
         val schedule = schedule(
             days = listOf(day("2026-08-20")),

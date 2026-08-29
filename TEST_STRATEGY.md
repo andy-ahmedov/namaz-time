@@ -85,6 +85,9 @@ No live external site is required for normal CI. A separate scheduled canary may
   Android;
 - correctly signed invalid iqamah, Jumu'ah, campaign and theme children fail
   closed;
+- iqamah policy is materialized before protected signing: duplicate overrides,
+  equal-priority winners, fixed times before daily adhan and offsets crossing
+  the local date are rejected, and the protected signer is not called;
 - payload size limit;
 - duplicate date rejection;
 - insufficient future coverage rejection;
@@ -277,14 +280,21 @@ picker completion remain `UNKNOWN`.
 T033 Checkpoint 6 replaces the obsolete T029 donation geometry with normalized
 status, equal-height gear, central donation-card, QR/row and gratitude-block
 anchors at 720p, 1080p-density and 4K-density profiles. State tests derive the
-current prayer from the resolved adhan/Jumu'ah timeline, including pre-Fajr and
-post-Jumu'ah cases. An app-level Compose test proves the donation status uses
+current prayer from the resolved adhan/Jumu'ah timeline, including pre-Fajr,
+post-Sunrise/pre-Dhuhr and post-Jumu'ah cases. The Sunrise interval proves that
+Sunrise never becomes the current prayer. An app-level Compose test proves the donation status uses
 the active local schedule and the existing mosque-local engine projection;
 another proves donation mode fails closed when that schedule is absent. The
 shared QR decode suite remains unchanged. Three controlled API 36/1920×1080
 build/install/component-review passes corrected the gear shape, scan copy and
 detail punctuation. This is `CONFIRMED_RUNTIME` emulator evidence; real-phone
 scan distance and physical-TV readability remain `UNKNOWN`.
+
+T033 final-review regressions traverse every compact donation field, including
+the Bank and Phone column, with explicit D-pad up/down/left/right focus links.
+They also pin current-prayer selection in `PrayerTimeEngine` rather than
+presentation and prove unmaterializable iqamah policy is rejected before a
+protected signer receives canonical bytes.
 
 T027 pins the concise public display identity for the Ulyanovsk pilot mosque
 on both the main screen and Mosque settings page. A non-pilot passthrough

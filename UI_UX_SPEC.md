@@ -123,7 +123,10 @@ is absent. Date, time and current prayer are projected from the same active
 Room schedule and `PrayerTimeEngine` resolution as the prayer display. Donation
 mode performs no independent calculation and fails closed to the unavailable
 screen when no valid active schedule exists; it remains network-free and
-offline-capable with the last-known-good Room snapshot.
+offline-capable with the last-known-good Room snapshot. The engine chooses the
+latest resolved obligatory-prayer adhan, or a later Friday Jumu'ah salah, as
+the current prayer; Sunrise is explicitly excluded and presentation only
+localizes that result.
 
 The QR uses dark-navy modules on a rounded warm-white surface, a thin
 champagne frame and a NamazTime center badge while retaining a four-module
