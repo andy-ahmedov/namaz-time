@@ -141,6 +141,7 @@ fun SettingsShell(
                             .padding(bottom = 4.dp),
                         color = NamazTvTheme.colors.textPrimary,
                         fontSize = 26.sp,
+                        lineHeight = 32.sp,
                         fontWeight = FontWeight.SemiBold,
                     )
                     SettingsDestination.entries.forEach { destination ->
@@ -497,6 +498,7 @@ private fun SettingsPage(
                 modifier = Modifier.semantics { heading() },
                 color = NamazTvTheme.colors.textPrimary,
                 fontSize = if (compactPreview) 34.sp else 42.sp,
+                lineHeight = if (compactPreview) 42.sp else 50.sp,
                 fontWeight = FontWeight.Bold,
             )
             Text(
