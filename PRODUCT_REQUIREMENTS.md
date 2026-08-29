@@ -74,6 +74,9 @@ Maintains sources and devices without being able to silently publish unapproved 
   and current prayer from the same active Room schedule and `PrayerTimeEngine`
   projection as the prayer display; absence or invalidity of that local
   schedule fails closed to the normal unavailable state.
+- `FR-TV-012`: standalone donation foreground blocks form one right-anchored
+  rail no wider than 30 percent of the 16:9 viewport; the remaining left area
+  has no foreground card so the selected background image stays visible.
 
 ### QR campaigns and announcements
 

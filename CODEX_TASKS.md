@@ -679,6 +679,14 @@ comes from the existing active Room schedule and `PrayerTimeEngine`; missing
 schedule state fails closed. Adaptive/state/app tests and three controlled API
 36 component-review passes succeed.
 
+The product owner's 2026-08-30 visual correction supersedes only Checkpoint 6
+geometry: every standalone donation foreground block now sits in one
+right-anchored 264/960-wide rail, while the first 656/960 of the viewport has no
+foreground card and exposes the selected image. The status and gear remain
+equal-height, the QR/details stack vertically in the central card, and the
+gratitude card shares the rail edges. No Room, engine, QR payload, operator
+configuration or signed-snapshot behavior changes.
+
 The six checkpoint commits are `2ffd7e0`, `92c49d0`, `69442af`, `9a186cf`,
 `8fce081` and `37f3183`. Independent review follow-ups `2c0992f` and `30f32bd`
 add complete donation-field D-pad traversal, move current-prayer ownership into

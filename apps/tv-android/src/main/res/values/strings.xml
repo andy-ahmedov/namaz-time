@@ -95,8 +95,10 @@
     <string name="donation_card_number_label">Номер карты</string>
     <string name="donation_card_number_hint">Номер карты или счёта</string>
     <string name="donation_phone_label">СБП / Телефон</string>
+    <string name="donation_display_phone_label">СБП</string>
     <string name="donation_phone_hint">Номер телефона для СБП</string>
     <string name="donation_collection_url_label">Ссылка на сбор</string>
+    <string name="donation_display_collection_url_label">Ссылка</string>
     <string name="donation_collection_url_hint">https://example.org/donate</string>
     <string name="donation_gratitude_label">Нижняя благодарственная надпись</string>
     <string name="donation_gratitude_hint">Пустое поле использует стандартный текст</string>

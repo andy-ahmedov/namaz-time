@@ -279,10 +279,14 @@ picker completion remain `UNKNOWN`.
 
 T033 Checkpoint 6 replaces the obsolete T029 donation geometry with normalized
 status, equal-height gear, central donation-card, QR/row and gratitude-block
-anchors at 720p, 1080p-density and 4K-density profiles. State tests derive the
-current prayer from the resolved adhan/Jumu'ah timeline, including pre-Fajr,
-post-Sunrise/pre-Dhuhr and post-Jumu'ah cases. The Sunrise interval proves that
-Sunrise never becomes the current prayer. An app-level Compose test proves the donation status uses
+anchors at 720p, 1080p-density and 4K-density profiles. The 2026-08-30 owner
+clarification adds a right-rail regression: the combined foreground begins no
+earlier than 68 percent of the viewport and occupies no more than 30 percent,
+while its status/gear, card and gratitude relationships retain their measured
+anchors. State tests derive the current prayer from the resolved adhan/Jumu'ah
+timeline, including pre-Fajr, post-Sunrise/pre-Dhuhr and post-Jumu'ah cases.
+The Sunrise interval proves that Sunrise never becomes the current prayer. An
+app-level Compose test proves the donation status uses
 the active local schedule and the existing mosque-local engine projection;
 another proves donation mode fails closed when that schedule is absent. The
 shared QR decode suite remains unchanged. Three controlled API 36/1920×1080

@@ -57,6 +57,14 @@ NamazTime identity, authenticated schedule data, locally generated QR payload
 and operator-local content remain independent. The raw references remain
 outside Git.
 
+On 2026-08-30 the product owner clarified the 16:9 interpretation of
+`layout_of_blocks_on_the_donation_screen.png`: all standalone donation
+foreground blocks belong to one right-anchored rail occupying no more than 30
+percent of the viewport. The approximately 70-percent left region must remain
+free of foreground blocks so the chosen image is visible. This clarification
+supersedes the earlier full-width T033 translation without changing the
+reference authorization or any schedule/content provenance boundary.
+
 ## Decision
 
 An explicitly authorized, product-owner-supplied visual reference may be

@@ -193,16 +193,39 @@ class DonationDisplayUiTest {
         compose.onNodeWithText(configuration.cardNumber).assertIsDisplayed()
         compose.onNodeWithText(configuration.phone).assertIsDisplayed()
         compose.onNodeWithText(configuration.collectionUrl).assertIsDisplayed()
+        compose.onNodeWithText("СБП:").assertIsDisplayed()
+        compose.onNodeWithText("Ссылка:").assertIsDisplayed()
         compose.onNodeWithText(configuration.httpsUrl).assertDoesNotExist()
         compose.onNodeWithTag(DONATION_DISPLAY_SETTINGS_TAG).assertIsFocused()
 
         val scale = (root.right - root.left).value / 960f
-        assertReferenceBounds(DONATION_DISPLAY_STATUS_TAG, 43f, 28f, 798f, 64f, scale)
-        assertReferenceBounds(DONATION_DISPLAY_SETTINGS_VISUAL_TAG, 853f, 28f, 64f, 64f, scale)
-        assertReferenceBounds(DONATION_DISPLAY_DETAILS_TAG, 43f, 105f, 874f, 319f, scale)
-        assertReferenceBounds(DONATION_DISPLAY_QR_TAG, 154f, 178f, 218f, 218f, scale, tolerance = 6f)
-        assertReferenceBounds(DONATION_DISPLAY_ROWS_TAG, 440f, 184f, 410f, 210f, scale, tolerance = 6f)
-        assertReferenceBounds(DONATION_DISPLAY_FOOTER_TAG, 43f, 438f, 874f, 74f, scale)
+        assertReferenceBounds(DONATION_DISPLAY_STATUS_TAG, 656f, 28f, 206f, 50f, scale)
+        assertReferenceBounds(DONATION_DISPLAY_SETTINGS_VISUAL_TAG, 870f, 28f, 50f, 50f, scale)
+        assertReferenceBounds(DONATION_DISPLAY_DETAILS_TAG, 656f, 88f, 264f, 348f, scale)
+        assertReferenceBounds(DONATION_DISPLAY_QR_TAG, 715f, 156f, 146f, 146f, scale, tolerance = 6f)
+        assertReferenceBounds(DONATION_DISPLAY_ROWS_TAG, 671f, 306f, 234f, 120f, scale, tolerance = 6f)
+        assertReferenceBounds(DONATION_DISPLAY_FOOTER_TAG, 656f, 446f, 264f, 66f, scale)
+
+        val railMembers = listOf(
+            DONATION_DISPLAY_STATUS_TAG,
+            DONATION_DISPLAY_DETAILS_TAG,
+            DONATION_DISPLAY_FOOTER_TAG,
+            DONATION_DISPLAY_SETTINGS_VISUAL_TAG,
+        ).map { tag ->
+            compose.onNodeWithTag(
+                tag,
+                useUnmergedTree = tag == DONATION_DISPLAY_SETTINGS_VISUAL_TAG,
+            ).getUnclippedBoundsInRoot()
+        }
+        val railLeft = railMembers.minOf { it.left.value }
+        val railRight = railMembers.maxOf { it.right.value }
+        val rootWidth = (root.right - root.left).value
+        assert(railLeft >= root.left.value + rootWidth * 0.68f) {
+            "donation rail must leave at least 68% of the viewport free on the left"
+        }
+        assert(railRight - railLeft <= rootWidth * 0.30f) {
+            "donation rail must occupy no more than 30% of the viewport width"
+        }
 
         val statusBounds = compose.onNodeWithTag(DONATION_DISPLAY_STATUS_TAG)
             .getUnclippedBoundsInRoot()

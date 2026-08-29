@@ -113,20 +113,22 @@ decorative lines fade to transparency instead of ending abruptly.
 T033 supersedes that historical T029 block composition with the
 owner-authorized `layout_of_blocks_on_the_donation_screen.png`. The portrait
 coordinates are not copied to 16:9. Instead, the selected image remains full
-bleed behind three TV-safe relationships: one long top status block containing
-localized date/weekday, a vertical divider, mosque-local `HH:mm`, a second
-divider and the current prayer; a separate equal-height Settings gear-card; one
-wide central navy/champagne glass card containing title, fading diamond line,
-scan instruction, shared framed QR and five transfer rows; and one wide bottom
-gratitude card with mirrored arch/lantern drawings. The old NamazTime top pill
-is absent. Date, time and current prayer are projected from the same active
-Room schedule and `PrayerTimeEngine` resolution as the prayer display. Donation
-mode performs no independent calculation and fails closed to the unavailable
-screen when no valid active schedule exists; it remains network-free and
-offline-capable with the last-known-good Room snapshot. The engine chooses the
-latest resolved obligatory-prayer adhan, or a later Friday Jumu'ah salah, as
-the current prayer; Sunrise is explicitly excluded and presentation only
-localizes that result.
+bleed behind one TV-safe rail anchored to the right edge. The rail occupies no
+more than 30 percent of the full 16:9 viewport; the approximately 70-percent
+left area contains no foreground block so the selected image remains visible.
+Inside the rail, a compact top status block contains localized date/weekday, a
+vertical divider, mosque-local `HH:mm`, a second divider and the current prayer;
+an equal-height Settings gear-card sits beside it. One tall navy/champagne glass
+card stacks the title, fading diamond line, scan instruction, shared framed QR
+and five transfer rows. A separate bottom gratitude card contains mirrored
+arch/lantern drawings. The old NamazTime top pill is absent. Date, time and
+current prayer are projected from the same active Room schedule and
+`PrayerTimeEngine` resolution as the prayer display. Donation mode performs no
+independent calculation and fails closed to the unavailable screen when no
+valid active schedule exists; it remains network-free and offline-capable with
+the last-known-good Room snapshot. The engine chooses the latest resolved
+obligatory-prayer adhan, or a later Friday Jumu'ah salah, as the current prayer;
+Sunrise is explicitly excluded and presentation only localizes that result.
 
 The QR uses dark-navy modules on a rounded warm-white surface, a thin
 champagne frame and a NamazTime center badge while retaining a four-module
@@ -196,12 +198,15 @@ uniformly for 720p/1080p/4K. Focus keeps the gear size stable and substitutes a
 thin gold outline/glow rather than a filled yellow surface.
 
 T033 replaces those T029 anchors. At normalized 960×540 its standalone
-donation anchors are: status `(43,28,798,64)`, Settings visual
-`(853,28,64,64)`, central card `(43,105,874,319)`, shared QR
-`(154,178,218,218)`, transfer rows `(440,184,410,210)` and gratitude block
-`(43,438,874,74)`. Geometry tests allow 4 dp, or 6 dp around QR/row internals,
-across the 720p, 1080p-density and 4K-density profiles. The bounded ±2 dp
-retention shift is additive and remains within the screen-safe margins.
+donation anchors, as clarified by the product owner on 2026-08-30, are: status
+`(656,28,206,50)`, Settings visual `(870,28,50,50)`, central card
+`(656,88,264,348)`, shared QR `(715,156,146,146)`, transfer rows
+`(671,306,234,120)` and gratitude block `(656,446,264,66)`. The combined
+foreground rail is `x=656…920`, or 27.5 percent of the viewport, and begins
+after 68.3 percent of unobstructed background. Geometry tests allow 4 dp, or
+6 dp around QR/row internals, across the 720p, 1080p-density and 4K-density
+profiles. The bounded ±2 dp retention shift is additive and remains within the
+screen-safe margins.
 
 The main display uses a centered NamazTime pill, mosque identity, a left
 next-event/countdown and local-clock stack, a right six-row prayer table and a
