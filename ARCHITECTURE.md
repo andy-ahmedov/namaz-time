@@ -133,7 +133,7 @@ mosque-local date; SQLite's unspecified row order is never treated as schedule
 order.
 
 The original T004 synthetic example is now test-only. In the explicitly
-non-release T022 pilot-local build, first launch reads an immutable approved
+offline T022 pilot-local build, first launch reads an immutable approved
 Ulyanovsk 2026 snapshot plus public-only, disjoint local trust bundles from the
 debug source set. It verifies the canonical hash/Ed25519 signature and exact
 trust environment separation before persistence, imports all supported child records in
@@ -146,10 +146,14 @@ Local schedule-flow corruption is also mapped to a bounded UI support code
 instead of escaping the Compose collector. Startup recovery revalidates the
 persisted timezone, provenance/integrity envelope and complete ordered prayer
 coverage before trusting either active or previous selection.
-The ephemeral pilot-local private key is discarded after fixture generation;
-it is not a production key, KMS substitute or API registry credential. Release
-builds package neither this schedule nor its local trust assets and continue to
-depend on pairing/T009 plus the ADR 0011 production trust deployment.
+The first fixture's ephemeral pilot-local private key was discarded after
+generation. D-015 now permits later offline pilot successors to use a new
+offline Ed25519 key kept outside Git/APK and to ship only its public trust
+transition in the next signed APK; cloud KMS is not required for this mode.
+Startup may replace only a known predecessor or the dedicated pilot snapshot
+family, requires monotonic signed `generated_at`, and preserves last-known-good
+on rejection. Remote-managed release builds remain separate and depend on
+pairing/T009 plus ADR 0011 deployment controls.
 
 T005 replaces the launch placeholder with a responsive, built-in offline main
 display. It renders the six daily adhan rows from immutable Room-backed local

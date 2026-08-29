@@ -42,7 +42,7 @@ Detailed prompts: [CODEX_TASKS.md](CODEX_TASKS.md).
 | Task | Status | Acceptance / evidence |
 |---|---|---|
 | T009 manifest/snapshot sync | DONE | explicit ephemeral one-use pairing fixture and scoped bearer API; duplicate credential rejection; signed registry and paired-mosque binding; same-origin canonical snapshot URLs; manifest/raw snapshot ETag/304 and Digest; Android AES-GCM/Keystore provisioning, provisioning-scoped durable stage/quarantine/checkpoint, signature/schema/domain/manifest/mosque binding, atomic activation and authenticated rollback; 401/404/500/timeout/tamper/re-pair plus file-backed import/post-commit interruption recovery tests pass |
-| T010 first real source onboarding | BLOCKED | local source/effective, named approval, D-009, D-013 and D-014 slices DONE: immutable PDF baseline + August override, deterministic 365-day candidate/diff, signed approver receipt, Dhuhr/iqamah/Jumuah policy, no-fallback expiry, protected-signer protocol and rollback evidence model; first production publication remains blocked on a concrete KMS Ed25519 key, distinct security operator and authenticated signing-trust deployment; paired emulator canary follows those inputs, physical OEM acceptance is deferred/non-blocking |
+| T010 first real source onboarding | DONE | immutable PDF baseline + August override, deterministic 365-day candidate/diff, signed approver receipt, Dhuhr/iqamah/Jumuah policy, no-fallback expiry and protected-signer protocol are complete. D-015 selects the signed bundled-snapshot/USB path for the first mosque pilot; KMS and remote trust deployment are deferred to remote-managed operation. |
 
 T010's locally executable source slice is complete. The retained PDF SHA-256 is
 `82045aa209e61bef7a394bcb883bfe367e760cf16aebfb8f602b56b1cc92bd21`;
@@ -57,10 +57,7 @@ All twelve numeric differences remain visible and policy-resolved. Named
 approver `approver:ulyanovsk-mosques:akhmedov-elmaddin-fazil-ogly` signed the
 exact candidate/diff/warnings and policy SHA-256. D-009 maps the approved
 collective-Dhuhr source value to Dhuhr adhan, applies iqamah +5 minutes, omits
-Friday Dhuhr iqamah and publishes one Jumuah at 13:15. This does not manufacture
-a provisioned production KMS key/signature, distinct signer operator,
-authenticated signing-trust deployment, so T010
-remains `BLOCKED` rather than DONE. D-013 is accepted and locally implemented: production code
+Friday Dhuhr iqamah and publishes one Jumuah at 13:15. D-013 is accepted and locally implemented: production code
 accepts only an isolated signer interface/two-signature response, Go/API
 and Android consume the same `scheduled`/`active`/`retired`/`revoked` public
 trust model with direct-predecessor transition checks, and finalization emits a
@@ -68,8 +65,9 @@ signer-attested hash-chained receipt required by production API admission.
 The earlier `0.3.0-pilot-local` emulator evidence is historical and has been
 superseded by T022. Runtime acceptance of the new APK belongs to the product
 owner; repository claims remain local build/Robolectric evidence until that
-run is recorded. Production delivery still requires D-015/T009 pairing and a
-KMS-signed publication.
+run is recorded. Remote-managed delivery still requires T009 pairing and the
+ADR 0011 production signer deployment; those are not requirements for D-015's
+offline USB pilot.
 
 T009 completes the locally testable delivery half of the Phase 2 invariant. The
 runtime command refuses to embed fixture credentials or trust keys, requires
@@ -128,7 +126,7 @@ backend or current Robolectric evidence labels.
 | T019 accelerated offline rollover hardening | DONE | deterministic seven-day matrix over one materialized local schedule preserves mosque-local date/time and safe frame at 4K density, then fails closed on the first uncovered date; Android/repository gates and independent review pass; this is not a Room-reopen or physical seven-day soak |
 | T020 bounded device-clock health | DONE | HTTPS manifest `Date` compared with injected response receipt at ±5-minute tolerance plus rollback detection; durable nullable health never blocks sync/display; heartbeat tri-state contract/wiring and physical bad-RTC/TLS/power evidence remain deferred |
 | T021 bounded display-retention shift | DONE | public display foreground follows a deterministic six-position, ten-minute, ±2 dp cycle inside the shared safe frame; unavailable display participates while settings/background/focus order remain unchanged; pure policy plus 720p/1080p/4K safe-frame and D-pad regressions pass locally; panel-specific efficacy remains physical evidence |
-| T022 pilot-local real runtime and settings | DONE | debug/pilot-local packages an approval-bound 365-day Ulyanovsk snapshot plus disjoint public trust, authenticates and atomically activates it through Room, and atomically replaces only the known prior demo snapshot on an in-place install without retaining synthetic rollback; unexpected real/remote active IDs are never replaced. August precedence/D-009 and D-014 expiry are pinned; release embeds no schedule/trust. Every settings section reports Room/local state, local appearance/language actions persist, Russian is default, RU/EN covers display/settings/error/QR/accessibility, and D-pad plus 720p/1080p/4K regressions pass locally. Emulator acceptance is product-owner-owned and remains `UNKNOWN`. |
+| T022 pilot-local real runtime and settings | DONE | pilot-local packages an approval-bound 365-day Ulyanovsk snapshot plus disjoint public trust, authenticates and atomically activates it through Room, and supports monotonic in-place bundled-snapshot successors. Replacement is limited to known predecessors/the pilot family, same timezone/same mosque after initial migration, and later signed generation time; rejection preserves last-known-good. August precedence/D-009/D-014, settings, RU/EN, D-pad and 720p/1080p/4K regressions pass locally. |
 | T023 Android TV visual redesign | DONE | original Golden dusk/Blue hour offline image assets, validated persisted Appearance selection, app-wide navy/gold Material 3 glass system, NamazTime identity, six original prayer glyphs plus iqamah, centered Sunrise time, explicit active-row treatment and redesigned display/settings/recovery surfaces; UI/DataStore/adaptive tests and controlled API 36 emulator screenshots pass while prayer/source logic remains unchanged |
 | T024 pixel-accurate main-display refinement | DONE | explicit normalized gap analysis against `design.png`; about 71% centered foreground, equal columns, reference-like next/clock/strip proportions, decorated location/date treatments, softer prayer rows and separators, compact icon-only Settings focus target and exceptional-only public source status; UI geometry/D-pad/adaptive regressions plus repeated API 36 build/install/screenshot comparison pass without prayer/domain/settings changes |
 | T025 device-local sadaqah QR and iqamah controls | DONE | validated HTTPS QR/purpose/motivation and five independent fixed iqamah values persist in DataStore without mutating the signed Room snapshot; Settings removes Friday technical copy and exposes D-pad editors; a configured QR activates the authorized-reference three-column Sadaqah panel with frame, support icon, scan-tested NamazTime center badge and lower geometric ornament; repository/projection/Compose/adaptive/QR-decode tests plus API 36 build/install/runtime screenshots pass |
@@ -136,7 +134,7 @@ backend or current Robolectric evidence labels.
 | T027 concise pilot display identity | DONE | local commit `feat(tv): shorten pilot display identity`; main display and Mosque settings show `Вторая Соборная Мечеть` / `Ульяновск` for the exact pilot mosque ID through a presentation-only mapping; canonical signed snapshot/provenance remains unchanged, non-pilot identity passes through, focused Compose/bootstrap tests pass and the updated APK is installed on the API 36 emulator |
 | T028 local TV operator UX and alternate display modes | DONE | five checkpoint commits replace ambiguous fixed `HH:mm` preferences with bounded `adhan + N minutes` offsets and approved-policy fallback; add eight offline built-in backgrounds plus validated app-private background/donation image imports; add a persisted, fail-closed donation display with the existing local QR generator, transfer text, five packaged images and explicit Settings/schedule D-pad exits; remove the Settings white/double frame and match the authorized main reference with a normalized rounded-square glass target, white gear and one gold non-scaling focus outline. Repository/projection/import/Compose/adaptive tests, `make test`, `make lint` and a controlled API 36/1920×1080 runtime loop cover the completed scope. The emulator had no document-provider activity, so OEM picker selection and physical-TV behavior remain `UNKNOWN`; signed Room data is unchanged. |
 | T029 pixel-accurate standalone donation display | DONE | local implementation commit `80c7200` replaces the three-column donation layout with the authorized `qr_page.png` full-bleed composition; adds one right card, exact localized footer, custom vector icons/fade ornaments, reference-scale decodable QR and compact gold-outline gear; replaces the transfer blob with five bounded DataStore/Settings fields plus deterministic RU/EN/unlabelled legacy preservation. 720p/1080p/4K geometry and actual-badge QR decode tests plus four API 36/1920×1080 build/install/full-and-region overlay loops pass. Final runtime values remain operator-local; signed Room data is unchanged. Physical-TV/OEM and real-phone scan distance remain `UNKNOWN`. |
-| T030 independent production-readiness engineering/security review | DONE | [independent report](docs/reviews/2026-08-28-engineering-security-review.md) records 0 CRITICAL, 4 HIGH, 12 MEDIUM, 2 LOW and 2 CLEANUP findings. Checkpoints `888f534`, `7a6e5b8`, `26cfbd0` and `2346fb8` close every locally actionable material issue: supported Go/dependencies and PostgreSQL hostname verification; authenticated publication proof; bounded/strict snapshot, pairing, provider and API inputs; Room retention; PostgreSQL v5 provenance/retention/resource constraints; pinned CI/tool/image provenance, strict Gradle checksums, release/race/database/vulnerability/secret gates; and deterministic restore readiness. The second pass found no new CRITICAL or unblocked HIGH. Verdict remains NOT READY because release Android provisioning/sync composition and policy-enforcing production signer/trust/KMS deployment are external release-critical blockers; AGP 9 migration and physical-TV evidence remain explicit follow-ups. |
+| T030 independent production-readiness engineering/security review | DONE | [independent report](docs/reviews/2026-08-28-engineering-security-review.md) records 0 CRITICAL, 4 HIGH, 12 MEDIUM, 2 LOW and 2 CLEANUP findings. Checkpoints `888f534`, `7a6e5b8`, `26cfbd0`, `2346fb8` and follow-up `a1e05d8` close every locally actionable material issue, including the AGP 9.3/KSP migration. The second pass found no new CRITICAL or unblocked HIGH. D-015 now separates a conditionally ready offline USB pilot from the still-not-ready future remote-managed mode. |
 
 The independent local Phase 4 queue is complete through T029. After T029, the
 remaining matrix below requires physical hardware, OEM behavior or an open
@@ -171,43 +169,28 @@ Do not begin until the first pilot is stable.
 5. Run `make docs-check` and project test commands.
 6. Keep `README.md` usage truthful.
 
-## Current blockers
+## Current offline-pilot blockers
 
-- T001 remote CI evidence cannot be recorded until the initial branch is pushed and GitHub Actions runs;
-- T003 retains the non-production product name/application ID while D-005 is open;
-- T003 implements only the reversible local-first shell while D-008 is open;
-- the release Android application does not yet compose authenticated pairing,
-  trust provisioning, synchronization or heartbeat; it intentionally contains
-  no pilot schedule/trust fallback and is not deployable until that production
-  configuration and credential lifecycle are supplied;
-- Room currently uses kapt because Room 2.8.4 KSP processing is incompatible with the scaffold's Kotlin 2.0.21 processor classpath; revisit with a coordinated Kotlin/AGP upgrade;
-- AGP 8.6.1's build/plugin graph contains OSV-listed transitive artifacts. They
-  are absent from the release runtime graph and checksums/caches are hardened,
-  but the official AGP 9 Upgrade Assistant/dedicated migration is still required;
+- D-005: choose the permanent application ID before the first retained mosque
+  installation; `com.example.namaztime.tv` must not be deployed;
+- create and back up one offline APK-signing keystore, then wire the dedicated
+  signed pilot build after D-005. This is a local key, not a cloud/KMS project;
+- install the resulting current build on the available emulator and then record
+  physical TV/box acceptance at the mosque. Emulator evidence cannot prove OEM
+  boot, overscan, storage-provider or long-soak behavior;
 - pilot source precedence, named mosque approver, exact signed approval and D-009 mosque policy are accepted; organizational role verification is based on the product-owner statement and public third-party verification is not claimed;
 - the official 2026 annual PDF now supplies full-year pilot coverage through T010; its daily Hijri values are absent and therefore remain unset rather than invented;
-- Android TV Emulator API 36 at 1920×1080 is available and provides controlled runtime evidence; no physical Android TV/box evidence is available;
 - abrupt OS process-kill/journal-recovery remains a future instrumentation/ADB
   acceptance case; T004 locally proves transactional rollback followed by a
   file-backed database close/reopen, not a physical-device process death;
-- product name is `NamazTime`; production package ID and license remain undecided.
 - D-010 still requires an approved pilot QR destination/domain for signed or
   remote campaigns. T025 adds a clearly device-local operator QR preference,
   while tests/runtime evidence continue to use synthetic `example.org` and do
   not invent a live destination or official claim.
-- D-013 policy and local implementation are complete under ADR 0011. KMS is
-  selected as the custody class, but the concrete provider, real Ed25519 key,
-  a signer/security operator distinct from the approver, authenticated production trust-bundle
-  deployment and measured rotation/revocation drill remain external rollout
-  inputs. T008's public test key is never promoted; its private half was discarded.
-- local Phase 1/T009 and T010 source/effective/approval onboarding are complete.
-  D-002 resolves August precedence; the signed approval binds the effective
-  candidate/diff/warnings; D-009 separately treats collective Dhuhr as adhan
-  and derives iqamah +5. A real pilot publication remains intentionally
-  impossible until protected production KMS key/trust deployment and a distinct
-  signer operator are provisioned. D-014 is accepted; the resulting signed
-  snapshot will use the already selected paired emulator for canary/rollback;
-  physical OEM acceptance remains a separate future validation.
+
+Remote API/domain, pairing composition, KMS custody, remote trust deployment,
+Google Play and remote CI evidence are deferred requirements for a different
+deployment mode, not blockers for the D-015 offline USB pilot.
 - T009 intentionally rejects non-empty remote asset manifests; custom asset
   staging/type/dimension activation requires a separately bounded task.
 - T020 preserves clock health as `unknown`/healthy/mismatch locally, while the

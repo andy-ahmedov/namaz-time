@@ -10,17 +10,17 @@ Record product decisions here before converting stable architecture choices into
 | D-002 | Canonical prayer-time authority/source | ACCEPTED | Product owner | before real publication | 2026 baseline is the retained RDUM Ulyanovsk annual PDF; for every field present in the retained August 2026 photo, the photo has priority throughout August. Named approval and D-009 are recorded separately and cryptographically bound to the effective candidate. |
 | D-003 | Written permission and attribution | ACCEPTED | Product owner/source | before real data commit/publication | product owner confirmed project use on 2026-08-20; preserve the exact raw SHA-256 and printed attribution |
 | D-004 | Pilot TV/box model and Android version | OPEN | Installer | before performance/autostart promises | Android Studio TV Emulator API 36 / 1920×1080 is the current controlled runtime; physical TV/box remains unselected and emulator evidence is not an OEM support promise |
-| D-005 | Product name and Android application ID | OPEN | Product owner | before distributable build | product name accepted as `NamazTime` on 2026-08-20; `com.example.namaztime.tv` remains a non-production placeholder until a final application ID is selected |
-| D-006 | Repository software license | OPEN | Product owner | before public release | do not assume competitor/data licenses |
+| D-005 | Product name and Android application ID | OPEN | Product owner | before distributable build | product name accepted as `NamazTime`; shortlist: `ru.namaztime.tv` (recommended), `ru.namaztime.display`, `ru.namaztime.mosque`, `com.github.andyahmedov.namaztime.tv`. Exact public searches found no indexed use on 2026-08-29, but only Play/Android Developer Console can definitively register availability. |
+| D-006 | Repository software license | ACCEPTED | Product owner | current repository | closed/proprietary; confirmed 2026-08-29; third-party and source-data permissions remain separate |
 | D-007 | Required languages for pilot | ACCEPTED | Product owner / mosque | T022 | Russian is the default; Russian and English are selectable for the whole TV UI and the choice persists locally. Confirmed 2026-08-20. |
 | D-008 | Local-only vs remote admin in MVP | OPEN | Product owner | before remote administration | T003 implements only the reversible local-first settings shell; it does not choose the final administration mode |
 | D-009 | Iqamah/Jumu'ah rule policy | ACCEPTED | Mosque approver | T006/T010 | all iqamah values are adhan +5 minutes; Friday Dhuhr congregation is replaced by one Jumuah at 13:15; no separate Ramadan/holiday exceptions yet; collective-Dhuhr source column is the mosque Dhuhr adhan |
 | D-010 | QR campaign domains and approval | OPEN | Mosque | T007 | HTTPS and official destination |
 | D-011 | Best-effort boot vs managed kiosk | OPEN | Installer/product | before pilot deployment | separate support promises |
 | D-012 | Analytics/crash reporting policy | OPEN | Product/privacy | before store release | recommended privacy-minimal default |
-| D-013 | Snapshot signer/KMS strategy | ACCEPTED | Product owner / security owner | before production publication | KMS selected; exact vendor/service, production Ed25519 key and distinct security operator remain deployment inputs. Separate approver/signer, versioned trust, rotation/revocation and no production private material in Git/APK/API/ordinary CI remain mandatory. |
+| D-013 | Snapshot signer/KMS strategy | ACCEPTED | Product owner / security owner | remote-managed publication only | the offline USB pilot does not require cloud KMS. Its APK and snapshot private keys may be offline files outside Git/APK with backups. A protected KMS, distinct security operator and remote trust deployment remain prerequisites only if remote-managed production publication is enabled. |
 | D-014 | Source stale/expiry/fallback behavior | ACCEPTED | Product owner / mosque approver | before real source | No silent calculation/provider fallback. Last-known-good is displayable only while the current mosque-local date is inside its signed coverage; after coverage the TV shows the safe “schedule unavailable” state. Confirmed 2026-08-20. |
-| D-015 | Pilot schedule delivery channel | ACCEPTED | Product owner | pilot rollout | Production pilot delivery remains pairing + T009 signed immutable snapshots. T022 may embed the exact approved schedule and a disjoint public-only local trust anchor only in the non-release pilot-local QA build; it is not API-admissible production publication or a delivery shortcut. |
+| D-015 | Pilot schedule delivery channel | ACCEPTED | Product owner | pilot rollout | Initial mosque pilot uses an approved signed snapshot bundled in a signed APK and manual USB sideload/update. No domain, API, pairing, Google Play or cloud KMS is required for this mode. T009 remains the future remote-managed delivery path. Confirmed 2026-08-29. |
 
 ## Confirmed repository proposals
 
@@ -168,10 +168,11 @@ These are proposals until accepted by the product owner:
 - `PROPOSAL` — the approver states that the source collective-Dhuhr column is
   the mosque Dhuhr adhan, not iqamah. Publication therefore selects that value
   as Dhuhr adhan and derives iqamah only from the separately approved +5 rule.
-- `UNKNOWN` — the selected KMS vendor/key, a distinct named security operator,
-  authenticated production signing-trust deployment still blocks the
-  first production activation. The paired Android TV emulator is the accepted
-  canary target; physical OEM evidence remains a separate future check.
+- `PROPOSAL` — KMS vendor/key, a distinct security operator and authenticated
+  remote signing-trust deployment remain open for the future T009-managed mode.
+  D-015's offline USB pilot instead uses private keys kept outside Git/APK and
+  does not depend on that remote boundary. Physical OEM evidence remains a
+  separate acceptance check.
 
 ## T009 device-sync record
 

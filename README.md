@@ -128,16 +128,16 @@ activate/rollback с file-backed process-interruption тестами. Ни test 
 private/production signing key в APK/Git не встроены. Источниковая часть T010
 завершена локально. D-002 и D-013 приняты; protected-signer, двойная
 snapshot/provenance attestation, монотонный trust lifecycle и обязательный API
-receipt реализованы без production private key. Первая production
-publication остаётся `BLOCKED` только на конкретном production KMS Ed25519
-ключе, отдельном security/signer операторе, authenticated snapshot-trust
-deployment и canary/rollback drill. Named approval, D-009 и отдельная
-approval-квитанция уже зафиксированы и проверяются локально.
-T022 переводит именно debug `pilot-local` сборку на реальный утверждённый
+receipt реализованы без production private key. Эти KMS/trust требования
+относятся к будущему remote-managed режиму. D-015 выбирает для первой мечети
+подписанную APK с подписанным встроенным расписанием и ручные USB-обновления;
+домен, API, Google Play и cloud KMS для этого не нужны.
+T022 переводит `pilot-local` сборку на реальный утверждённый
 effective schedule Ульяновска 2026. Snapshot проходит canonical Ed25519
-проверку и атомарный Room import; одноразовый локальный приватный ключ удалён,
-а его public trust и расписание не входят в release. Production-доставка
-по-прежнему требует pairing/T009 и KMS-подписанный publication. D-014 принят:
+проверку и атомарный Room import. Следующий offline snapshot может безопасно
+заменить известного predecessor только с более поздним подписанным временем;
+отказ оставляет last-known-good активным. Порядок USB-установки, APK signing и
+snapshot signing описан в `PILOT_SIDELOAD_RUNBOOK.md`. D-014 принят:
 после 31 декабря 2026 нет скрытого расчёта — показывается безопасное состояние
 «Расписание недоступно».
 T022 также заменяет технические заглушки настроек на проекцию активного Room

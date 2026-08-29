@@ -3,19 +3,27 @@
 Date: 2026-08-28
 
 Review baseline: `edd3f34` plus its parent history. Remediation checkpoints:
-`888f534`, `7a6e5b8`, `26cfbd0`, and `2346fb8`.
+`888f534`, `7a6e5b8`, `26cfbd0`, `2346fb8`, and follow-up Android toolchain
+checkpoint `a1e05d8`.
 
 ## Verdict
 
-**NOT READY** for a production or unattended pilot release.
+**CONDITIONALLY READY** for the product-owner-selected offline USB pilot, once
+D-005 is chosen and the APK is built with a stable offline signing key.
 
-The locally testable backend, database, contracts and Android components are in
-a materially stronger state and no unblocked `CRITICAL` or `HIGH` defect remains
-in the reviewed code. The release application still has no production
-composition root for authenticated provisioning, synchronization or heartbeat,
-and the repository cannot prove that a separately deployed signer enforces the
-approval proof and exclusive release-ledger transition before key use. Those are
-release-critical boundaries, not optional polish.
+**NOT READY** for the separate remote-managed production mode.
+
+The locally testable backend, database, contracts and Android components have no
+unblocked `CRITICAL` or `HIGH` defect in the selected offline mode. D-015 now
+defines that mode as a signed APK with an approved signed bundled snapshot,
+manually installed and updated by USB. It requires no domain, API, pairing,
+Google Play or cloud KMS. The remaining immediate actions are a permanent
+application ID, an offline APK-signing key with backups, a dedicated signed
+pilot variant and physical-TV acceptance.
+
+The release application still has no remote provisioning/sync composition, and
+the repository cannot prove a separately deployed remote signer boundary. Those
+remain release-critical only if remote-managed operation is enabled.
 
 ## Scope and method
 
@@ -67,9 +75,10 @@ deployment evidence.
 - **Remediation/status:** `7a6e5b8` makes the production request and isolated
   signing request carry canonical Base64 proof, re-verifies the receipt and
   direct trust transition at prepare/finalize, and adds tamper/bypass tests.
-  A production signer must still pin approval trust independently, verify this
-  proof, and enforce exclusive ledger CAS before key use. That external boundary
-  remains blocking.
+  A remote production signer must still pin approval trust independently,
+  verify this proof, and enforce exclusive ledger CAS before key use. D-015's
+  offline USB pilot does not call that boundary, so it is a deferred remote-mode
+  prerequisite rather than a pilot blocker.
 
 ### H-02 — reachable vulnerabilities in the Go production toolchain and modules
 
@@ -101,7 +110,7 @@ deployment evidence.
   `InsecureSkipVerify`, including all fallbacks. Local Unix/loopback development
   endpoints remain explicitly allowed.
 
-### H-04 — release Android application has no production provisioning/sync composition
+### H-04 — remote-managed release Android has no provisioning/sync composition
 
 - **Location:** `apps/tv-android/src/main/AndroidManifest.xml`,
   `MainActivity.kt`, `sync/SnapshotSyncWorker.kt`, and constructor/call sites for
@@ -116,10 +125,10 @@ deployment evidence.
   deployable display.
 - **Evidence:** `CONFIRMED_STATIC`; release APK inspection confirms no pilot
   schedule/trust asset. A physical release deployment was not available.
-- **Remediation/status:** the worker was made fail-closed in `888f534`, but a real
-  composition requires production endpoint/trust distribution, provisioning UX
-  and credential lifecycle decisions that cannot be invented in Git. This is a
-  release blocker.
+- **Remediation/status:** the worker was made fail-closed in `888f534`. D-015
+  selects an offline signed-APK/bundled-snapshot path for the first mosque, so
+  this is not on that runtime path and is not its blocker. It remains a blocker
+  before any claim of remote pairing, sync or fleet-managed production.
 
 ## MEDIUM findings
 
@@ -230,9 +239,9 @@ deployment evidence.
   release-runtime absence is also `CONFIRMED_RUNTIME`.
 - **Remediation/status:** dependency checksums are strict, caches are disabled,
   Robolectric/test Bouncy Castle moved to fixed versions, and no affected package
-  ships in the APK. Full AGP 9.3 migration remains blocked by the required
-  Upgrade Assistant/explicit migration authorization and must be a dedicated
-  build-system task, not forced transitively inside this review.
+  ships in the APK. After explicit product-owner authorization, `a1e05d8`
+  migrates to AGP 9.3.2, Gradle 9.5.0, built-in Kotlin and KSP; unit tests and
+  the AGP migration gates pass. Closed.
 
 ### M-10 — a raw visual reference was tracked against repository custody policy
 
@@ -242,9 +251,9 @@ deployment evidence.
 - **Evidence:** `CONFIRMED_STATIC`; the tracked object hash was independently
   recorded before removal.
 - **Remediation/status:** `26cfbd0` removes it from the current tree, adds a
-  specific ignore and a docs-check regression. The object remains in existing
-  Git history; any history rewrite requires explicit destructive-operation and
-  redistribution-policy authorization.
+  specific ignore and a docs-check regression. On 2026-08-29 the product owner
+  confirmed rights to retain the historical object and explicitly chose no
+  history rewrite. Accepted/closed; this is not a release blocker.
 
 ### M-11 — campaign URL validators accepted HTTPS userinfo
 
@@ -371,31 +380,35 @@ The final restore archive was 39,060 bytes with SHA-256
 Gitleaks scanned all 51 commits with no non-allowlisted leak; `govulncheck` and
 the focused OSV Go scan both reported no vulnerabilities.
 
-The broad OSV scan of `gradle/verification-metadata.xml` remains non-zero because
+Follow-up verification on 2026-08-29 migrated the Android build to AGP 9.3.2,
+Gradle 9.5.0, built-in Kotlin and KSP. `./gradlew help`,
+`./gradlew build --dry-run` and `make test-android-all` pass with strict
+dependency verification; the latter executed 110 tasks including unit/Compose
+tests, debug/release lint and debug/release assemble. The current debug APK was
+installed in-place and D-pad-smoked on the API 36 TV emulator; hashes and
+observations are recorded in the emulator evidence log.
+
+The broad OSV scan of `gradle/verification-metadata.xml` at the original review
+checkpoint remained non-zero because
 that file deliberately inventories build/plugin/test artifacts. Manual Gradle
 graphs prove the reported packages are absent from `releaseRuntimeClasspath`;
 M-09 records the remaining build-tool risk rather than suppressing scanner output.
 
-## External blockers and residual risk
+## Offline-pilot actions and deferred remote risks
 
-1. `UNKNOWN` — no production policy-enforcing signer/KMS adapter, real Ed25519
-   custody, distinct security operator or exclusive signer-side ledger CAS was
-   available. H-01 cannot be closed end-to-end without it.
-2. `CONFIRMED_STATIC` — the release Android composition/provisioning path is
-   absent (H-04). Endpoint, trust distribution, rotation/revocation and credential
-   lifecycle must be supplied and tested as one coherent deployment slice.
-3. `PROPOSAL` — migrate AGP 8.6.1 to the current stable AGP 9 line through the
-   official Upgrade Assistant/dedicated migration task, then regenerate strict
-   verification metadata and repeat all Android gates. Keep caches disabled until
-   a stable Kotlin release containing the advisory fix is adopted.
-4. `UNKNOWN` — no physical-TV evidence exists for OEM boot/relaunch, picker,
+1. `PROPOSAL` — before the first retained mosque install, choose D-005 and create
+   one backed-up offline APK signing key. This is the only unresolved local
+   packaging decision; it does not require a domain or KMS.
+2. `UNKNOWN` — no physical-TV evidence exists for OEM boot/relaunch, picker,
    real-phone QR distance, power loss, wrong RTC/timezone, 720p/1080p/4K memory
    soak, kiosk/device-owner mode or seven-day offline operation.
-5. `UNKNOWN` — production package ID, distribution license, source operational
-   contacts/SLA and approved live QR destination remain product/deployment inputs.
-6. `CONFIRMED_STATIC` — the removed raw reference still exists in old Git objects;
-   history rewrite/purge was not performed because it is destructive and requires
-   explicit coordination.
+3. `CONFIRMED_STATIC` — remote Android composition/provisioning is absent (H-04),
+   and remote signer/KMS enforcement is not deployed (H-01). They are deferred
+   remote-mode prerequisites, not D-015 pilot blockers.
+4. `UNKNOWN` — source operational contacts/SLA and an approved live signed QR
+   destination remain optional deployment inputs. Device-local QR remains usable.
+5. `CONFIRMED_STATIC` — `design.png` remains in old Git objects. The product
+   owner confirmed retention rights and accepted the history as-is on 2026-08-29.
 
 ## Second independent pass
 

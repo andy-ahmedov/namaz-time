@@ -397,7 +397,7 @@ Room-backed mosque/source/iqamah/Jumu'ah/QR/diagnostic settings; locally
 effective appearance/language actions; Russian default and persisted whole-app
 language; D-pad and multi-profile regression coverage.
 
-**Non-goals:** a production-signing shortcut, production KMS/private material,
+**Non-goals:** a remote-production signing shortcut, private material in Git/APK,
 API registry admission of the local artifact, an invented QR destination,
 device-owner/kiosk or boot promises, physical TV, emulator/ADB evidence,
 production application ID/license, remote settings mutation or Phase 5.
@@ -425,13 +425,13 @@ cover every section/action and 720p/1080p/4K safe frames. The product owner will
 perform emulator runtime acceptance separately, so that evidence remains
 `UNKNOWN` rather than being promoted from local tests.
 
-An in-place update from the prior pilot APK is explicit rather than requiring
-data clearing: under the same Room transaction, only
-`synthetic-ulsk-demo-2026-08-v1` may be replaced, the authenticated real pilot
-snapshot becomes active and the synthetic row is deleted instead of becoming
-last-known-good. A concurrent/unexpected active ID makes replacement abort
-without persistence, so this debug migration cannot overwrite a paired real or
-remote snapshot.
+In-place offline pilot updates are explicit rather than requiring data clearing.
+Under the same Room transaction, only a known predecessor or the dedicated
+`ulyanovsk-second-cathedral-pilot-local-` family may be replaced. After the
+initial synthetic migration, mosque and timezone must match, and the incoming
+signed `generated_at` must be later. The replaced row is deleted instead of
+becoming rollback state. Unexpected family, cross-mosque/timezone or downgrade
+input aborts without persistence and leaves last-known-good active.
 
 ## T023 — Android TV visual redesign and offline image backgrounds
 

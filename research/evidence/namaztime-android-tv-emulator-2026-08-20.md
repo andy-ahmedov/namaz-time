@@ -188,3 +188,26 @@ The debug APK SHA-256 is
 `3b67628c3b822a0ccc2794c18a8e86f01350894be2bcbf776967ecc728378d49`.
 The presentation alias does not modify the authenticated canonical snapshot or
 its stored provenance identity.
+
+## AGP 9.3 and offline successor follow-up — 2026-08-29
+
+Evidence label: `CONFIRMED_RUNTIME` for the controlled Android TV Emulator API
+36 at 1920×1080. After the AGP 9.3.2 / Gradle 9.5.0 / built-in Kotlin / KSP
+migration and offline bundled-successor hardening, the debug APK was installed
+with `adb install -r` over the existing package without clearing Room or
+DataStore. Android reported `versionCode=3`, `versionName=0.4.0-pilot-local`
+and the existing debug signing identity; `MainActivity` became the resumed
+LEANBACK activity. The approved local schedule, saved donation configuration,
+mosque identity and current countdown rendered. D-pad select opened Settings,
+Back returned to the display, and the sampled logcat contained no app crash.
+
+The APK SHA-256 is
+`a5399f685911c36f999c6765b8bf9ba41d30327b5eccd59d7be74a55e5a52a1b`.
+The display and Settings screencap SHA-256 values are
+`0294189aea34a19357e5ca7625e2b8770a6bd2025d4c3ff52f9f557e644c8e2e`
+and `6c6bc9680a42dce8c106a2737dc120378606bcfd88485cc1fad81663011956e6`.
+Raw screenshots remain outside Git.
+
+This does not promote the placeholder `com.example.namaztime.tv` debug key to
+a mosque distribution identity. D-005 and a backed-up offline APK signing key
+remain one-time prerequisites for the first retained field installation.

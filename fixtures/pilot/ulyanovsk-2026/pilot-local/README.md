@@ -30,6 +30,9 @@ Fingerprints:
 - test local trust bundle raw SHA-256:
   `82c7e7e943f5796ab689265a2d24862fc1f869f5ea574f7a940d2adaf74c1f77`.
 
-Do not copy these trust bundles into a release configuration. Production
-continues to require ADR 0011 KMS custody, distinct signer operator,
-authenticated trust deployment, publication ledger and T009 delivery.
+Do not treat these public bundles as private credentials or as authorization
+for the remote API registry. D-015 allows the offline mosque pilot to package
+an approved successor and public trust transition in a separately signed APK;
+the successor private key remains offline and outside Git/APK. ADR 0011 KMS,
+remote trust deployment, publication ledger and T009 delivery apply when the
+project enables the separate remote-managed mode.
