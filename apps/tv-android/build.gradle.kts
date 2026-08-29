@@ -1,9 +1,55 @@
+import java.io.File
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("com.google.devtools.ksp")
     id("androidx.room")
+}
+
+val pilotSigningPropertiesFile = providers
+    .gradleProperty("namaztimePilotSigningProperties")
+    .orElse(providers.environmentVariable("NAMAZTIME_PILOT_SIGNING_PROPERTIES"))
+    .orNull
+    ?.let(::file)
+    ?.canonicalFile
+
+val pilotSigning = pilotSigningPropertiesFile?.let { propertiesFile ->
+    require(propertiesFile.isFile) {
+        "Pilot signing properties file does not exist: $propertiesFile"
+    }
+    val repositoryPath = rootDir.canonicalFile.toPath()
+    require(!propertiesFile.toPath().startsWith(repositoryPath)) {
+        "Pilot signing properties must be stored outside the repository"
+    }
+
+    val properties = Properties().apply {
+        propertiesFile.inputStream().use(::load)
+    }
+    fun requiredProperty(name: String): String =
+        properties.getProperty(name)?.takeIf(String::isNotBlank)
+            ?: error("Pilot signing property '$name' is required")
+
+    val configuredStoreFile = File(requiredProperty("storeFile"))
+    val storeFile = if (configuredStoreFile.isAbsolute) {
+        configuredStoreFile.canonicalFile
+    } else {
+        File(propertiesFile.parentFile, configuredStoreFile.path).canonicalFile
+    }
+    require(storeFile.isFile) { "Pilot signing keystore does not exist: $storeFile" }
+    require(!storeFile.toPath().startsWith(repositoryPath)) {
+        "Pilot signing keystore must be stored outside the repository"
+    }
+
+    mapOf(
+        "storeFile" to storeFile.path,
+        "storeType" to requiredProperty("storeType"),
+        "storePassword" to requiredProperty("storePassword"),
+        "keyAlias" to requiredProperty("keyAlias"),
+        "keyPassword" to requiredProperty("keyPassword"),
+    )
 }
 
 android {
@@ -20,8 +66,21 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    signingConfigs {
+        if (pilotSigning != null) {
+            create("pilot") {
+                storeFile = file(pilotSigning.getValue("storeFile"))
+                storeType = pilotSigning.getValue("storeType")
+                storePassword = pilotSigning.getValue("storePassword")
+                keyAlias = pilotSigning.getValue("keyAlias")
+                keyPassword = pilotSigning.getValue("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
         debug {
+            applicationIdSuffix = ".debug"
             buildConfigField("boolean", "PILOT_LOCAL_RUNTIME", "true")
         }
         release {
@@ -32,6 +91,15 @@ android {
                 "proguard-rules.pro",
             )
         }
+        create("pilot") {
+            initWith(getByName("release"))
+            buildConfigField("boolean", "PILOT_LOCAL_RUNTIME", "true")
+            signingConfig = signingConfigs.findByName("pilot")
+        }
+    }
+
+    sourceSets {
+        getByName("debug").assets.directories.add("src/pilot/assets")
     }
 
     buildFeatures {
@@ -48,6 +116,14 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
+}
+
+tasks.matching { it.name == "prePilotBuild" }.configureEach {
+    doFirst {
+        check(pilotSigning != null) {
+            "A signed pilot build requires -PnamaztimePilotSigningProperties=/absolute/path/to/pilot-signing.properties"
+        }
+    }
 }
 
 room {

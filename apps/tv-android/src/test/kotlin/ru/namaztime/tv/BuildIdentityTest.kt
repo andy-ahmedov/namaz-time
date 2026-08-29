@@ -5,7 +5,7 @@ import org.junit.Test
 
 class BuildIdentityTest {
     @Test
-    fun applicationIdMatchesAcceptedPilotIdentity() {
-        assertEquals("ru.namaztime.tv", BuildConfig.APPLICATION_ID)
+    fun debugApplicationIdCannotOccupyAcceptedPilotIdentity() {
+        assertEquals("ru.namaztime.tv.debug", BuildConfig.APPLICATION_ID)
     }
 }
