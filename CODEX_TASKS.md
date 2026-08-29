@@ -679,8 +679,9 @@ comes from the existing active Room schedule and `PrayerTimeEngine`; missing
 schedule state fails closed. Adaptive/state/app tests and three controlled API
 36 component-review passes succeed.
 
-The product owner's 2026-08-30 visual correction supersedes only Checkpoint 6
-geometry: every standalone donation foreground block now sits in one
+Follow-up `852f98d` implements the product owner's 2026-08-30 visual correction,
+which supersedes only Checkpoint 6 geometry: every standalone donation
+foreground block now sits in one
 right-anchored 264/960-wide rail, while the first 656/960 of the viewport has no
 foreground card and exposes the selected image. The status and gear remain
 equal-height, the QR/details stack vertically in the central card, and the
