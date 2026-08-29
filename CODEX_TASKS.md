@@ -659,8 +659,8 @@ each checkpoint has a local commit; final `make test`, `make lint`,
 `make docs-check`, Android gates, debug/pilot builds, four runtime screenshots
 and independent code/visual reviews pass with a clean worktree.
 
-**Progress:** Checkpoints 1–5 are implemented. Checkpoint 1 passed targeted
-tests and three controlled API 36 build/install/normalize/refine passes.
+**Result:** completed locally on 2026-08-29. Checkpoint 1 passed targeted tests
+and repeated controlled API 36 build/install/normalize/refine passes.
 Checkpoint 2 keeps source Dhuhr onset, publishes the authenticated 13:15
 Dhuhr/Jumu'ah successor through approval/receipt/trust rotation, and adds
 one-minute local controls with explicit fixed-Dhuhr persistence/projection.
@@ -677,5 +677,20 @@ Checkpoint 6 translates the new portrait composition into a measured 16:9
 status/gear, central-card and gratitude-block layout. Its current-prayer label
 comes from the existing active Room schedule and `PrayerTimeEngine`; missing
 schedule state fails closed. Adaptive/state/app tests and three controlled API
-36 component-review passes succeed. Final gates, builds and reviews are in
-progress.
+36 component-review passes succeed.
+
+The six checkpoint commits are `2ffd7e0`, `92c49d0`, `69442af`, `9a186cf`,
+`8fce081` and `37f3183`. Independent review follow-ups `2c0992f` and `30f32bd`
+add complete donation-field D-pad traversal, move current-prayer ownership into
+`PrayerTimeEngine` with Sunrise excluded, materialize effective iqamah policy
+before protected signing, remove dead donation drawings and preserve Cyrillic
+heading diacritics. Final `make test`, `make lint`, `make docs-check`, strict
+debug/release Android gates, secret/vulnerability scans and the externally
+signed pilot build pass. The signed pilot remains `ru.namaztime.tv`, version
+`0.4.0-pilot-local` (3), with the pinned certificate and bundled signed
+offline snapshot intact. Fresh 1920×1080 runtime screenshots cover main,
+Appearance, Donation Settings and standalone Donation. Independent code and
+visual reviews report zero Critical, Important or Minor findings and return
+`Ready` / `ACCEPT`. These are `CONFIRMED_RUNTIME` emulator results;
+physical-TV/OEM picker and representative-distance QR acceptance remain
+`UNKNOWN`.
