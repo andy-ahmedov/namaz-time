@@ -10,6 +10,7 @@ import com.example.namaztime.tv.domain.JumuahSessionInput
 import com.example.namaztime.tv.domain.PrayerDayInput
 import com.example.namaztime.tv.domain.PrayerScheduleInput
 import com.example.namaztime.tv.domain.PrayerTimeEngine
+import java.time.Instant
 import java.util.Locale
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -31,6 +32,49 @@ sealed interface SnapshotImportResult {
 
 class SnapshotImportException(val code: String) : IllegalStateException(code)
 
+class SnapshotReplacementPolicy private constructor(
+    private val currentSnapshotId: String,
+    private val predecessorSnapshotIds: Set<String>,
+    private val snapshotIdPrefix: String,
+) {
+    fun shouldReadBundledAsset(activeSnapshotId: String): Boolean =
+        activeSnapshotId != currentSnapshotId &&
+            (activeSnapshotId in predecessorSnapshotIds || activeSnapshotId.startsWith(snapshotIdPrefix))
+
+    internal fun allows(active: SnapshotEntity, incoming: SnapshotPayload): Boolean {
+        val activeIsKnownPredecessor = active.snapshotId in predecessorSnapshotIds
+        val activeIsSameFamily = active.snapshotId.startsWith(snapshotIdPrefix)
+        val incomingGeneratedAt = runCatching { Instant.parse(incoming.generatedAt) }.getOrNull()
+            ?: return false
+        val activeGeneratedAt = runCatching { Instant.parse(active.generatedAt) }.getOrNull()
+            ?: return false
+        return incoming.snapshotId == currentSnapshotId &&
+            (activeIsKnownPredecessor || activeIsSameFamily) &&
+            active.timezoneId == incoming.mosque.timezone &&
+            (activeIsKnownPredecessor || active.mosqueId == incoming.mosque.id) &&
+            incomingGeneratedAt.isAfter(activeGeneratedAt)
+    }
+
+    companion object {
+        fun pilotLocal(
+            currentSnapshotId: String,
+            predecessorSnapshotIds: Set<String>,
+            snapshotIdPrefix: String,
+        ): SnapshotReplacementPolicy {
+            require(currentSnapshotId.isNotBlank()) { "current snapshot ID must not be blank" }
+            require(snapshotIdPrefix.isNotBlank()) { "snapshot ID prefix must not be blank" }
+            require(predecessorSnapshotIds.none(String::isBlank)) {
+                "predecessor snapshot IDs must not be blank"
+            }
+            return SnapshotReplacementPolicy(
+                currentSnapshotId = currentSnapshotId,
+                predecessorSnapshotIds = predecessorSnapshotIds.toSet(),
+                snapshotIdPrefix = snapshotIdPrefix,
+            )
+        }
+    }
+}
+
 class SnapshotImporter(
     private val database: NamazDatabase,
     private val beforeActivation: BeforeSnapshotActivation = BeforeSnapshotActivation {},
@@ -49,12 +93,20 @@ class SnapshotImporter(
         require(replaceableActiveSnapshotIds.isNotEmpty()) {
             "replaceable active snapshot IDs must not be empty"
         }
-        return importAndActivate(input, replaceableActiveSnapshotIds)
+        return importAndActivate(input, replaceableActiveSnapshotIds, replacementPolicy = null)
+    }
+
+    suspend fun replaceAndActivate(
+        input: ActivatableSnapshot,
+        replacementPolicy: SnapshotReplacementPolicy,
+    ): SnapshotImportResult {
+        return importAndActivate(input, replaceableActiveSnapshotIds = null, replacementPolicy)
     }
 
     private suspend fun importAndActivate(
         input: ActivatableSnapshot,
         replaceableActiveSnapshotIds: Set<String>?,
+        replacementPolicy: SnapshotReplacementPolicy? = null,
     ): SnapshotImportResult {
         val snapshot = input.payload
         timeEngine.validate(snapshot.toTimeEngineInput())?.let { code ->
@@ -65,17 +117,28 @@ class SnapshotImporter(
             val selection = dao.getSelection()
             val stalePreviousSnapshotId = selection?.previousSnapshotId
                 ?.takeIf { it != snapshot.snapshotId }
-            val replacedSnapshotId = replaceableActiveSnapshotIds?.let { replaceableIds ->
-                val activeSnapshotId = selection?.activeSnapshotId
+            val activeSnapshotId = selection?.activeSnapshotId
+            if (activeSnapshotId == snapshot.snapshotId && dao.snapshotExists(snapshot.snapshotId)) {
+                return@withTransaction SnapshotImportResult.AlreadyActive(snapshot.snapshotId)
+            }
+            val replacedSnapshotId = when {
+                replacementPolicy != null -> {
+                    val active = activeSnapshotId?.let { dao.getSnapshot(it) }
+                    if (active == null || !replacementPolicy.allows(active, snapshot)) {
+                        throw SnapshotImportException("replacement_not_allowed")
+                    }
+                    activeSnapshotId
+                }
+                replaceableActiveSnapshotIds != null -> {
+                    val replaceableIds = replaceableActiveSnapshotIds
                 if (activeSnapshotId !in replaceableIds) {
                     return@withTransaction SnapshotImportResult.SelectionChanged(activeSnapshotId)
                 }
                 activeSnapshotId
+                }
+                else -> null
             }
             if (dao.snapshotExists(snapshot.snapshotId)) {
-                if (selection?.activeSnapshotId == snapshot.snapshotId) {
-                    return@withTransaction SnapshotImportResult.AlreadyActive(snapshot.snapshotId)
-                }
                 if (selection?.previousSnapshotId != snapshot.snapshotId || selection.activeSnapshotId == null) {
                     throw SnapshotImportException("snapshot_id_conflict")
                 }
@@ -164,7 +227,7 @@ class SnapshotImporter(
             }
 
             beforeActivation.run(snapshot.snapshotId)
-            val previous = if (replaceableActiveSnapshotIds == null) {
+            val previous = if (replaceableActiveSnapshotIds == null && replacementPolicy == null) {
                 selection?.activeSnapshotId
             } else {
                 null

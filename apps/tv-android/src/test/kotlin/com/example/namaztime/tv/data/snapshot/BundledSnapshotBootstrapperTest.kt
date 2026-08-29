@@ -5,6 +5,7 @@ import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import com.example.namaztime.tv.data.local.NamazDatabase
 import com.example.namaztime.tv.data.local.SnapshotImporter
+import com.example.namaztime.tv.data.local.SnapshotReplacementPolicy
 import com.example.namaztime.tv.data.local.SnapshotSelectionGuard
 import com.example.namaztime.tv.data.local.SnapshotSelectionResolver
 import java.io.File
@@ -126,6 +127,35 @@ class BundledSnapshotBootstrapperTest {
             SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
             resumed.state.value,
         )
+    }
+
+    @Test
+    fun newerBundledPilotFamilySnapshotReplacesInstalledPredecessor() = runTest {
+        val active = SnapshotDecoder.decode(syntheticSnapshotBytes()).copy(
+            snapshotId = "ulyanovsk-second-cathedral-2026-pilot-local-v1",
+            generatedAt = "2026-08-20T00:00:00Z",
+        )
+        val successor = active.copy(
+            snapshotId = "ulyanovsk-second-cathedral-pilot-local-2026-09-v2",
+            generatedAt = "2026-08-21T00:00:00Z",
+        )
+        SnapshotImporter(database).importAndActivate(active)
+        val bootstrapper = BundledSnapshotBootstrapper(
+            selectionGuard = SnapshotSelectionGuard(database),
+            importer = SnapshotImporter(database),
+            assetSource = SnapshotAssetSource { byteArrayOf(1) },
+            activationGate = { SnapshotActivationGate.bundledSynthetic(successor) },
+            replacementPolicy = SnapshotReplacementPolicy.pilotLocal(
+                currentSnapshotId = successor.snapshotId,
+                predecessorSnapshotIds = setOf(active.snapshotId),
+                snapshotIdPrefix = "ulyanovsk-second-cathedral-pilot-local-",
+            ),
+        )
+
+        bootstrapper.bootstrapIfNeeded()
+
+        assertEquals(successor.snapshotId, database.snapshotDao().getSelection()?.activeSnapshotId)
+        assertEquals(SnapshotBootstrapState.Ready(successor.snapshotId), bootstrapper.state.value)
     }
 
     @Test

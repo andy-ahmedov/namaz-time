@@ -102,6 +102,62 @@ class SnapshotImporterTest {
     }
 
     @Test
+    fun authenticatedBundledSuccessorReplacesOnlyTheSamePilotFamily() = runTest {
+        val active = SnapshotDecoder.decode(syntheticFixture()).copy(
+            snapshotId = "ulyanovsk-second-cathedral-2026-pilot-local-v1",
+            generatedAt = "2026-08-20T00:00:00Z",
+        )
+        val successor = active.copy(
+            snapshotId = "ulyanovsk-second-cathedral-pilot-local-2026-09-v2",
+            generatedAt = "2026-08-21T00:00:00Z",
+        )
+        val importer = SnapshotImporter(database)
+        importer.importAndActivate(active)
+
+        val result = importer.replaceAndActivate(
+            SnapshotActivationGate.bundledSynthetic(successor),
+            SnapshotReplacementPolicy.pilotLocal(
+                currentSnapshotId = successor.snapshotId,
+                predecessorSnapshotIds = setOf(active.snapshotId),
+                snapshotIdPrefix = "ulyanovsk-second-cathedral-pilot-local-",
+            ),
+        )
+
+        assertEquals(SnapshotImportResult.Activated(successor.snapshotId, null), result)
+        assertEquals(successor.snapshotId, dao.getSelection()?.activeSnapshotId)
+        assertFalse(dao.snapshotExists(active.snapshotId))
+    }
+
+    @Test
+    fun authenticatedBundledSuccessorCannotRollBackToOlderGeneratedData() = runTest {
+        val active = SnapshotDecoder.decode(syntheticFixture()).copy(
+            snapshotId = "ulyanovsk-second-cathedral-pilot-local-2026-09-v2",
+            generatedAt = "2026-08-21T00:00:00Z",
+        )
+        val stale = active.copy(
+            snapshotId = "ulyanovsk-second-cathedral-pilot-local-2026-08-v1",
+            generatedAt = "2026-08-20T00:00:00Z",
+        )
+        val importer = SnapshotImporter(database)
+        importer.importAndActivate(active)
+
+        val error = runCatching {
+            importer.replaceAndActivate(
+                SnapshotActivationGate.bundledSynthetic(stale),
+                SnapshotReplacementPolicy.pilotLocal(
+                    currentSnapshotId = stale.snapshotId,
+                    predecessorSnapshotIds = emptySet(),
+                    snapshotIdPrefix = "ulyanovsk-second-cathedral-pilot-local-",
+                ),
+            )
+        }.exceptionOrNull() as SnapshotImportException
+
+        assertEquals("replacement_not_allowed", error.code)
+        assertEquals(active.snapshotId, dao.getSelection()?.activeSnapshotId)
+        assertFalse(dao.snapshotExists(stale.snapshotId))
+    }
+
+    @Test
     fun authenticatedGoFixturePassesTheOnlySignedActivationGate() = runTest {
         val fixture = File(
             "../../fixtures/verification/synthetic-signed-snapshot.json",

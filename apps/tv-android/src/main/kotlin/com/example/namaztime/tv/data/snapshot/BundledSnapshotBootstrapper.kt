@@ -4,6 +4,7 @@ import android.content.Context
 import com.example.namaztime.tv.data.local.SnapshotImportException
 import com.example.namaztime.tv.data.local.SnapshotImportResult
 import com.example.namaztime.tv.data.local.SnapshotImporter
+import com.example.namaztime.tv.data.local.SnapshotReplacementPolicy
 import com.example.namaztime.tv.data.local.SnapshotSelectionResolver
 import com.example.namaztime.tv.data.local.SnapshotSelectionResolution
 import java.io.IOException
@@ -42,6 +43,7 @@ class BundledSnapshotBootstrapper(
     private val activationGate: (ByteArray) -> ActivatableSnapshot =
         SnapshotActivationGate::bundledSynthetic,
     private val replaceableActiveSnapshotIds: Set<String> = emptySet(),
+    private val replacementPolicy: SnapshotReplacementPolicy? = null,
 ) {
     private val mutableState = MutableStateFlow<SnapshotBootstrapState>(
         SnapshotBootstrapState.Pending,
@@ -59,14 +61,14 @@ class BundledSnapshotBootstrapper(
         }
         val replaceableSelectionId = when (selection) {
             is SnapshotSelectionResolution.Active -> {
-                if (selection.snapshotId !in replaceableActiveSnapshotIds) {
+                if (!shouldReadBundledAsset(selection.snapshotId)) {
                     mutableState.value = SnapshotBootstrapState.Ready(selection.snapshotId)
                     return
                 }
                 selection.snapshotId
             }
             is SnapshotSelectionResolution.Recovered -> {
-                if (selection.snapshotId !in replaceableActiveSnapshotIds) {
+                if (!shouldReadBundledAsset(selection.snapshotId)) {
                     mutableState.value = SnapshotBootstrapState.Ready(
                         selection.snapshotId,
                         recoveryCode = "SNAPSHOT_PREVIOUS_RESTORED",
@@ -91,6 +93,8 @@ class BundledSnapshotBootstrapper(
             val snapshot = activationGate(assetSource.read())
             val result = if (replaceableSelectionId == null) {
                 importer.importAndActivate(snapshot)
+            } else if (replacementPolicy != null) {
+                importer.replaceAndActivate(snapshot, replacementPolicy)
             } else {
                 importer.replaceAndActivate(snapshot, replaceableActiveSnapshotIds)
             }
@@ -111,6 +115,10 @@ class BundledSnapshotBootstrapper(
             SnapshotBootstrapState.Diagnostic("SNAPSHOT_IMPORT_FAILED")
         }
     }
+
+    private fun shouldReadBundledAsset(activeSnapshotId: String): Boolean =
+        replacementPolicy?.shouldReadBundledAsset(activeSnapshotId)
+            ?: (activeSnapshotId in replaceableActiveSnapshotIds)
 }
 
 const val BUNDLED_SNAPSHOT_ASSET = "synthetic-prayer-snapshot.json"

@@ -8,18 +8,21 @@ import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.lifecycleScope
 import com.example.namaztime.tv.data.local.NamazDatabase
 import com.example.namaztime.tv.data.local.SnapshotImporter
+import com.example.namaztime.tv.data.local.SnapshotReplacementPolicy
 import com.example.namaztime.tv.data.local.SnapshotSelectionGuard
 import com.example.namaztime.tv.data.snapshot.AndroidSnapshotAssetSource
 import com.example.namaztime.tv.data.snapshot.BundledSnapshotBootstrapper
-import com.example.namaztime.tv.data.snapshot.LEGACY_SYNTHETIC_SNAPSHOT_ID
 import com.example.namaztime.tv.data.snapshot.PILOT_LOCAL_SNAPSHOT_ASSET
+import com.example.namaztime.tv.data.snapshot.PILOT_LOCAL_PREDECESSOR_SNAPSHOT_IDS
+import com.example.namaztime.tv.data.snapshot.PILOT_LOCAL_SNAPSHOT_ID
+import com.example.namaztime.tv.data.snapshot.PILOT_LOCAL_SNAPSHOT_ID_PREFIX
 import com.example.namaztime.tv.data.snapshot.PilotLocalSnapshotTrust
 import com.example.namaztime.tv.data.snapshot.SnapshotActivationGate
 import com.example.namaztime.tv.presentation.NamazTvApp
 import com.example.namaztime.tv.repository.DataStoreOperatorPreferencesRepository
 import com.example.namaztime.tv.repository.RoomPrayerScheduleRepository
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 private val Context.operatorPreferencesDataStore by preferencesDataStore(
     name = "operator_preferences",
@@ -52,7 +55,11 @@ class MainActivity : ComponentActivity() {
                 activationGate = { bytes ->
                     SnapshotActivationGate.authenticated(bytes, pilotLocalVerifier)
                 },
-                replaceableActiveSnapshotIds = setOf(LEGACY_SYNTHETIC_SNAPSHOT_ID),
+                replacementPolicy = SnapshotReplacementPolicy.pilotLocal(
+                    currentSnapshotId = PILOT_LOCAL_SNAPSHOT_ID,
+                    predecessorSnapshotIds = PILOT_LOCAL_PREDECESSOR_SNAPSHOT_IDS,
+                    snapshotIdPrefix = PILOT_LOCAL_SNAPSHOT_ID_PREFIX,
+                ),
             )
         } else {
             BundledSnapshotBootstrapper(

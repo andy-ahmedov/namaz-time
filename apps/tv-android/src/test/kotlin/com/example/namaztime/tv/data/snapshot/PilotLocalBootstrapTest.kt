@@ -6,6 +6,7 @@ import androidx.test.core.app.ApplicationProvider
 import com.example.namaztime.tv.data.local.NamazDatabase
 import com.example.namaztime.tv.data.local.SnapshotImporter
 import com.example.namaztime.tv.data.local.SnapshotSelectionGuard
+import com.example.namaztime.tv.data.local.SnapshotReplacementPolicy
 import com.example.namaztime.tv.domain.PrayerTimeEngine
 import com.example.namaztime.tv.domain.PrayerTimeResolution
 import com.example.namaztime.tv.repository.RoomPrayerScheduleRepository
@@ -80,7 +81,11 @@ class PilotLocalBootstrapTest {
             importer = SnapshotImporter(database),
             assetSource = AndroidSnapshotAssetSource(context, PILOT_LOCAL_SNAPSHOT_ASSET),
             activationGate = { bytes -> SnapshotActivationGate.authenticated(bytes, verifier) },
-            replaceableActiveSnapshotIds = setOf(LEGACY_SYNTHETIC_SNAPSHOT_ID),
+            replacementPolicy = SnapshotReplacementPolicy.pilotLocal(
+                currentSnapshotId = PILOT_LOCAL_SNAPSHOT_ID,
+                predecessorSnapshotIds = PILOT_LOCAL_PREDECESSOR_SNAPSHOT_IDS,
+                snapshotIdPrefix = PILOT_LOCAL_SNAPSHOT_ID_PREFIX,
+            ),
         )
 
         bootstrapper.bootstrapIfNeeded()
