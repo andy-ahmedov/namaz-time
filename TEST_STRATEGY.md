@@ -262,6 +262,18 @@ build/install/component-review passes corrected a clipped filmstrip, restored
 This is `CONFIRMED_RUNTIME` emulator evidence; OEM picker availability and
 physical-TV focus/readability remain `UNKNOWN`.
 
+T033 Checkpoint 5 repeats the selector contract with only the five built-in
+donation images and a separate custom-image action. Compose tests traverse all
+five focus targets through LazyRow scrolling, assert the custom image is not a
+sixth thumbnail, and verify Down reaches the picker. DataStore tests pin the
+optional gratitude field's 240-Unicode-code-point bound, trimming, blank
+fallback marker and control-character rejection. RU/EN display tests prove a
+blank field resolves at render time to the localized standard string, while a
+non-blank value replaces it. Three API 36/1920×1080 component-review passes
+corrected field clipping, preview aspect ratio and action-label wrapping. This
+is `CONFIRMED_RUNTIME` emulator evidence; physical-TV readability and OEM
+picker completion remain `UNKNOWN`.
+
 T027 pins the concise public display identity for the Ulyanovsk pilot mosque
 on both the main screen and Mosque settings page. A non-pilot passthrough
 assertion and the authenticated pilot bootstrap test prove the presentation

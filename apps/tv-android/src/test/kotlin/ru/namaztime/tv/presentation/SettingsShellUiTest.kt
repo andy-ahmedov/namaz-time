@@ -142,10 +142,9 @@ class SettingsShellUiTest {
         compose.onNodeWithTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_PHONE_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG).assertIsDisplayed()
-        DonationImageStyle.entries.forEach { style ->
-            compose.onNodeWithTag("$SETTINGS_DONATION_IMAGE_TAG_PREFIX${style.id}")
-                .assertIsDisplayed()
-        }
+        compose.onNodeWithTag(SETTINGS_DONATION_GRATITUDE_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_SELECTED_PREVIEW_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_FILMSTRIP_TAG).assertIsDisplayed()
 
         moveDownFrom(SettingsDestination.DONATION)
         compose.onNodeWithText("Русский").assertIsDisplayed()

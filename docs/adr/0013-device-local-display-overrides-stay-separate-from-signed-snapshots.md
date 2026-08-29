@@ -55,13 +55,15 @@ and an allowlisted image ID. T029 replaces the ambiguous transfer-details blob
 with bounded recipient, bank, card-number, SBP/phone and collection-link
 fields. Existing labelled Russian/English blobs are deterministically mapped;
 an unlabelled legacy blob is preserved as recipient text until the operator
-edits and saves it. The former free-form public message is replaced by the
-fixed localized gratitude copy specified for the display. Donation mode can be
+edits and saves it. T033 adds a separate optional gratitude field bounded to
+240 Unicode code points; it is trimmed, rejects control characters and remains
+device-local. Blank stores no override and resolves at render time to the
+localized RU/EN gratitude copy. Donation mode can be
 activated only when the HTTPS target, at least one local detail field and the
 existing campaign/QR validation pass. Invalid persisted content fails closed
-to schedule mode. Five
-packaged image choices remain offline; the custom slot uses the same bounded
-document-picker pipeline as Appearance but has a separate app-private file.
+to schedule mode. Five packaged image choices remain offline in a built-in-only
+D-pad filmstrip; the custom image is a separate action using the same bounded
+document-picker pipeline as Appearance and has a separate app-private file.
 If that file is missing or corrupt, the donation screen renders its packaged
 default. The screen performs no payment processing and does not write Room.
 

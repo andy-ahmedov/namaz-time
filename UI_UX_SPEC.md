@@ -104,7 +104,9 @@ title/card and remains primarily photographic. The donation card contains the
 localized donation heading and scan instruction, a large locally generated QR,
 a fading gold diamond divider, a details heading and five equal
 `icon → label → value` rows for recipient, bank, card number, SBP/phone and
-collection link. The footer uses the exact localized gratitude sentence. All
+collection link. The footer uses the bounded operator gratitude message when
+non-blank; blank uses the exact localized gratitude sentence for the active
+RU/EN UI language. All
 screen-specific icons and ornaments are Compose Canvas/vector drawings;
 decorative lines fade to transparency instead of ending abruptly.
 
@@ -113,7 +115,10 @@ champagne frame and a NamazTime center badge while retaining a four-module
 quiet zone, high error correction and decode regressions for the actual badge
 ratio. Runtime values come only from the operator's local fields; sample
 banking values from the reference are never defaults. Five packaged image
-choices and one validated app-local custom-photo slot remain available. A
+choices remain available in one D-pad LazyRow below a large selected-image
+preview. The app-local custom photo is deliberately not a sixth thumbnail; a
+separate `Choose custom image` action below the filmstrip uses the validated
+system document picker. A
 focused Settings control is always visible; Settings exposes an explicit
 action to return to the prayer schedule. No payment flow is present.
 

@@ -1,11 +1,15 @@
 package ru.namaztime.tv.presentation
 
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.pressKey
 import ru.namaztime.tv.domain.QrCodeGenerator
 import ru.namaztime.tv.repository.CUSTOM_DONATION_IMAGE_STYLE_ID
 import ru.namaztime.tv.repository.OperatorDonationConfiguration
@@ -36,8 +40,9 @@ class DonationDisplayUiTest {
     fun donationDisplayFits4kDensitySafeFrame() = assertDonationDisplayFits()
 
     @Test
+    @OptIn(ExperimentalTestApi::class)
     @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
-    fun donationSettingsShowsFiveBuiltInsAndCustomSlot() {
+    fun donationSettingsUsesFiveBuiltInFilmstripAndSeparateCustomAction() {
         compose.setContent {
             NamazTvTheme {
                 SettingsShell(
@@ -52,41 +57,94 @@ class DonationDisplayUiTest {
             }
         }
 
-        DonationImageStyle.entries.forEach { style ->
-            compose.onNodeWithTag("$SETTINGS_DONATION_IMAGE_TAG_PREFIX${style.id}")
-                .assertIsDisplayed()
-        }
+        compose.onNodeWithTag(SETTINGS_DONATION_SELECTED_PREVIEW_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_FILMSTRIP_TAG).assertIsDisplayed()
         compose.onNodeWithTag(
             "$SETTINGS_DONATION_IMAGE_TAG_PREFIX$CUSTOM_DONATION_IMAGE_STYLE_ID",
-        ).assertIsDisplayed()
+        ).assertDoesNotExist()
         compose.onNodeWithTag(SETTINGS_DONATION_RECIPIENT_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_BANK_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_PHONE_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_DONATION_GRATITUDE_FIELD_TAG).assertIsDisplayed()
+
+        compose.onNodeWithTag(SettingsDestination.DONATION.navigationTestTag)
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        listOf(
+            SETTINGS_DONATION_URL_FIELD_TAG,
+            SETTINGS_DONATION_RECIPIENT_FIELD_TAG,
+            SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG,
+            SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG,
+            SETTINGS_DONATION_GRATITUDE_FIELD_TAG,
+        ).forEach { tag ->
+            compose.onNodeWithTag(tag)
+                .assertIsFocused()
+                .performKeyInput { pressKey(Key.DirectionDown) }
+        }
+        DonationImageStyle.entries.forEachIndexed { index, style ->
+            compose.onNodeWithTag("$SETTINGS_DONATION_IMAGE_TAG_PREFIX${style.id}")
+                .assertIsDisplayed()
+                .assertIsFocused()
+            if (index < DonationImageStyle.entries.lastIndex) {
+                compose.onNodeWithTag("$SETTINGS_DONATION_IMAGE_TAG_PREFIX${style.id}")
+                    .performKeyInput { pressKey(Key.DirectionRight) }
+            }
+        }
+        compose.onNodeWithTag(
+            "$SETTINGS_DONATION_IMAGE_TAG_PREFIX${DonationImageStyle.entries.last().id}",
+        ).performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_PICKER_TAG).assertIsFocused()
         compose.onNodeWithTag(SETTINGS_DONATION_SAVE_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG).assertIsDisplayed()
     }
 
-    private fun assertDonationDisplayFits() {
+    @Test
+    @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun blankDonationGratitudeUsesLocalizedRussianFallback() {
+        setDonationDisplayContent(configuration())
+
+        compose.onNodeWithText(
+            "Да вознаградит вас Аллах за вашу щедрость и доброе сердце",
+        ).assertIsDisplayed()
+    }
+
+    @Test
+    @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun blankDonationGratitudeUsesLocalizedEnglishFallback() {
         val configuration = configuration()
         compose.setContent {
-            NamazTvTheme {
-                DonationDisplayScreen(
-                    configuration = configuration,
-                    qrState = QrCampaignUiState(
-                        id = "operator-local-donation-screen",
-                        kind = "donation",
-                        title = configuration.recipient,
-                        subtitle = null,
-                        qrCode = QrCodeGenerator().generate(configuration.httpsUrl),
-                        preview = false,
-                    ),
-                    customAssetVersion = 0L,
-                    onOpenSettings = {},
-                )
+            AppLanguageProvider("en") {
+                NamazTvTheme {
+                    DonationDisplayScreen(
+                        configuration = configuration,
+                        qrState = qrState(configuration),
+                        customAssetVersion = 0L,
+                        onOpenSettings = {},
+                    )
+                }
             }
         }
+
+        compose.onNodeWithText(
+            "May Allah reward you for your generosity and kind heart",
+        ).assertIsDisplayed()
+    }
+
+    @Test
+    @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun nonBlankDonationGratitudeReplacesFallback() {
+        setDonationDisplayContent(configuration().copy(gratitudeMessage = "Спасибо за поддержку"))
+
+        compose.onNodeWithText("Спасибо за поддержку").assertIsDisplayed()
+        compose.onNodeWithText(
+            "Да вознаградит вас Аллах за вашу щедрость и доброе сердце",
+        ).assertDoesNotExist()
+    }
+
+    private fun assertDonationDisplayFits() {
+        val configuration = configuration()
+        setDonationDisplayContent(configuration)
 
         val root = compose.onNodeWithTag(DONATION_DISPLAY_TAG)
             .assertIsDisplayed()
@@ -130,6 +188,28 @@ class DonationDisplayUiTest {
         assertReferenceBounds(DONATION_DISPLAY_ROWS_TAG, 616.5f, 315.5f, 255f, 145f, scale, tolerance = 6f)
         assertReferenceBounds(DONATION_DISPLAY_FOOTER_TAG, 97f, 485f, 765f, 40.5f, scale)
     }
+
+    private fun setDonationDisplayContent(configuration: OperatorDonationConfiguration) {
+        compose.setContent {
+            NamazTvTheme {
+                DonationDisplayScreen(
+                    configuration = configuration,
+                    qrState = qrState(configuration),
+                    customAssetVersion = 0L,
+                    onOpenSettings = {},
+                )
+            }
+        }
+    }
+
+    private fun qrState(configuration: OperatorDonationConfiguration) = QrCampaignUiState(
+        id = "operator-local-donation-screen",
+        kind = "donation",
+        title = configuration.recipient,
+        subtitle = null,
+        qrCode = QrCodeGenerator().generate(configuration.httpsUrl),
+        preview = false,
+    )
 
     private fun assertReferenceBounds(
         tag: String,

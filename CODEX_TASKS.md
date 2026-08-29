@@ -659,7 +659,7 @@ each checkpoint has a local commit; final `make test`, `make lint`,
 `make docs-check`, Android gates, debug/pilot builds, four runtime screenshots
 and independent code/visual reviews pass with a clean worktree.
 
-**Progress:** Checkpoints 1–4 are implemented. Checkpoint 1 passed targeted
+**Progress:** Checkpoints 1–5 are implemented. Checkpoint 1 passed targeted
 tests and three controlled API 36 build/install/normalize/refine passes.
 Checkpoint 2 keeps source Dhuhr onset, publishes the authenticated 13:15
 Dhuhr/Jumu'ah successor through approval/receipt/trust rotation, and adds
@@ -670,4 +670,7 @@ Room identity or provenance. Checkpoint 4 replaces the three-column Appearance
 grid with one large 16:9 preview, an eight-built-in-only scrolling D-pad
 filmstrip and a separate SAF action; focused traversal, safe-import regressions
 and five controlled 1920×1080 component-review iterations pass.
-Checkpoints 5–6 and final gates/reviews are in progress.
+Checkpoint 5 applies the built-in-only filmstrip to five donation images and
+adds a bounded persisted gratitude override with render-time RU/EN fallback;
+DataStore/Compose tests and three emulator component-review passes succeed.
+Checkpoint 6 and final gates/reviews are in progress.

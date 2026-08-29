@@ -162,6 +162,56 @@ class OperatorPreferencesRepositoryTest {
     }
 
     @Test
+    fun donationGratitudePersistsTrimmedAndBlankResetsToFallbackMarker() = runTest {
+        val repository = repositoryFor(this)
+        val configuration = OperatorDonationConfiguration(
+            gratitudeMessage = "  Благодарим за поддержку  ",
+        )
+
+        repository.setDonationConfiguration(configuration)
+
+        assertEquals(
+            "Благодарим за поддержку",
+            repository.preferences.first().donationConfiguration.gratitudeMessage,
+        )
+
+        repository.setDonationConfiguration(configuration.copy(gratitudeMessage = "  "))
+
+        assertEquals("", repository.preferences.first().donationConfiguration.gratitudeMessage)
+    }
+
+    @Test
+    fun donationGratitudeAcceptsBoundedUnicodeCodePoints() = runTest {
+        val repository = repositoryFor(this)
+        val message = "🤲".repeat(MAX_DONATION_GRATITUDE_LENGTH)
+
+        repository.setDonationConfiguration(
+            OperatorDonationConfiguration(gratitudeMessage = message),
+        )
+
+        assertEquals(
+            message,
+            repository.preferences.first().donationConfiguration.gratitudeMessage,
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun donationGratitudeRejectsTextBeyondCodePointBound() = runTest {
+        repositoryFor(this).setDonationConfiguration(
+            OperatorDonationConfiguration(
+                gratitudeMessage = "а".repeat(MAX_DONATION_GRATITUDE_LENGTH + 1),
+            ),
+        )
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun donationGratitudeRejectsControlCharacters() = runTest {
+        repositoryFor(this).setDonationConfiguration(
+            OperatorDonationConfiguration(gratitudeMessage = "Первая строка\nВторая строка"),
+        )
+    }
+
+    @Test
     fun donationImageAllowlistContainsFiveBuiltInsAndOneCustomSlot() = runTest {
         assertEquals(5, BUILT_IN_DONATION_IMAGE_STYLE_IDS.size)
         assertTrue(CUSTOM_DONATION_IMAGE_STYLE_ID in SELECTABLE_DONATION_IMAGE_STYLE_IDS)

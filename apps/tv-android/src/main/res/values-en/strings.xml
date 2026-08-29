@@ -15,7 +15,7 @@
     <string name="settings_campaigns_title">QR code</string>
     <string name="settings_campaigns_description">A local sadaqah QR code, collection purpose, and motivational text.</string>
     <string name="settings_donation_title">Donation screen</string>
-    <string name="settings_donation_description">A separate full-screen donation QR, transfer details, and image.</string>
+    <string name="settings_donation_description">QR, details, and background for the separate screen.</string>
     <string name="settings_language_title">Language</string>
     <string name="settings_language_description">The selected interface language is stored on the device.</string>
     <string name="settings_kiosk_title">Autostart and kiosk</string>
@@ -98,6 +98,8 @@
     <string name="donation_phone_hint">Phone number for transfer</string>
     <string name="donation_collection_url_label">Collection link</string>
     <string name="donation_collection_url_hint">https://example.org/donate</string>
+    <string name="donation_gratitude_label">Bottom gratitude message</string>
+    <string name="donation_gratitude_hint">Leave blank to use the localized default</string>
     <string name="donation_message_label">Screen message</string>
     <string name="donation_message_hint">For example: support our mosque</string>
     <string name="donation_image_title">Image</string>
@@ -108,7 +110,7 @@
     <string name="value_donation_image_community">Community</string>
     <string name="value_donation_image_custom">Custom photo</string>
     <string name="save_donation_settings">Save screen</string>
-    <string name="choose_donation_image">Choose custom photo</string>
+    <string name="choose_donation_image">Choose custom image</string>
     <string name="show_donation_screen">Enable screen</string>
     <string name="show_prayer_schedule">Show prayer schedule</string>
     <string name="donation_display_title">Donations</string>

@@ -15,7 +15,7 @@
     <string name="settings_campaigns_title">QR-код</string>
     <string name="settings_campaigns_description">Локальный QR-код садака, цель сбора и мотивационный текст.</string>
     <string name="settings_donation_title">Экран пожертвований</string>
-    <string name="settings_donation_description">Отдельный полноэкранный QR, реквизиты и изображение для пожертвований.</string>
+    <string name="settings_donation_description">QR, реквизиты и фон отдельного экрана.</string>
     <string name="settings_language_title">Язык</string>
     <string name="settings_language_description">Язык всего пользовательского интерфейса сохраняется на устройстве.</string>
     <string name="settings_kiosk_title">Автозапуск и киоск</string>
@@ -98,6 +98,8 @@
     <string name="donation_phone_hint">Номер телефона для СБП</string>
     <string name="donation_collection_url_label">Ссылка на сбор</string>
     <string name="donation_collection_url_hint">https://example.org/donate</string>
+    <string name="donation_gratitude_label">Нижняя благодарственная надпись</string>
+    <string name="donation_gratitude_hint">Пустое поле использует стандартный текст</string>
     <string name="donation_message_label">Текст экрана</string>
     <string name="donation_message_hint">Например: поддержите нашу мечеть</string>
     <string name="donation_image_title">Изображение</string>
@@ -108,7 +110,7 @@
     <string name="value_donation_image_community">Община</string>
     <string name="value_donation_image_custom">Своё фото</string>
     <string name="save_donation_settings">Сохранить экран</string>
-    <string name="choose_donation_image">Выбрать своё фото</string>
+    <string name="choose_donation_image">Выбрать свое изображение</string>
     <string name="show_donation_screen">Включить экран</string>
     <string name="show_prayer_schedule">Показывать расписание</string>
     <string name="donation_display_title">Пожертвования</string>

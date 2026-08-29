@@ -186,6 +186,9 @@ internal fun DonationDisplayScreen(
                 .testTag(DONATION_DISPLAY_DETAILS_TAG),
         )
         DonationFooter(
+            text = configuration.gratitudeMessage.trim().ifEmpty {
+                appString(R.string.donation_footer_thanks)
+            },
             metrics = metrics,
             modifier = Modifier
                 .offset(metrics.footerLeft, metrics.footerTop)
@@ -434,6 +437,7 @@ private fun DonationDetailsRow(
 
 @Composable
 private fun DonationFooter(
+    text: String,
     metrics: DonationDisplayMetrics,
     modifier: Modifier = Modifier,
 ) {
@@ -456,7 +460,7 @@ private fun DonationFooter(
                 .height(metrics.dp(12f)),
         )
         Text(
-            text = appString(R.string.donation_footer_thanks),
+            text = text,
             modifier = Modifier.weight(1f),
             color = colors.textPrimary,
             fontSize = (13.4f * metrics.scale).sp,

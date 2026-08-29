@@ -304,6 +304,11 @@ private fun SettingsPage(
     var donationCollectionUrl by rememberSaveable(preferences.donationConfiguration.collectionUrl) {
         mutableStateOf(preferences.donationConfiguration.collectionUrl)
     }
+    var donationGratitudeMessage by rememberSaveable(
+        preferences.donationConfiguration.gratitudeMessage,
+    ) {
+        mutableStateOf(preferences.donationConfiguration.gratitudeMessage)
+    }
     var donationImageStyleId by rememberSaveable(preferences.donationConfiguration.imageStyleId) {
         mutableStateOf(preferences.donationConfiguration.imageStyleId)
     }
@@ -334,6 +339,7 @@ private fun SettingsPage(
         cardNumber = donationCardNumber,
         phone = donationPhone,
         collectionUrl = donationCollectionUrl,
+        gratitudeMessage = donationGratitudeMessage,
         imageStyleId = donationImageStyleId,
     )
     val iqamahDraft = OperatorIqamahConfiguration(
@@ -404,6 +410,15 @@ private fun SettingsPage(
             }
         }
         SettingsDestination.DONATION -> buildList {
+            onPickCustomDonationImage?.let { pick ->
+                add(
+                    LocalSettingsAction(
+                        label = appString(R.string.choose_donation_image),
+                        invoke = pick,
+                        testTag = SETTINGS_DONATION_PICKER_TAG,
+                    ),
+                )
+            }
             onDonationConfigurationChanged?.let { change ->
                 add(
                     LocalSettingsAction(
@@ -411,15 +426,6 @@ private fun SettingsPage(
                         invoke = { change(donationDraft) },
                         testTag = SETTINGS_DONATION_SAVE_TAG,
                         enabled = isValidDonationConfiguration(donationDraft),
-                    ),
-                )
-            }
-            onPickCustomDonationImage?.let { pick ->
-                add(
-                    LocalSettingsAction(
-                        label = appString(R.string.choose_donation_image),
-                        invoke = pick,
-                        testTag = SETTINGS_DONATION_PICKER_TAG,
                     ),
                 )
             }
@@ -479,6 +485,9 @@ private fun SettingsPage(
 
     BoxWithConstraints(modifier = modifier.fillMaxHeight()) {
         val compactPreview = maxHeight < 600.dp
+        val compactSingleLineDescription = compactPreview &&
+            (destination == SettingsDestination.APPEARANCE ||
+                destination == SettingsDestination.DONATION)
         Column(
             modifier = Modifier.fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(if (compactPreview) 10.dp else 16.dp),
@@ -493,21 +502,21 @@ private fun SettingsPage(
             Text(
                 text = appString(destination.descriptionRes),
                 color = NamazTvTheme.colors.textSecondary,
-                fontSize = if (destination == SettingsDestination.APPEARANCE && compactPreview) {
+                fontSize = if (compactSingleLineDescription) {
                     17.sp
                 } else if (compactPreview) {
                     19.sp
                 } else {
                     24.sp
                 },
-                lineHeight = if (destination == SettingsDestination.APPEARANCE && compactPreview) {
+                lineHeight = if (compactSingleLineDescription) {
                     22.sp
                 } else if (compactPreview) {
                     24.sp
                 } else {
                     32.sp
                 },
-                maxLines = if (destination == SettingsDestination.APPEARANCE && compactPreview) 1 else 2,
+                maxLines = if (compactSingleLineDescription) 1 else 2,
                 overflow = TextOverflow.Ellipsis,
             )
             SettingsContent(
@@ -544,6 +553,7 @@ private fun SettingsPage(
                     donationCardNumber = updated.cardNumber
                     donationPhone = updated.phone
                     donationCollectionUrl = updated.collectionUrl
+                    donationGratitudeMessage = updated.gratitudeMessage
                     donationImageStyleId = updated.imageStyleId
                 },
                 entryRequester = pageActionRequester,
@@ -575,6 +585,10 @@ private fun SettingsPage(
                                         1.2f
                                     } else if (destination == SettingsDestination.APPEARANCE) {
                                         0.8f
+                                    } else if (action.testTag == SETTINGS_DONATION_PICKER_TAG) {
+                                        1.1f
+                                    } else if (action.testTag == SETTINGS_DONATION_SAVE_TAG) {
+                                        0.9f
                                     } else {
                                         1f
                                     },
@@ -590,7 +604,9 @@ private fun SettingsPage(
                         ) {
                             Text(
                                 text = action.label,
-                                fontSize = if (destination == SettingsDestination.APPEARANCE && compactPreview) {
+                                fontSize = if (destination == SettingsDestination.DONATION && compactPreview) {
+                                    14.sp
+                                } else if (destination == SettingsDestination.APPEARANCE && compactPreview) {
                                     16.sp
                                 } else {
                                     18.sp

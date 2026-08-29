@@ -14,21 +14,26 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusProperties
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.input.key.Key
@@ -53,6 +58,7 @@ import androidx.tv.material3.Text
 import ru.namaztime.tv.R
 import ru.namaztime.tv.repository.MAX_MOSQUE_DISPLAY_ADDRESS_LENGTH
 import ru.namaztime.tv.repository.MAX_MOSQUE_DISPLAY_NAME_LENGTH
+import ru.namaztime.tv.repository.MAX_DONATION_GRATITUDE_LENGTH
 import ru.namaztime.tv.repository.OPERATOR_DHUHR_FIXED_TIME_RANGE
 import ru.namaztime.tv.repository.OPERATOR_IQAMAH_PRAYER_IDS
 import ru.namaztime.tv.repository.OPERATOR_IQAMAH_OFFSET_RANGE
@@ -78,6 +84,9 @@ const val SETTINGS_DONATION_BANK_FIELD_TAG = "settings-donation-bank"
 const val SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG = "settings-donation-card-number"
 const val SETTINGS_DONATION_PHONE_FIELD_TAG = "settings-donation-phone"
 const val SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG = "settings-donation-collection-url"
+const val SETTINGS_DONATION_GRATITUDE_FIELD_TAG = "settings-donation-gratitude"
+const val SETTINGS_DONATION_SELECTED_PREVIEW_TAG = "settings-donation-selected-preview"
+const val SETTINGS_DONATION_FILMSTRIP_TAG = "settings-donation-filmstrip"
 const val SETTINGS_DONATION_SAVE_TAG = "settings-donation-save"
 const val SETTINGS_DONATION_PICKER_TAG = "settings-donation-picker"
 const val SETTINGS_DONATION_MODE_TAG = "settings-donation-mode"
@@ -164,16 +173,22 @@ internal fun DonationSettingsEditor(
     val cardNumberRequester = remember { FocusRequester() }
     val phoneRequester = remember { FocusRequester() }
     val collectionUrlRequester = remember { FocusRequester() }
-    val choices = remember {
-        DonationImageStyle.entries.map { it.id } + CUSTOM_DONATION_IMAGE_STYLE_ID
-    }
-    val imageRequesters = remember {
-        choices.associateWith { FocusRequester() }
+    val gratitudeRequester = remember { FocusRequester() }
+    val choices = remember { DonationImageStyle.entries.map { it.id } }
+    val imageRequesters = remember { choices.associateWith { FocusRequester() } }
+    val listState = rememberLazyListState()
+    var focusedIndex by remember {
+        mutableStateOf(choices.indexOf(configuration.imageStyleId).coerceAtLeast(0))
     }
     val customImage = rememberOperatorImageBitmap(
         slot = OperatorImageSlot.DONATION,
         assetVersion = customAssetVersion,
     )
+
+    LaunchedEffect(focusedIndex) {
+        listState.animateScrollToItem(focusedIndex)
+    }
+
     Row(
         modifier = modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -271,9 +286,26 @@ internal fun DonationSettingsEditor(
                 placeholder = appString(R.string.donation_collection_url_hint),
                 requester = collectionUrlRequester,
                 previousRequester = cardNumberRequester,
-                nextRequester = imageRequesters.getValue(choices.first()),
+                nextRequester = gratitudeRequester,
                 modifier = Modifier.testTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG),
                 keyboardType = KeyboardType.Uri,
+                compact = true,
+            )
+            TvSettingsTextField(
+                value = configuration.gratitudeMessage,
+                onValueChange = {
+                    onConfigurationChange(
+                        configuration.copy(
+                            gratitudeMessage = it.takeCodePoints(MAX_DONATION_GRATITUDE_LENGTH),
+                        ),
+                    )
+                },
+                label = appString(R.string.donation_gratitude_label),
+                placeholder = appString(R.string.donation_gratitude_hint),
+                requester = gratitudeRequester,
+                previousRequester = collectionUrlRequester,
+                nextRequester = imageRequesters.getValue(choices.first()),
+                modifier = Modifier.testTag(SETTINGS_DONATION_GRATITUDE_FIELD_TAG),
                 compact = true,
             )
         }
@@ -287,90 +319,106 @@ internal fun DonationSettingsEditor(
                 fontSize = if (compact) 14.sp else 17.sp,
                 fontWeight = FontWeight.SemiBold,
             )
-            choices.chunked(2).forEachIndexed { rowIndex, rowChoices ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(7.dp),
-                ) {
-                    rowChoices.forEach { styleId ->
-                        val index = choices.indexOf(styleId)
-                        val style = DonationImageStyle.entries.firstOrNull { it.id == styleId }
-                        val selected = configuration.imageStyleId == styleId
-                        val enabled = styleId != CUSTOM_DONATION_IMAGE_STYLE_ID || customImage != null
-                        Button(
-                            onClick = {
-                                onConfigurationChange(configuration.copy(imageStyleId = styleId))
-                            },
-                            enabled = enabled,
-                            contentPadding = PaddingValues(0.dp),
-                            colors = ButtonDefaults.colors(
-                                containerColor = NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.78f),
-                                contentColor = NamazTvTheme.colors.textPrimary,
-                                focusedContainerColor = NamazTvTheme.colors.accentSoft,
-                                focusedContentColor = NamazTvTheme.colors.textPrimary,
-                            ),
-                            modifier = Modifier
-                                .weight(1f)
-                                .height(if (compact) 61.dp else 76.dp)
-                                .testTag("$SETTINGS_DONATION_IMAGE_TAG_PREFIX$styleId")
-                                .semantics { this.selected = selected }
-                                .focusRequester(imageRequesters.getValue(styleId))
-                                .focusProperties {
-                                    choices.getOrNull(index - 1)
-                                        ?.takeIf { index % 2 != 0 }
-                                        ?.let { left = imageRequesters.getValue(it) }
-                                    choices.getOrNull(index + 1)
-                                        ?.takeIf { (index + 1) % 2 != 0 }
-                                        ?.let { right = imageRequesters.getValue(it) }
-                                    up = choices.getOrNull(index - 2)
-                                        ?.let(imageRequesters::getValue)
-                                        ?: collectionUrlRequester
-                                    down = choices.getOrNull(index + 2)
-                                        ?.let(imageRequesters::getValue)
-                                        ?: saveRequester
-                                }
-                                .border(
-                                    if (selected) 2.dp else 0.5.dp,
-                                    if (selected) {
-                                        NamazTvTheme.colors.accent
-                                    } else {
-                                        NamazTvTheme.colors.surfaceOutline
-                                    },
-                                    RoundedCornerShape(12.dp),
-                                ),
-                        ) {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                if (style != null) {
-                                    Image(
-                                        painter = painterResource(style.drawableRes),
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxWidth().weight(1f),
-                                    )
-                                } else if (customImage != null) {
-                                    Image(
-                                        painter = BitmapPainter(customImage),
-                                        contentDescription = null,
-                                        contentScale = ContentScale.Crop,
-                                        modifier = Modifier.fillMaxWidth().weight(1f),
-                                    )
-                                } else {
-                                    Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
-                                        Text("+", color = NamazTvTheme.colors.accent, fontSize = 22.sp)
-                                    }
-                                }
-                                Text(
-                                    text = style?.let { appString(it.labelRes) }
-                                        ?: appString(R.string.value_donation_image_custom),
-                                    modifier = Modifier.padding(horizontal = 3.dp, vertical = 1.dp),
-                                    fontSize = if (compact) 10.sp else 12.sp,
-                                    maxLines = 1,
-                                )
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(if (compact) 95.dp else 124.dp)
+                    .clip(RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp))
+                    .background(NamazTvTheme.colors.backgroundBottom)
+                    .border(
+                        1.dp,
+                        NamazTvTheme.colors.surfaceOutline,
+                        RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp),
+                    )
+                    .testTag(SETTINGS_DONATION_SELECTED_PREVIEW_TAG),
+            ) {
+                val selectedStyle = DonationImageStyle.entries.firstOrNull {
+                    it.id == configuration.imageStyleId
+                }
+                if (configuration.imageStyleId == CUSTOM_DONATION_IMAGE_STYLE_ID && customImage != null) {
+                    Image(
+                        painter = BitmapPainter(customImage),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(
+                            (selectedStyle ?: DonationImageStyle.MOSQUE).drawableRes,
+                        ),
+                        contentDescription = null,
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.fillMaxSize(),
+                    )
+                }
+                Box(
+                    Modifier
+                        .fillMaxSize()
+                        .background(NamazTvTheme.colors.backgroundTop.copy(alpha = 0.18f)),
+                )
+            }
+            LazyRow(
+                state = listState,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(if (compact) 52.dp else 64.dp)
+                    .clip(RoundedCornerShape(bottomStart = 14.dp, bottomEnd = 14.dp))
+                    .background(NamazTvTheme.colors.surfaceTop.copy(alpha = 0.72f))
+                    .testTag(SETTINGS_DONATION_FILMSTRIP_TAG),
+                contentPadding = PaddingValues(horizontal = 5.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                items(count = choices.size, key = { choices[it] }) {
+                    val styleId = choices[it]
+                    val style = DonationImageStyle.entries.first { style -> style.id == styleId }
+                    val selected = configuration.imageStyleId == styleId
+                    val focused = focusedIndex == it
+                    Button(
+                        onClick = {
+                            onConfigurationChange(configuration.copy(imageStyleId = styleId))
+                        },
+                        contentPadding = PaddingValues(0.dp),
+                        colors = ButtonDefaults.colors(
+                            containerColor = Color.Transparent,
+                            contentColor = Color.White,
+                            focusedContainerColor = Color.Transparent,
+                            focusedContentColor = Color.White,
+                        ),
+                        scale = ButtonDefaults.scale(focusedScale = 1f),
+                        shape = ButtonDefaults.shape(shape = RoundedCornerShape(8.dp)),
+                        modifier = Modifier
+                            .width(if (compact) 76.dp else 96.dp)
+                            .height(if (compact) 42.dp else 54.dp)
+                            .testTag("$SETTINGS_DONATION_IMAGE_TAG_PREFIX$styleId")
+                            .semantics { this.selected = selected }
+                            .focusRequester(imageRequesters.getValue(styleId))
+                            .focusProperties {
+                                choices.getOrNull(it - 1)?.let { left = imageRequesters.getValue(it) }
+                                choices.getOrNull(it + 1)?.let { right = imageRequesters.getValue(it) }
+                                up = gratitudeRequester
+                                down = saveRequester
                             }
-                        }
+                            .onFocusChanged { state ->
+                                if (state.isFocused) focusedIndex = it
+                            }
+                            .border(
+                                if (selected || focused) 3.dp else 1.dp,
+                                if (selected || focused) {
+                                    NamazTvTheme.colors.accent
+                                } else {
+                                    NamazTvTheme.colors.surfaceOutline
+                                },
+                                RoundedCornerShape(8.dp),
+                            ),
+                    ) {
+                        Image(
+                            painter = painterResource(style.drawableRes),
+                            contentDescription = appString(style.labelRes),
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize().clip(RoundedCornerShape(7.dp)),
+                        )
                     }
                 }
             }

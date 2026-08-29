@@ -101,16 +101,14 @@ class NamazTvAppUiTest {
             .performKeyInput { pressKey(Key.DirectionDown) }
         compose.onNodeWithTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG).assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_DONATION_GRATITUDE_FIELD_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
         compose.onNodeWithTag(
             "$SETTINGS_DONATION_IMAGE_TAG_PREFIX${DonationImageStyle.MOSQUE.id}",
-        ).assertIsFocused().performKeyInput {
-            pressKey(Key.DirectionDown)
-            pressKey(Key.DirectionDown)
-            pressKey(Key.DirectionDown)
-        }
-        compose.onNodeWithTag(SETTINGS_DONATION_SAVE_TAG).assertIsFocused()
-            .performKeyInput { pressKey(Key.DirectionRight) }
+        ).assertIsFocused().performKeyInput { pressKey(Key.DirectionDown) }
         compose.onNodeWithTag(SETTINGS_DONATION_PICKER_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag(SETTINGS_DONATION_SAVE_TAG).assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionRight) }
         compose.onNodeWithTag(SETTINGS_DONATION_MODE_TAG).assertIsFocused()
             .performKeyInput {

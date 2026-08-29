@@ -67,6 +67,9 @@ Maintains sources and devices without being able to silently publish unapproved 
 - `FR-TV-007`: recover after process recreation and power cycle;
 - `FR-TV-008`: never blank because remote content failed;
 - `FR-TV-009`: provide safe prayer-in-progress/dim mode as a later feature.
+- `FR-TV-010`: allow a bounded device-local donation gratitude message; blank
+  uses the current UI language's standard fallback and never changes schedule
+  provenance.
 
 ### QR campaigns and announcements
 
