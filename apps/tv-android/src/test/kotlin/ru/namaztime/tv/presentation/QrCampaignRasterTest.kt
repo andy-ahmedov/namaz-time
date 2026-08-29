@@ -7,6 +7,7 @@ import com.google.zxing.common.HybridBinarizer
 import com.google.zxing.qrcode.QRCodeReader
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class QrCampaignRasterTest {
@@ -46,7 +47,7 @@ class QrCampaignRasterTest {
 
         listOf(128, 192, 360, 540).forEach { physicalPixels ->
             val pixels = qrArgbPixels(matrix, physicalPixels)
-            val badgeSize = (physicalPixels * (44f / 140f)).toInt()
+            val badgeSize = (physicalPixels * REFERENCE_QR_BADGE_FRACTION).toInt()
             val badgeStart = (physicalPixels - badgeSize) / 2
             repeat(badgeSize) { badgeY ->
                 repeat(badgeSize) { badgeX ->
@@ -63,5 +64,17 @@ class QrCampaignRasterTest {
             )
             assertEquals("size=$physicalPixels", target, decoded.text)
         }
+    }
+
+    @Test
+    fun `reference QR frame declares four symmetric equal-arm corners`() {
+        assertEquals(4, REFERENCE_QR_CORNERS.size)
+        assertEquals(
+            setOf(1 to 1, -1 to 1, 1 to -1, -1 to -1),
+            REFERENCE_QR_CORNERS
+                .map { it.horizontalDirection to it.verticalDirection }
+                .toSet(),
+        )
+        assertTrue(REFERENCE_QR_CORNER_ARM_FRACTION in 0.12f..0.14f)
     }
 }

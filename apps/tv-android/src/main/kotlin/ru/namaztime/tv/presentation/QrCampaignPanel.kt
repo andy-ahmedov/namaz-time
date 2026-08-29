@@ -22,12 +22,15 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
@@ -51,6 +54,20 @@ const val QR_ELEGANT_FRAME_TAG = "qr-elegant-frame"
 const val QR_SUPPORT_ICON_TAG = "qr-support-icon"
 const val QR_BOTTOM_ORNAMENT_TAG = "qr-bottom-ornament"
 const val QR_CENTER_BRAND_BADGE_TAG = "qr-center-brand-badge"
+internal const val REFERENCE_QR_BADGE_FRACTION = 0.30f
+internal const val REFERENCE_QR_CORNER_ARM_FRACTION = 0.13f
+
+internal data class ReferenceQrCorner(
+    val horizontalDirection: Int,
+    val verticalDirection: Int,
+)
+
+internal val REFERENCE_QR_CORNERS = listOf(
+    ReferenceQrCorner(horizontalDirection = 1, verticalDirection = 1),
+    ReferenceQrCorner(horizontalDirection = -1, verticalDirection = 1),
+    ReferenceQrCorner(horizontalDirection = 1, verticalDirection = -1),
+    ReferenceQrCorner(horizontalDirection = -1, verticalDirection = -1),
+)
 
 data class QrCampaignUiState(
     val id: String,
@@ -86,14 +103,17 @@ internal fun QrCampaignPanel(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(horizontal = if (compact) 14.dp else 20.dp, vertical = 14.dp),
+                    .padding(
+                        horizontal = if (compact) 14.dp else 20.dp,
+                        vertical = if (compact) 21.dp else 14.dp,
+                    ),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(if (compact) 7.dp else 11.dp),
             ) {
                 Text(
                     text = kindLabel,
                     color = NamazTvTheme.colors.accent,
-                    fontSize = if (compact) 15.sp else 19.sp,
+                    fontSize = if (compact) 16.sp else 19.sp,
                     fontWeight = FontWeight.Normal,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -110,13 +130,13 @@ internal fun QrCampaignPanel(
                         .fillMaxWidth()
                         .testTag(QR_CAMPAIGN_TITLE_TAG),
                     color = NamazTvTheme.colors.textPrimary,
-                    fontSize = if (compact) 16.sp else 19.sp,
+                    fontSize = if (compact) 14.sp else 19.sp,
                     fontWeight = FontWeight.Normal,
                     textAlign = TextAlign.Center,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                 )
-                ElegantQrFrame(
+                ReferenceQrCode(
                     state = state,
                     qrSize = qrSize,
                     modifier = Modifier.testTag(QR_ELEGANT_FRAME_TAG),
@@ -152,44 +172,43 @@ internal fun QrCampaignPanel(
 }
 
 @Composable
-private fun ElegantQrFrame(
+internal fun ReferenceQrCode(
     state: QrCampaignUiState,
     qrSize: Dp,
     modifier: Modifier = Modifier,
+    framePadding: Dp = 8.dp,
 ) {
-    val frameSize = qrSize + 22.dp
+    val frameSize = qrSize + framePadding * 2f
     val tint = NamazTvTheme.colors.accent
     Box(modifier = modifier.size(frameSize), contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxSize()) {
             val inset = 1.dp.toPx()
-            val arm = size.minDimension * 0.15f
-            val radius = size.minDimension * 0.06f
+            val arm = size.minDimension * REFERENCE_QR_CORNER_ARM_FRACTION
+            val radius = size.minDimension * 0.035f
             val strokeWidth = 1.15.dp.toPx()
             val left = inset
             val top = inset
             val right = size.width - inset
             val bottom = size.height - inset
-            val framePaths = listOf(
+            val framePaths = REFERENCE_QR_CORNERS.map { corner ->
+                val cornerX = if (corner.horizontalDirection > 0) left else right
+                val cornerY = if (corner.verticalDirection > 0) top else bottom
+                val horizontalEnd = cornerX + corner.horizontalDirection * arm
+                val verticalEnd = cornerY + corner.verticalDirection * arm
+                val horizontalTurn = cornerX + corner.horizontalDirection * radius
+                val verticalTurn = cornerY + corner.verticalDirection * radius
                 Path().apply {
-                    moveTo(left, top + arm * 1.08f)
-                    lineTo(left, top + radius)
-                    quadraticTo(left, top, left + radius, top)
-                    lineTo(size.width * 0.76f, top)
-                },
-                Path().apply {
-                    moveTo(right, bottom - arm * 1.42f)
-                    lineTo(right, bottom - radius)
-                    quadraticTo(right, bottom, right - radius, bottom)
-                    lineTo(size.width * 0.18f, bottom)
-                    quadraticTo(left, bottom, left, bottom - radius)
-                    lineTo(left, bottom - arm * 0.48f)
-                },
-            )
+                    moveTo(horizontalEnd, cornerY)
+                    lineTo(horizontalTurn, cornerY)
+                    quadraticTo(cornerX, cornerY, cornerX, verticalTurn)
+                    lineTo(cornerX, verticalEnd)
+                }
+            }
             framePaths.forEach {
                 drawPath(
                     it,
-                    tint.copy(alpha = 0.22f),
-                    style = Stroke(3.2.dp.toPx(), cap = StrokeCap.Round),
+                    tint.copy(alpha = 0.20f),
+                    style = Stroke(3.dp.toPx(), cap = StrokeCap.Round),
                 )
                 drawPath(it, tint, style = Stroke(strokeWidth, cap = StrokeCap.Round))
             }
@@ -215,7 +234,7 @@ private fun ElegantQrFrame(
             )
             DecorativeQrBadge(
                 modifier = Modifier
-                    .size(qrSize * 0.23f)
+                    .size(qrSize * REFERENCE_QR_BADGE_FRACTION)
                     .testTag(QR_CENTER_BRAND_BADGE_TAG),
             )
         }
@@ -225,34 +244,19 @@ private fun ElegantQrFrame(
 @Composable
 private fun DecorativeQrBadge(modifier: Modifier = Modifier) {
     val colors = NamazTvTheme.colors
-    Box(modifier = modifier, contentAlignment = Alignment.Center) {
-        Canvas(Modifier.fillMaxSize()) {
-            val center = androidx.compose.ui.geometry.Offset(size.width / 2f, size.height / 2f)
-            val radius = size.minDimension * 0.47f
-            val star = Path()
-            repeat(16) { point ->
-                val angle = Math.PI * point / 8.0 - Math.PI / 2.0
-                val pointRadius = radius * if (point % 2 == 0) 1f else 0.78f
-                val x = center.x + kotlin.math.cos(angle).toFloat() * pointRadius
-                val y = center.y + kotlin.math.sin(angle).toFloat() * pointRadius
-                if (point == 0) star.moveTo(x, y) else star.lineTo(x, y)
-            }
-            star.close()
-            drawPath(star, colors.backgroundTop)
-            drawPath(
-                star,
-                colors.accent.copy(alpha = 0.92f),
-                style = Stroke(0.8.dp.toPx(), cap = StrokeCap.Round),
+    Canvas(modifier) {
+        val cornerRadius = CornerRadius(size.minDimension * 0.22f)
+        drawRoundRect(colors.backgroundTop.copy(alpha = 0.99f), cornerRadius = cornerRadius)
+        drawRoundRect(
+            colors.accentOutline,
+            cornerRadius = cornerRadius,
+            style = Stroke(0.8.dp.toPx(), cap = StrokeCap.Round),
+        )
+        inset(size.minDimension * 0.17f) {
+            drawCrescentStars(
+                tint = colors.accent,
+                strokeWidth = size.minDimension * 0.055f,
             )
-        }
-        Box(
-            modifier = Modifier
-                .fillMaxSize(0.70f)
-                .background(colors.backgroundTop, RoundedCornerShape(22))
-                .border(0.55.dp, colors.accentOutline, RoundedCornerShape(22)),
-            contentAlignment = Alignment.Center,
-        ) {
-            BrandMark(Modifier.fillMaxSize().padding(4.dp))
         }
     }
 }
@@ -269,45 +273,62 @@ private fun SadaqahSupportGlyph(modifier: Modifier = Modifier) {
         val stroke = Stroke(size.minDimension * TV_ICON_STROKE_FRACTION, cap = StrokeCap.Round)
         drawRoundRect(
             color = tint,
-            topLeft = androidx.compose.ui.geometry.Offset(size.width * 0.20f, size.height * 0.06f),
-            size = androidx.compose.ui.geometry.Size(size.width * 0.56f, size.height * 0.86f),
-            cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.minDimension * 0.09f),
+            topLeft = Offset(size.width * 0.12f, size.height * 0.05f),
+            size = androidx.compose.ui.geometry.Size(size.width * 0.54f, size.height * 0.86f),
+            cornerRadius = CornerRadius(size.minDimension * 0.08f),
             style = stroke,
         )
         drawLine(
             tint,
-            androidx.compose.ui.geometry.Offset(size.width * 0.38f, size.height * 0.17f),
-            androidx.compose.ui.geometry.Offset(size.width * 0.58f, size.height * 0.17f),
+            Offset(size.width * 0.28f, size.height * 0.15f),
+            Offset(size.width * 0.49f, size.height * 0.15f),
             stroke.width,
             StrokeCap.Round,
         )
-        val supportMark = Path().apply {
-            moveTo(size.width * 0.34f, size.height * 0.39f)
-            cubicTo(
-                size.width * 0.28f,
-                size.height * 0.56f,
-                size.width * 0.36f,
-                size.height * 0.69f,
-                size.width * 0.53f,
-                size.height * 0.70f,
-            )
-            cubicTo(
-                size.width * 0.64f,
-                size.height * 0.70f,
-                size.width * 0.69f,
-                size.height * 0.64f,
-                size.width * 0.72f,
-                size.height * 0.55f,
-            )
-        }
-        drawPath(supportMark, tint, style = stroke)
         drawCircle(
-            color = tint,
-            radius = size.minDimension * 0.055f,
-            center = androidx.compose.ui.geometry.Offset(size.width * 0.65f, size.height * 0.38f),
-            style = stroke,
+            tint,
+            size.minDimension * 0.021f,
+            Offset(size.width * 0.39f, size.height * 0.82f),
         )
-        drawCircle(tint, size.minDimension * 0.025f, androidx.compose.ui.geometry.Offset(size.width * 0.48f, size.height * 0.82f))
+        val hand = Path().apply {
+            moveTo(size.width * 0.61f, size.height * 0.50f)
+            cubicTo(
+                size.width * 0.70f,
+                size.height * 0.45f,
+                size.width * 0.77f,
+                size.height * 0.51f,
+                size.width * 0.74f,
+                size.height * 0.61f,
+            )
+            cubicTo(
+                size.width * 0.82f,
+                size.height * 0.56f,
+                size.width * 0.89f,
+                size.height * 0.62f,
+                size.width * 0.84f,
+                size.height * 0.71f,
+            )
+            lineTo(size.width * 0.68f, size.height * 0.88f)
+            cubicTo(
+                size.width * 0.56f,
+                size.height * 0.98f,
+                size.width * 0.38f,
+                size.height * 0.88f,
+                size.width * 0.39f,
+                size.height * 0.74f,
+            )
+            lineTo(size.width * 0.40f, size.height * 0.58f)
+            cubicTo(
+                size.width * 0.41f,
+                size.height * 0.51f,
+                size.width * 0.49f,
+                size.height * 0.50f,
+                size.width * 0.52f,
+                size.height * 0.57f,
+            )
+            lineTo(size.width * 0.55f, size.height * 0.66f)
+        }
+        drawPath(hand, tint, style = stroke)
     }
 }
 

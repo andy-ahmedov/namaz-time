@@ -30,9 +30,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Brush
@@ -86,6 +88,10 @@ const val CALENDAR_ICON_TAG = "calendar-icon"
 const val LOCAL_CLOCK_VALUE_TAG = "mosque-local-clock"
 const val NEXT_EVENT_WATERMARK_TAG = "next-event-watermark"
 const val BOTTOM_STRIP_ORNAMENT_TAG = "bottom-strip-ornament"
+const val NEXT_EVENT_LABEL_TAG = "next-event-label"
+const val NEXT_EVENT_NAME_TAG = "next-event-name"
+const val DATE_LABEL_TAG = "mosque-local-date"
+const val WEEKDAY_LABEL_TAG = "mosque-local-weekday"
 
 internal enum class IqamahPresentation {
     MISSING,
@@ -149,16 +155,17 @@ internal fun MainPrayerDisplay(
             contentShiftBudget = SCREEN_RETENTION_SHIFT_BUDGET,
         ) {
             Box(Modifier.fillMaxSize()) {
-                val compositionWidth = if (state.campaign == null) 0.79f else 0.88f
+                val compositionWidth = if (state.campaign == null) 0.79f else 0.872f
                 Column(
                     modifier = Modifier
                         .align(Alignment.TopCenter)
+                        .offset(x = if (state.campaign == null) 0.dp else 4.dp)
                         .fillMaxWidth(compositionWidth)
                         .fillMaxHeight()
                         .testTag(MAIN_DISPLAY_COMPOSITION_TAG),
                 ) {
                     DisplayHeader(state, metrics)
-                    Spacer(Modifier.height(metrics.sectionGap))
+                    Spacer(Modifier.height(metrics.bodyTopGap))
                     if (state.campaign == null) {
                         Row(
                             modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -171,7 +178,7 @@ internal fun MainPrayerDisplay(
                                 Modifier.weight(1f).fillMaxHeight(),
                             )
                         }
-                        Spacer(Modifier.height(metrics.sectionGap))
+                        Spacer(Modifier.height(metrics.stripGap))
                         IqamahStatusStrip(
                             state,
                             metrics,
@@ -194,7 +201,7 @@ internal fun MainPrayerDisplay(
                                         Modifier.weight(1f).fillMaxHeight(),
                                     )
                                 }
-                                Spacer(Modifier.height(metrics.sectionGap))
+                                Spacer(Modifier.height(metrics.stripGap))
                                 IqamahStatusStrip(
                                     state,
                                     metrics,
@@ -471,19 +478,25 @@ private fun NextEventCard(
                     .fillMaxHeight(0.90f)
                     .testTag(NEXT_EVENT_WATERMARK_TAG),
             )
-            Column(
-                modifier = Modifier.fillMaxSize().padding(metrics.cardPadding),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
+            Box(
+                modifier = Modifier.fillMaxSize(),
             ) {
                 Text(
                     appString(R.string.next_prayer),
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = metrics.nextTitleTop)
+                        .testTag(NEXT_EVENT_LABEL_TAG),
                     color = colors.accent,
                     fontSize = metrics.labelSize,
                     fontWeight = FontWeight.Normal,
                 )
                 Text(
                     state.nextPrayerLabel,
+                    modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = metrics.nextPrayerTop)
+                        .testTag(NEXT_EVENT_NAME_TAG),
                     color = colors.textPrimary,
                     fontSize = metrics.nextPrayerSize,
                     fontWeight = FontWeight.Medium,
@@ -494,7 +507,8 @@ private fun NextEventCard(
                 OrnamentDivider(
                     tint = colors.accentOutline,
                     modifier = Modifier
-                        .padding(vertical = metrics.inlineGap / 2)
+                        .align(Alignment.TopCenter)
+                        .offset(y = metrics.nextDividerTop)
                         .width(metrics.ornamentDividerWidth)
                         .height(8.dp)
                         .testTag(NEXT_EVENT_DIVIDER_TAG),
@@ -502,6 +516,8 @@ private fun NextEventCard(
                 Text(
                     state.countdown,
                     modifier = Modifier
+                        .align(Alignment.TopCenter)
+                        .offset(y = metrics.nextCountdownTop)
                         .width(metrics.countdownWidth)
                         .testTag(COUNTDOWN_TEST_TAG)
                         .semantics {
@@ -527,10 +543,10 @@ private fun NextPrayerWatermark(modifier: Modifier = Modifier) {
         val stroke = Stroke(0.65.dp.toPx(), cap = StrokeCap.Round)
         val glowStroke = Stroke(2.6.dp.toPx(), cap = StrokeCap.Round)
         val arch = Path().apply {
-            moveTo(size.width * 0.08f, size.height)
-            lineTo(size.width * 0.08f, size.height * 0.44f)
+            moveTo(size.width * 0.13f, size.height)
+            lineTo(size.width * 0.13f, size.height * 0.44f)
             cubicTo(
-                size.width * 0.08f,
+                size.width * 0.13f,
                 size.height * 0.34f,
                 size.width * 0.23f,
                 size.height * 0.31f,
@@ -550,9 +566,9 @@ private fun NextPrayerWatermark(modifier: Modifier = Modifier) {
         drawPath(arch, tint.copy(alpha = 0.035f), style = glowStroke)
         drawPath(arch, tint.copy(alpha = 0.12f), style = stroke)
 
-        val lanternX = size.width * 0.27f
+        val lanternX = size.width * 0.20f
         val chainTop = size.height * 0.18f
-        val lanternTop = size.height * 0.49f
+        val lanternTop = size.height * 0.42f
         drawLine(
             tint.copy(alpha = 0.12f),
             Offset(lanternX, chainTop),
@@ -562,26 +578,73 @@ private fun NextPrayerWatermark(modifier: Modifier = Modifier) {
         )
         val lantern = Path().apply {
             moveTo(lanternX, lanternTop)
-            lineTo(size.width * 0.22f, size.height * 0.55f)
-            lineTo(size.width * 0.23f, size.height * 0.74f)
-            lineTo(lanternX, size.height * 0.80f)
-            lineTo(size.width * 0.31f, size.height * 0.74f)
-            lineTo(size.width * 0.32f, size.height * 0.55f)
+            cubicTo(
+                size.width * 0.18f,
+                size.height * 0.44f,
+                size.width * 0.14f,
+                size.height * 0.47f,
+                size.width * 0.13f,
+                size.height * 0.50f,
+            )
+            lineTo(size.width * 0.12f, size.height * 0.69f)
+            lineTo(size.width * 0.15f, size.height * 0.73f)
+            lineTo(lanternX, size.height * 0.75f)
+            lineTo(size.width * 0.25f, size.height * 0.73f)
+            lineTo(size.width * 0.28f, size.height * 0.69f)
+            lineTo(size.width * 0.27f, size.height * 0.50f)
+            cubicTo(
+                size.width * 0.26f,
+                size.height * 0.47f,
+                size.width * 0.22f,
+                size.height * 0.44f,
+                lanternX,
+                lanternTop,
+            )
             close()
         }
         drawPath(lantern, tint.copy(alpha = 0.035f), style = glowStroke)
-        drawPath(lantern, tint.copy(alpha = 0.14f), style = stroke)
+        drawPath(lantern, tint.copy(alpha = 0.18f), style = stroke)
         drawLine(
-            tint.copy(alpha = 0.14f),
-            Offset(size.width * 0.235f, size.height * 0.62f),
-            Offset(size.width * 0.305f, size.height * 0.62f),
+            tint.copy(alpha = 0.18f),
+            Offset(size.width * 0.13f, size.height * 0.53f),
+            Offset(size.width * 0.27f, size.height * 0.53f),
+            stroke.width,
+            StrokeCap.Round,
+        )
+        listOf(0.16f, 0.24f).forEach { paneCenterX ->
+            drawArc(
+                color = tint.copy(alpha = 0.17f),
+                startAngle = 180f,
+                sweepAngle = 180f,
+                useCenter = false,
+                topLeft = Offset(size.width * (paneCenterX - 0.025f), size.height * 0.57f),
+                size = Size(size.width * 0.05f, size.height * 0.08f),
+                style = stroke,
+            )
+            drawLine(
+                tint.copy(alpha = 0.17f),
+                Offset(size.width * (paneCenterX - 0.025f), size.height * 0.61f),
+                Offset(size.width * (paneCenterX - 0.025f), size.height * 0.68f),
+                stroke.width,
+            )
+            drawLine(
+                tint.copy(alpha = 0.17f),
+                Offset(size.width * (paneCenterX + 0.025f), size.height * 0.61f),
+                Offset(size.width * (paneCenterX + 0.025f), size.height * 0.68f),
+                stroke.width,
+            )
+        }
+        drawLine(
+            tint.copy(alpha = 0.18f),
+            Offset(size.width * 0.14f, size.height * 0.70f),
+            Offset(size.width * 0.26f, size.height * 0.70f),
             stroke.width,
             StrokeCap.Round,
         )
         drawCircle(
             tint.copy(alpha = 0.12f),
             1.2.dp.toPx(),
-            Offset(lanternX, size.height * 0.85f),
+            Offset(lanternX, size.height * 0.80f),
         )
     }
 }
@@ -597,65 +660,66 @@ private fun LocalClockCard(
         modifier = modifier.fillMaxHeight().testTag(LOCAL_CLOCK_CARD_TAG),
         radius = metrics.cardRadius,
     ) {
-        Column(
+        Row(
             modifier = Modifier.fillMaxSize().padding(horizontal = metrics.cardPadding),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(
-                modifier = Modifier.fillMaxSize(),
-                verticalAlignment = Alignment.CenterVertically,
+            Box(
+                modifier = Modifier.width(metrics.calendarAreaWidth),
+                contentAlignment = Alignment.Center,
             ) {
-                Box(
-                    modifier = Modifier.width(metrics.calendarAreaWidth),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    CalendarGlyph(
-                        modifier = Modifier
-                            .size(metrics.calendarIconSize)
-                            .testTag(CALENDAR_ICON_TAG),
-                    )
-                }
-                Column(
-                    modifier = Modifier.weight(1f),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center,
-                ) {
-                    Text(
-                        state.dateLabel,
-                        color = colors.textPrimary,
-                        fontSize = metrics.dateSize,
-                        fontWeight = FontWeight.Normal,
-                        maxLines = 1,
-                    )
-                    Text(
-                        state.weekdayLabel,
-                        color = colors.textSecondary,
-                        fontSize = metrics.captionSize,
-                    )
-                    OrnamentDivider(
-                        tint = colors.accentOutline,
-                        modifier = Modifier
-                            .width(metrics.clockDividerWidth)
-                            .height(7.dp)
-                            .testTag(CLOCK_DIVIDER_TAG),
-                    )
-                    Text(
-                        state.mosqueLocalTime,
-                        modifier = Modifier
-                            .widthIn(min = metrics.clockWidth)
-                            .testTag(LOCAL_CLOCK_VALUE_TAG),
-                        color = colors.textPrimary,
-                        fontSize = metrics.clockSize,
-                        fontWeight = FontWeight.Light,
-                        fontFamily = FontFamily.SansSerif,
-                        letterSpacing = 1.sp,
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                    )
-                }
-                Spacer(Modifier.width(metrics.calendarAreaWidth / 2))
+                CalendarGlyph(
+                    modifier = Modifier
+                        .size(metrics.calendarIconSize)
+                        .testTag(CALENDAR_ICON_TAG),
+                )
             }
+            Column(
+                modifier = Modifier
+                    .weight(1f)
+                    .fillMaxHeight()
+                    .padding(top = metrics.clockContentTop),
+                horizontalAlignment = Alignment.CenterHorizontally,
+            ) {
+                Text(
+                    state.dateLabel,
+                    modifier = Modifier.testTag(DATE_LABEL_TAG),
+                    color = colors.textPrimary,
+                    fontSize = metrics.dateSize,
+                    fontWeight = FontWeight.Normal,
+                    maxLines = 1,
+                )
+                Spacer(Modifier.height(metrics.dateWeekdayGap))
+                Text(
+                    state.weekdayLabel,
+                    modifier = Modifier.testTag(WEEKDAY_LABEL_TAG),
+                    color = colors.textSecondary,
+                    fontSize = metrics.captionSize,
+                )
+                OrnamentDivider(
+                    tint = colors.accentOutline,
+                    modifier = Modifier
+                        .padding(vertical = 1.dp)
+                        .width(metrics.clockDividerWidth)
+                        .height(7.dp)
+                        .testTag(CLOCK_DIVIDER_TAG),
+                )
+                Spacer(Modifier.height(metrics.clockPreTimeGap))
+                Text(
+                    state.mosqueLocalTime,
+                    modifier = Modifier
+                        .widthIn(min = metrics.clockWidth)
+                        .testTag(LOCAL_CLOCK_VALUE_TAG),
+                    color = colors.textPrimary,
+                    fontSize = metrics.clockSize,
+                    fontWeight = FontWeight.Light,
+                    fontFamily = FontFamily.SansSerif,
+                    letterSpacing = 1.sp,
+                    textAlign = TextAlign.Center,
+                    maxLines = 1,
+                )
+            }
+            Spacer(Modifier.width(metrics.calendarAreaWidth / 2))
         }
     }
 }
@@ -672,17 +736,25 @@ private fun PrayerListCard(
         radius = metrics.cardRadius,
     ) {
         Column(
-            modifier = Modifier.fillMaxSize().padding(
-                horizontal = metrics.gridHorizontalPadding,
-                vertical = metrics.gridVerticalPadding,
-            ),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(
+                    horizontal = metrics.rowHighlightHorizontalInset,
+                    vertical = metrics.gridVerticalPadding,
+                ),
         ) {
-            PrayerGridHeader(metrics)
+            PrayerGridHeader(
+                metrics,
+                Modifier.padding(horizontal = metrics.gridHorizontalPadding),
+            )
             state.rows.forEachIndexed { index, row ->
                 PrayerGridRow(row, metrics, Modifier.weight(1f))
                 if (index < state.rows.lastIndex) {
                     TvFadingHairline(
-                        modifier = Modifier.fillMaxWidth().height(1.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = metrics.gridHorizontalPadding)
+                            .height(1.dp),
                         color = colors.separator,
                     )
                 }
@@ -751,26 +823,31 @@ private fun PrayerGridRow(
             .then(
                 if (row.isNextEvent) {
                     Modifier
-                        .background(
-                            brush = Brush.horizontalGradient(
-                                listOf(
-                                    colors.accentSoft.copy(alpha = 0.64f),
-                                    colors.accentSoft.copy(alpha = 0.30f),
-                                    colors.accentSoft.copy(alpha = 0.18f),
+                        .drawBehind {
+                            val radius = metrics.rowRadius.toPx()
+                            drawRoundRect(
+                                brush = Brush.horizontalGradient(
+                                    listOf(
+                                        colors.accentSoft.copy(alpha = 0.57f),
+                                        colors.accentSoft.copy(alpha = 0.31f),
+                                        colors.accentSoft.copy(alpha = 0.16f),
+                                    ),
                                 ),
-                            ),
-                            shape = RoundedCornerShape(metrics.rowRadius),
-                        )
-                        .border(
-                            2.5.dp,
-                            colors.accentOutline.copy(alpha = 0.10f),
-                            RoundedCornerShape(metrics.rowRadius),
-                        )
-                        .border(
-                            0.65.dp,
-                            colors.accentOutline.copy(alpha = 0.62f),
-                            RoundedCornerShape(metrics.rowRadius),
-                        )
+                                cornerRadius = CornerRadius(radius),
+                            )
+                            drawRoundRect(
+                                color = colors.accentOutline.copy(alpha = 0.66f),
+                                cornerRadius = CornerRadius(radius),
+                                style = Stroke(0.65.dp.toPx()),
+                            )
+                            drawLine(
+                                color = colors.accent,
+                                start = Offset(1.8.dp.toPx(), radius * 0.72f),
+                                end = Offset(1.8.dp.toPx(), size.height - radius * 0.72f),
+                                strokeWidth = 3.6.dp.toPx(),
+                                cap = StrokeCap.Round,
+                            )
+                        }
                 } else {
                     Modifier
                 },
@@ -783,7 +860,9 @@ private fun PrayerGridRow(
             row = row,
             iqamahText = iqamahText,
             metrics = metrics,
-            modifier = Modifier.fillMaxSize(),
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = metrics.gridHorizontalPadding),
         )
     }
 }
@@ -791,10 +870,11 @@ private fun PrayerGridRow(
 @Composable
 private fun PrayerGridHeader(
     metrics: MainDisplayMetrics,
+    modifier: Modifier = Modifier,
 ) {
     val colors = NamazTvTheme.colors
     Row(
-        modifier = Modifier.fillMaxWidth().height(metrics.gridHeaderHeight),
+        modifier = modifier.fillMaxWidth().height(metrics.gridHeaderHeight),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Spacer(Modifier.width(metrics.prayerIconSize + metrics.inlineGap))
@@ -820,7 +900,7 @@ private fun PrayerGridHeader(
         }
     }
     TvFadingHairline(
-        modifier = Modifier.fillMaxWidth().height(1.dp),
+        modifier = modifier.fillMaxWidth().height(1.dp),
         color = colors.separator,
     )
 }
@@ -1187,9 +1267,12 @@ private val PRAYER_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ROO
 
 private data class MainDisplayMetrics(
     val sectionGap: Dp,
+    val bodyTopGap: Dp,
+    val stripGap: Dp,
     val inlineGap: Dp,
     val cardPadding: Dp,
     val gridHorizontalPadding: Dp,
+    val rowHighlightHorizontalInset: Dp,
     val gridVerticalPadding: Dp,
     val cellPadding: Dp,
     val headerHeight: Dp,
@@ -1198,6 +1281,9 @@ private data class MainDisplayMetrics(
     val settingsEndMargin: Dp,
     val settingsCornerRadius: Dp,
     val clockCardHeight: Dp,
+    val clockContentTop: Dp,
+    val dateWeekdayGap: Dp,
+    val clockPreTimeGap: Dp,
     val iqamahStripHeight: Dp,
     val bottomBreathingRoom: Dp,
     val countdownWidth: Dp,
@@ -1211,6 +1297,10 @@ private data class MainDisplayMetrics(
     val rowRadius: Dp,
     val leftColumnWeight: Float,
     val ornamentDividerWidth: Dp,
+    val nextTitleTop: Dp,
+    val nextPrayerTop: Dp,
+    val nextDividerTop: Dp,
+    val nextCountdownTop: Dp,
     val clockDividerWidth: Dp,
     val locationOrnamentWidth: Dp,
     val calendarAreaWidth: Dp,
@@ -1237,9 +1327,12 @@ private data class MainDisplayMetrics(
         fun forHeight(height: Dp): MainDisplayMetrics = if (height < 600.dp) {
             MainDisplayMetrics(
                 sectionGap = 8.dp,
+                bodyTopGap = 12.dp,
+                stripGap = 13.dp,
                 inlineGap = 8.dp,
                 cardPadding = 16.dp,
-                gridHorizontalPadding = 14.dp,
+                gridHorizontalPadding = 17.dp,
+                rowHighlightHorizontalInset = 4.dp,
                 gridVerticalPadding = 9.dp,
                 cellPadding = 3.dp,
                 headerHeight = 86.dp,
@@ -1247,8 +1340,11 @@ private data class MainDisplayMetrics(
                 settingsTopMargin = 27.dp,
                 settingsEndMargin = 20.dp,
                 settingsCornerRadius = 11.dp,
-                clockCardHeight = 128.dp,
-                iqamahStripHeight = 58.dp,
+                clockCardHeight = 127.dp,
+                clockContentTop = 19.dp,
+                dateWeekdayGap = 2.dp,
+                clockPreTimeGap = 8.dp,
+                iqamahStripHeight = 52.dp,
                 bottomBreathingRoom = 0.dp,
                 countdownWidth = 230.dp,
                 clockWidth = 180.dp,
@@ -1261,6 +1357,10 @@ private data class MainDisplayMetrics(
                 rowRadius = 11.dp,
                 leftColumnWeight = 1f,
                 ornamentDividerWidth = 118.dp,
+                nextTitleTop = 24.dp,
+                nextPrayerTop = 53.dp,
+                nextDividerTop = 98.dp,
+                nextCountdownTop = 119.dp,
                 clockDividerWidth = 92.dp,
                 locationOrnamentWidth = 54.dp,
                 calendarAreaWidth = 52.dp,
@@ -1277,7 +1377,7 @@ private data class MainDisplayMetrics(
                 captionSize = 13.sp,
                 sourceDescriptionSize = 10.sp,
                 brandIconSize = 17.dp,
-                prayerIconSize = 22.dp,
+                prayerIconSize = 25.dp,
                 iqamahIconSize = 24.dp,
                 settingsIconSize = 22.dp,
                 calendarIconSize = 34.dp,
@@ -1286,9 +1386,12 @@ private data class MainDisplayMetrics(
         } else {
             MainDisplayMetrics(
                 sectionGap = 14.dp,
+                bodyTopGap = 17.dp,
+                stripGap = 17.dp,
                 inlineGap = 10.dp,
                 cardPadding = 24.dp,
-                gridHorizontalPadding = 20.dp,
+                gridHorizontalPadding = 23.dp,
+                rowHighlightHorizontalInset = 5.dp,
                 gridVerticalPadding = 12.dp,
                 cellPadding = 5.dp,
                 headerHeight = 108.dp,
@@ -1297,7 +1400,10 @@ private data class MainDisplayMetrics(
                 settingsEndMargin = 28.dp,
                 settingsCornerRadius = 14.dp,
                 clockCardHeight = 170.dp,
-                iqamahStripHeight = 68.dp,
+                clockContentTop = 25.dp,
+                dateWeekdayGap = 3.dp,
+                clockPreTimeGap = 11.dp,
+                iqamahStripHeight = 69.dp,
                 bottomBreathingRoom = 0.dp,
                 countdownWidth = 310.dp,
                 clockWidth = 230.dp,
@@ -1310,6 +1416,10 @@ private data class MainDisplayMetrics(
                 rowRadius = 15.dp,
                 leftColumnWeight = 1f,
                 ornamentDividerWidth = 156.dp,
+                nextTitleTop = 32.dp,
+                nextPrayerTop = 71.dp,
+                nextDividerTop = 131.dp,
+                nextCountdownTop = 159.dp,
                 clockDividerWidth = 124.dp,
                 locationOrnamentWidth = 72.dp,
                 calendarAreaWidth = 70.dp,
@@ -1326,7 +1436,7 @@ private data class MainDisplayMetrics(
                 captionSize = 16.sp,
                 sourceDescriptionSize = 13.sp,
                 brandIconSize = 21.dp,
-                prayerIconSize = 32.dp,
+                prayerIconSize = 34.dp,
                 iqamahIconSize = 32.dp,
                 settingsIconSize = 29.dp,
                 calendarIconSize = 46.dp,

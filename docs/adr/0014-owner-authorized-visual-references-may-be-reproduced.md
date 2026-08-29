@@ -34,6 +34,29 @@ custom-drawn icon silhouettes and wording. NamazTime branding, the locally
 generated QR payload and operator-entered details replace the reference sample
 content. The raw reference remains outside Git; no bitmap icon was extracted.
 
+For T033 (requested by the product owner as “T030 — pilot UI fidelity and
+operator customization”; repository number T030 was already assigned) the
+product owner explicitly directed the implementation on 2026-08-29 to treat
+three supplied images as canonical visual specifications:
+
+- `new_reference.png`, SHA-256
+  `0df8e3b5ac25e7f65c975d354e19b3e652b20da33e8d9bea10602fbf5b6e6c27`,
+  for the main display, its original line icons, row highlight, arch/lantern
+  watermark and shared QR frame/glyph;
+- `design_item_in_the_menu.png`, SHA-256
+  `542c4c2b083365549a594b18d195de485b7604fe711f4679be4443de582a2cc8`,
+  for the Appearance and donation-image selector hierarchy;
+- `layout_of_blocks_on_the_donation_screen.png`, SHA-256
+  `e5ea06acc72131935c1a12a2963a3902dfd43f3f3d0a6941304ee0520982c8bb`,
+  for the standalone donation-screen block composition.
+
+The supplied screenshots are `CONFIRMED_PUBLIC` visual requirements. The
+authorization covers visual hierarchy, proportions, decoration, icons and
+wording. It does not authorize third-party branding or extracted resources.
+NamazTime identity, authenticated schedule data, locally generated QR payload
+and operator-local content remain independent. The raw references remain
+outside Git.
+
 ## Decision
 
 An explicitly authorized, product-owner-supplied visual reference may be

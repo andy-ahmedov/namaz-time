@@ -226,6 +226,17 @@ composition is measured. Three API 36 build/install/screenshot passes were
 compared directly with `main_with_qr.png`; this is bounded visual runtime
 evidence, not automated perceptual equivalence or physical-TV acceptance.
 
+T033 supersedes the main-screen geometry reference with `new_reference.png`.
+The controlled 960×540 Compose contract pins all five campaign-layout regions
+to the normalized 4–8 px tolerance, verifies the highlight reaches within 6 dp
+of both prayer-card edges, and pins the raised next-event/date anchors. QR
+raster tests obscure the actual 30 percent badge region at four physical sizes
+and assert a four-orientation equal-arm corner declaration. Controlled API 36
+build/install/screenshots are normalized to 1920×1080 for side-by-side and
+difference review. They are `CONFIRMED_RUNTIME` emulator evidence; physical-TV
+overscan, panel behavior and representative-distance phone scanning remain
+`UNKNOWN`.
+
 T027 pins the concise public display identity for the Ulyanovsk pilot mosque
 on both the main screen and Mosque settings page. A non-pilot passthrough
 assertion and the authenticated pilot bootstrap test prove the presentation

@@ -202,9 +202,26 @@ opacity fades toward both ends around a small diamond. The next-prayer card has
 a non-semantic low-contrast arch and hanging-lantern watermark. A connected
 star/diamond lattice is reused below the QR and at the right of the bottom
 strip. The QR keeps its local payload and error correction but renders on a
-rounded warm-white surface with dark-navy modules, a decorative NamazTime
-center badge and an asymmetric corner/bottom frame. These decorative layers do
+rounded warm-white surface with dark-navy modules and a decorative NamazTime
+center badge. T033 supersedes the old asymmetric frame with four identical
+short L-shaped corners, mirrored around the QR with equal arms. These decorative layers do
 not read data, accept focus, or introduce network work into display state.
+
+T033 uses the owner-authorized `new_reference.png` as the canonical main-screen
+visual contract under ADR 0014. At normalized 960×540 its principal campaign
+anchors are approximately: next card `(110,122,268,190)`, local-clock card
+`(110,320,268,127)`, prayer card `(385,122,267,325)`, event strip
+`(110,460,542,52)` and QR panel `(660,122,201,390)`. Real text length and the
+bounded ±2 dp retention shift may move glyph bounds, but structural anchors
+target 4–8 px tolerance. The active prayer highlight spans the prayer-card
+interior with about a 4 dp inset, translucent warm fill, thin outline and a
+separate thicker left accent. Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha,
+collective prayer and phone/support use original rounded-cap champagne line
+drawings. The next-event watermark is a pointed Islamic arch with a suspended,
+pane-detailed lantern. Next-event/date content uses explicit top anchors rather
+than centered column arrangements. The shared QR primitive uses the same four
+corners and crescent/two-star center glyph on main and standalone donation
+screens.
 
 For mosque ID `second-cathedral-mosque-ulyanovsk`, the public main display and
 Mosque settings summary use the concise presentation identity `Вторая Соборная

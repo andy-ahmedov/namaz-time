@@ -538,6 +538,44 @@ class NamazTvAppUiTest {
         assertActiveCampaignFitsDisplay()
     }
 
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun activeCampaignMatchesCanonicalMainDisplayAnchors() {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(
+                    schedule().copy(campaigns = listOf(campaign())),
+                ),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        assertReferenceBounds(MAIN_DISPLAY_COMPOSITION_TAG, 109f, 27f, 861f, 513f)
+        assertReferenceBounds(NEXT_EVENT_CARD_TAG, 109f, 121f, 377f, 311f)
+        assertReferenceBounds(LOCAL_CLOCK_CARD_TAG, 109f, 319f, 377f, 447f)
+        assertReferenceBounds(PRAYER_LIST_CARD_TAG, 385f, 121f, 652f, 447f)
+        assertReferenceBounds(IQAMAH_STRIP_TAG, 109f, 463f, 652f, 515f)
+        assertReferenceBounds(QR_CAMPAIGN_PANEL_TAG, 660f, 121f, 862f, 515f)
+
+        val prayerCard = compose.onNodeWithTag(PRAYER_LIST_CARD_TAG).getUnclippedBoundsInRoot()
+        val highlight = compose.onNodeWithTag("${PRAYER_ROW_TEST_TAG_PREFIX}asr")
+            .getUnclippedBoundsInRoot()
+        assertTrue(highlight.left - prayerCard.left <= 6.dp)
+        assertTrue(prayerCard.right - highlight.right <= 6.dp)
+
+        val nextCard = compose.onNodeWithTag(NEXT_EVENT_CARD_TAG).getUnclippedBoundsInRoot()
+        val nextLabel = compose.onNodeWithTag(NEXT_EVENT_LABEL_TAG).getUnclippedBoundsInRoot()
+        val date = compose.onNodeWithTag(DATE_LABEL_TAG).getUnclippedBoundsInRoot()
+        val clockCard = compose.onNodeWithTag(LOCAL_CLOCK_CARD_TAG).getUnclippedBoundsInRoot()
+        assertTrue(nextLabel.top - nextCard.top in 14.dp..27.dp)
+        assertTrue(date.top - clockCard.top in 10.dp..24.dp)
+    }
+
     private fun assertActiveCampaignFitsDisplay() {
         val campaign = campaign()
         compose.setContent {
@@ -1272,6 +1310,23 @@ class NamazTvAppUiTest {
         endsAt = "2026-08-21T00:00:00Z",
         placement = "with_prayer_times",
     )
+
+    private fun assertReferenceBounds(
+        tag: String,
+        left: Float,
+        top: Float,
+        right: Float,
+        bottom: Float,
+        tolerance: Float = 8f,
+    ) {
+        val actual = compose.onNodeWithTag(tag)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        assertTrue("$tag left=${actual.left.value}", kotlin.math.abs(actual.left.value - left) <= tolerance)
+        assertTrue("$tag top=${actual.top.value}", kotlin.math.abs(actual.top.value - top) <= tolerance)
+        assertTrue("$tag right=${actual.right.value}", kotlin.math.abs(actual.right.value - right) <= tolerance)
+        assertTrue("$tag bottom=${actual.bottom.value}", kotlin.math.abs(actual.bottom.value - bottom) <= tolerance)
+    }
 }
 
 private class FakeOperatorPreferencesRepository(

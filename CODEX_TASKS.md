@@ -627,3 +627,38 @@ structured fields while retaining the five packaged images and custom picker.
 The signed Room schedule, offline path and QR destination remain unchanged.
 Controlled emulator observations are `CONFIRMED_RUNTIME`; physical-TV/OEM and
 real-phone scan distance remain `UNKNOWN`.
+
+## T033 — pilot UI fidelity and operator customization
+
+The product-owner request names this task T030, but repository T030 already
+records the completed production-readiness audit. T033 preserves that history
+and is the repository identifier for the requested work.
+
+**Goal:** reproduce the supplied canonical main, selector and donation-layout
+references while adding mosque-local Dhuhr/Jumu'ah policy and bounded operator
+identity/gratitude customization without weakening the signed offline model.
+
+**In scope:** six separately committed checkpoints: main-screen/vector/QR
+fidelity; Dhuhr onset plus shared 13:15 Dhuhr/Jumu'ah policy and one-minute
+operator control; local display-name/address overrides; eight-item Appearance
+preview plus one D-pad LazyRow and separate SAF action; equivalent five-item
+donation selector plus localized optional gratitude; and the new 16:9
+standalone donation block hierarchy driven by the existing Room-backed time
+engine. Each persisted field requires bounded defaults and regression tests.
+
+**Non-goals:** changing mosque ID, source locality, timezone, provenance or
+signed schedule through presentation settings; independent prayer calculation;
+broad storage access; bypassing artifact validation/signatures; third-party
+brand/resources; remote publication; push or PR.
+
+**Acceptance:** all functional requirements in the owner request pass; main
+anchors normalize to approximately 4–8 px where content permits; selector and
+donation references pass region/component comparisons; D-pad, RU/EN, image
+validation, QR decode, offline/rollback and signed pilot invariants regress;
+each checkpoint has a local commit; final `make test`, `make lint`,
+`make docs-check`, Android gates, debug/pilot builds, four runtime screenshots
+and independent code/visual reviews pass with a clean worktree.
+
+**Progress:** Checkpoint 1 is implemented and verified with targeted tests and
+three controlled API 36 build/install/normalize/refine passes. Remaining
+checkpoints are in progress.

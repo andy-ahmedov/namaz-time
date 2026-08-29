@@ -34,10 +34,8 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.FilterQuality
 import androidx.compose.ui.graphics.painter.BitmapPainter
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.contentDescription
@@ -348,49 +346,13 @@ private fun DonationQrSurface(
     scale: Float,
     modifier: Modifier = Modifier,
 ) {
-    val colors = NamazTvTheme.colors
-    val outerShape = RoundedCornerShape((14f * scale).dp)
-    val qrSize = (140f * scale).dp
-    Box(
+    ReferenceQrCode(
+        state = state,
+        qrSize = (140f * scale).dp,
+        framePadding = (7f * scale).dp,
         modifier = modifier
-            .clip(outerShape)
-            .background(colors.surfaceStrong.copy(alpha = 0.88f))
-            .border((0.65f * scale).dp, colors.accentOutline.copy(alpha = 0.92f), outerShape),
-        contentAlignment = Alignment.Center,
-    ) {
-        Box(
-            modifier = Modifier
-                .size(qrSize)
-                .clip(RoundedCornerShape((9f * scale).dp))
-                .background(QR_WARM_WHITE),
-            contentAlignment = Alignment.Center,
-        ) {
-            Image(
-                bitmap = rememberQrBitmap(
-                    matrix = state.qrCode,
-                    outputSize = with(LocalDensity.current) { qrSize.roundToPx() },
-                ),
-                contentDescription = appString(R.string.qr_content_description, state.title),
-                modifier = Modifier.fillMaxSize().testTag(QR_CODE_IMAGE_TAG),
-                filterQuality = FilterQuality.None,
-            )
-            Box(
-                modifier = Modifier
-                    .size((44f * scale).dp)
-                    .clip(RoundedCornerShape((10f * scale).dp))
-                    .background(colors.backgroundBottom.copy(alpha = 0.98f))
-                    .border(
-                        (0.65f * scale).dp,
-                        colors.accentOutline,
-                        RoundedCornerShape((10f * scale).dp),
-                    )
-                    .testTag(QR_CENTER_BRAND_BADGE_TAG),
-                contentAlignment = Alignment.Center,
-            ) {
-                DonationBrandMark(Modifier.fillMaxSize().padding((7f * scale).dp))
-            }
-        }
-    }
+            .testTag(QR_ELEGANT_FRAME_TAG),
+    )
 }
 
 @Composable
@@ -576,4 +538,3 @@ private val DONATION_BACKGROUND_SCRIM = Color(0x3D061322)
 private val DONATION_CARD_TOP = Color(0xEE243143)
 private val DONATION_CARD_BOTTOM = Color(0xF21A2533)
 private val DONATION_FOOTER_SURFACE = Color(0xE6182638)
-private val QR_WARM_WHITE = Color(0xFFFFFDF8)
