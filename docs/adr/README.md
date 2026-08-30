@@ -17,3 +17,4 @@ Create an ADR for durable decisions affecting correctness, source authority, sec
 - [0013 — Device-local display overrides stay separate from signed snapshots](0013-device-local-display-overrides-stay-separate-from-signed-snapshots.md)
 - [0014 — Owner-authorized visual references may be reproduced](0014-owner-authorized-visual-references-may-be-reproduced.md)
 - [0015 — City, region, authority, source and policy resolution are separate](0015-city-region-authority-source-policy-resolution.md)
+- [0016 — TV setup uses a device-scoped review handoff](0016-tv-setup-uses-device-scoped-review-handoff.md)

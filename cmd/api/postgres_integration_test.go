@@ -36,9 +36,12 @@ func TestRuntimeLoadsRestartSafePostgresPairingWithoutLiteralSecrets(t *testing.
 
 	directory := t.TempDir()
 	config := map[string]any{
-		"public_base_url":                 "https://api.example.invalid",
-		"pairing_backend":                 "postgres",
-		"registry_backend":                "postgres",
+		"public_base_url":  "https://api.example.invalid",
+		"pairing_backend":  "postgres",
+		"registry_backend": "postgres",
+		"device_setup_revision_ids": map[string]string{
+			"mosque-runtime-0001": "revision-runtime-staged-0001",
+		},
 		"database_url_env":                "NAMAZ_DATABASE_URL_TEST",
 		"pairing_rate_limit_key_env":      "NAMAZ_PAIR_RATE_KEY_TEST",
 		"admin_idempotency_key_env":       "NAMAZ_ADMIN_IDEMPOTENCY_KEY_TEST",
@@ -306,6 +309,87 @@ func TestRuntimeLoadsRestartSafePostgresPairingWithoutLiteralSecrets(t *testing.
 	if manifestResponse.StatusCode != http.StatusNotFound {
 		t.Fatalf("authenticated unassigned manifest status = %d", manifestResponse.StatusCode)
 	}
+	citySearchRequest, err := http.NewRequest(
+		http.MethodGet,
+		restartedServer.URL+"/v1/devices/"+issued.DeviceID+"/setup/cities?q="+url.QueryEscape("Ульяновск"),
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("create device city search request: %v", err)
+	}
+	citySearchRequest.Header.Set("Authorization", "Bearer "+paired.DeviceToken)
+	citySearchResponse, err := http.DefaultClient.Do(citySearchRequest)
+	if err != nil {
+		t.Fatalf("device city search request: %v", err)
+	}
+	citySearchBody, readErr := io.ReadAll(citySearchResponse.Body)
+	citySearchResponse.Body.Close()
+	if readErr != nil || citySearchResponse.StatusCode != http.StatusOK ||
+		!bytes.Contains(citySearchBody, []byte(`"city_id":"city-runtime-ulyanovsk"`)) ||
+		!bytes.Contains(citySearchBody, []byte(`"federal_subject_code":"RU-ULY"`)) {
+		t.Fatalf("device staged city search = %d %s, read=%v", citySearchResponse.StatusCode, citySearchBody, readErr)
+	}
+	choicesRequest, err := http.NewRequest(
+		http.MethodGet,
+		restartedServer.URL+"/v1/devices/"+issued.DeviceID+
+			"/setup/schedule-choices?city_id=city-runtime-ulyanovsk&date=2026-08-30",
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("create device schedule choices request: %v", err)
+	}
+	choicesRequest.Header.Set("Authorization", "Bearer "+paired.DeviceToken)
+	choicesResponse, err := http.DefaultClient.Do(choicesRequest)
+	if err != nil {
+		t.Fatalf("device schedule choices request: %v", err)
+	}
+	choicesBody, readErr := io.ReadAll(choicesResponse.Body)
+	choicesResponse.Body.Close()
+	if readErr != nil || choicesResponse.StatusCode != http.StatusOK ||
+		!bytes.Contains(choicesBody, []byte(`"allowed_actions":["request_selection"]`)) {
+		t.Fatalf("device staged schedule choices = %d %s, read=%v", choicesResponse.StatusCode, choicesBody, readErr)
+	}
+	var choicesDocument struct {
+		Choices []struct {
+			ID string `json:"choice_id"`
+		} `json:"choices"`
+	}
+	if err := json.Unmarshal(choicesBody, &choicesDocument); err != nil || len(choicesDocument.Choices) != 1 {
+		t.Fatalf("decode device schedule choices = %#v, %v", choicesDocument, err)
+	}
+	deviceProposalRequest, err := http.NewRequest(
+		http.MethodPost,
+		restartedServer.URL+"/v1/devices/"+issued.DeviceID+"/setup/schedule-choice-requests",
+		bytes.NewBufferString(`{"city_id":"city-runtime-ulyanovsk","choice_id":"`+
+			choicesDocument.Choices[0].ID+
+			`","date":"2026-08-30","interaction_id":"interaction-runtime-tv-0001"}`),
+	)
+	if err != nil {
+		t.Fatalf("create device schedule choice proposal: %v", err)
+	}
+	deviceProposalRequest.Header.Set("Content-Type", "application/json")
+	deviceProposalRequest.Header.Set("Authorization", "Bearer "+paired.DeviceToken)
+	deviceProposalResponse, err := http.DefaultClient.Do(deviceProposalRequest)
+	if err != nil {
+		t.Fatalf("device schedule choice proposal: %v", err)
+	}
+	deviceProposalBody, readErr := io.ReadAll(deviceProposalResponse.Body)
+	deviceProposalResponse.Body.Close()
+	if readErr != nil || deviceProposalResponse.StatusCode != http.StatusCreated ||
+		!bytes.Contains(deviceProposalBody, []byte(`"status":"pending_review"`)) ||
+		!bytes.Contains(deviceProposalBody, []byte(`"origin":"local_tv_operator"`)) {
+		t.Fatalf("device schedule choice proposal = %d %s, read=%v", deviceProposalResponse.StatusCode, deviceProposalBody, readErr)
+	}
+	var deviceProposalRows, deviceProposalAuditRows int
+	if err := pool.QueryRow(ctx, `
+		SELECT
+			(SELECT count(*) FROM device_registry_binding_requests WHERE device_id = $1),
+			(SELECT count(*) FROM audit_events WHERE actor_type = 'device' AND actor_id = $1
+			 AND action = 'registry.binding_requested_from_tv')`, issued.DeviceID).Scan(
+		&deviceProposalRows, &deviceProposalAuditRows,
+	); err != nil || deviceProposalRows != 1 || deviceProposalAuditRows != 1 {
+		t.Fatalf("least-privilege device proposal rows/audit = %d/%d, %v", deviceProposalRows, deviceProposalAuditRows, err)
+	}
 	heartbeatRequest, err := http.NewRequest(
 		http.MethodPost,
 		restartedServer.URL+"/v1/devices/"+issued.DeviceID+"/heartbeat",
@@ -431,10 +515,10 @@ func createLeastPrivilegeRuntimeRole(t *testing.T, ownerPool *pgxpool.Pool, owne
 			registry_source_overrides, registry_source_override_fields,
 			registry_timetable_overrides, registry_active_revision, registry_audit_events,
 			registry_verified_approvals, registry_verified_snapshots,
-			registry_binding_requests TO namaz_runtime_test;
+			registry_binding_requests, device_registry_binding_requests TO namaz_runtime_test;
 		GRANT INSERT ON devices, pairing_codes, pairing_rate_buckets, audit_events,
 			device_assignments, admin_requests, device_health,
-			registry_binding_requests TO namaz_runtime_test;
+			registry_binding_requests, device_registry_binding_requests TO namaz_runtime_test;
 		GRANT UPDATE ON devices, pairing_codes, pairing_rate_buckets,
 			device_assignments, device_health TO namaz_runtime_test;
 		GRANT DELETE ON pairing_rate_buckets TO namaz_runtime_test;
@@ -458,21 +542,26 @@ func createLeastPrivilegeRuntimeRole(t *testing.T, ownerPool *pgxpool.Pool, owne
 	if _, err := runtimePool.Exec(t.Context(), `ALTER TABLE audit_events DISABLE TRIGGER audit_events_append_only`); err == nil {
 		t.Fatal("runtime database role could disable an audit trigger")
 	}
-	var canInsertBindingRequest, canUpdateBindingRequest, canInsertRegistryRevision, canUpdateActiveRevision bool
+	var canInsertBindingRequest, canUpdateBindingRequest, canInsertDeviceBindingRequest, canUpdateDeviceBindingRequest, canInsertRegistryRevision, canUpdateActiveRevision bool
 	if err := runtimePool.QueryRow(t.Context(), `
 		SELECT
 			has_table_privilege(current_user, 'registry_binding_requests', 'INSERT'),
 			has_table_privilege(current_user, 'registry_binding_requests', 'UPDATE'),
+			has_table_privilege(current_user, 'device_registry_binding_requests', 'INSERT'),
+			has_table_privilege(current_user, 'device_registry_binding_requests', 'UPDATE'),
 			has_table_privilege(current_user, 'registry_revisions', 'INSERT'),
 			has_table_privilege(current_user, 'registry_active_revision', 'UPDATE')`).Scan(
-		&canInsertBindingRequest, &canUpdateBindingRequest, &canInsertRegistryRevision, &canUpdateActiveRevision,
+		&canInsertBindingRequest, &canUpdateBindingRequest, &canInsertDeviceBindingRequest,
+		&canUpdateDeviceBindingRequest, &canInsertRegistryRevision, &canUpdateActiveRevision,
 	); err != nil {
 		t.Fatalf("inspect registry workflow privileges: %v", err)
 	}
-	if !canInsertBindingRequest || canUpdateBindingRequest || canInsertRegistryRevision || canUpdateActiveRevision {
+	if !canInsertBindingRequest || canUpdateBindingRequest || !canInsertDeviceBindingRequest ||
+		canUpdateDeviceBindingRequest || canInsertRegistryRevision || canUpdateActiveRevision {
 		t.Fatalf(
-			"registry workflow privileges: insert_binding=%v update_binding=%v insert_revision=%v update_active=%v",
-			canInsertBindingRequest, canUpdateBindingRequest, canInsertRegistryRevision, canUpdateActiveRevision,
+			"registry workflow privileges: insert_binding=%v update_binding=%v insert_device_binding=%v update_device_binding=%v insert_revision=%v update_active=%v",
+			canInsertBindingRequest, canUpdateBindingRequest, canInsertDeviceBindingRequest,
+			canUpdateDeviceBindingRequest, canInsertRegistryRevision, canUpdateActiveRevision,
 		)
 	}
 	return runtimeURL

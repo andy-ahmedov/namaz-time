@@ -33,6 +33,7 @@ const (
 	maxPairRequestBytes   = 16 * 1024
 	maxHeartbeatBytes     = 16 * 1024
 	maxAdminRequestBytes  = 16 * 1024
+	maxDeviceSetupBytes   = 16 * 1024
 	maxSnapshotBytes      = 5 * 1024 * 1024
 	defaultBackendTimeout = 5 * time.Second
 	maximumBackendTimeout = 30 * time.Second
@@ -81,6 +82,7 @@ type ServiceConfig struct {
 	PairingBackend              PairingBackend
 	AdminBackend                AdminFleetBackend
 	RegistryBackend             AdminRegistryBackend
+	DeviceSetupBackend          DeviceSetupBackend
 	BackendTimeout              time.Duration
 	Now                         func() time.Time
 }
@@ -89,6 +91,12 @@ type AdminRegistryBackend interface {
 	SearchCities(context.Context, string) ([]registry.CitySearchResult, error)
 	Resolve(context.Context, registry.ResolveRequest) (registry.Resolution, error)
 	AssessRevision(context.Context, string, registry.ResolveRequest) (registry.RevisionPolicyAssessment, error)
+}
+
+type DeviceSetupBackend interface {
+	SearchCities(context.Context, DevicePrincipal, string) ([]registry.CitySearchResult, error)
+	ScheduleChoices(context.Context, DevicePrincipal, string, string) (registry.CityScheduleChoiceSet, error)
+	RequestScheduleChoice(context.Context, DevicePrincipal, DeviceScheduleChoiceCommand) (DeviceRegistryBindingRequest, error)
 }
 
 type DeviceManifest struct {
@@ -130,6 +138,7 @@ type Service struct {
 	pairingBackend  PairingBackend
 	adminBackend    AdminFleetBackend
 	registryBackend AdminRegistryBackend
+	deviceSetup     DeviceSetupBackend
 	backendTimeout  time.Duration
 	now             func() time.Time
 }
@@ -143,6 +152,7 @@ func NewService(config ServiceConfig) (*Service, error) {
 		pairingBackend:  config.PairingBackend,
 		adminBackend:    config.AdminBackend,
 		registryBackend: config.RegistryBackend,
+		deviceSetup:     config.DeviceSetupBackend,
 		now:             config.Now,
 	}
 	if service.now == nil {
@@ -290,6 +300,9 @@ func (s *Service) routes() http.Handler {
 	mux.HandleFunc("POST /v1/devices/pair", s.handlePair)
 	mux.HandleFunc("GET /v1/devices/{deviceId}/manifest", s.handleManifest)
 	mux.HandleFunc("POST /v1/devices/{deviceId}/heartbeat", s.handleHeartbeat)
+	mux.HandleFunc("GET /v1/devices/{deviceId}/setup/cities", s.handleDeviceCitySearch)
+	mux.HandleFunc("GET /v1/devices/{deviceId}/setup/schedule-choices", s.handleDeviceCityScheduleChoices)
+	mux.HandleFunc("POST /v1/devices/{deviceId}/setup/schedule-choice-requests", s.handleDeviceScheduleChoiceRequest)
 	mux.HandleFunc("GET /v1/snapshots/{snapshotId}", s.handleSnapshot)
 	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/devices", s.handleAdminListDevices)
 	mux.HandleFunc("POST /v1/admin/mosques/{mosqueId}/pairing-codes", s.handleAdminIssuePairing)
@@ -568,6 +581,13 @@ type adminRegistryBindingRequest struct {
 	Reason     string `json:"reason"`
 }
 
+type deviceScheduleChoiceRequest struct {
+	CityID        string `json:"city_id"`
+	ChoiceID      string `json:"choice_id"`
+	Date          string `json:"date"`
+	InteractionID string `json:"interaction_id"`
+}
+
 type adminCityCandidate struct {
 	CityID             string   `json:"city_id"`
 	CanonicalName      string   `json:"canonical_name"`
@@ -629,6 +649,113 @@ type adminCityScheduleChoicesResponse struct {
 	City                      adminCityCandidate                `json:"city"`
 	Choices                   []registry.CityScheduleChoice     `json:"choices"`
 	AllowedActions            []string                          `json:"allowed_actions"`
+}
+
+type deviceCityScheduleChoicesResponse struct {
+	SchemaVersion             string                            `json:"schema_version"`
+	Revision                  registry.RevisionRecord           `json:"revision"`
+	RevisionState             registry.RevisionState            `json:"revision_state"`
+	Status                    registry.CityScheduleChoiceStatus `json:"status"`
+	AutomaticResolutionStatus registry.AssessmentStatus         `json:"automatic_resolution_status"`
+	AutomaticResolutionReason registry.AssessmentReason         `json:"automatic_resolution_reason"`
+	SelectionRequired         bool                              `json:"selection_required"`
+	Date                      string                            `json:"date"`
+	City                      adminCityCandidate                `json:"city"`
+	Choices                   []registry.CityScheduleChoice     `json:"choices"`
+	AllowedActions            []string                          `json:"allowed_actions"`
+}
+
+func (s *Service) handleDeviceCitySearch(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, ok := s.authenticateDeviceSetupRequest(writer, request)
+	if !ok {
+		return
+	}
+	query, valid := exactQueryValue(request, "q", 200)
+	if !valid || len(request.URL.Query()) != 1 {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	results, err := s.deviceSetup.SearchCities(backendContext, principal, query)
+	if err != nil {
+		writeDeviceSetupOperationError(writer, err)
+		return
+	}
+	candidates := make([]adminCityCandidate, 0, len(results))
+	for _, result := range results {
+		candidates = append(candidates, projectAdminCity(result))
+	}
+	writeJSON(writer, http.StatusOK, struct {
+		SchemaVersion string               `json:"schema_version"`
+		Query         string               `json:"query"`
+		Candidates    []adminCityCandidate `json:"candidates"`
+	}{SchemaVersion: "device-city-search/v1", Query: query, Candidates: candidates})
+}
+
+func (s *Service) handleDeviceCityScheduleChoices(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, ok := s.authenticateDeviceSetupRequest(writer, request)
+	if !ok {
+		return
+	}
+	cityID, cityOK := exactQueryValue(request, "city_id", 160)
+	date, dateOK := exactQueryValue(request, "date", len(time.DateOnly))
+	if !cityOK || !dateOK || len(request.URL.Query()) != 2 {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	projected, err := s.deviceSetup.ScheduleChoices(backendContext, principal, cityID, date)
+	if err != nil {
+		writeDeviceSetupOperationError(writer, err)
+		return
+	}
+	choices := append([]registry.CityScheduleChoice(nil), projected.Choices...)
+	if choices == nil {
+		choices = []registry.CityScheduleChoice{}
+	}
+	actions := []string{}
+	if projected.RevisionState == registry.RevisionStateStaged && len(choices) > 0 {
+		actions = append(actions, "request_selection")
+	}
+	writeJSON(writer, http.StatusOK, deviceCityScheduleChoicesResponse{
+		SchemaVersion: "device-city-schedule-choices/v1", Revision: projected.Revision,
+		RevisionState: projected.RevisionState, Status: projected.Status,
+		AutomaticResolutionStatus: projected.AutomaticResolutionStatus,
+		AutomaticResolutionReason: projected.AutomaticResolutionReason,
+		SelectionRequired:         projected.SelectionRequired, Date: projected.Date,
+		City:    projectAdminCity(registry.CitySearchResult{City: projected.City, Region: projected.Region}),
+		Choices: choices, AllowedActions: actions,
+	})
+}
+
+func (s *Service) handleDeviceScheduleChoiceRequest(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	principal, ok := s.authenticateDeviceSetupRequest(writer, request)
+	if !ok {
+		return
+	}
+	var input deviceScheduleChoiceRequest
+	if !decodeRequestJSON(writer, request, maxDeviceSetupBytes, &input) {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	created, err := s.deviceSetup.RequestScheduleChoice(
+		backendContext, principal, DeviceScheduleChoiceCommand(input),
+	)
+	if err != nil {
+		writeDeviceSetupOperationError(writer, err)
+		return
+	}
+	writeJSON(writer, http.StatusCreated, struct {
+		SchemaVersion string                       `json:"schema_version"`
+		Request       DeviceRegistryBindingRequest `json:"request"`
+	}{SchemaVersion: "device-schedule-choice-request/v1", Request: created})
 }
 
 func (s *Service) handleAdminIssuePairing(writer http.ResponseWriter, request *http.Request) {
@@ -1220,6 +1347,26 @@ func (s *Service) authenticateAdminRequest(writer http.ResponseWriter, request *
 	return AdminPrincipal{}, false
 }
 
+func (s *Service) authenticateDeviceSetupRequest(
+	writer http.ResponseWriter,
+	request *http.Request,
+) (DevicePrincipal, bool) {
+	if s.deviceSetup == nil {
+		writeAPIError(writer, http.StatusNotFound, "device_setup_unavailable", false)
+		return DevicePrincipal{}, false
+	}
+	principal, err := s.authenticatedDevice(request)
+	if err != nil {
+		writeDeviceAuthenticationError(writer, err)
+		return DevicePrincipal{}, false
+	}
+	if subtle.ConstantTimeCompare([]byte(principal.DeviceID), []byte(request.PathValue("deviceId"))) != 1 {
+		writeAPIError(writer, http.StatusUnauthorized, "device_unauthorized", false)
+		return DevicePrincipal{}, false
+	}
+	return principal, true
+}
+
 func decodeAdminJSON(writer http.ResponseWriter, request *http.Request, target any) bool {
 	if !decodeRequestJSON(writer, request, maxAdminRequestBytes, target) {
 		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
@@ -1260,6 +1407,25 @@ func writeAdminOperationError(writer http.ResponseWriter, err error) {
 		writeAPIError(writer, http.StatusServiceUnavailable, "registry_workflow_unavailable", true)
 	case errors.Is(err, ErrAdminResourceNotFound):
 		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
+	default:
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+	}
+}
+
+func writeDeviceSetupOperationError(writer http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, ErrInvalidDeviceSetupRequest), errors.Is(err, registry.ErrInvalidResolveRequest),
+		errors.Is(err, registry.ErrRevisionInvalid):
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+	case errors.Is(err, ErrDeviceUnauthorized):
+		writeAPIError(writer, http.StatusUnauthorized, "device_unauthorized", false)
+	case errors.Is(err, ErrDeviceSetupConflict):
+		writeAPIError(writer, http.StatusConflict, "device_setup_conflict", false)
+	case errors.Is(err, ErrDeviceSetupNotRequestable), errors.Is(err, registry.ErrPolicyAmbiguous),
+		errors.Is(err, registry.ErrPolicyUnavailable):
+		writeAPIError(writer, http.StatusConflict, "device_schedule_choice_not_requestable", false)
+	case errors.Is(err, ErrDeviceSetupUnavailable), errors.Is(err, registry.ErrRevisionUnavailable):
+		writeAPIError(writer, http.StatusServiceUnavailable, "device_setup_unavailable", true)
 	default:
 		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
 	}

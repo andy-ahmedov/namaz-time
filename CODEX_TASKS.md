@@ -950,3 +950,36 @@ unavailability; migration/restore behavior remains v7. `make docs-check`,
 `make security-go` and `make secret-scan` pass. The pilot snapshot remains
 byte-identical at the expected SHA-256. T038 and visual admin remain deferred;
 no real regional authority or source was added.
+
+## T041 — Android TV city and authoritative schedule setup flow
+
+**Goal:** implement the missing TV-operated path from Mosque/location settings
+through canonical city search and complete authoritative schedule-choice
+discovery to an explicit non-authoritative `pending_review` proposal, while the
+current signed last-known-good schedule remains active.
+
+**In scope:** a device-bearer-scoped setup API that derives device/mosque and
+server-selected immutable review revision; Cyrillic/alias city search with
+debounce and superseded-request cancellation; duplicate-name disambiguation by
+subject/type/timezone; D-pad/IME/back/focus-safe TV screens; complete 0..N T040
+choice display without ranking/truncation; explicit request state; RU/EN and
+720p/1080p/4K tests; PostgreSQL append-only audit; emulator evidence.
+
+**Non-goals:** admin credentials on TV, direct approval/publication/activation,
+Room or signed-snapshot mutation, T038 or any new real regional source, generic
+calculation fallback, top-N, custom keyboard, nationwide scraping, production
+deployment, signing keys or build-version naming work.
+
+**Acceptance:** a provisioned TV can search and explicitly select a canonical
+city, see all eligible choices and submit one proposal that remains
+`pending_review`. Wrong/revoked/cross-device credentials and client
+mosque/revision injection fail closed. Duplicate cities and multiple authorities
+never auto-select. Failure/recreation retains the old Room snapshot. The
+Ulyanovsk pilot remains byte-identical at SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+
+**Progress:** in progress on 2026-08-30. Baseline checkpoint `6375915` restores
+strict Gradle verification. The device-scoped API/ADR/migration checkpoint is
+implemented locally: server configuration selects a staged review revision,
+device credentials cannot name a mosque/revision, and schema v8 appends only an
+audited device-originated proposal. Android UI and emulator evidence remain.

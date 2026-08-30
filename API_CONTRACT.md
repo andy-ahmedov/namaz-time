@@ -355,3 +355,31 @@ equivalent lossless completeness metadata; it must not omit choices while
 presenting the response as complete. The endpoint is read-only, uses
 `Cache-Control: no-store`, rejects unknown query parameters, and cannot approve,
 publish, activate, sign or assign a snapshot.
+
+## T041 device-scoped city and schedule setup
+
+The TV never receives an admin bearer. Three bounded endpoints reuse the
+existing provisioned device bearer and require the `{deviceId}` path to match
+that bearer principal:
+
+- `GET /v1/devices/{deviceId}/setup/cities?q=…`;
+- `GET /v1/devices/{deviceId}/setup/schedule-choices?city_id=…&date=…`;
+- `POST /v1/devices/{deviceId}/setup/schedule-choice-requests`.
+
+The server derives mosque identity from the authenticated device. It also
+selects the immutable setup revision from private deployment configuration;
+neither `mosque_id` nor `revision_id` is accepted from the client. With no
+configured staged revision, reads use the active revision and its choice is
+read-only. A configured staged revision supplies both canonical city search and
+the T040 choice projection. Same-name city results retain subject, settlement
+type and IANA timezone and are never auto-selected. The choice response remains
+complete and unranked; no `limit`, top-N or implicit first choice exists.
+
+The POST body contains only canonical `city_id`, stable `choice_id`, local
+Gregorian `date` and a non-secret `interaction_id`. It may append an idempotent
+device-originated `pending_review` proposal for a selectable choice in the
+still-staged server-configured revision. Origin is `local_tv_operator`; the
+append-only audit identifies device and mosque. The operation cannot approve,
+publish, activate, sign, assign or change the active/Room snapshot. A revoked
+or cross-device bearer receives `401`; stale, active, unavailable or otherwise
+non-requestable choices receive fail-closed `409`.

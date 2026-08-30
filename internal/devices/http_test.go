@@ -1040,6 +1040,137 @@ func TestAdminCityScheduleChoicesExposeEveryEligibleAuthorityWithoutAutoSelectio
 	}
 }
 
+func TestDeviceSetupEndpointsDeriveMosqueScopeAndNeverUseAdminCredential(t *testing.T) {
+	t.Parallel()
+
+	const (
+		mosqueID   = "synthetic-verification-mosque"
+		cityID     = "city-device-http-setup-0001"
+		revisionID = "revision-device-http-setup-0001"
+	)
+	assessment := syntheticDeviceSetupAssessment(mosqueID, cityID, revisionID, 8)
+	registryBackend := &recordingDeviceSetupRegistry{
+		cities: []registrydomain.CitySearchResult{{
+			City: assessment.Result.City, Region: assessment.Result.Region,
+		}},
+		assessment: assessment,
+	}
+	repository := &recordingDeviceSetupRepository{}
+	setupManager, err := NewDeviceSetupManager(DeviceSetupManagerConfig{
+		Registry: registryBackend, Repository: repository,
+		SetupRevisionIDs: map[string]string{mosqueID: revisionID},
+		Now:              func() time.Time { return time.Date(2026, 8, 30, 12, 0, 0, 0, time.UTC) },
+	})
+	if err != nil {
+		t.Fatalf("NewDeviceSetupManager() error = %v", err)
+	}
+	config := validServiceConfig(t)
+	config.DeviceSetupBackend = setupManager
+	service, err := NewService(config)
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+	server := httptest.NewServer(service.Handler())
+	t.Cleanup(server.Close)
+
+	searchURL := server.URL + "/v1/devices/" + testDeviceID + "/setup/cities?q=" + url.QueryEscape("Синтетический город")
+	unauthorized := request(t, http.MethodGet, searchURL, nil, "admin-bearer-must-not-work", "")
+	if unauthorized.StatusCode != http.StatusUnauthorized ||
+		!strings.Contains(unauthorized.Body, `"code":"device_unauthorized"`) {
+		t.Fatalf("admin credential on device setup = %d %s", unauthorized.StatusCode, unauthorized.Body)
+	}
+	crossDevice := request(
+		t, http.MethodGet,
+		server.URL+"/v1/devices/other-device-setup-0001/setup/cities?q="+url.QueryEscape("Синтетический город"),
+		nil, testToken, "",
+	)
+	if crossDevice.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("cross-device setup search = %d %s", crossDevice.StatusCode, crossDevice.Body)
+	}
+	search := request(t, http.MethodGet, searchURL, nil, testToken, "")
+	if search.StatusCode != http.StatusOK || search.Header.Get("Cache-Control") != "no-store" ||
+		!strings.Contains(search.Body, `"schema_version":"device-city-search/v1"`) ||
+		!strings.Contains(search.Body, `"city_id":"`+cityID+`"`) ||
+		!strings.Contains(search.Body, `"federal_subject_code":"RU-XX"`) ||
+		strings.Contains(search.Body, `"mosque_id"`) {
+		t.Fatalf("device city search = %d %s", search.StatusCode, search.Body)
+	}
+
+	choicesURL := server.URL + "/v1/devices/" + testDeviceID +
+		"/setup/schedule-choices?city_id=" + cityID + "&date=2026-08-30"
+	choices := request(t, http.MethodGet, choicesURL, nil, testToken, "")
+	if choices.StatusCode != http.StatusOK ||
+		!strings.Contains(choices.Body, `"schema_version":"device-city-schedule-choices/v1"`) ||
+		!strings.Contains(choices.Body, `"selection_required":true`) ||
+		strings.Count(choices.Body, `"choice_id":`) != 8 ||
+		!strings.Contains(choices.Body, `"allowed_actions":["request_selection"]`) ||
+		registryBackend.request.MosqueID != mosqueID || registryBackend.assessmentID != revisionID {
+		t.Fatalf("device schedule choices = %d %s; scope=%#v revision=%q", choices.StatusCode, choices.Body, registryBackend.request, registryBackend.assessmentID)
+	}
+
+	projected, err := setupManager.ScheduleChoices(t.Context(), DevicePrincipal{
+		DeviceID: testDeviceID,
+		Mosque:   MosqueIdentity{ID: mosqueID, Name: "Synthetic verification fixture", Timezone: "Europe/Ulyanovsk"},
+	}, cityID, "2026-08-30")
+	if err != nil {
+		t.Fatalf("ScheduleChoices() error = %v", err)
+	}
+	selected := projected.Choices[5]
+	body := []byte(`{"city_id":"` + cityID + `","choice_id":"` + selected.ID + `","date":"2026-08-30","interaction_id":"interaction-device-http-0001"}`)
+	created := request(
+		t, http.MethodPost,
+		server.URL+"/v1/devices/"+testDeviceID+"/setup/schedule-choice-requests",
+		body, testToken, "",
+	)
+	if created.StatusCode != http.StatusCreated ||
+		!strings.Contains(created.Body, `"schema_version":"device-schedule-choice-request/v1"`) ||
+		!strings.Contains(created.Body, `"status":"pending_review"`) ||
+		!strings.Contains(created.Body, `"choice_id":"`+selected.ID+`"`) ||
+		!strings.Contains(created.Body, `"origin":"local_tv_operator"`) || repository.creates != 1 {
+		t.Fatalf("device schedule choice request = %d %s; creates=%d", created.StatusCode, created.Body, repository.creates)
+	}
+
+	for name, target := range map[string]string{
+		"revision injection": choicesURL + "&revision_id=" + revisionID,
+		"hidden limit":       choicesURL + "&limit=3",
+	} {
+		response := request(t, http.MethodGet, target, nil, testToken, "")
+		if response.StatusCode != http.StatusBadRequest {
+			t.Errorf("%s status = %d %s", name, response.StatusCode, response.Body)
+		}
+	}
+	injectedBody := []byte(`{"city_id":"` + cityID + `","choice_id":"` + selected.ID + `","date":"2026-08-30","interaction_id":"interaction-device-http-0002","mosque_id":"other-mosque"}`)
+	injected := request(
+		t, http.MethodPost,
+		server.URL+"/v1/devices/"+testDeviceID+"/setup/schedule-choice-requests",
+		injectedBody, testToken, "",
+	)
+	if injected.StatusCode != http.StatusBadRequest || repository.creates != 1 {
+		t.Fatalf("mosque injection = %d %s; creates=%d", injected.StatusCode, injected.Body, repository.creates)
+	}
+
+	revokedBackend := &recordingHTTPPairingBackend{authErr: ErrDeviceUnauthorized}
+	revokedConfig := validServiceConfig(t)
+	revokedConfig.PairingFixtures = nil
+	revokedConfig.Assignments = nil
+	revokedConfig.PairingBackend = revokedBackend
+	revokedConfig.DeviceSetupBackend = setupManager
+	revokedService, err := NewService(revokedConfig)
+	if err != nil {
+		t.Fatalf("NewService(revoked setup) error = %v", err)
+	}
+	revokedServer := httptest.NewServer(revokedService.Handler())
+	t.Cleanup(revokedServer.Close)
+	revoked := request(
+		t, http.MethodGet,
+		revokedServer.URL+"/v1/devices/"+testDeviceID+"/setup/cities?q="+url.QueryEscape("Синтетический город"),
+		nil, testToken, "",
+	)
+	if revoked.StatusCode != http.StatusUnauthorized || repository.creates != 1 {
+		t.Fatalf("revoked device setup = %d %s; creates=%d", revoked.StatusCode, revoked.Body, repository.creates)
+	}
+}
+
 func TestPersistentAssignmentFeedsExistingDeviceReadContract(t *testing.T) {
 	t.Parallel()
 

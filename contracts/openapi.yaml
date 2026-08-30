@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Mosque Prayer TV Synchronization API
-  version: 0.8.0
+  version: 0.9.0
   description: >-
     Draft contract for pairing a television, retrieving a small manifest,
     downloading an immutable signed prayer-time snapshot, and reporting
@@ -143,6 +143,124 @@ paths:
         '401':
           $ref: '#/components/responses/ErrorResponse'
         '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/devices/{deviceId}/setup/cities:
+    get:
+      operationId: searchDeviceSetupCities
+      summary: Search canonical cities within the authenticated device's configured setup revision
+      description: >-
+        Uses the provisioned device bearer and derives mosque scope from that credential. It never
+        accepts a mosque or registry revision from the client and never auto-selects duplicate names.
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+      responses:
+        '200':
+          description: Deterministically ordered canonical city candidates
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCitySearchResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+        '503':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/devices/{deviceId}/setup/schedule-choices:
+    get:
+      operationId: listDeviceSetupScheduleChoices
+      summary: Return every eligible schedule choice for one explicitly selected canonical city
+      description: >-
+        The server derives mosque and immutable revision scope from the authenticated device and
+        deployment configuration. The client cannot inject either value. Results are complete,
+        neutrally ordered, and never imply automatic authority selection.
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+        - name: city_id
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 160
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Complete eligible choice set from the scoped active or staged revision
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceCityScheduleChoicesResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+        '503':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/devices/{deviceId}/setup/schedule-choice-requests:
+    post:
+      operationId: requestDeviceSetupScheduleChoice
+      summary: Append an explicit local-TV schedule choice as pending review
+      description: >-
+        This device-originated proposal cannot approve, publish, activate, sign, assign, or replace
+        the active snapshot. The current last-known-good schedule remains in effect.
+      parameters:
+        - $ref: '#/components/parameters/DeviceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeviceScheduleChoiceRequestInput'
+      responses:
+        '201':
+          description: Append-only pending-review proposal created or idempotently reproduced
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeviceScheduleChoiceRequestResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+        '503':
           $ref: '#/components/responses/ErrorResponse'
   /v1/admin/mosques/{mosqueId}/devices:
     get:
@@ -652,6 +770,21 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorEnvelope'
   schemas:
+    DeviceCitySearchResponse:
+      type: object
+      additionalProperties: false
+      required: [schema_version, query, candidates]
+      properties:
+        schema_version:
+          const: device-city-search/v1
+        query:
+          type: string
+          minLength: 1
+          maxLength: 200
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/CityCandidate'
     CitySearchResponse:
       type: object
       additionalProperties: false
@@ -880,6 +1013,65 @@ components:
           items:
             type: string
             enum: [request_binding]
+    DeviceCityScheduleChoicesResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - schema_version
+        - revision
+        - revision_state
+        - status
+        - automatic_resolution_status
+        - automatic_resolution_reason
+        - selection_required
+        - date
+        - city
+        - choices
+        - allowed_actions
+      properties:
+        schema_version:
+          const: device-city-schedule-choices/v1
+        revision:
+          $ref: '#/components/schemas/RegistryRevision'
+        revision_state:
+          type: string
+          enum: [staged, active]
+        status:
+          type: string
+          enum: [available, unavailable]
+        automatic_resolution_status:
+          type: string
+          enum: [resolved, ambiguous, stale, unavailable]
+        automatic_resolution_reason:
+          type: string
+          enum:
+            - resolved
+            - same_tier_ambiguous
+            - stale_source
+            - source_unavailable
+            - source_not_approved
+            - schedule_unavailable
+            - policy_out_of_range
+            - no_policy
+        selection_required:
+          type: boolean
+          description: Multiple choices require explicit selection; ordering never selects one.
+        date:
+          type: string
+          format: date
+        city:
+          $ref: '#/components/schemas/CityCandidate'
+        choices:
+          type: array
+          description: Complete eligible set in neutral deterministic order; no top-N limit.
+          items:
+            $ref: '#/components/schemas/CityScheduleChoice'
+        allowed_actions:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum: [request_selection]
     CityScheduleChoice:
       type: object
       additionalProperties: false
@@ -1057,6 +1249,95 @@ components:
           type: string
           minLength: 1
           maxLength: 512
+    DeviceScheduleChoiceRequestInput:
+      type: object
+      additionalProperties: false
+      required: [city_id, choice_id, date, interaction_id]
+      properties:
+        city_id:
+          type: string
+          minLength: 8
+          maxLength: 160
+        choice_id:
+          type: string
+          pattern: '^schedule-choice-[0-9a-f]{64}$'
+        date:
+          type: string
+          format: date
+        interaction_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+          description: Non-secret stable identity for idempotent retry of one local interaction.
+    DeviceScheduleChoiceRequestResponse:
+      type: object
+      additionalProperties: false
+      required: [schema_version, request]
+      properties:
+        schema_version:
+          const: device-schedule-choice-request/v1
+        request:
+          $ref: '#/components/schemas/DeviceRegistryBindingRequest'
+    DeviceRegistryBindingRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - revision_id
+        - city_id
+        - policy_id
+        - choice_id
+        - mosque_id
+        - device_id
+        - date
+        - resolution_tier
+        - status
+        - selection_sha256
+        - origin
+        - interaction_id
+        - requested_at
+      properties:
+        id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        revision_id:
+          type: string
+        city_id:
+          type: string
+        policy_id:
+          type: string
+        choice_id:
+          type: string
+          pattern: '^schedule-choice-[0-9a-f]{64}$'
+        mosque_id:
+          type: string
+        device_id:
+          type: string
+        date:
+          type: string
+          format: date
+        resolution_tier:
+          type: string
+          enum:
+            - exact_city_timetable
+            - regional_official_timetable
+            - approved_regional_calculation_profile
+            - explicitly_configured_fallback
+        status:
+          const: pending_review
+        selection_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+        origin:
+          const: local_tv_operator
+        interaction_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        requested_at:
+          type: string
+          format: date-time
     RegistryBindingRequestResponse:
       type: object
       additionalProperties: false

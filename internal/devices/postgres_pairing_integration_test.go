@@ -86,7 +86,7 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 		t.Fatalf("upgrade v4 to current: %v", err)
 	}
 	var versions int
-	var adminTable, healthTable, rolloutColumn, registryBindingRequestTable bool
+	var adminTable, healthTable, rolloutColumn, registryBindingRequestTable, deviceRegistryBindingRequestTable bool
 	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM schema_migrations`).Scan(&versions); err != nil {
 		t.Fatalf("count upgraded versions: %v", err)
 	}
@@ -106,8 +106,11 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('registry_binding_requests') IS NOT NULL`).Scan(&registryBindingRequestTable); err != nil {
 		t.Fatalf("inspect v7 table: %v", err)
 	}
-	if versions != PairingSchemaVersion || !adminTable || !healthTable || !rolloutColumn || !registryBindingRequestTable {
-		t.Fatalf("upgraded schema: versions=%d admin_table=%v health_table=%v rollout_column=%v binding_requests=%v", versions, adminTable, healthTable, rolloutColumn, registryBindingRequestTable)
+	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('device_registry_binding_requests') IS NOT NULL`).Scan(&deviceRegistryBindingRequestTable); err != nil {
+		t.Fatalf("inspect v8 table: %v", err)
+	}
+	if versions != PairingSchemaVersion || !adminTable || !healthTable || !rolloutColumn || !registryBindingRequestTable || !deviceRegistryBindingRequestTable {
+		t.Fatalf("upgraded schema: versions=%d admin_table=%v health_table=%v rollout_column=%v binding_requests=%v device_binding_requests=%v", versions, adminTable, healthTable, rolloutColumn, registryBindingRequestTable, deviceRegistryBindingRequestTable)
 	}
 	var setGroupOperations, assignGroupOperations int
 	if err := pool.QueryRow(t.Context(), `
@@ -124,6 +127,25 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 	}
 	if err := repository.VerifySchema(t.Context()); err != nil {
 		t.Fatalf("VerifySchema(current) error = %v", err)
+	}
+	if err := repository.MigrateTo(t.Context(), 7); err != nil {
+		t.Fatalf("rollback current schema to v7: %v", err)
+	}
+	var v7Versions int
+	var preservedAdminBindingRequests, removedDeviceBindingRequests bool
+	if err := pool.QueryRow(t.Context(), `
+		SELECT (SELECT count(*) FROM schema_migrations),
+		       to_regclass('registry_binding_requests') IS NOT NULL,
+		       to_regclass('device_registry_binding_requests') IS NULL`).Scan(
+		&v7Versions, &preservedAdminBindingRequests, &removedDeviceBindingRequests,
+	); err != nil {
+		t.Fatalf("inspect v8 to v7 rollback: %v", err)
+	}
+	if v7Versions != 7 || !preservedAdminBindingRequests || !removedDeviceBindingRequests {
+		t.Fatalf("v8 to v7 rollback: versions=%d admin_binding=%v device_binding_removed=%v", v7Versions, preservedAdminBindingRequests, removedDeviceBindingRequests)
+	}
+	if err := repository.MigrateUp(t.Context()); err != nil {
+		t.Fatalf("reapply current schema after v7 rollback: %v", err)
 	}
 	if err := repository.MigrateTo(t.Context(), 3); err != nil {
 		t.Fatalf("rollback current schema to v3: %v", err)

@@ -42,6 +42,23 @@ func (reader *ActiveReader) SearchCities(ctx context.Context, query string) ([]C
 	return reader.store.SearchActiveCities(ctx, query)
 }
 
+func (reader *ActiveReader) SearchRevisionCities(
+	ctx context.Context,
+	revisionID string,
+	query string,
+) ([]CitySearchResult, error) {
+	if reader == nil || reader.store == nil || !validAuditText(revisionID, 160) {
+		return nil, ErrRevisionUnavailable
+	}
+	searcher, ok := reader.store.(interface {
+		SearchRevisionCities(context.Context, string, string) ([]CitySearchResult, error)
+	})
+	if !ok {
+		return nil, ErrRevisionUnavailable
+	}
+	return searcher.SearchRevisionCities(ctx, revisionID, query)
+}
+
 func (reader *ActiveReader) Resolve(ctx context.Context, request ResolveRequest) (Resolution, error) {
 	if reader == nil || reader.store == nil {
 		return Resolution{}, ErrRevisionUnavailable

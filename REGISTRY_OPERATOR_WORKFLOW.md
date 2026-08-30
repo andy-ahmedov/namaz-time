@@ -111,6 +111,20 @@ stage or activate registry revisions. Registry activation remains a separate
 operator-side control-plane action with verified approval and signed-snapshot
 adapters.
 
+## Device-originated setup proposals
+
+T041 does not expose this admin workflow or its bearer to Android TV. A
+provisioned TV uses separate device-scoped read routes; the server derives its
+device/mosque identity and private configured setup revision. An explicit
+choice appends to `device_registry_binding_requests` with status
+`pending_review` and origin `local_tv_operator` plus a device audit event.
+
+This proposal is input to later operator review only. It is not an admin actor,
+does not create or activate a registry revision, and does not approve, publish,
+sign or assign a snapshot. The active T039 surface remains the complete
+operator/debug explanation layer. Schema v8 rollback deletes unreviewed device
+proposals only; export them before rollback.
+
 ## Verification evidence
 
 - `CONFIRMED_RUNTIME`: unit tests cover same-tier ambiguity, explicit policy

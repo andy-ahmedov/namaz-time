@@ -110,19 +110,30 @@ already mandatory, immutable and covered by the revision content hash, so no
 separate mutable display label or religious ranking is introduced. PostgreSQL
 v6/v7 rollback and reapply semantics are unchanged.
 
+Migration v8 adds append-only `device_registry_binding_requests` for the T041
+TV-to-review handoff. It retains device/mosque, immutable revision, canonical
+city, policy/choice, local date, precedence tier, selection hash, interaction
+identity, UTC time and `local_tv_operator` origin. Device and mosque are joined
+by a composite foreign key; city and policy remain revision-scoped. The
+repository rechecks an active device and staged revision under locks before
+inserting the request and its device audit event. It cannot update the active
+registry pointer or any publication/assignment table. Rolling v8 back to v7
+removes only these unreviewed proposals, so they must be exported first.
+
 ## Database roles
 
 The registry writer/activator needs write access and remains an operator-side
 control-plane process. The API registry reader needs `SELECT`; the admin
 handoff additionally needs `SELECT`/`INSERT` only on
-`registry_binding_requests`. It receives no registry revision/pointer write
-permission. The PostgreSQL restore drill recreates a read-only recovery role
+`registry_binding_requests`, while the TV handoff needs `SELECT`/`INSERT` only
+on `device_registry_binding_requests`. It receives no registry revision/pointer
+write permission. The PostgreSQL restore drill recreates a read-only recovery role
 and proves it can read the registry while lacking registry `INSERT`/`UPDATE`,
 audit `UPDATE`, and schema `CREATE` privileges.
 
 ## Search behavior
 
-PostgreSQL search uses the active revision only and performs exact
+Admin PostgreSQL search uses the active revision and performs exact
 case/whitespace-normalized matching over canonical names and explicit aliases.
 Results are deterministically ordered by federal-subject code, canonical name
 and city ID. `UniqueActiveCity` succeeds only when exactly one result exists;
@@ -152,14 +163,21 @@ cap or top-N filtering. Same-tier multiplicity is available for explicit choice
 discovery while the automatic resolver remains ambiguous and the active
 execution path remains fail closed.
 
+T041 device search uses the same exact normalized canonical/alias matching but
+against the private server-configured immutable setup revision for that
+device's mosque, or the active revision when no staged revision is configured.
+The TV cannot name a revision or mosque. An explicit staged choice produces
+only a v8 append-only `pending_review` proposal; active registry state and the
+last-known-good signed snapshot are unchanged.
+
 ## Verification evidence
 
-- `CONFIRMED_RUNTIME`: the local Docker-backed PostgreSQL 18 gate applies v7,
+- `CONFIRMED_RUNTIME`: the local Docker-backed PostgreSQL 18 gate applies v8,
   stages and activates two synthetic revisions, searches duplicate names,
   verifies canonical hashes, rolls back the active revision, checks retained
   evidence/audit rows, rejects append-only mutations, rolls current migrations
-  down without deleting fleet state, and reapplies v7.
-- `CONFIRMED_RUNTIME`: the backup/restore drill restores v7 and verifies the
+  down without deleting fleet state, explicitly rolls v8 back to v7, and reapplies v8.
+- `CONFIRMED_RUNTIME`: the backup/restore drill restores v8 and verifies the
   least-privileged runtime role described above.
 - `CONFIRMED_RUNTIME`: the T037 PostgreSQL/HTTP gate activates the real
   Ulyanovsk binding against its real approval/publication evidence, resolves
@@ -174,5 +192,11 @@ execution path remains fail closed.
   Ulyanovsk revision as one executable choice, a staged same-tier revision as
   two selectable/non-executable choices, and a stale revision as no selectable
   choices while retaining the T039 blocked explanation.
+- `CONFIRMED_RUNTIME`: the T041 PostgreSQL/API gate uses the least-privileged
+  runtime role to search a configured staged revision with a device bearer,
+  discover its selectable choice and append exactly one audited
+  `pending_review` device proposal. Cross-device/revision/mosque injection is
+  rejected, active registry state is unchanged, and the Ulyanovsk pilot bytes
+  retain SHA-256 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 - `UNKNOWN`: production backup retention, RPO/RTO and external approval/source
   store recovery have not been exercised; the local drill makes no such claim.

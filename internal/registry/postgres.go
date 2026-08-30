@@ -782,6 +782,66 @@ func (store *PostgresRevisionStore) SearchActiveCities(ctx context.Context, quer
 	return results, nil
 }
 
+func (store *PostgresRevisionStore) SearchRevisionCities(
+	ctx context.Context,
+	revisionID string,
+	query string,
+) ([]CitySearchResult, error) {
+	if store == nil || store.pool == nil || !validAuditText(revisionID, 160) {
+		return nil, ErrRevisionUnavailable
+	}
+	normalized := normalizeSearch(query)
+	if normalized == "" {
+		return nil, nil
+	}
+	rows, err := store.pool.Query(ctx, `
+		SELECT c.id, c.canonical_name,
+		       ARRAY(SELECT a.alias FROM registry_city_aliases a
+		             WHERE a.revision_id = c.revision_id AND a.city_id = c.id
+		             ORDER BY a.normalized_alias),
+		       c.country_code, c.region_id, c.settlement_type, c.latitude, c.longitude,
+		       c.timezone, c.population, c.geographic_source, c.geographic_source_id,
+		       c.geographic_revision, c.geographic_license,
+		       COALESCE(c.source_modified_date::text, ''), COALESCE(c.fallback_policy_id, ''),
+		       r.id, r.name, r.country_code, r.federal_subject_code
+		FROM registry_cities c
+		JOIN registry_regions r ON r.revision_id = c.revision_id AND r.id = c.region_id
+		WHERE c.revision_id = $1
+		  AND (
+		    c.normalized_name = $2 OR EXISTS (
+		      SELECT 1 FROM registry_city_aliases match_alias
+		      WHERE match_alias.revision_id = c.revision_id
+		        AND match_alias.city_id = c.id
+		        AND match_alias.normalized_alias = $2
+		    )
+		  )
+		ORDER BY r.federal_subject_code, c.canonical_name, c.id`, revisionID, normalized)
+	if err != nil {
+		return nil, fmt.Errorf("search registry revision cities: %w", err)
+	}
+	defer rows.Close()
+	var results []CitySearchResult
+	for rows.Next() {
+		var result CitySearchResult
+		if err := rows.Scan(
+			&result.City.ID, &result.City.Name, &result.City.Aliases,
+			&result.City.CountryCode, &result.City.RegionID, &result.City.SettlementType,
+			&result.City.Latitude, &result.City.Longitude, &result.City.Timezone,
+			&result.City.Population, &result.City.GeographicSource, &result.City.GeographicSourceID,
+			&result.City.GeographicRevision, &result.City.GeographicLicense,
+			&result.City.SourceModifiedDate, &result.City.FallbackPolicyID,
+			&result.Region.ID, &result.Region.Name, &result.Region.CountryCode, &result.Region.FederalSubjectCode,
+		); err != nil {
+			return nil, fmt.Errorf("scan registry revision city: %w", err)
+		}
+		results = append(results, result)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("search registry revision cities: %w", err)
+	}
+	return results, nil
+}
+
 func (store *PostgresRevisionStore) UniqueActiveCity(ctx context.Context, query string) (CitySearchResult, bool, error) {
 	results, err := store.SearchActiveCities(ctx, query)
 	if err != nil || len(results) != 1 {

@@ -315,6 +315,23 @@ func (service *PersistentService) SearchCities(ctx context.Context, query string
 	return searcher.SearchActiveCities(ctx, query)
 }
 
+func (service *PersistentService) SearchRevisionCities(
+	ctx context.Context,
+	revisionID string,
+	query string,
+) ([]CitySearchResult, error) {
+	if service == nil || service.store == nil || !validAuditText(revisionID, 160) {
+		return nil, ErrRevisionUnavailable
+	}
+	searcher, ok := service.store.(interface {
+		SearchRevisionCities(context.Context, string, string) ([]CitySearchResult, error)
+	})
+	if !ok {
+		return nil, ErrRevisionUnavailable
+	}
+	return searcher.SearchRevisionCities(ctx, revisionID, query)
+}
+
 func (service *PersistentService) Resolve(ctx context.Context, request ResolveRequest) (Resolution, error) {
 	if service == nil || service.store == nil {
 		return Resolution{}, ErrRevisionUnavailable

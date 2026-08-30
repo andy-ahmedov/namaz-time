@@ -168,6 +168,9 @@ names, not credential values:
   "public_base_url": "https://api.example.invalid",
   "pairing_backend": "postgres",
   "registry_backend": "postgres",
+  "device_setup_revision_ids": {
+    "mosque-second-cathedral-ulyanovsk": "registry-reviewed-setup-candidate-v1"
+  },
   "database_url_env": "NAMAZ_DATABASE_URL",
   "pairing_rate_limit_key_env": "NAMAZ_PAIRING_RATE_KEY",
   "admin_idempotency_key_env": "NAMAZ_ADMIN_IDEMPOTENCY_KEY_CURRENT",
@@ -253,12 +256,12 @@ or credential:
 ```bash
 go run ./cmd/migrate \
   -database-url-env NAMAZ_MIGRATION_DATABASE_URL \
-  -target-version 7
+  -target-version 8
 ```
 
 The command applies embedded migrations under a transaction-scoped advisory
 lock and exits. Only then start the API with `NAMAZ_DATABASE_URL` for the
-least-privileged runtime role. API startup performs a read-only exact-v7 ledger
+least-privileged runtime role. API startup performs a read-only exact-v8 ledger
 check and refuses missing, lower, gapped or future schemas. The runtime role must
 not own schema/functions/triggers.
 
@@ -275,6 +278,20 @@ audit/idempotency update/delete/truncate. It requires `SELECT` on
 tables and `SELECT`/`INSERT` on append-only `registry_binding_requests`, but no
 revision/active-pointer/audit/DDL write privilege. Verify the grants in
 staging rather than granting broad schema ownership.
+
+T041 additionally requires `SELECT`/`INSERT` on append-only
+`device_registry_binding_requests`; no `UPDATE`, `DELETE`, registry revision
+write or active-pointer write is granted. Optional `device_setup_revision_ids`
+maps each mosque to one immutable staged review revision. It is private server
+configuration, never a client parameter, and does not select an authority
+inside that revision.
+
+For a controlled v8-to-v7 rollback, stop device setup proposal writes,
+export/verify pending `device_registry_binding_requests`, and run
+`-target-version 7`. Migration `000008` down removes only those pending TV
+handoffs; it does not change the active revision, admin T039 requests, device
+assignments or signed snapshots. Resume only with a v7 binary/config that does
+not expose the device setup routes.
 
 For a controlled v7-to-v6 rollback, stop registry binding-request writes,
 export/verify the database and run `-target-version 6`. Migration `000007` down

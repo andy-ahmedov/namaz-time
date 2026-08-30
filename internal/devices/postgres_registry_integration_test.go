@@ -139,6 +139,56 @@ func TestPostgresUlyanovskAdminSearchResolveAndRollbackPreserveSignedPilot(t *te
 		!strings.Contains(activeChoices.Body, `"published_snapshot_id":"`+ulyanovskSnapshotID+`"`) {
 		t.Fatalf("persisted Ulyanovsk schedule choice = %d %s", activeChoices.StatusCode, activeChoices.Body)
 	}
+	deviceID := "device-ulyanovsk-setup-integration-0001"
+	deviceToken := "device-ulyanovsk-setup-token-integration-0001"
+	deviceTokenHash := sha256.Sum256([]byte(deviceToken))
+	if _, err := pool.Exec(ctx, `
+		INSERT INTO devices (
+			id, mosque_id, status, token_hash, app_version, created_at, paired_at
+		) VALUES ($1, $2, 'active', $3, 't041-integration', $4, $4)`,
+		deviceID, ulyanovskMosqueID, deviceTokenHash[:], time.Date(2026, 8, 30, 7, 0, 0, 0, time.UTC),
+	); err != nil {
+		t.Fatalf("seed setup device: %v", err)
+	}
+	pairingManager, err := NewPairingManager(PairingManagerConfig{
+		Repository: migrator, RateLimitKey: bytes.Repeat([]byte{0x41}, sha256.Size),
+		RateLimits: PairingRateLimits{
+			Window: 10 * time.Minute, SourceAttempts: 20, DeviceAttempts: 20, CodeAttempts: 20,
+		},
+	})
+	if err != nil {
+		t.Fatalf("NewPairingManager() error = %v", err)
+	}
+	activeDeviceSetup, err := NewDeviceSetupManager(DeviceSetupManagerConfig{
+		Registry: registryService, Repository: migrator,
+		Now: func() time.Time { return time.Date(2026, 8, 30, 7, 30, 0, 0, time.UTC) },
+	})
+	if err != nil {
+		t.Fatalf("NewDeviceSetupManager(active) error = %v", err)
+	}
+	activeDeviceHTTP, err := NewService(ServiceConfig{
+		PairingBackend: pairingManager, DeviceSetupBackend: activeDeviceSetup,
+	})
+	if err != nil {
+		t.Fatalf("NewService(active device setup) error = %v", err)
+	}
+	activeDeviceServer := httptest.NewServer(activeDeviceHTTP.Handler())
+	t.Cleanup(activeDeviceServer.Close)
+	deviceSearchURL := activeDeviceServer.URL + "/v1/devices/" + deviceID + "/setup/cities?q=" + url.QueryEscape("Ульяновск")
+	deviceSearch := request(t, http.MethodGet, deviceSearchURL, nil, deviceToken, "")
+	if deviceSearch.StatusCode != http.StatusOK || strings.Count(deviceSearch.Body, `"city_id":`) != 1 ||
+		!strings.Contains(deviceSearch.Body, `"city_id":"`+ulyanovskCityID+`"`) {
+		t.Fatalf("device Ulyanovsk search = %d %s", deviceSearch.StatusCode, deviceSearch.Body)
+	}
+	deviceActiveChoicesURL := activeDeviceServer.URL + "/v1/devices/" + deviceID +
+		"/setup/schedule-choices?city_id=" + ulyanovskCityID + "&date=2026-08-30"
+	deviceActiveChoices := request(t, http.MethodGet, deviceActiveChoicesURL, nil, deviceToken, "")
+	if deviceActiveChoices.StatusCode != http.StatusOK || strings.Count(deviceActiveChoices.Body, `"choice_id":`) != 1 ||
+		!strings.Contains(deviceActiveChoices.Body, `"executable":true`) ||
+		!strings.Contains(deviceActiveChoices.Body, `"published_snapshot_id":"`+ulyanovskSnapshotID+`"`) ||
+		!strings.Contains(deviceActiveChoices.Body, `"allowed_actions":[]`) {
+		t.Fatalf("device active Ulyanovsk choice = %d %s", deviceActiveChoices.StatusCode, deviceActiveChoices.Body)
+	}
 
 	secondDataset := dataset
 	secondDataset.Cities = append([]domain.City(nil), dataset.Cities...)
@@ -200,6 +250,76 @@ func TestPostgresUlyanovskAdminSearchResolveAndRollbackPreserveSignedPilot(t *te
 		!strings.Contains(ambiguousChoices.Body, `"allowed_actions":["request_binding"]`) {
 		t.Fatalf("persisted ambiguous schedule choices = %d %s", ambiguousChoices.StatusCode, ambiguousChoices.Body)
 	}
+	stagedDeviceSetup, err := NewDeviceSetupManager(DeviceSetupManagerConfig{
+		Registry: registryService, Repository: migrator,
+		SetupRevisionIDs: map[string]string{ulyanovskMosqueID: ambiguousRevision.ID},
+		Now:              func() time.Time { return time.Date(2026, 8, 30, 8, 0, 0, 0, time.UTC) },
+	})
+	if err != nil {
+		t.Fatalf("NewDeviceSetupManager(staged) error = %v", err)
+	}
+	stagedDeviceHTTP, err := NewService(ServiceConfig{
+		PairingBackend: pairingManager, DeviceSetupBackend: stagedDeviceSetup,
+	})
+	if err != nil {
+		t.Fatalf("NewService(staged device setup) error = %v", err)
+	}
+	stagedDeviceServer := httptest.NewServer(stagedDeviceHTTP.Handler())
+	t.Cleanup(stagedDeviceServer.Close)
+	deviceStagedChoicesURL := stagedDeviceServer.URL + "/v1/devices/" + deviceID +
+		"/setup/schedule-choices?city_id=" + ulyanovskCityID + "&date=2026-08-30"
+	deviceStagedChoices := request(t, http.MethodGet, deviceStagedChoicesURL, nil, deviceToken, "")
+	if deviceStagedChoices.StatusCode != http.StatusOK || strings.Count(deviceStagedChoices.Body, `"choice_id":`) != 2 ||
+		!strings.Contains(deviceStagedChoices.Body, `"selection_required":true`) ||
+		!strings.Contains(deviceStagedChoices.Body, `"allowed_actions":["request_selection"]`) {
+		t.Fatalf("device staged choices = %d %s", deviceStagedChoices.StatusCode, deviceStagedChoices.Body)
+	}
+	devicePrincipal := DevicePrincipal{
+		DeviceID: deviceID,
+		Mosque: MosqueIdentity{
+			ID: ulyanovskMosqueID, Name: "Вторая Соборная мечеть Ульяновска", Timezone: "Europe/Ulyanovsk",
+		},
+	}
+	projectedDeviceChoices, err := stagedDeviceSetup.ScheduleChoices(ctx, devicePrincipal, ulyanovskCityID, "2026-08-30")
+	if err != nil || len(projectedDeviceChoices.Choices) != 2 {
+		t.Fatalf("project staged device choices = %#v, %v", projectedDeviceChoices, err)
+	}
+	deviceSelected := projectedDeviceChoices.Choices[1]
+	deviceBindingBody := []byte(`{"city_id":"` + ulyanovskCityID + `","choice_id":"` + deviceSelected.ID + `","date":"2026-08-30","interaction_id":"interaction-ulyanovsk-tv-0001"}`)
+	deviceBindingURL := stagedDeviceServer.URL + "/v1/devices/" + deviceID + "/setup/schedule-choice-requests"
+	deviceBinding := request(t, http.MethodPost, deviceBindingURL, deviceBindingBody, deviceToken, "")
+	if deviceBinding.StatusCode != http.StatusCreated ||
+		!strings.Contains(deviceBinding.Body, `"status":"pending_review"`) ||
+		!strings.Contains(deviceBinding.Body, `"origin":"local_tv_operator"`) ||
+		!strings.Contains(deviceBinding.Body, `"policy_id":"`+deviceSelected.PolicyID+`"`) {
+		t.Fatalf("device binding proposal = %d %s", deviceBinding.StatusCode, deviceBinding.Body)
+	}
+	deviceBindingRetry := request(t, http.MethodPost, deviceBindingURL, deviceBindingBody, deviceToken, "")
+	if deviceBindingRetry.StatusCode != http.StatusCreated || deviceBindingRetry.Body != deviceBinding.Body {
+		t.Fatalf("idempotent device binding proposal = %d %s; want %d %s", deviceBindingRetry.StatusCode, deviceBindingRetry.Body, deviceBinding.StatusCode, deviceBinding.Body)
+	}
+	var deviceBindingRows, deviceAuditRows int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM device_registry_binding_requests`).Scan(&deviceBindingRows); err != nil || deviceBindingRows != 1 {
+		t.Fatalf("device binding rows = %d, %v", deviceBindingRows, err)
+	}
+	if err := pool.QueryRow(ctx, `
+		SELECT count(*) FROM audit_events
+		WHERE actor_type = 'device' AND actor_id = $1
+		  AND action = 'registry.binding_requested_from_tv'`, deviceID).Scan(&deviceAuditRows); err != nil || deviceAuditRows != 1 {
+		t.Fatalf("device binding audit rows = %d, %v", deviceAuditRows, err)
+	}
+	assertRestoredAppendOnlyGuard(t, ctx, pool, `UPDATE device_registry_binding_requests SET status = status`)
+	assertRestoredAppendOnlyGuard(t, ctx, pool, `DELETE FROM device_registry_binding_requests`)
+	assertRestoredAppendOnlyGuard(t, ctx, pool, `TRUNCATE device_registry_binding_requests`)
+	activeAfterDeviceRequest, err := registryService.ActiveRevision(ctx)
+	if err != nil || activeAfterDeviceRequest.ID != record.ID {
+		t.Fatalf("device request activated revision: active=%#v err=%v", activeAfterDeviceRequest, err)
+	}
+	snapshotAfterDeviceRequest := readRegistryRepositoryFile(t, "apps/tv-android/src/pilot/assets/pilot-local-ulyanovsk-2026-snapshot.json")
+	if !bytes.Equal(snapshotBefore, snapshotAfterDeviceRequest) {
+		t.Fatal("device setup request changed signed pilot snapshot bytes")
+	}
+	assertSHA256(t, snapshotAfterDeviceRequest, ulyanovskSnapshotSHA)
 	bindingBody := []byte(`{"revision_id":"` + ambiguousRevision.ID + `","city_id":"` + ulyanovskCityID + `","policy_id":"` + secondPolicy.ID + `","date":"2026-08-30","reason":"operator selected the reviewed exact-city policy"}`)
 	bindingURL := server.URL + "/v1/admin/mosques/" + ulyanovskMosqueID + "/setup/prayer-policy-binding-requests"
 	created := adminRequest(t, http.MethodPost, bindingURL, bindingBody, adminToken, "idem-t039-binding-integration-0001")

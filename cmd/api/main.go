@@ -72,6 +72,7 @@ type runtimeConfig struct {
 	PairingFixtureMode                   string                     `json:"pairing_fixture_mode"`
 	PairingBackend                       string                     `json:"pairing_backend"`
 	RegistryBackend                      string                     `json:"registry_backend"`
+	DeviceSetupRevisionIDs               map[string]string          `json:"device_setup_revision_ids"`
 	DatabaseURLEnv                       string                     `json:"database_url_env"`
 	PairingRateLimitKeyEnv               string                     `json:"pairing_rate_limit_key_env"`
 	AdminIdempotencyKeyEnv               string                     `json:"admin_idempotency_key_env"`
@@ -313,6 +314,7 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 	var pairingBackend devices.PairingBackend
 	var adminBackend devices.AdminFleetBackend
 	var registryBackend devices.AdminRegistryBackend
+	var deviceSetupBackend devices.DeviceSetupBackend
 	if config.PairingBackend == "postgres" {
 		if len(config.PairingFixtures) > 0 || config.PairingFixtureMode != "" || len(config.Assignments) > 0 {
 			return nil, errors.New("PostgreSQL pairing cannot use ephemeral fixtures or static device assignments")
@@ -392,6 +394,7 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		}
 		pairingBackend = manager
 		var registryVerifier devices.RegistrySelectionVerifier
+		var deviceSetupRegistry devices.DeviceSetupRegistry
 		if config.RegistryBackend == "postgres" {
 			registryStore, openErr := registry.OpenPostgresRevisionStore(openContext, databaseURL)
 			if openErr != nil {
@@ -406,6 +409,7 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 			}
 			registryBackend = registryReader
 			registryVerifier = registryReader
+			deviceSetupRegistry = registryReader
 		} else if config.RegistryBackend != "" {
 			repository.Close()
 			return nil, errors.New("unsupported registry backend")
@@ -423,9 +427,26 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 			return nil, err
 		}
 		adminBackend = adminManager
+		if deviceSetupRegistry != nil {
+			deviceSetupManager, setupErr := devices.NewDeviceSetupManager(devices.DeviceSetupManagerConfig{
+				Registry: deviceSetupRegistry, Repository: repository,
+				SetupRevisionIDs: config.DeviceSetupRevisionIDs,
+			})
+			if setupErr != nil {
+				if closer, ok := registryBackend.(interface{ Close() }); ok {
+					closer.Close()
+				}
+				repository.Close()
+				return nil, setupErr
+			}
+			deviceSetupBackend = deviceSetupManager
+		} else if len(config.DeviceSetupRevisionIDs) > 0 {
+			repository.Close()
+			return nil, errors.New("device setup revisions require registry_backend postgres")
+		}
 	} else if config.PairingBackend != "" {
 		return nil, errors.New("unsupported pairing backend")
-	} else if config.DatabaseURLEnv != "" || config.PairingRateLimitKeyEnv != "" || config.AdminIdempotencyKeyEnv != "" || len(config.AdminCompatibilityIdempotencyKeyEnvs) > 0 || config.PairingRateLimits != (runtimePairingRateLimits{}) || config.PairingBackendTimeoutSeconds != 0 || config.RegistryBackend != "" {
+	} else if config.DatabaseURLEnv != "" || config.PairingRateLimitKeyEnv != "" || config.AdminIdempotencyKeyEnv != "" || len(config.AdminCompatibilityIdempotencyKeyEnvs) > 0 || config.PairingRateLimits != (runtimePairingRateLimits{}) || config.PairingBackendTimeoutSeconds != 0 || config.RegistryBackend != "" || len(config.DeviceSetupRevisionIDs) > 0 {
 		return nil, errors.New("PostgreSQL pairing settings require pairing_backend postgres")
 	}
 	service, err := devices.NewService(devices.ServiceConfig{
@@ -434,6 +455,7 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		PairingBackend:              pairingBackend,
 		AdminBackend:                adminBackend,
 		RegistryBackend:             registryBackend,
+		DeviceSetupBackend:          deviceSetupBackend,
 		BackendTimeout:              time.Duration(config.PairingBackendTimeoutSeconds) * time.Second,
 		Assignments:                 config.Assignments,
 		Snapshots:                   snapshots,
