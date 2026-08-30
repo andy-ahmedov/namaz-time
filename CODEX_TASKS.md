@@ -932,3 +932,21 @@ T039. Eight synthetic choices are not truncated, ordering is stable and never
 selects. Binding remains `pending_review`. Active Ulyanovsk returns exactly one
 executable choice and its signed snapshot raw SHA-256 remains
 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+
+**Result:** completed locally on 2026-08-30 in checkpoint commits `4f0c9dd`,
+`3e41749` and `b7f8e76`. `CityScheduleChoiceSet` derives stable, complete
+highest-tier choices from `RevisionPolicyAssessment`; it uses canonical
+`PrayerAuthority.Name`, keeps equal labels independently identifiable and
+marks only one resolved active choice executable. The separate authenticated
+`city-schedule-choices/v1` endpoint supports active or exact staged revisions,
+returns all eight synthetic options without pagination/top-N and preserves
+T039's complete blocked-option surface plus `pending_review` handoff.
+
+No migration was required: existing immutable v6 entities already contain all
+choice/provenance fields and v7 already stores review requests. Real PostgreSQL
+tests cover active Ulyanovsk, two staged equal-tier choices and stale
+unavailability; migration/restore behavior remains v7. `make docs-check`,
+`make test`, `make lint`, `make test-postgres`, `go test -race ./...`,
+`make security-go` and `make secret-scan` pass. The pilot snapshot remains
+byte-identical at the expected SHA-256. T038 and visual admin remain deferred;
+no real regional authority or source was added.
