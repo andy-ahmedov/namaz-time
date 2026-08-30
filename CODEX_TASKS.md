@@ -1023,8 +1023,8 @@ identity in TV diagnostics without touching prayer data.
 **In scope:** one checked-in Android version source; `0.5.0-pilot.1` / code `4`
 for the next offline pilot; embedded commit/variant/clean-state metadata;
 RU/EN Diagnostics projection; a fail-closed clean-tree signed-pilot packaging
-command that emits a versioned ignored APK plus checksum/manifest; artifact
-verification; tests; and a controlled API 36 emulator update from the already
+command that emits a versioned outside-repository APK plus checksum/manifest;
+artifact verification; tests; and a controlled API 36 emulator update from the already
 installed `0.4.0-pilot-local` / code `3` package.
 
 **Correctness-sensitive unknowns:** physical-TV update behavior remains
@@ -1047,4 +1047,26 @@ certificate and retained install identity; repository gates pass; and
 `ulyanovsk-second-cathedral-2026-pilot-local-v2` remains byte-identical at raw
 SHA-256 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 
-**Status:** `IN_PROGRESS` on 2026-08-31.
+**Status:** `DONE` on 2026-08-31.
+
+**Result:** checkpoints `609dda9` and `8f3713d` introduce the validated
+`version.properties` source, `0.5.0-pilot.1` / code `4`, typed RU/EN Diagnostics
+identity and fail-closed APK inspection/packaging. Debug, remote release and
+pilot identify themselves independently; a signed pilot bundle can be produced
+only from a clean tree and is written outside the repository with its checksum
+and manifest. The clean artifact maps to exact checkpoint
+`609dda98a92417b48b6771a8f3d3dc0b0940ff25`, APK SHA-256
+`87ab34c42ccb8adc6709f65bce113586bc5c1206322a9f956d884ef8256e2509`
+and the pinned certificate.
+
+`CONFIRMED_RUNTIME` on the Android 16 / API 36 TV emulator: `adb install -r`
+updated the retained package from `0.4.0-pilot-local` / code `3` to
+`0.5.0-pilot.1` / code `4` without changing its first-install timestamp;
+Diagnostics shows `pilot · 609dda98a924 · чистая` and the cold-launched display
+uses the existing last-known-good schedule. Physical-TV behavior remains
+`UNKNOWN`. `make docs-check`, `make test`, `make lint`, `make test-postgres`,
+`go test -race ./...`, `make test-android-all`, `make security-go` and
+`make secret-scan` pass. Room schemas are unchanged and the bundled signed
+snapshot remains byte-identical at raw SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+No migration, tag, GitHub Release, push or remote update mechanism was added.
