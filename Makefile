@@ -1,4 +1,4 @@
-.PHONY: docs-check format format-check lint lint-go lint-android security-go secret-scan test test-go test-go-race test-contracts test-android-unit test-android-all test-postgres test-postgres-restore build-android-pilot verify-android-pilot
+.PHONY: docs-check format format-check lint lint-go lint-android security-go secret-scan test test-go test-go-race test-contracts test-research test-android-unit test-android-all test-postgres test-postgres-restore build-android-pilot verify-android-pilot
 
 GO_FILES := $(shell find cmd internal -type f -name '*.go' 2>/dev/null)
 GRADLE_FLAGS ?= --no-daemon --no-build-cache
@@ -29,7 +29,7 @@ secret-scan:
 lint-android:
 	./gradlew $(GRADLE_FLAGS) :apps:tv-android:lintDebug
 
-test: docs-check test-go test-android-unit
+test: docs-check test-go test-research test-android-unit
 
 test-go:
 	go test ./...
@@ -46,6 +46,9 @@ test-postgres-restore:
 
 test-contracts:
 	go test ./internal/domain -run 'Test(SyntheticSnapshotMatchesJSONSchemaAndDomain|InvalidSnapshotFixturesFailDeterministically|ProviderKindsMatchJSONSchemas|DomainAcceptsJSONSchemaDateTimeVariants|DomainRejectsJSONSchemaInvalidLeapSecond|ConditionalProvenanceRejectedBySchemaAndDomain)'
+
+test-research:
+	python3 -m unittest discover -s research/tools -p 'test_*.py'
 
 test-android-unit:
 	./gradlew $(GRADLE_FLAGS) :apps:tv-android:testDebugUnitTest

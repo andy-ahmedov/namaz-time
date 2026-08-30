@@ -24,14 +24,14 @@ Phase 3
 - [x] Trace city/location to timezone/region/policy to calculation/timetable/API to adjustments and displayed output.
 - [x] Attempt ordinary emulator black-box checks only where they add evidence; do not bypass controls.
 - [x] Write `ONE_MUSLIM_APK_RESEARCH.md` with strict evidence labels and a reproducible sanitized method.
-- [ ] Commit checkpoint 1 without adding the APK or extracted proprietary artifacts.
-- **Status:** in_progress
+- [x] Commit checkpoint 1 without adding the APK or extracted proprietary artifacts.
+- **Status:** complete
 
 ### Phase 3: Ulyanovsk independent reproduction and comparison
 
-- [ ] Identify the Ulyanovsk coordinates, timezone, calculation/timetable policy, Asr/high-latitude rules, seasonal switches, and offsets evidenced by the app.
-- [ ] Build an independent, synthetic research harness if the observed mechanism is reproducible without proprietary code/data.
-- [ ] Compare every 2026 effective Ulyanovsk row/prayer; report exact, ±1, ±2–5, >5, maxima, ranges, and late-August Dhuhr behavior.
+- [x] Identify the Ulyanovsk coordinates, timezone, calculation/timetable policy, Asr/high-latitude rules, seasonal switches, and offsets evidenced by the app.
+- [x] Build an independent, synthetic research harness if the observed mechanism is reproducible without proprietary code/data.
+- [x] Compare every 2026 effective Ulyanovsk row/prayer; report exact, ±1, ±2–5, >5, maxima, ranges, and late-August Dhuhr behavior.
 - [ ] Commit checkpoint 2.
 - **Status:** in_progress
 
@@ -87,6 +87,7 @@ Phase 3
 | `python: command not found` while running the planning skill catch-up script. | 1 | Retry once with installed `python3`; do not repeat the missing `python` command. |
 | `sudo` package installation requires an unavailable interactive password. | 1 | Installed official JADX 1.5.6 and apktool 3.0.3 releases user-locally; use Android SDK build tools and platform sqlite3. |
 | Ordinary emulator installation fails with `INSTALL_FAILED_MISSING_SPLIT`. | 1 | The supplied base declares required ABI/density splits; record the runtime limit and do not generate modified splits or bypass Pairip/store controls. |
+| First synthetic comparison assertion expected four `>5` fields, but the fixture actually contained five. | 1 | Audited the six synthetic deltas, corrected the test expectation to include Asr +6, and reran all four tests successfully. |
 
 ## Notes
 

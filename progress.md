@@ -53,6 +53,14 @@
 - Actions taken:
   - Compared all 365 projected ID 1187 rows and six prayer fields with both the official annual CSV and approved effective signed snapshot.
   - Determined the exact field/day distributions and isolated the July Dhuhr, late-August effective Dhuhr, and July 3 Isha discrepancy clusters.
+  - Added a read-only external-input comparison harness, four synthetic tests, and the `make test-research` repository command.
+  - Confirmed January–May is a complete 906-field exact match and disproved coordinates-only causation by comparing the materially different same-coordinate `Ульяновск 2` table.
+  - Wrote `ULYANOVSK_ONE_MUSLIM_COMPARISON.md` with annual/effective per-prayer statistics and bounded date-range explanations.
+- Files created/modified:
+  - `ULYANOVSK_ONE_MUSLIM_COMPARISON.md`
+  - `research/tools/one_muslim_ulyanovsk_compare.py`
+  - `research/tools/test_one_muslim_ulyanovsk_compare.py`
+  - `Makefile`
 
 ## Test Results
 
@@ -67,6 +75,7 @@
 | Ordinary APK runtime install | base APK on API 36 Android TV emulator | Install only if a complete supported artifact is present | Fails closed: `INSTALL_FAILED_MISSING_SPLIT`; manifest requires ABI/density splits | BLOCKED AS EXPECTED |
 | Ulyanovsk annual comparison | ID 1187 projected to 2026 vs annual CSV | 365 dates × 6 fields | 1,912 exact; 246 ±1; 0 ±2–5; 32 >5 | PASS |
 | Ulyanovsk effective comparison | ID 1187 projected to 2026 vs approved snapshot | 365 dates × 6 fields | 1,901 exact; 246 ±1; 0 ±2–5; 43 >5 | PASS |
+| Research harness tests | `make test-research` | Projection, validation, buckets, runs, snapshot parsing | 4 tests pass | PASS |
 
 ## Error Log
 
@@ -79,6 +88,7 @@
 | 2026-08-30 | `sudo apt-get` requires an interactive password | 1 | Switched to official user-local JADX/apktool releases; no privileged install needed. |
 | 2026-08-30 | JADX returned status 3 with 620 decode/decompile errors; apktool emitted unresolved-resource warnings | 1 | Usable output retained externally; material findings will be cross-checked against smali/DEX/direct database contents. |
 | 2026-08-30 | Base APK install failed with `INSTALL_FAILED_MISSING_SPLIT` | 1 | Manifest requires ABI/density splits that were not supplied. Record runtime behavior as unavailable and do not bypass packaging/protection. |
+| 2026-08-30 | Initial synthetic bucket expectation counted four `>5` fields instead of five | 1 | Audited fixture deltas, added the omitted Asr +6 material run, and reran successfully. |
 
 ## 5-Question Reboot Check
 

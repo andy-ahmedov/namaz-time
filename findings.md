@@ -60,6 +60,9 @@
 - `INFERENCE`: the 366-row no-year template and the many systematic ±1 differences from September onward are consistent with a reusable annual template derived from a different Gregorian/leap-year basis, not a literal copy of the 2026 PDF. The exact template year/source remains `UNKNOWN`.
 - `INFERENCE`: matching distinctive seasonal Fajr/Isha transitions and 98.54% of annual fields within one minute strongly support a shared or closely related upstream Ulyanovsk timetable tradition. They do not prove source authority or approval.
 - `UNKNOWN`: July 3 Isha is an isolated 60-minute outlier among neighboring rows. Static code does not supply a rule that explains only this cell; a data-entry/version error is plausible but unproved.
+- `CONFIRMED_STATIC`: January through May has 906/906 exact fields, including the distinctive supplied-source summer Fajr/Isha transition cells. July Dhuhr in 1Muslim equals the official zenith minute on 23 dates and is one minute earlier on eight, whereas the annual/effective July Dhuhr is zenith +10.
+- `CONFIRMED_STATIC`: the same-coordinate stored candidate `Ульяновск 2` is decisively different from the official annual fixture: 49 exact fields, 97 within one minute, 1,567 above five minutes, maximum 124. The close match is tied to city ID 1187, not merely Ulyanovsk coordinates.
+- `PROPOSAL`: because the ID 1187 mechanism is a reusable timetable projection, the clean-room harness reproduces the projection/validation/comparison interface and consumes the extracted SQLite read-only. It does not synthesize a misleading solar-calculation profile or emit competitor rows.
 
 ## Technical Decisions
 
@@ -68,6 +71,7 @@
 | Store only sanitized summaries and independently generated statistics/harness data. | Avoid committing competitor artifacts or reconstructable proprietary datasets. |
 | Treat city coordinates/geometry, authority, source, and policy as separate concepts. | A geographic match cannot establish religious authority. |
 | Fail closed at unavailable/ambiguous policy rather than silently applying a nationwide method. | Required product invariant. |
+| Keep the comparison output aggregate-only while testing every source row in memory. | Provides reproducible statistics without committing a reconstructable competitor timetable. |
 
 ## Issues Encountered
 
