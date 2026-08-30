@@ -85,6 +85,15 @@ canonical city ID for an authorized mosque/date. Registry rollback re-verifies
 the retained approval/snapshot references and moves only the active pointer;
 the existing signed USB-pilot snapshot is neither rewritten nor re-signed.
 
+T039 follow-up (2026-08-30): a revision-specific assessment projects every
+applicable option with exact precedence, authority/source evidence, freshness
+and blocked reason. An authorized mosque operator may append an explicit
+`pending_review` choice only for a selectable option in a still-staged
+revision. This handoff does not mutate or activate that ambiguous revision;
+the normal curator, approval, publication and activation boundaries remain in
+force. Active/stale/unavailable/lower-precedence choices fail closed, and no
+neighboring or nationwide fallback is introduced.
+
 ## Rejected alternatives
 
 - one nationwide authority or `method=Russia`;

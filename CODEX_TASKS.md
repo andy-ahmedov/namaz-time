@@ -879,3 +879,19 @@ automatic nationwide/neighboring fallback, or modifying the TV display path.
 **Acceptance:** ambiguous/stale/unavailable results are explained and cannot be
 published until an explicit approved binding exists; devices retain the last-
 known-good signed snapshot.
+
+**Result:** completed locally on 2026-08-30 as a control-plane API/review
+handoff. Revision-specific assessment deterministically projects every
+applicable policy with precedence, named authority evidence/scope, source
+freshness, payload range and a stable blocked reason. Same-tier eligible
+options remain `ambiguous`; stale, unavailable, research-only, expired,
+out-of-range and missing-schedule options are non-selectable. An authorized
+mosque operator can append an idempotent `pending_review` choice only from a
+still-staged revision. PostgreSQL migration v7 stores the selection digest and
+audit context under append-only guards while serializing against activation.
+The request does not activate a revision, approve/publish anything, or modify
+an assignment/snapshot. Real PostgreSQL/HTTP tests cover ambiguous selection,
+idempotent replay, stale rejection, active-pointer preservation, migration
+rollback/reapply and signed-pilot byte preservation. The versioned API is the
+operator surface for this slice; no visual web client, neighboring fallback,
+generic Russia method or new regional source was added.

@@ -90,7 +90,7 @@ docker exec "${drill_container_id}" createdb \
 export NAMAZ_RESTORE_DRILL_MIGRATION_URL="postgres://namaz_time_test:local-integration-only@127.0.0.1:${drill_mapped_port}/${drill_source_database}?sslmode=disable"
 go run ./cmd/migrate \
   -database-url-env NAMAZ_RESTORE_DRILL_MIGRATION_URL \
-  -target-version 6
+  -target-version 7
 
 docker cp "${drill_fixture}" "${drill_container_id}:/tmp/namaz-time-restore-seed.sql" >/dev/null
 docker exec "${drill_container_id}" psql \

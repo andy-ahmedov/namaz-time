@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Mosque Prayer TV Synchronization API
-  version: 0.7.0
+  version: 0.8.0
   description: >-
     Draft contract for pairing a television, retrieving a small manifest,
     downloading an immutable signed prayer-time snapshot, and reporting
@@ -411,6 +411,94 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
         '500':
           $ref: '#/components/responses/ErrorResponse'
+  /v1/admin/mosques/{mosqueId}/setup/prayer-policy-options:
+    get:
+      operationId: assessSetupPrayerPolicyOptions
+      security:
+        - adminBearer: []
+      summary: Explain every applicable policy option from one immutable registry revision
+      parameters:
+        - $ref: '#/components/parameters/MosqueId'
+        - name: revision_id
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 160
+        - name: city_id
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 160
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Deterministic precedence, freshness and blocked-reason explanation
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrayerPolicyOptionsResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/admin/mosques/{mosqueId}/setup/prayer-policy-binding-requests:
+    post:
+      operationId: requestSetupPrayerPolicyBinding
+      security:
+        - adminBearer: []
+      summary: Persist an explicit selectable staged-policy choice for separate review
+      description: >-
+        This append-only request remains pending_review. It does not activate a registry
+        revision, approve a policy, publish a snapshot, or change a device assignment.
+      parameters:
+        - $ref: '#/components/parameters/MosqueId'
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistryBindingRequestInput'
+      responses:
+        '201':
+          description: Append-only pending-review request created or idempotently replayed
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistryBindingRequestResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+        '503':
+          $ref: '#/components/responses/ErrorResponse'
   /v1/admin/mosques/{mosqueId}/rollout-groups/{groupId}/assignment:
     put:
       operationId: assignFleetRolloutGroupSnapshot
@@ -635,6 +723,202 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/RegistrySourceOverride'
+    PrayerPolicyOptionsResponse:
+      type: object
+      additionalProperties: false
+      required: [schema_version, revision, revision_state, status, reason, date, city, options, allowed_actions]
+      properties:
+        schema_version:
+          const: prayer-policy-options/v1
+        revision:
+          $ref: '#/components/schemas/RegistryRevision'
+        revision_state:
+          type: string
+          enum: [staged, active]
+        status:
+          type: string
+          enum: [resolved, ambiguous, stale, unavailable]
+        reason:
+          type: string
+          enum:
+            - resolved
+            - same_tier_ambiguous
+            - stale_source
+            - source_unavailable
+            - source_not_approved
+            - schedule_unavailable
+            - policy_out_of_range
+            - no_policy
+        date:
+          type: string
+          format: date
+        city:
+          $ref: '#/components/schemas/CityCandidate'
+        options:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegistryPolicyOption'
+        allowed_actions:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            enum: [request_binding]
+    RegistryRevision:
+      type: object
+      additionalProperties: false
+      required: [id, schema_version, catalog_revision_id, content_sha256, created_at, created_by, reason]
+      properties:
+        id:
+          type: string
+        schema_version:
+          type: integer
+          minimum: 1
+        parent_revision_id:
+          type: string
+        catalog_revision_id:
+          type: string
+        content_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+        created_at:
+          type: string
+          format: date-time
+        created_by:
+          type: string
+        reason:
+          type: string
+    RegistryPolicyOption:
+      type: object
+      additionalProperties: false
+      required: [tier, selectable, blocked_reason, scope, authorities, source, policy, source_overrides]
+      properties:
+        tier:
+          type: string
+          enum:
+            - exact_city_timetable
+            - regional_official_timetable
+            - approved_regional_calculation_profile
+            - explicitly_configured_fallback
+        selectable:
+          type: boolean
+        blocked_reason:
+          type: string
+          enum:
+            - eligible
+            - lower_precedence
+            - policy_out_of_range
+            - source_research_only
+            - source_stale
+            - source_not_fresh_for_date
+            - source_unavailable
+            - schedule_unavailable_for_date
+        scope:
+          $ref: '#/components/schemas/GeographicScope'
+        authorities:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PrayerAuthority'
+        source:
+          $ref: '#/components/schemas/RegistryPrayerSource'
+        policy:
+          $ref: '#/components/schemas/RegistryPrayerPolicy'
+        timetable:
+          $ref: '#/components/schemas/RegistryTimeTable'
+        calculation_profile:
+          $ref: '#/components/schemas/RegistryCalculationProfile'
+        source_overrides:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegistrySourceOverride'
+    RegistryBindingRequestInput:
+      type: object
+      additionalProperties: false
+      required: [revision_id, city_id, policy_id, date, reason]
+      properties:
+        revision_id:
+          type: string
+          minLength: 8
+          maxLength: 160
+        city_id:
+          type: string
+          minLength: 8
+          maxLength: 160
+        policy_id:
+          type: string
+          minLength: 8
+          maxLength: 160
+        date:
+          type: string
+          format: date
+        reason:
+          type: string
+          minLength: 1
+          maxLength: 512
+    RegistryBindingRequestResponse:
+      type: object
+      additionalProperties: false
+      required: [schema_version, request]
+      properties:
+        schema_version:
+          const: registry-binding-request/v1
+        request:
+          $ref: '#/components/schemas/RegistryBindingRequest'
+    RegistryBindingRequest:
+      type: object
+      additionalProperties: false
+      required:
+        - id
+        - revision_id
+        - city_id
+        - policy_id
+        - mosque_id
+        - date
+        - resolution_tier
+        - status
+        - selection_sha256
+        - requested_by_actor_id
+        - reason
+        - request_id
+        - requested_at
+      properties:
+        id:
+          type: string
+        revision_id:
+          type: string
+        city_id:
+          type: string
+        policy_id:
+          type: string
+        mosque_id:
+          type: string
+        date:
+          type: string
+          format: date
+        resolution_tier:
+          type: string
+          enum:
+            - exact_city_timetable
+            - regional_official_timetable
+            - approved_regional_calculation_profile
+            - explicitly_configured_fallback
+        status:
+          const: pending_review
+        selection_sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+        requested_by_actor_id:
+          type: string
+        reason:
+          type: string
+        request_id:
+          type: string
+          minLength: 8
+          maxLength: 128
+        requested_at:
+          type: string
+          format: date-time
     GeographicScope:
       type: object
       additionalProperties: false
@@ -690,7 +974,8 @@ components:
           type: string
           format: uri
         status:
-          const: approved
+          type: string
+          enum: [research_only, approved, stale, unavailable]
         fresh_through:
           type: string
           format: date

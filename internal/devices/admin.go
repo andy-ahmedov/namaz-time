@@ -5,20 +5,25 @@ import (
 	"crypto/hmac"
 	"crypto/sha256"
 	"encoding/base32"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/andy-ahmedov/namaz-time/internal/registry"
 )
 
 var (
-	ErrAdminUnauthorized        = errors.New("admin unauthorized")
-	ErrAdminResourceNotFound    = errors.New("admin resource not found")
-	ErrAdminIdempotencyConflict = errors.New("admin idempotency conflict")
-	ErrInvalidAdminRequest      = errors.New("invalid admin request")
-	ErrDeviceAssignmentNotFound = errors.New("device assignment not found")
-	ErrRolloutGroupTooLarge     = errors.New("rollout group exceeds transaction bound")
+	ErrAdminUnauthorized            = errors.New("admin unauthorized")
+	ErrAdminResourceNotFound        = errors.New("admin resource not found")
+	ErrAdminIdempotencyConflict     = errors.New("admin idempotency conflict")
+	ErrInvalidAdminRequest          = errors.New("invalid admin request")
+	ErrDeviceAssignmentNotFound     = errors.New("device assignment not found")
+	ErrRolloutGroupTooLarge         = errors.New("rollout group exceeds transaction bound")
+	ErrRegistryBindingNotSelectable = errors.New("registry binding is not selectable")
+	ErrRegistryWorkflowUnavailable  = errors.New("registry workflow unavailable")
 )
 
 const MaxRolloutGroupDevices = 100
@@ -140,6 +145,37 @@ type AdminRolloutAssignmentRetryQuery struct {
 	IdempotencyKey    string
 }
 
+type RegistryBindingStatus string
+
+const RegistryBindingPendingReview RegistryBindingStatus = "pending_review"
+
+type AdminRegistryBindingCommand struct {
+	MosqueID       string
+	RevisionID     string
+	CityID         string
+	PolicyID       string
+	Date           string
+	Reason         string
+	RequestID      string
+	IdempotencyKey string
+}
+
+type RegistryBindingRequest struct {
+	ID                 string                  `json:"id"`
+	RevisionID         string                  `json:"revision_id"`
+	CityID             string                  `json:"city_id"`
+	PolicyID           string                  `json:"policy_id"`
+	MosqueID           string                  `json:"mosque_id"`
+	Date               string                  `json:"date"`
+	Tier               registry.ResolutionTier `json:"resolution_tier"`
+	Status             RegistryBindingStatus   `json:"status"`
+	SelectionSHA256    string                  `json:"selection_sha256"`
+	RequestedByActorID string                  `json:"requested_by_actor_id"`
+	Reason             string                  `json:"reason"`
+	RequestID          string                  `json:"request_id"`
+	RequestedAt        time.Time               `json:"requested_at"`
+}
+
 type RolloutAssignmentResult struct {
 	RolloutGroup string             `json:"rollout_group"`
 	SnapshotID   string             `json:"snapshot_id"`
@@ -249,6 +285,28 @@ type AdminRolloutAssignmentMutation struct {
 	RequestHash     [sha256.Size]byte
 }
 
+type AdminRegistryBindingMutation struct {
+	Scope           AdminRepositoryScope
+	Command         AdminRegistryBindingCommand
+	Request         RegistryBindingRequest
+	IdempotencyHash [sha256.Size]byte
+	RequestHash     [sha256.Size]byte
+}
+
+type AdminRegistryBindingRepository interface {
+	ReadRegistryBindingRequestRetry(
+		context.Context,
+		AdminRepositoryScope,
+		[sha256.Size]byte,
+		[sha256.Size]byte,
+	) (RegistryBindingRequest, bool, error)
+	CreateRegistryBindingRequest(context.Context, AdminRegistryBindingMutation) (RegistryBindingRequest, error)
+}
+
+type RegistrySelectionVerifier interface {
+	AssessRevision(context.Context, string, registry.ResolveRequest) (registry.RevisionPolicyAssessment, error)
+}
+
 type AdminFleetRepository interface {
 	AuthenticateAdmin(context.Context, [sha256.Size]byte) (AdminPrincipal, error)
 	CreateAdminPairing(context.Context, AdminPairingMutation) (PairingRecord, error)
@@ -278,6 +336,10 @@ type AdminFleetBackend interface {
 	GetDeviceAssignment(context.Context, string, string) (DeviceAssignment, error)
 }
 
+type AdminRegistryBindingBackend interface {
+	RequestRegistryBinding(context.Context, AdminPrincipal, AdminRegistryBindingCommand) (RegistryBindingRequest, error)
+}
+
 func (manager *AdminFleetManager) AuthorizeAdminScope(principal AdminPrincipal, mosqueID string, write bool) error {
 	if !validIdentifier(mosqueID) {
 		return ErrInvalidAdminRequest
@@ -299,12 +361,14 @@ type AdminFleetManagerConfig struct {
 	Now                          func() time.Time
 	IdempotencyKey               []byte
 	CompatibilityIdempotencyKeys [][]byte
+	RegistrySelectionVerifier    RegistrySelectionVerifier
 }
 
 type AdminFleetManager struct {
-	repository      AdminFleetRepository
-	now             func() time.Time
-	idempotencyKeys [][]byte
+	repository       AdminFleetRepository
+	now              func() time.Time
+	idempotencyKeys  [][]byte
+	registryVerifier RegistrySelectionVerifier
 }
 
 func NewAdminFleetManager(config AdminFleetManagerConfig) (*AdminFleetManager, error) {
@@ -330,7 +394,7 @@ func NewAdminFleetManager(config AdminFleetManagerConfig) (*AdminFleetManager, e
 	}
 	return &AdminFleetManager{
 		repository: config.Repository, now: config.Now,
-		idempotencyKeys: keys,
+		idempotencyKeys: keys, registryVerifier: config.RegistrySelectionVerifier,
 	}, nil
 }
 
@@ -682,6 +746,116 @@ func asciiLetterOrDigit(value byte) bool {
 
 func hashAdminRolloutAssignmentRequest(mosqueID, group, snapshotID, minimumAppVersion, reason string) [sha256.Size]byte {
 	return hashAdminRequest("assign_rollout_group", mosqueID, group, snapshotID, minimumAppVersion, reason)
+}
+
+func (manager *AdminFleetManager) RequestRegistryBinding(
+	ctx context.Context,
+	principal AdminPrincipal,
+	command AdminRegistryBindingCommand,
+) (RegistryBindingRequest, error) {
+	parsedDate, dateErr := time.Parse(time.DateOnly, command.Date)
+	if !validIdentifier(command.MosqueID) || !validIdentifier(command.RevisionID) ||
+		!validIdentifier(command.CityID) || !validIdentifier(command.PolicyID) ||
+		dateErr != nil || parsedDate.Format(time.DateOnly) != command.Date ||
+		!validAuditText(command.Reason, 512) || !validIdentifier(command.RequestID) ||
+		!validIdempotencyKey(command.IdempotencyKey) {
+		return RegistryBindingRequest{}, ErrInvalidAdminRequest
+	}
+	scope, allowed := manager.writeScope(principal, command.MosqueID)
+	if !allowed {
+		return RegistryBindingRequest{}, ErrAdminResourceNotFound
+	}
+	repository, ok := manager.repository.(AdminRegistryBindingRepository)
+	if !ok {
+		return RegistryBindingRequest{}, ErrRegistryWorkflowUnavailable
+	}
+	idempotencyHash := hashAdminRequest("idempotency", principal.ActorID, "request_registry_binding", command.IdempotencyKey)
+	requestHash := hashAdminRequest(
+		"request_registry_binding", command.RevisionID, command.CityID, command.PolicyID,
+		command.MosqueID, command.Date, command.Reason,
+	)
+	retried, found, err := repository.ReadRegistryBindingRequestRetry(ctx, scope, idempotencyHash, requestHash)
+	if err != nil {
+		return RegistryBindingRequest{}, mapAdminRepositoryError("retry registry binding request", err)
+	}
+	if found {
+		if !validRegistryBindingResult(retried, command, principal.ActorID) {
+			return RegistryBindingRequest{}, errors.New("retry registry binding request: repository returned invalid result")
+		}
+		return retried, nil
+	}
+	if manager.registryVerifier == nil {
+		return RegistryBindingRequest{}, ErrRegistryWorkflowUnavailable
+	}
+	assessment, err := manager.registryVerifier.AssessRevision(ctx, command.RevisionID, registry.ResolveRequest{
+		CityID: command.CityID, MosqueID: command.MosqueID, Date: command.Date,
+	})
+	if err != nil {
+		switch {
+		case errors.Is(err, registry.ErrRevisionUnavailable), errors.Is(err, registry.ErrPolicyUnavailable),
+			errors.Is(err, registry.ErrPolicyAmbiguous):
+			return RegistryBindingRequest{}, ErrRegistryBindingNotSelectable
+		case errors.Is(err, registry.ErrRevisionInvalid), errors.Is(err, registry.ErrInvalidResolveRequest):
+			return RegistryBindingRequest{}, ErrInvalidAdminRequest
+		default:
+			return RegistryBindingRequest{}, fmt.Errorf("request registry binding: assess revision: %w", err)
+		}
+	}
+	if assessment.Revision.ID != command.RevisionID || assessment.State != registry.RevisionStateStaged ||
+		assessment.Result.City.ID != command.CityID || assessment.Result.Date != command.Date ||
+		!validSHA256(assessment.Revision.ContentSHA256) {
+		return RegistryBindingRequest{}, ErrRegistryBindingNotSelectable
+	}
+	var selected *registry.PolicyOption
+	for index := range assessment.Result.Options {
+		if assessment.Result.Options[index].Policy.ID == command.PolicyID {
+			selected = &assessment.Result.Options[index]
+			break
+		}
+	}
+	if selected == nil || !selected.Selectable || selected.BlockedReason != registry.OptionEligible {
+		return RegistryBindingRequest{}, ErrRegistryBindingNotSelectable
+	}
+	selectionDigest := hashAdminRequest(
+		"registry_binding_selection_v1", assessment.Revision.ID, assessment.Revision.ContentSHA256,
+		command.CityID, command.PolicyID, command.MosqueID, command.Date, string(selected.Tier),
+	)
+	selectionSHA256 := hex.EncodeToString(selectionDigest[:])
+	request := RegistryBindingRequest{
+		ID: deterministicUUID(manager.digest(
+			0, "registry_binding_request_id", principal.ActorID, command.MosqueID, command.IdempotencyKey,
+		)),
+		RevisionID: command.RevisionID, CityID: command.CityID, PolicyID: command.PolicyID,
+		MosqueID: command.MosqueID, Date: command.Date, Tier: selected.Tier,
+		Status: RegistryBindingPendingReview, SelectionSHA256: selectionSHA256,
+		RequestedByActorID: principal.ActorID, Reason: command.Reason, RequestID: command.RequestID,
+		RequestedAt: manager.now().UTC(),
+	}
+	stored, err := repository.CreateRegistryBindingRequest(ctx, AdminRegistryBindingMutation{
+		Scope: scope, Command: command, Request: request,
+		IdempotencyHash: idempotencyHash, RequestHash: requestHash,
+	})
+	if err != nil {
+		return RegistryBindingRequest{}, mapAdminRepositoryError("request registry binding", err)
+	}
+	if !validRegistryBindingResult(stored, command, principal.ActorID) ||
+		stored.Tier != request.Tier || stored.SelectionSHA256 != request.SelectionSHA256 {
+		return RegistryBindingRequest{}, errors.New("request registry binding: repository returned invalid result")
+	}
+	return stored, nil
+}
+
+func validRegistryBindingResult(result RegistryBindingRequest, command AdminRegistryBindingCommand, actorID string) bool {
+	validTier := result.Tier == registry.ResolutionExactCityTimetable ||
+		result.Tier == registry.ResolutionRegionalTimetable ||
+		result.Tier == registry.ResolutionRegionalCalculation ||
+		result.Tier == registry.ResolutionExplicitFallback
+	return result.RevisionID == command.RevisionID && result.CityID == command.CityID &&
+		result.PolicyID == command.PolicyID && result.MosqueID == command.MosqueID &&
+		result.Date == command.Date && result.Reason == command.Reason && validTier &&
+		result.Status == RegistryBindingPendingReview && validSHA256(result.SelectionSHA256) &&
+		result.RequestedByActorID == actorID && validIdentifier(result.RequestID) &&
+		validIdentifier(result.ID) && !result.RequestedAt.IsZero()
 }
 
 func (manager *AdminFleetManager) GetDeviceAssignment(ctx context.Context, deviceID, mosqueID string) (DeviceAssignment, error) {

@@ -391,14 +391,7 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 			return nil, err
 		}
 		pairingBackend = manager
-		adminManager, err := devices.NewAdminFleetManager(devices.AdminFleetManagerConfig{
-			Repository: repository, IdempotencyKey: adminKey, CompatibilityIdempotencyKeys: compatibilityAdminKeys,
-		})
-		if err != nil {
-			repository.Close()
-			return nil, err
-		}
-		adminBackend = adminManager
+		var registryVerifier devices.RegistrySelectionVerifier
 		if config.RegistryBackend == "postgres" {
 			registryStore, openErr := registry.OpenPostgresRevisionStore(openContext, databaseURL)
 			if openErr != nil {
@@ -412,10 +405,24 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 				return nil, readerErr
 			}
 			registryBackend = registryReader
+			registryVerifier = registryReader
 		} else if config.RegistryBackend != "" {
 			repository.Close()
 			return nil, errors.New("unsupported registry backend")
 		}
+		adminManager, err := devices.NewAdminFleetManager(devices.AdminFleetManagerConfig{
+			Repository: repository, IdempotencyKey: adminKey,
+			CompatibilityIdempotencyKeys: compatibilityAdminKeys,
+			RegistrySelectionVerifier:    registryVerifier,
+		})
+		if err != nil {
+			if closer, ok := registryBackend.(interface{ Close() }); ok {
+				closer.Close()
+			}
+			repository.Close()
+			return nil, err
+		}
+		adminBackend = adminManager
 	} else if config.PairingBackend != "" {
 		return nil, errors.New("unsupported pairing backend")
 	} else if config.DatabaseURLEnv != "" || config.PairingRateLimitKeyEnv != "" || config.AdminIdempotencyKeyEnv != "" || len(config.AdminCompatibilityIdempotencyKeyEnvs) > 0 || config.PairingRateLimits != (runtimePairingRateLimits{}) || config.PairingBackendTimeoutSeconds != 0 || config.RegistryBackend != "" {

@@ -238,7 +238,7 @@
 
 ### T037: persisted Ulyanovsk end-to-end
 
-- **Status:** complete pending checkpoint commit.
+- **Status:** complete; local commit `804c677`.
 - Removed `NewPilotRegistry`; added strict reviewed bindings targeting the exact T035 catalog revision/hash and retaining both Ulyanovsk authority evidence identities.
 - Added a pinned artifact manifest and verifier that cryptographically rechecks the real mosque approval, approval trust, publication trust transition/environment separation, receipt/signature and exact signed snapshot identity.
 - Added `registryctl validate/apply`; the full ignored 166,557-city catalog composes to stable registry SHA-256 `0114c41e6e7d58fc5886b5a4363567348a0c5bb56835e5d9d830dc0b4fef8e5f`.
@@ -254,6 +254,44 @@
 | Registry integration test acquired an import cycle after devices began importing registry | 1 | Converted the integration test to external `registry_test` package and supplied isolated exported-API fixtures. |
 | New UTC assertions used `time.Equal(value.UTC())`, which cannot distinguish location representation | 1 | Replaced with canonical `time.UTC` location validation and added non-UTC revision/approval/snapshot tests. |
 | `registryctl validate` initially checked policy approvals but not override/profile references | 1 | Added a red missing-override test, then deterministic deduplicated verification for every referenced approval and published snapshot. |
+
+### T039: explainable operator workflow
+
+- **Status:** complete pending checkpoint commit.
+- Added revision-specific assessment with deterministic precedence and stable
+  `resolved`/`ambiguous`/`stale`/`unavailable` reasons plus per-option authority,
+  evidence, scope, freshness/range, payload and blocked reason.
+- Added authenticated `prayer-policy-options` and explicit
+  `prayer-policy-binding-requests` endpoints under OpenAPI 0.8.0. The latter
+  writes only an idempotent append-only `pending_review` handoff and never
+  activates/publishes/assigns.
+- PostgreSQL migration v7 adds `registry_binding_requests`, preserves audit
+  actor/reason/request/time and selection SHA-256, serializes with the registry
+  lifecycle lock, and rolls back to v6 without touching active state or signed
+  snapshots.
+- Unit coverage includes independent parallel-authority options, lower-tier
+  precedence, research/stale/unavailable/expired sources, policy/payload range,
+  seasonal override range, missing policy, active/new-request rejection and
+  exact retry after state change.
+- Real PostgreSQL/HTTP coverage proves staged ambiguity selection, idempotent
+  replay, append-only guards, stale rejection, unchanged active revision and a
+  least-privilege API role that may insert only the handoff—not revisions or
+  the active pointer.
+- Checkpoint gates pass: `make test`, full-catalog `registryctl validate`,
+  `make test-postgres` including v7 restore, `go test -race ./...`,
+  `make security-go` (no vulnerabilities), `make lint`, and a clean
+  working-tree gitleaks scan. The local T039 commit is the remaining checkpoint
+  step.
+
+### T039 error/falsification log
+
+| Finding | Attempt | Resolution |
+|---|---:|---|
+| Exact idempotent replay was initially assessed before reading retained evidence, so later activation could change the retry response | 1 | Added a scoped persisted-retry read before mutable registry assessment; changed input still conflicts. |
+| Binding persistence could race staged→active between assessment and insert | 1 | Shared the registry PostgreSQL lifecycle advisory lock and rechecked state inside the insert transaction. |
+| A seasonal override source was initially checked outside its effective range | 1 | Base source remains checked; override source is checked only in-range, with inside/outside regression tests. |
+| Assessment initially required a mosque ID on regional timetables | 1 | Matched resolver semantics: blank timetable mosque means regional payload, while explicit nonmatching mosque still blocks. |
+| Gitleaks classified a high-entropy synthetic idempotency value as a generic API key | 1 | Replaced it with an obvious low-entropy test-only value and reran the working-tree scan with no findings. |
 
 ## 5-Question Reboot Check
 

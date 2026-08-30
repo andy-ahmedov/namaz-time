@@ -86,7 +86,7 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 		t.Fatalf("upgrade v4 to current: %v", err)
 	}
 	var versions int
-	var adminTable, healthTable, rolloutColumn bool
+	var adminTable, healthTable, rolloutColumn, registryBindingRequestTable bool
 	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM schema_migrations`).Scan(&versions); err != nil {
 		t.Fatalf("count upgraded versions: %v", err)
 	}
@@ -103,8 +103,11 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 		)`).Scan(&rolloutColumn); err != nil {
 		t.Fatalf("inspect v4 column: %v", err)
 	}
-	if versions != PairingSchemaVersion || !adminTable || !healthTable || !rolloutColumn {
-		t.Fatalf("upgraded schema: versions=%d admin_table=%v health_table=%v rollout_column=%v", versions, adminTable, healthTable, rolloutColumn)
+	if err := pool.QueryRow(t.Context(), `SELECT to_regclass('registry_binding_requests') IS NOT NULL`).Scan(&registryBindingRequestTable); err != nil {
+		t.Fatalf("inspect v7 table: %v", err)
+	}
+	if versions != PairingSchemaVersion || !adminTable || !healthTable || !rolloutColumn || !registryBindingRequestTable {
+		t.Fatalf("upgraded schema: versions=%d admin_table=%v health_table=%v rollout_column=%v binding_requests=%v", versions, adminTable, healthTable, rolloutColumn, registryBindingRequestTable)
 	}
 	var setGroupOperations, assignGroupOperations int
 	if err := pool.QueryRow(t.Context(), `
@@ -126,7 +129,7 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 		t.Fatalf("rollback current schema to v3: %v", err)
 	}
 	var v3Versions int
-	var preservedHealth, removedRollout bool
+	var preservedHealth, removedRollout, removedBindingRequests bool
 	if err := pool.QueryRow(t.Context(), `SELECT count(*) FROM schema_migrations`).Scan(&v3Versions); err != nil {
 		t.Fatalf("count v3 rollback versions: %v", err)
 	}
@@ -135,11 +138,12 @@ func TestPostgresPairingMigrationUpgradesVersionOneToCurrent(t *testing.T) {
 		       NOT EXISTS (
 			   SELECT 1 FROM information_schema.columns
 			   WHERE table_schema = 'public' AND table_name = 'devices' AND column_name = 'rollout_group'
-		       )`).Scan(&preservedHealth, &removedRollout); err != nil {
+		       ),
+		       to_regclass('registry_binding_requests') IS NULL`).Scan(&preservedHealth, &removedRollout, &removedBindingRequests); err != nil {
 		t.Fatalf("inspect v4 to v3 rollback: %v", err)
 	}
-	if v3Versions != 3 || !preservedHealth || !removedRollout {
-		t.Fatalf("v4 to v3 rollback: versions=%d health=%v rollout_removed=%v", v3Versions, preservedHealth, removedRollout)
+	if v3Versions != 3 || !preservedHealth || !removedRollout || !removedBindingRequests {
+		t.Fatalf("current to v3 rollback: versions=%d health=%v rollout_removed=%v binding_requests_removed=%v", v3Versions, preservedHealth, removedRollout, removedBindingRequests)
 	}
 	if err := repository.MigrateUp(t.Context()); err != nil {
 		t.Fatalf("reapply current schema after v3 rollback: %v", err)

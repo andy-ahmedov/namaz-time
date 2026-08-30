@@ -5,9 +5,84 @@ import (
 	"context"
 	"crypto/sha256"
 	"errors"
+	"strings"
 	"testing"
 	"time"
+
+	"github.com/andy-ahmedov/namaz-time/internal/domain"
+	"github.com/andy-ahmedov/namaz-time/internal/registry"
 )
+
+func TestAdminFleetManagerRequestsOnlySelectableStagedRegistryBinding(t *testing.T) {
+	t.Parallel()
+
+	repository := newRecordingAdminRepository()
+	verifier := &recordingRegistrySelectionVerifier{assessment: registry.RevisionPolicyAssessment{
+		Revision: registry.RevisionRecord{
+			ID: "revision-staged-0001", ContentSHA256: strings.Repeat("a", sha256.Size*2),
+		},
+		State: registry.RevisionStateStaged,
+		Result: registry.PolicyAssessment{
+			Status: registry.AssessmentAmbiguous,
+			City:   domain.City{ID: "city-ulyanovsk-0001"},
+			Date:   "2026-08-30",
+			Options: []registry.PolicyOption{
+				{Tier: registry.ResolutionExactCityTimetable, Selectable: true, BlockedReason: registry.OptionEligible, Policy: domain.PrayerPolicy{ID: "policy-city-first-0001"}},
+				{Tier: registry.ResolutionExactCityTimetable, Selectable: true, BlockedReason: registry.OptionEligible, Policy: domain.PrayerPolicy{ID: "policy-city-second-001"}},
+			},
+		},
+	}}
+	manager := mustAdminFleetManagerWithVerifier(t, repository, verifier)
+	principal := AdminPrincipal{
+		ActorID:     "actor-mosque-admin-0001",
+		Memberships: []AdminMembership{{MosqueID: "mosque-ulyanovsk-0001", Role: AdminRoleMosqueAdmin}},
+	}
+	command := AdminRegistryBindingCommand{
+		MosqueID: "mosque-ulyanovsk-0001", RevisionID: "revision-staged-0001",
+		CityID: "city-ulyanovsk-0001", PolicyID: "policy-city-second-001", Date: "2026-08-30",
+		Reason: "choose the approved city timetable", RequestID: "request-registry-binding-001",
+		IdempotencyKey: "idem-registry-binding-0001",
+	}
+
+	request, err := manager.RequestRegistryBinding(t.Context(), principal, command)
+	if err != nil {
+		t.Fatalf("RequestRegistryBinding() error = %v", err)
+	}
+	if request.Status != RegistryBindingPendingReview || request.PolicyID != command.PolicyID ||
+		request.Tier != registry.ResolutionExactCityTimetable || len(request.SelectionSHA256) != sha256.Size*2 {
+		t.Fatalf("RequestRegistryBinding() = %#v", request)
+	}
+	if verifier.request != (registry.ResolveRequest{CityID: command.CityID, MosqueID: command.MosqueID, Date: command.Date}) {
+		t.Fatalf("assessment request = %#v", verifier.request)
+	}
+	if repository.bindingRows != 1 || repository.lastBinding.Command != command {
+		t.Fatalf("persisted binding mutation = %#v, rows=%d", repository.lastBinding, repository.bindingRows)
+	}
+	retried, err := manager.RequestRegistryBinding(t.Context(), principal, command)
+	if err != nil || retried != request || repository.bindingRows != 1 {
+		t.Fatalf("idempotent RequestRegistryBinding() = %#v, %v; rows=%d", retried, err, repository.bindingRows)
+	}
+
+	verifier.assessment.State = registry.RevisionStateActive
+	activeRetry, err := manager.RequestRegistryBinding(t.Context(), principal, command)
+	if err != nil || activeRetry != request {
+		t.Fatalf("active exact retry = %#v, %v; want %#v", activeRetry, err, request)
+	}
+	newRequest := command
+	newRequest.IdempotencyKey = "idem-registry-binding-active-02"
+	newRequest.RequestID = "request-registry-binding-active-02"
+	if _, err := manager.RequestRegistryBinding(t.Context(), principal, newRequest); !errors.Is(err, ErrRegistryBindingNotSelectable) {
+		t.Fatalf("active revision RequestRegistryBinding() error = %v", err)
+	}
+	verifier.assessment.State = registry.RevisionStateStaged
+	verifier.assessment.Result.Options[1].Selectable = false
+	verifier.assessment.Result.Options[1].BlockedReason = registry.OptionSourceStale
+	newRequest.IdempotencyKey = "idem-registry-binding-stale-003"
+	newRequest.RequestID = "request-registry-binding-stale-003"
+	if _, err := manager.RequestRegistryBinding(t.Context(), principal, newRequest); !errors.Is(err, ErrRegistryBindingNotSelectable) {
+		t.Fatalf("stale policy RequestRegistryBinding() error = %v", err)
+	}
+}
 
 func TestAdminFleetManagerEnforcesGlobalAndMosqueRoles(t *testing.T) {
 	t.Parallel()
@@ -286,6 +361,38 @@ func mustAdminFleetManager(t *testing.T, repository AdminFleetRepository) *Admin
 	return manager
 }
 
+func mustAdminFleetManagerWithVerifier(
+	t *testing.T,
+	repository AdminFleetRepository,
+	verifier RegistrySelectionVerifier,
+) *AdminFleetManager {
+	t.Helper()
+	manager, err := NewAdminFleetManager(AdminFleetManagerConfig{
+		Repository: repository, RegistrySelectionVerifier: verifier,
+		Now:            func() time.Time { return time.Date(2026, 8, 30, 9, 0, 0, 0, time.UTC) },
+		IdempotencyKey: bytes.Repeat([]byte{0x71}, sha256.Size),
+	})
+	if err != nil {
+		t.Fatalf("NewAdminFleetManager() error = %v", err)
+	}
+	return manager
+}
+
+type recordingRegistrySelectionVerifier struct {
+	assessment registry.RevisionPolicyAssessment
+	request    registry.ResolveRequest
+	err        error
+}
+
+func (verifier *recordingRegistrySelectionVerifier) AssessRevision(
+	_ context.Context,
+	_ string,
+	request registry.ResolveRequest,
+) (registry.RevisionPolicyAssessment, error) {
+	verifier.request = request
+	return verifier.assessment, verifier.err
+}
+
 type recordingAdminRepository struct {
 	authenticated           AdminPrincipal
 	authenticatedHash       [sha256.Size]byte
@@ -301,6 +408,10 @@ type recordingAdminRepository struct {
 	lastAssignCommand       AdminAssignDeviceCommand
 	rolloutResult           RolloutAssignmentResult
 	supportBundle           DeviceSupportBundle
+	bindingRequests         map[[sha256.Size]byte]RegistryBindingRequest
+	bindingRequestHashes    map[[sha256.Size]byte][sha256.Size]byte
+	bindingRows             int
+	lastBinding             AdminRegistryBindingMutation
 }
 
 type adminPairingFixture struct {
@@ -313,6 +424,8 @@ func newRecordingAdminRepository() *recordingAdminRepository {
 		pairings: make(map[[sha256.Size]byte]adminPairingFixture), assignments: make(map[string]DeviceAssignment),
 		assignmentRequests: make(map[[sha256.Size]byte]DeviceAssignment), revocations: make(map[[sha256.Size]byte][sha256.Size]byte),
 		assignmentRequestHashes: make(map[[sha256.Size]byte][sha256.Size]byte),
+		bindingRequests:         make(map[[sha256.Size]byte]RegistryBindingRequest),
+		bindingRequestHashes:    make(map[[sha256.Size]byte][sha256.Size]byte),
 		rolloutResult: RolloutAssignmentResult{
 			RolloutGroup: "canary-group-0001", SnapshotID: "synthetic-android-verification-v1", DeviceCount: 2,
 			Assignments: []DeviceAssignment{
@@ -321,6 +434,38 @@ func newRecordingAdminRepository() *recordingAdminRepository {
 			},
 		},
 	}
+}
+
+func (repository *recordingAdminRepository) CreateRegistryBindingRequest(
+	_ context.Context,
+	mutation AdminRegistryBindingMutation,
+) (RegistryBindingRequest, error) {
+	if existing, found := repository.bindingRequests[mutation.IdempotencyHash]; found {
+		if repository.bindingRequestHashes[mutation.IdempotencyHash] != mutation.RequestHash {
+			return RegistryBindingRequest{}, ErrAdminIdempotencyConflict
+		}
+		return existing, nil
+	}
+	repository.lastBinding = mutation
+	repository.bindingRequests[mutation.IdempotencyHash] = mutation.Request
+	repository.bindingRequestHashes[mutation.IdempotencyHash] = mutation.RequestHash
+	repository.bindingRows++
+	return mutation.Request, nil
+}
+
+func (repository *recordingAdminRepository) ReadRegistryBindingRequestRetry(
+	_ context.Context,
+	_ AdminRepositoryScope,
+	idempotencyHash, requestHash [sha256.Size]byte,
+) (RegistryBindingRequest, bool, error) {
+	existing, found := repository.bindingRequests[idempotencyHash]
+	if !found {
+		return RegistryBindingRequest{}, false, nil
+	}
+	if repository.bindingRequestHashes[idempotencyHash] != requestHash {
+		return RegistryBindingRequest{}, false, ErrAdminIdempotencyConflict
+	}
+	return existing, true, nil
 }
 
 func (repository *recordingAdminRepository) ReadAdminAssignmentRetry(

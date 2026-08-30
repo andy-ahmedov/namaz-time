@@ -818,6 +818,96 @@ func TestAdminRegistrySearchAndResolveRequireExplicitScopedCity(t *testing.T) {
 	}
 }
 
+func TestAdminRegistryWorkflowExplainsAmbiguityAndRequiresExplicitBinding(t *testing.T) {
+	t.Parallel()
+	const (
+		mosqueID   = "second-cathedral-mosque-ulyanovsk"
+		cityID     = "city-4adcfc15932f3850d5dd5dbaa17e3a4c"
+		revisionID = "revision-operator-review-0001"
+		policyID   = "policy-operator-choice-second"
+	)
+	admin := &recordingHTTPAdminBackend{
+		principal: AdminPrincipal{
+			ActorID:     "actor-mosque-admin-registry",
+			Memberships: []AdminMembership{{MosqueID: mosqueID, Role: AdminRoleMosqueAdmin}},
+		},
+		bindingRequest: RegistryBindingRequest{
+			ID: "binding-request-operator-0001", RevisionID: revisionID, CityID: cityID,
+			PolicyID: policyID, MosqueID: mosqueID, Date: "2026-08-30",
+			Tier: registrydomain.ResolutionExactCityTimetable, Status: RegistryBindingPendingReview,
+			SelectionSHA256: strings.Repeat("b", 64), RequestedByActorID: "actor-mosque-admin-registry",
+			Reason: "choose reviewed city timetable", RequestID: "request-registry-binding-http-0001",
+			RequestedAt: time.Date(2026, 8, 30, 9, 0, 0, 0, time.UTC),
+		},
+	}
+	city := domain.City{
+		ID: cityID, Name: "Ульяновск", RegionID: "ru-uly", CountryCode: "RU",
+		Timezone: "Europe/Ulyanovsk", SettlementType: "PPLA", GeographicSourceID: "geonames:479123",
+		GeographicRevision: "2026-08-29", GeographicLicense: "CC BY 4.0",
+	}
+	region := domain.Region{ID: "ru-uly", Name: "Ульяновская область", CountryCode: "RU", FederalSubjectCode: "RU-ULY"}
+	registryBackend := &recordingHTTPRegistryBackend{assessment: registrydomain.RevisionPolicyAssessment{
+		Revision: registrydomain.RevisionRecord{ID: revisionID, ContentSHA256: strings.Repeat("a", 64)},
+		State:    registrydomain.RevisionStateStaged,
+		Result: registrydomain.PolicyAssessment{
+			Status: registrydomain.AssessmentAmbiguous, Reason: registrydomain.AssessmentReasonSameTierAmbiguous,
+			City: city, Region: region, Date: "2026-08-30",
+			Options: []registrydomain.PolicyOption{
+				{Tier: registrydomain.ResolutionExactCityTimetable, Selectable: true, BlockedReason: registrydomain.OptionEligible, Policy: domain.PrayerPolicy{ID: "policy-operator-choice-first"}},
+				{Tier: registrydomain.ResolutionExactCityTimetable, Selectable: true, BlockedReason: registrydomain.OptionEligible, Policy: domain.PrayerPolicy{ID: policyID}},
+			},
+		},
+	}}
+	config := validServiceConfig(t)
+	config.PairingFixtures = nil
+	config.Assignments = nil
+	config.AdminBackend = admin
+	config.RegistryBackend = registryBackend
+	service, err := NewService(config)
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+	server := httptest.NewServer(service.Handler())
+	t.Cleanup(server.Close)
+
+	optionsURL := server.URL + "/v1/admin/mosques/" + mosqueID + "/setup/prayer-policy-options?revision_id=" + revisionID + "&city_id=" + cityID + "&date=2026-08-30"
+	options := adminRequest(t, http.MethodGet, optionsURL, nil, "admin-bearer-token-registry-options", "")
+	if options.StatusCode != http.StatusOK ||
+		!strings.Contains(options.Body, `"status":"ambiguous"`) ||
+		!strings.Contains(options.Body, `"reason":"same_tier_ambiguous"`) ||
+		strings.Count(options.Body, `"selectable":true`) != 2 ||
+		!strings.Contains(options.Body, `"allowed_actions":["request_binding"]`) {
+		t.Fatalf("policy options = %d %s", options.StatusCode, options.Body)
+	}
+	if registryBackend.assessmentID != revisionID || registryBackend.assessRequest.CityID != cityID {
+		t.Fatalf("assessment call = %q %#v", registryBackend.assessmentID, registryBackend.assessRequest)
+	}
+
+	bindingBody := []byte(`{"revision_id":"` + revisionID + `","city_id":"` + cityID + `","policy_id":"` + policyID + `","date":"2026-08-30","reason":"choose reviewed city timetable"}`)
+	created := adminRequest(
+		t, http.MethodPost,
+		server.URL+"/v1/admin/mosques/"+mosqueID+"/setup/prayer-policy-binding-requests",
+		bindingBody, "admin-bearer-token-registry-options", "idem-registry-binding-http-0001",
+	)
+	if created.StatusCode != http.StatusCreated || !strings.Contains(created.Body, `"status":"pending_review"`) ||
+		!strings.Contains(created.Body, `"policy_id":"`+policyID+`"`) {
+		t.Fatalf("binding request = %d %s", created.StatusCode, created.Body)
+	}
+	if admin.bindingCommand.PolicyID != policyID || admin.bindingCommand.RevisionID != revisionID ||
+		admin.bindingCommand.IdempotencyKey != "idem-registry-binding-http-0001" {
+		t.Fatalf("binding command = %#v", admin.bindingCommand)
+	}
+	admin.bindingErr = ErrRegistryBindingNotSelectable
+	rejected := adminRequest(
+		t, http.MethodPost,
+		server.URL+"/v1/admin/mosques/"+mosqueID+"/setup/prayer-policy-binding-requests",
+		bindingBody, "admin-bearer-token-registry-options", "idem-registry-binding-http-0002",
+	)
+	if rejected.StatusCode != http.StatusConflict || !strings.Contains(rejected.Body, `"code":"registry_binding_not_selectable"`) {
+		t.Fatalf("blocked binding = %d %s", rejected.StatusCode, rejected.Body)
+	}
+}
+
 func TestPersistentAssignmentFeedsExistingDeviceReadContract(t *testing.T) {
 	t.Parallel()
 
@@ -1069,6 +1159,9 @@ type recordingHTTPAdminBackend struct {
 	supportErr         error
 	supportMosqueID    string
 	supportDeviceID    string
+	bindingCommand     AdminRegistryBindingCommand
+	bindingRequest     RegistryBindingRequest
+	bindingErr         error
 }
 
 type recordingHTTPRegistryBackend struct {
@@ -1078,6 +1171,20 @@ type recordingHTTPRegistryBackend struct {
 	resolution     registrydomain.Resolution
 	resolveRequest registrydomain.ResolveRequest
 	resolveErr     error
+	assessment     registrydomain.RevisionPolicyAssessment
+	assessmentID   string
+	assessRequest  registrydomain.ResolveRequest
+	assessmentErr  error
+}
+
+func (backend *recordingHTTPRegistryBackend) AssessRevision(
+	_ context.Context,
+	revisionID string,
+	request registrydomain.ResolveRequest,
+) (registrydomain.RevisionPolicyAssessment, error) {
+	backend.assessmentID = revisionID
+	backend.assessRequest = request
+	return backend.assessment, backend.assessmentErr
 }
 
 func (backend *recordingHTTPRegistryBackend) SearchCities(_ context.Context, query string) ([]registrydomain.CitySearchResult, error) {
@@ -1102,6 +1209,15 @@ func (backend *recordingHTTPAdminBackend) AuthenticateAdmin(_ context.Context, _
 func (backend *recordingHTTPAdminBackend) IssuePairing(_ context.Context, _ AdminPrincipal, command AdminIssuePairingCommand) (IssuedPairing, error) {
 	backend.issueCommand = command
 	return backend.issued, backend.issueErr
+}
+
+func (backend *recordingHTTPAdminBackend) RequestRegistryBinding(
+	_ context.Context,
+	_ AdminPrincipal,
+	command AdminRegistryBindingCommand,
+) (RegistryBindingRequest, error) {
+	backend.bindingCommand = command
+	return backend.bindingRequest, backend.bindingErr
 }
 
 func (backend *recordingHTTPAdminBackend) ListDevices(_ context.Context, _ AdminPrincipal, _ string) ([]FleetDevice, error) {

@@ -330,6 +330,17 @@ func (service *PersistentService) Resolve(ctx context.Context, request ResolveRe
 	return active.Resolve(request)
 }
 
+func (service *PersistentService) AssessRevision(
+	ctx context.Context,
+	revisionID string,
+	request ResolveRequest,
+) (RevisionPolicyAssessment, error) {
+	if service == nil || service.store == nil {
+		return RevisionPolicyAssessment{}, ErrRevisionUnavailable
+	}
+	return assessRevision(ctx, service.store, revisionID, request)
+}
+
 func DatasetSHA256(dataset Dataset) (string, error) {
 	canonical := cloneDataset(dataset)
 	sortDataset(&canonical)

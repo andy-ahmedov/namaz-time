@@ -19,6 +19,8 @@ import (
 	"time"
 
 	"github.com/andy-ahmedov/namaz-time/internal/devices"
+	"github.com/andy-ahmedov/namaz-time/internal/domain"
+	"github.com/andy-ahmedov/namaz-time/internal/registry"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -111,6 +113,50 @@ func TestRuntimeLoadsRestartSafePostgresPairingWithoutLiteralSecrets(t *testing.
 		time.Date(2026, 8, 20, 12, 0, 0, 0, time.UTC)); err != nil {
 		t.Fatalf("seed runtime admin membership: %v", err)
 	}
+	stagedDataset := registry.Dataset{
+		Cities: []domain.City{{
+			ID: "city-runtime-ulyanovsk", Name: "Ульяновск", CountryCode: "RU", RegionID: "region-runtime-uly",
+			SettlementType: "PPLA", Latitude: 54.32824, Longitude: 48.38657, Timezone: "Europe/Ulyanovsk",
+			GeographicSource: "https://www.geonames.org/479123", GeographicSourceID: "geonames:479123",
+			GeographicRevision: "2026-08-29", GeographicLicense: "CC BY 4.0",
+		}},
+		Regions: []domain.Region{{ID: "region-runtime-uly", Name: "Ульяновская область", CountryCode: "RU", FederalSubjectCode: "RU-ULY"}},
+		Scopes: []domain.GeographicScope{{
+			ID: "scope-runtime-uly", Kind: domain.GeographicScopeCity,
+			CityID: "city-runtime-ulyanovsk", RegionID: "region-runtime-uly", Description: "runtime staged city",
+		}},
+		Authorities: []domain.PrayerAuthority{{ID: "authority-runtime-uly", Name: "Runtime authority", EvidenceLabel: "CONFIRMED_PUBLIC"}},
+		Sources: []domain.PrayerSource{{
+			ID: "source-runtime-uly", Kind: domain.ProviderKindManualImport,
+			AuthorityIDs: []string{"authority-runtime-uly"}, GeographicScopeID: "scope-runtime-uly",
+			Status: domain.PrayerSourceApproved, FreshThrough: "2026-12-31",
+		}},
+		Policies: []domain.PrayerPolicy{{
+			ID: "policy-runtime-uly", Kind: domain.PrayerPolicyTimeTable,
+			GeographicScopeID: "scope-runtime-uly", AuthorityIDs: []string{"authority-runtime-uly"},
+			SourceID: "source-runtime-uly", TimeTableID: "timetable-runtime-uly",
+			MosqueIDs: []string{"mosque-runtime-0001"}, Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"},
+			ApprovalID: "approval-runtime-uly",
+		}},
+		TimeTables: []domain.TimeTable{{
+			ID: "timetable-runtime-uly", SourceID: "source-runtime-uly", GeographicScopeID: "scope-runtime-uly",
+			MosqueID: "mosque-runtime-0001", Timezone: "Europe/Ulyanovsk",
+			Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"}, PublishedSnapshotID: "snapshot-runtime-uly",
+		}},
+	}
+	stagedSHA256, err := registry.DatasetSHA256(stagedDataset)
+	if err != nil {
+		t.Fatalf("hash staged runtime registry: %v", err)
+	}
+	stagedRevision := registry.RevisionRecord{
+		ID: "revision-runtime-staged-0001", SchemaVersion: registry.RegistrySchemaVersion,
+		CatalogRevisionID: "catalog-runtime-integration", ContentSHA256: stagedSHA256,
+		CreatedAt: time.Date(2026, 8, 20, 12, 1, 0, 0, time.UTC), CreatedBy: "actor-runtime-admin-0001",
+		Reason: "least privilege staged registry workflow",
+	}
+	if err := registry.NewPostgresRevisionStore(pool).Stage(ctx, stagedRevision, stagedDataset); err != nil {
+		t.Fatalf("stage runtime registry: %v", err)
+	}
 	repository := devices.NewPostgresPairingRepository(pool)
 	manager, err := devices.NewPairingManager(devices.PairingManagerConfig{
 		Repository: repository, RateLimitKey: rateKey,
@@ -131,6 +177,50 @@ func TestRuntimeLoadsRestartSafePostgresPairingWithoutLiteralSecrets(t *testing.
 	}
 
 	server := httptest.NewServer(service.Handler())
+	optionsRequest, err := http.NewRequest(
+		http.MethodGet,
+		server.URL+"/v1/admin/mosques/mosque-runtime-0001/setup/prayer-policy-options?revision_id="+stagedRevision.ID+"&city_id=city-runtime-ulyanovsk&date=2026-08-30",
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("create registry options request: %v", err)
+	}
+	optionsRequest.Header.Set("Authorization", "Bearer "+adminToken)
+	optionsResponse, err := http.DefaultClient.Do(optionsRequest)
+	if err != nil {
+		t.Fatalf("registry options request: %v", err)
+	}
+	optionsBody, readErr := io.ReadAll(optionsResponse.Body)
+	optionsResponse.Body.Close()
+	if readErr != nil || optionsResponse.StatusCode != http.StatusOK ||
+		!bytes.Contains(optionsBody, []byte(`"allowed_actions":["request_binding"]`)) {
+		t.Fatalf("registry options response = %d %s, read=%v", optionsResponse.StatusCode, optionsBody, readErr)
+	}
+	bindingRequest, err := http.NewRequest(
+		http.MethodPost,
+		server.URL+"/v1/admin/mosques/mosque-runtime-0001/setup/prayer-policy-binding-requests",
+		bytes.NewBufferString(`{"revision_id":"`+stagedRevision.ID+`","city_id":"city-runtime-ulyanovsk","policy_id":"policy-runtime-uly","date":"2026-08-30","reason":"least privilege explicit policy review"}`),
+	)
+	if err != nil {
+		t.Fatalf("create registry binding request: %v", err)
+	}
+	bindingRequest.Header.Set("Content-Type", "application/json")
+	bindingRequest.Header.Set("Authorization", "Bearer "+adminToken)
+	bindingRequest.Header.Set("Idempotency-Key", "idem-runtime-registry-binding-0001")
+	bindingResponse, err := http.DefaultClient.Do(bindingRequest)
+	if err != nil {
+		t.Fatalf("registry binding request: %v", err)
+	}
+	bindingBody, readErr := io.ReadAll(bindingResponse.Body)
+	bindingResponse.Body.Close()
+	if readErr != nil || bindingResponse.StatusCode != http.StatusCreated ||
+		!bytes.Contains(bindingBody, []byte(`"status":"pending_review"`)) {
+		t.Fatalf("registry binding response = %d %s, read=%v", bindingResponse.StatusCode, bindingBody, readErr)
+	}
+	var runtimeBindingRows int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM registry_binding_requests WHERE revision_id = $1`, stagedRevision.ID).Scan(&runtimeBindingRows); err != nil || runtimeBindingRows != 1 {
+		t.Fatalf("least-privilege registry binding rows = %d, %v", runtimeBindingRows, err)
+	}
 	adminIssueRequest, err := http.NewRequest(
 		http.MethodPost,
 		server.URL+"/v1/admin/mosques/mosque-runtime-0001/pairing-codes",
@@ -340,9 +430,11 @@ func createLeastPrivilegeRuntimeRole(t *testing.T, ownerPool *pgxpool.Pool, owne
 			registry_policy_mosques, registry_calculation_profiles, registry_timetables,
 			registry_source_overrides, registry_source_override_fields,
 			registry_timetable_overrides, registry_active_revision, registry_audit_events,
-			registry_verified_approvals, registry_verified_snapshots TO namaz_runtime_test;
+			registry_verified_approvals, registry_verified_snapshots,
+			registry_binding_requests TO namaz_runtime_test;
 		GRANT INSERT ON devices, pairing_codes, pairing_rate_buckets, audit_events,
-			device_assignments, admin_requests, device_health TO namaz_runtime_test;
+			device_assignments, admin_requests, device_health,
+			registry_binding_requests TO namaz_runtime_test;
 		GRANT UPDATE ON devices, pairing_codes, pairing_rate_buckets,
 			device_assignments, device_health TO namaz_runtime_test;
 		GRANT DELETE ON pairing_rate_buckets TO namaz_runtime_test;
@@ -365,6 +457,23 @@ func createLeastPrivilegeRuntimeRole(t *testing.T, ownerPool *pgxpool.Pool, owne
 	}
 	if _, err := runtimePool.Exec(t.Context(), `ALTER TABLE audit_events DISABLE TRIGGER audit_events_append_only`); err == nil {
 		t.Fatal("runtime database role could disable an audit trigger")
+	}
+	var canInsertBindingRequest, canUpdateBindingRequest, canInsertRegistryRevision, canUpdateActiveRevision bool
+	if err := runtimePool.QueryRow(t.Context(), `
+		SELECT
+			has_table_privilege(current_user, 'registry_binding_requests', 'INSERT'),
+			has_table_privilege(current_user, 'registry_binding_requests', 'UPDATE'),
+			has_table_privilege(current_user, 'registry_revisions', 'INSERT'),
+			has_table_privilege(current_user, 'registry_active_revision', 'UPDATE')`).Scan(
+		&canInsertBindingRequest, &canUpdateBindingRequest, &canInsertRegistryRevision, &canUpdateActiveRevision,
+	); err != nil {
+		t.Fatalf("inspect registry workflow privileges: %v", err)
+	}
+	if !canInsertBindingRequest || canUpdateBindingRequest || canInsertRegistryRevision || canUpdateActiveRevision {
+		t.Fatalf(
+			"registry workflow privileges: insert_binding=%v update_binding=%v insert_revision=%v update_active=%v",
+			canInsertBindingRequest, canUpdateBindingRequest, canInsertRegistryRevision, canUpdateActiveRevision,
+		)
 	}
 	return runtimeURL
 }

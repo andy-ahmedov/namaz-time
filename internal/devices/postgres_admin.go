@@ -10,8 +10,41 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/andy-ahmedov/namaz-time/internal/registry"
 	"github.com/jackc/pgx/v5"
 )
+
+func (repository *PostgresPairingRepository) ReadRegistryBindingRequestRetry(
+	ctx context.Context,
+	scope AdminRepositoryScope,
+	idempotencyHash, requestHash [sha256.Size]byte,
+) (RegistryBindingRequest, bool, error) {
+	tx, err := repository.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return RegistryBindingRequest{}, false, fmt.Errorf("retry registry binding request: begin transaction: %w", err)
+	}
+	defer rollbackTransaction(tx)
+	if err := authorizeAdminScope(ctx, tx, scope, true); err != nil {
+		return RegistryBindingRequest{}, false, err
+	}
+	resourceID, response, found, err := readAdminRequest(
+		ctx, tx, scope, "request_registry_binding", idempotencyHash, requestHash,
+	)
+	if err != nil {
+		return RegistryBindingRequest{}, false, err
+	}
+	if !found {
+		return RegistryBindingRequest{}, false, commitTransaction(ctx, tx, "retry registry binding request: commit miss")
+	}
+	var stored RegistryBindingRequest
+	if len(response) == 0 || json.Unmarshal(response, &stored) != nil || stored.ID != resourceID {
+		return RegistryBindingRequest{}, false, errors.New("retry registry binding request: stored response is invalid")
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return RegistryBindingRequest{}, false, fmt.Errorf("retry registry binding request: commit: %w", err)
+	}
+	return stored, true, nil
+}
 
 func (repository *PostgresPairingRepository) AuthenticateAdmin(ctx context.Context, tokenHash [sha256.Size]byte) (AdminPrincipal, error) {
 	rows, err := repository.pool.Query(ctx, `
@@ -47,6 +80,91 @@ func (repository *PostgresPairingRepository) AuthenticateAdmin(ctx context.Conte
 		return AdminPrincipal{}, ErrAdminUnauthorized
 	}
 	return principal, nil
+}
+
+func (repository *PostgresPairingRepository) CreateRegistryBindingRequest(
+	ctx context.Context,
+	mutation AdminRegistryBindingMutation,
+) (RegistryBindingRequest, error) {
+	request := mutation.Request
+	if request.MosqueID != mutation.Scope.MosqueID ||
+		request.RequestedByActorID != mutation.Scope.ActorID ||
+		request.RevisionID != mutation.Command.RevisionID || request.CityID != mutation.Command.CityID ||
+		request.PolicyID != mutation.Command.PolicyID || request.Date != mutation.Command.Date ||
+		request.Reason != mutation.Command.Reason || request.RequestID != mutation.Command.RequestID ||
+		request.Status != RegistryBindingPendingReview {
+		return RegistryBindingRequest{}, ErrAdminResourceNotFound
+	}
+	tx, err := repository.pool.BeginTx(ctx, pgx.TxOptions{})
+	if err != nil {
+		return RegistryBindingRequest{}, fmt.Errorf("request registry binding: begin transaction: %w", err)
+	}
+	defer rollbackTransaction(tx)
+	if err := authorizeAdminScope(ctx, tx, mutation.Scope, true); err != nil {
+		return RegistryBindingRequest{}, err
+	}
+	if err := lockAdminIdempotency(ctx, tx, mutation.IdempotencyHash); err != nil {
+		return RegistryBindingRequest{}, fmt.Errorf("request registry binding: lock idempotency: %w", err)
+	}
+	resourceID, response, found, err := readAdminRequest(
+		ctx, tx, mutation.Scope, "request_registry_binding", mutation.IdempotencyHash, mutation.RequestHash,
+	)
+	if err != nil {
+		return RegistryBindingRequest{}, err
+	}
+	if found {
+		var stored RegistryBindingRequest
+		if err := json.Unmarshal(response, &stored); err != nil || stored.ID != resourceID {
+			return RegistryBindingRequest{}, errors.New("request registry binding: invalid stored idempotent response")
+		}
+		if err := tx.Commit(ctx); err != nil {
+			return RegistryBindingRequest{}, fmt.Errorf("request registry binding: commit idempotent read: %w", err)
+		}
+		return stored, nil
+	}
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, registry.PostgresLifecycleAdvisoryLockID); err != nil {
+		return RegistryBindingRequest{}, fmt.Errorf("request registry binding: lock revision lifecycle: %w", err)
+	}
+	var staged bool
+	if err := tx.QueryRow(ctx, `
+		SELECT NOT EXISTS (
+			SELECT 1 FROM registry_active_revision active WHERE active.revision_id = revision.id
+		)
+		FROM registry_revisions revision
+		WHERE revision.id = $1`, request.RevisionID).Scan(&staged); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return RegistryBindingRequest{}, ErrAdminResourceNotFound
+		}
+		return RegistryBindingRequest{}, fmt.Errorf("request registry binding: verify revision state: %w", err)
+	}
+	if !staged {
+		return RegistryBindingRequest{}, ErrRegistryBindingNotSelectable
+	}
+	if _, err := tx.Exec(ctx, `
+		INSERT INTO registry_binding_requests (
+			id, revision_id, city_id, policy_id, mosque_id, local_date,
+			resolution_tier, status, selection_sha256, requested_by_actor_id, reason, request_id, requested_at
+		) VALUES ($1, $2, $3, $4, $5, $6::date, $7, $8, $9, $10, $11, $12, $13)`,
+		request.ID, request.RevisionID, request.CityID, request.PolicyID, request.MosqueID, request.Date,
+		request.Tier, request.Status, request.SelectionSHA256, request.RequestedByActorID,
+		request.Reason, request.RequestID, request.RequestedAt,
+	); err != nil {
+		return RegistryBindingRequest{}, mapCredentialWriteError("request registry binding: insert", err)
+	}
+	encoded, err := json.Marshal(request)
+	if err != nil {
+		return RegistryBindingRequest{}, fmt.Errorf("request registry binding: encode response: %w", err)
+	}
+	if err := insertAdminRequest(
+		ctx, tx, mutation.Scope, "request_registry_binding", request.ID,
+		mutation.IdempotencyHash, mutation.RequestHash, encoded,
+	); err != nil {
+		return RegistryBindingRequest{}, err
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return RegistryBindingRequest{}, fmt.Errorf("request registry binding: commit: %w", err)
+	}
+	return request, nil
 }
 
 func (repository *PostgresPairingRepository) CreateAdminPairing(ctx context.Context, mutation AdminPairingMutation) (PairingRecord, error) {

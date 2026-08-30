@@ -92,7 +92,8 @@ func TestPostgresUlyanovskAdminSearchResolveAndRollbackPreserveSignedPilot(t *te
 
 	adminManager, err := NewAdminFleetManager(AdminFleetManagerConfig{
 		Repository: migrator, Now: func() time.Time { return time.Date(2026, 8, 30, 7, 0, 0, 0, time.UTC) },
-		IdempotencyKey: bytes.Repeat([]byte{0x37}, sha256.Size),
+		IdempotencyKey:            bytes.Repeat([]byte{0x37}, sha256.Size),
+		RegistrySelectionVerifier: registryService,
 	})
 	if err != nil {
 		t.Fatalf("NewAdminFleetManager() error = %v", err)
@@ -157,6 +158,80 @@ func TestPostgresUlyanovskAdminSearchResolveAndRollbackPreserveSignedPilot(t *te
 		t.Fatal("registry lifecycle changed signed pilot snapshot bytes")
 	}
 	assertSHA256(t, snapshotAfter, ulyanovskSnapshotSHA)
+
+	ambiguousDataset := dataset
+	ambiguousDataset.Policies = append([]domain.PrayerPolicy(nil), dataset.Policies...)
+	secondPolicy := dataset.Policies[0]
+	secondPolicy.ID = "policy-ulyanovsk-operator-alternative-2026"
+	ambiguousDataset.Policies = append(ambiguousDataset.Policies, secondPolicy)
+	ambiguousRevision := record
+	ambiguousRevision.ID = "registry-ulyanovsk-operator-ambiguous-2026"
+	ambiguousRevision.ParentRevisionID = record.ID
+	ambiguousRevision.CreatedAt = record.CreatedAt.Add(2 * time.Minute)
+	ambiguousRevision.Reason = "exercise explicit operator selection without activation"
+	ambiguousRevision.ContentSHA256 = ""
+	if err := registryService.Stage(ctx, ambiguousRevision, ambiguousDataset); err != nil {
+		t.Fatalf("Stage(ambiguous) error = %v", err)
+	}
+	optionsURL := server.URL + "/v1/admin/mosques/" + ulyanovskMosqueID + "/setup/prayer-policy-options?revision_id=" + ambiguousRevision.ID + "&city_id=" + ulyanovskCityID + "&date=2026-08-30"
+	options := adminRequest(t, http.MethodGet, optionsURL, nil, adminToken, "")
+	if options.StatusCode != http.StatusOK || !strings.Contains(options.Body, `"status":"ambiguous"`) ||
+		!strings.Contains(options.Body, `"reason":"same_tier_ambiguous"`) ||
+		strings.Count(options.Body, `"selectable":true`) != 2 ||
+		!strings.Contains(options.Body, `"allowed_actions":["request_binding"]`) {
+		t.Fatalf("persisted ambiguous options = %d %s", options.StatusCode, options.Body)
+	}
+	bindingBody := []byte(`{"revision_id":"` + ambiguousRevision.ID + `","city_id":"` + ulyanovskCityID + `","policy_id":"` + secondPolicy.ID + `","date":"2026-08-30","reason":"operator selected the reviewed exact-city policy"}`)
+	bindingURL := server.URL + "/v1/admin/mosques/" + ulyanovskMosqueID + "/setup/prayer-policy-binding-requests"
+	created := adminRequest(t, http.MethodPost, bindingURL, bindingBody, adminToken, "idem-t039-binding-integration-0001")
+	if created.StatusCode != http.StatusCreated || !strings.Contains(created.Body, `"status":"pending_review"`) ||
+		!strings.Contains(created.Body, `"policy_id":"`+secondPolicy.ID+`"`) {
+		t.Fatalf("persisted binding request = %d %s", created.StatusCode, created.Body)
+	}
+	retried := adminRequest(t, http.MethodPost, bindingURL, bindingBody, adminToken, "idem-t039-binding-integration-0001")
+	if retried.StatusCode != http.StatusCreated || retried.Body != created.Body {
+		t.Fatalf("idempotent persisted binding request = %d %s; want %d %s", retried.StatusCode, retried.Body, created.StatusCode, created.Body)
+	}
+	var bindingRows int
+	if err := pool.QueryRow(ctx, `SELECT count(*) FROM registry_binding_requests`).Scan(&bindingRows); err != nil || bindingRows != 1 {
+		t.Fatalf("registry binding request rows = %d, %v", bindingRows, err)
+	}
+	assertRestoredAppendOnlyGuard(t, ctx, pool, `UPDATE registry_binding_requests SET reason = reason`)
+	assertRestoredAppendOnlyGuard(t, ctx, pool, `DELETE FROM registry_binding_requests`)
+	assertRestoredAppendOnlyGuard(t, ctx, pool, `TRUNCATE registry_binding_requests`)
+	activeAfterRequest, err := registryService.ActiveRevision(ctx)
+	if err != nil || activeAfterRequest.ID != record.ID {
+		t.Fatalf("binding request activated revision: active=%#v err=%v", activeAfterRequest, err)
+	}
+
+	staleDataset := dataset
+	staleDataset.Sources = append([]domain.PrayerSource(nil), dataset.Sources...)
+	for index := range staleDataset.Sources {
+		if staleDataset.Sources[index].ID == dataset.Policies[0].SourceID {
+			staleDataset.Sources[index].Status = domain.PrayerSourceStale
+		}
+	}
+	staleRevision := record
+	staleRevision.ID = "registry-ulyanovsk-operator-stale-2026"
+	staleRevision.ParentRevisionID = record.ID
+	staleRevision.CreatedAt = record.CreatedAt.Add(3 * time.Minute)
+	staleRevision.Reason = "exercise stale-source fail-closed explanation"
+	staleRevision.ContentSHA256 = ""
+	if err := registryService.Stage(ctx, staleRevision, staleDataset); err != nil {
+		t.Fatalf("Stage(stale) error = %v", err)
+	}
+	staleOptionsURL := server.URL + "/v1/admin/mosques/" + ulyanovskMosqueID + "/setup/prayer-policy-options?revision_id=" + staleRevision.ID + "&city_id=" + ulyanovskCityID + "&date=2026-08-30"
+	staleOptions := adminRequest(t, http.MethodGet, staleOptionsURL, nil, adminToken, "")
+	if staleOptions.StatusCode != http.StatusOK || !strings.Contains(staleOptions.Body, `"status":"stale"`) ||
+		!strings.Contains(staleOptions.Body, `"blocked_reason":"source_stale"`) ||
+		!strings.Contains(staleOptions.Body, `"allowed_actions":[]`) {
+		t.Fatalf("persisted stale options = %d %s", staleOptions.StatusCode, staleOptions.Body)
+	}
+	staleBindingBody := []byte(`{"revision_id":"` + staleRevision.ID + `","city_id":"` + ulyanovskCityID + `","policy_id":"` + dataset.Policies[0].ID + `","date":"2026-08-30","reason":"must reject stale source"}`)
+	staleBinding := adminRequest(t, http.MethodPost, bindingURL, staleBindingBody, adminToken, "t039-stale")
+	if staleBinding.StatusCode != http.StatusConflict || !strings.Contains(staleBinding.Body, `"code":"registry_binding_not_selectable"`) {
+		t.Fatalf("stale binding rejection = %d %s", staleBinding.StatusCode, staleBinding.Body)
+	}
 }
 
 func integrationPilotCatalog(t *testing.T) geography.Catalog {

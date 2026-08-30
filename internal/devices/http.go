@@ -88,6 +88,7 @@ type ServiceConfig struct {
 type AdminRegistryBackend interface {
 	SearchCities(context.Context, string) ([]registry.CitySearchResult, error)
 	Resolve(context.Context, registry.ResolveRequest) (registry.Resolution, error)
+	AssessRevision(context.Context, string, registry.ResolveRequest) (registry.RevisionPolicyAssessment, error)
 }
 
 type DeviceManifest struct {
@@ -299,6 +300,8 @@ func (s *Service) routes() http.Handler {
 	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/devices/{deviceId}/support-bundle", s.handleAdminDeviceSupportBundle)
 	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/setup/cities", s.handleAdminCitySearch)
 	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/setup/prayer-policy", s.handleAdminPrayerPolicy)
+	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/setup/prayer-policy-options", s.handleAdminPrayerPolicyOptions)
+	mux.HandleFunc("POST /v1/admin/mosques/{mosqueId}/setup/prayer-policy-binding-requests", s.handleAdminRegistryBindingRequest)
 	return securityHeaders(mux)
 }
 
@@ -556,6 +559,14 @@ type adminRolloutGroupRequest struct {
 	Reason       string  `json:"reason"`
 }
 
+type adminRegistryBindingRequest struct {
+	RevisionID string `json:"revision_id"`
+	CityID     string `json:"city_id"`
+	PolicyID   string `json:"policy_id"`
+	Date       string `json:"date"`
+	Reason     string `json:"reason"`
+}
+
 type adminCityCandidate struct {
 	CityID             string   `json:"city_id"`
 	CanonicalName      string   `json:"canonical_name"`
@@ -591,6 +602,18 @@ type adminPrayerPolicyResponse struct {
 	TimeTable          *domain.TimeTable          `json:"timetable,omitempty"`
 	CalculationProfile *domain.CalculationProfile `json:"calculation_profile,omitempty"`
 	SourceOverrides    []domain.SourceOverride    `json:"source_overrides"`
+}
+
+type adminPrayerPolicyOptionsResponse struct {
+	SchemaVersion  string                    `json:"schema_version"`
+	Revision       registry.RevisionRecord   `json:"revision"`
+	RevisionState  registry.RevisionState    `json:"revision_state"`
+	Status         registry.AssessmentStatus `json:"status"`
+	Reason         registry.AssessmentReason `json:"reason"`
+	Date           string                    `json:"date"`
+	City           adminCityCandidate        `json:"city"`
+	Options        []registry.PolicyOption   `json:"options"`
+	AllowedActions []string                  `json:"allowed_actions"`
 }
 
 func (s *Service) handleAdminIssuePairing(writer http.ResponseWriter, request *http.Request) {
@@ -739,6 +762,102 @@ func (s *Service) handleAdminPrayerPolicy(writer http.ResponseWriter, request *h
 		Policy: resolved.Policy, TimeTable: timetable, CalculationProfile: calculationProfile,
 		SourceOverrides: overrides,
 	})
+}
+
+func (s *Service) handleAdminPrayerPolicyOptions(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	if s.registryBackend == nil {
+		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
+		return
+	}
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	revisionID, revisionOK := exactQueryValue(request, "revision_id", 160)
+	cityID, cityOK := exactQueryValue(request, "city_id", 160)
+	date, dateOK := exactQueryValue(request, "date", len(time.DateOnly))
+	parsedDate, dateErr := time.Parse(time.DateOnly, date)
+	if !revisionOK || !cityOK || !dateOK || len(request.URL.Query()) != 3 ||
+		dateErr != nil || parsedDate.Format(time.DateOnly) != date {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	mosqueID := request.PathValue("mosqueId")
+	if err := s.adminBackend.AuthorizeAdminScope(principal, mosqueID, false); err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	assessment, err := s.registryBackend.AssessRevision(backendContext, revisionID, registry.ResolveRequest{
+		CityID: cityID, MosqueID: mosqueID, Date: date,
+	})
+	if err != nil {
+		writeRegistryOperationError(writer, err)
+		return
+	}
+	options := append([]registry.PolicyOption(nil), assessment.Result.Options...)
+	if options == nil {
+		options = []registry.PolicyOption{}
+	}
+	actions := []string{}
+	if assessment.State == registry.RevisionStateStaged {
+		for _, option := range options {
+			if option.Selectable {
+				actions = append(actions, "request_binding")
+				break
+			}
+		}
+	}
+	writeJSON(writer, http.StatusOK, adminPrayerPolicyOptionsResponse{
+		SchemaVersion: "prayer-policy-options/v1", Revision: assessment.Revision,
+		RevisionState: assessment.State, Status: assessment.Result.Status, Reason: assessment.Result.Reason,
+		Date:    assessment.Result.Date,
+		City:    projectAdminCity(registry.CitySearchResult{City: assessment.Result.City, Region: assessment.Result.Region}),
+		Options: options, AllowedActions: actions,
+	})
+}
+
+func (s *Service) handleAdminRegistryBindingRequest(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	backend, ok := s.adminBackend.(AdminRegistryBindingBackend)
+	if !ok || s.registryBackend == nil {
+		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
+		return
+	}
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	var input adminRegistryBindingRequest
+	if !decodeAdminJSON(writer, request, &input) {
+		return
+	}
+	if !validIdempotencyKey(request.Header.Get("Idempotency-Key")) {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	requestID, err := newRequestID()
+	if err != nil {
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	created, err := backend.RequestRegistryBinding(backendContext, principal, AdminRegistryBindingCommand{
+		MosqueID: request.PathValue("mosqueId"), RevisionID: input.RevisionID,
+		CityID: input.CityID, PolicyID: input.PolicyID, Date: input.Date, Reason: input.Reason,
+		RequestID: requestID, IdempotencyKey: request.Header.Get("Idempotency-Key"),
+	})
+	if err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	writeJSON(writer, http.StatusCreated, struct {
+		SchemaVersion string                 `json:"schema_version"`
+		Request       RegistryBindingRequest `json:"request"`
+	}{SchemaVersion: "registry-binding-request/v1", Request: created})
 }
 
 func projectAdminCity(result registry.CitySearchResult) adminCityCandidate {
@@ -1050,6 +1169,10 @@ func writeAdminOperationError(writer http.ResponseWriter, err error) {
 		writeAPIError(writer, http.StatusConflict, "idempotency_conflict", false)
 	case errors.Is(err, ErrRolloutGroupTooLarge):
 		writeAPIError(writer, http.StatusConflict, "rollout_group_too_large", false)
+	case errors.Is(err, ErrRegistryBindingNotSelectable):
+		writeAPIError(writer, http.StatusConflict, "registry_binding_not_selectable", false)
+	case errors.Is(err, ErrRegistryWorkflowUnavailable):
+		writeAPIError(writer, http.StatusServiceUnavailable, "registry_workflow_unavailable", true)
 	case errors.Is(err, ErrAdminResourceNotFound):
 		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
 	default:

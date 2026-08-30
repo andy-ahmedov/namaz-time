@@ -1,7 +1,7 @@
 # Persisted executable prayer-policy registry
 
 Date: 2026-08-30
-Status: T037 verified-reference adapters and first persisted vertical slice implemented; no nationwide prayer-source rollout
+Status: T039 explainable operator handoff implemented; no nationwide prayer-source rollout
 
 ## Outcome
 
@@ -96,13 +96,22 @@ preserves the existing fleet tables. This is a schema rollback, not a recovery
 mechanism for an active production registry; operators must export/retain the
 database before applying it.
 
+Migration v7 adds append-only `registry_binding_requests` for the T039
+operator-review handoff. A request binds one staged revision content hash,
+city, policy, mosque, local date and precedence tier. It remains
+`pending_review`; it cannot update the active pointer, approve a source,
+publish a snapshot or change a device assignment. Rolling v7 back to v6 removes
+these pending requests only, so operators must back them up before rollback.
+
 ## Database roles
 
 The registry writer/activator needs write access and remains an operator-side
-control-plane process. The API runtime role needs `SELECT` only. The PostgreSQL
-restore drill recreates a read-only runtime role and proves it can read the
-registry while lacking registry `INSERT`/`UPDATE`, audit `UPDATE`, and schema
-`CREATE` privileges.
+control-plane process. The API registry reader needs `SELECT`; the admin
+handoff additionally needs `SELECT`/`INSERT` only on
+`registry_binding_requests`. It receives no registry revision/pointer write
+permission. The PostgreSQL restore drill recreates a read-only recovery role
+and proves it can read the registry while lacking registry `INSERT`/`UPDATE`,
+audit `UPDATE`, and schema `CREATE` privileges.
 
 ## Search behavior
 
@@ -119,19 +128,30 @@ resolution requires the selected `city_id`, mosque path and local Gregorian
 date; unavailable and ambiguous results fail with stable `409` codes and do
 not alter the active registry or any device assignment.
 
+T039 adds a revision-specific assessment endpoint that returns every applicable
+option with precedence, authority evidence, scope, freshness and a stable
+blocked reason. A second endpoint accepts only an explicitly named selectable
+policy from a still-staged revision and appends a `pending_review` request. The
+request is an audit/review handoff, not executable state. See
+`REGISTRY_OPERATOR_WORKFLOW.md`.
+
 ## Verification evidence
 
-- `CONFIRMED_RUNTIME`: the local Docker-backed PostgreSQL 18 gate applies v6,
+- `CONFIRMED_RUNTIME`: the local Docker-backed PostgreSQL 18 gate applies v7,
   stages and activates two synthetic revisions, searches duplicate names,
   verifies canonical hashes, rolls back the active revision, checks retained
-  evidence/audit rows, rejects append-only mutations, rolls v6 down to v5
-  without deleting fleet state, and reapplies v6.
-- `CONFIRMED_RUNTIME`: the backup/restore drill restores v6 and verifies the
+  evidence/audit rows, rejects append-only mutations, rolls current migrations
+  down without deleting fleet state, and reapplies v7.
+- `CONFIRMED_RUNTIME`: the backup/restore drill restores v7 and verifies the
   least-privileged runtime role described above.
 - `CONFIRMED_RUNTIME`: the T037 PostgreSQL/HTTP gate activates the real
   Ulyanovsk binding against its real approval/publication evidence, resolves
   `Ульяновск` to `RU-ULY`, the Second Cathedral Mosque and the existing signed
   snapshot, activates a successor revision, rolls back and proves exact
   snapshot bytes/SHA-256 remain unchanged.
+- `CONFIRMED_RUNTIME`: the T039 PostgreSQL/HTTP gate explains two same-tier
+  staged options, persists exactly one idempotent append-only review request,
+  leaves the active revision unchanged, then explains and rejects a stale
+  source choice.
 - `UNKNOWN`: production backup retention, RPO/RTO and external approval/source
   store recovery have not been exercised; the local drill makes no such claim.

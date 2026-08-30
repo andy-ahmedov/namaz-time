@@ -135,7 +135,7 @@ func TestPostgresRegistryRevisionActivationSearchAndRollback(t *testing.T) {
 	}
 	assertRegistryAppendOnly(t, pool)
 
-	if err := migrator.MigrateTo(ctx, devices.PairingSchemaVersion-1); err != nil {
+	if err := migrator.MigrateTo(ctx, 5); err != nil {
 		t.Fatalf("rollback registry migration: %v", err)
 	}
 	var registryRemoved, fleetPreserved bool

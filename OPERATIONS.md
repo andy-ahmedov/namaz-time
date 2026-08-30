@@ -253,12 +253,12 @@ or credential:
 ```bash
 go run ./cmd/migrate \
   -database-url-env NAMAZ_MIGRATION_DATABASE_URL \
-  -target-version 6
+  -target-version 7
 ```
 
 The command applies embedded migrations under a transaction-scoped advisory
 lock and exits. Only then start the API with `NAMAZ_DATABASE_URL` for the
-least-privileged runtime role. API startup performs a read-only exact-v6 ledger
+least-privileged runtime role. API startup performs a read-only exact-v7 ledger
 check and refuses missing, lower, gapped or future schemas. The runtime role must
 not own schema/functions/triggers.
 
@@ -272,8 +272,15 @@ admin idempotency tables. It needs no DDL, trigger/function ownership,
 audit/idempotency update/delete/truncate. It requires `SELECT` on
 `schema_migrations` solely for startup verification. When
 `registry_backend` is enabled, it also requires `SELECT` on active registry
-tables but no registry write/audit/DDL privilege. Verify the grants in
+tables and `SELECT`/`INSERT` on append-only `registry_binding_requests`, but no
+revision/active-pointer/audit/DDL write privilege. Verify the grants in
 staging rather than granting broad schema ownership.
+
+For a controlled v7-to-v6 rollback, stop registry binding-request writes,
+export/verify the database and run `-target-version 6`. Migration `000007` down
+removes pending review handoffs only; it does not change the active revision,
+device assignments or signed snapshots. Resume only with a v6 binary/config
+that does not expose the T039 endpoints.
 
 For a controlled v6-to-v5 rollback, stop registry activation and API setup
 reads, export/verify the database, and run `-target-version 5`; migration

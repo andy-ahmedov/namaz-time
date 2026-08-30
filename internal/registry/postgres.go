@@ -17,7 +17,9 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-const registryAdvisoryLockID int64 = 70149822411036
+// PostgresLifecycleAdvisoryLockID serializes immutable registry staging,
+// activation and explicit staged-policy review handoffs across repositories.
+const PostgresLifecycleAdvisoryLockID int64 = 70149822411036
 
 type PostgresRevisionStore struct {
 	pool *pgxpool.Pool
@@ -113,7 +115,7 @@ func (store *PostgresRevisionStore) Stage(ctx context.Context, record RevisionRe
 		return fmt.Errorf("stage registry revision: begin: %w", err)
 	}
 	defer rollbackRegistryTx(tx)
-	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, registryAdvisoryLockID); err != nil {
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, PostgresLifecycleAdvisoryLockID); err != nil {
 		return fmt.Errorf("stage registry revision: lock: %w", err)
 	}
 	if _, err := tx.Exec(ctx, `
@@ -622,7 +624,7 @@ func (store *PostgresRevisionStore) Activate(ctx context.Context, activation Act
 		return fmt.Errorf("activate registry revision: begin: %w", err)
 	}
 	defer rollbackRegistryTx(tx)
-	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, registryAdvisoryLockID); err != nil {
+	if _, err := tx.Exec(ctx, `SELECT pg_advisory_xact_lock($1)`, PostgresLifecycleAdvisoryLockID); err != nil {
 		return fmt.Errorf("activate registry revision: lock: %w", err)
 	}
 	var contentSHA256 string

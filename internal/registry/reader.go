@@ -15,6 +15,19 @@ type ActiveReader struct {
 	store ActiveRevisionStore
 }
 
+type RevisionState string
+
+const (
+	RevisionStateStaged RevisionState = "staged"
+	RevisionStateActive RevisionState = "active"
+)
+
+type RevisionPolicyAssessment struct {
+	Revision RevisionRecord   `json:"revision"`
+	State    RevisionState    `json:"revision_state"`
+	Result   PolicyAssessment `json:"result"`
+}
+
 func NewActiveReader(store ActiveRevisionStore) (*ActiveReader, error) {
 	if store == nil {
 		return nil, errors.New("create active registry reader: store is required")
@@ -42,6 +55,50 @@ func (reader *ActiveReader) Resolve(ctx context.Context, request ResolveRequest)
 		return Resolution{}, fmt.Errorf("load active registry: %w", err)
 	}
 	return active.Resolve(request)
+}
+
+func (reader *ActiveReader) AssessRevision(ctx context.Context, revisionID string, request ResolveRequest) (RevisionPolicyAssessment, error) {
+	if reader == nil || reader.store == nil {
+		return RevisionPolicyAssessment{}, ErrRevisionUnavailable
+	}
+	return assessRevision(ctx, reader.store, revisionID, request)
+}
+
+func assessRevision(
+	ctx context.Context,
+	store RevisionStore,
+	revisionID string,
+	request ResolveRequest,
+) (RevisionPolicyAssessment, error) {
+	var record RevisionRecord
+	var dataset Dataset
+	var err error
+	state := RevisionStateStaged
+	if revisionID == "" {
+		record, dataset, err = store.Active(ctx)
+		state = RevisionStateActive
+	} else {
+		if !validAuditText(revisionID, 160) {
+			return RevisionPolicyAssessment{}, ErrRevisionInvalid
+		}
+		record, dataset, err = store.Load(ctx, revisionID)
+	}
+	if err != nil {
+		return RevisionPolicyAssessment{}, err
+	}
+	if revisionID != "" {
+		active, _, activeErr := store.Active(ctx)
+		if activeErr == nil && active.ID == record.ID {
+			state = RevisionStateActive
+		} else if activeErr != nil && !errors.Is(activeErr, ErrRevisionUnavailable) {
+			return RevisionPolicyAssessment{}, fmt.Errorf("read active registry state: %w", activeErr)
+		}
+	}
+	assessment, err := AssessDataset(dataset, request)
+	if err != nil {
+		return RevisionPolicyAssessment{}, err
+	}
+	return RevisionPolicyAssessment{Revision: record, State: state, Result: assessment}, nil
 }
 
 func (reader *ActiveReader) ActiveRevision(ctx context.Context) (RevisionRecord, error) {

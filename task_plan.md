@@ -6,7 +6,7 @@ Determine, with clean-room evidence, how 1Muslim 5.9.5 resolves prayer times (es
 
 ## Current Phase
 
-Phase 10 — T039 operator workflow (`pending checkpoint after T037 commit`)
+Phase 10 — T039 operator workflow (`in_progress`)
 
 ## Phases
 
@@ -126,19 +126,19 @@ Phase 10 — T039 operator workflow (`pending checkpoint after T037 commit`)
 - [x] Add the minimal setup/admin search API proving city → RU-ULY → authority/source/policy → timetable → mosque → existing signed snapshot.
 - [x] Prove snapshot bytes/ID/hash/signature unchanged, USB pilot remains compatible, rollback is non-destructive and duplicate/unknown/ambiguous city is not auto-selected.
 - [x] Update docs/task status and run checkpoint gates.
-- [ ] Create the local T037 commit before T039 implementation edits.
-- **Status:** complete pending checkpoint commit
+- [x] Create the local T037 commit before T039 implementation edits (`804c677`).
+- **Status:** complete
 
 ### Phase 10: T039 operator workflow (conditional)
 
-- [ ] Start only if T035–T037 are complete; expose explicit reasons/actions for duplicate city, ambiguous policy, stale source and unavailable schedule.
-- [ ] Never auto-select a neighboring region or generic Russia calculation method.
-- [ ] Update docs/task status, run checkpoint gates and create a local T039 commit.
-- **Status:** pending
+- [x] Start only if T035–T037 are complete; expose explicit reasons/actions for duplicate city, ambiguous policy, stale source and unavailable schedule.
+- [x] Never auto-select a neighboring region or generic Russia calculation method.
+- [x] Run checkpoint gates and record verification evidence; create the local T039 commit next.
+- **Status:** complete pending the immediate checkpoint commit
 
 ### Phase 11: final verification
 
-- [ ] Run all available docs, unit, lint, race, security and PostgreSQL gates from a clean worktree state except intended commits.
-- [ ] Re-read acceptance criteria and audit Git for third-party dumps, APK/decompilation, keys/secrets and signed-pilot drift.
+- [x] Run all available docs, unit, lint, race, security and PostgreSQL gates from a clean worktree state except intended commits.
+- [x] Re-read acceptance criteria and audit Git for third-party dumps, APK/decompilation, keys/secrets and signed-pilot drift.
 - [ ] Report task statuses, commits, chosen geographic source/license, catalog coverage, Ulyanovsk E2E evidence and real blockers; do not push or create a PR.
-- **Status:** pending
+- **Status:** in progress; checkpoint commit and final report remain

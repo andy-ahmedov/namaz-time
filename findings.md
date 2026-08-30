@@ -138,6 +138,27 @@
 - T039 is conditional on completing T035–T037 and must expose operator-visible reasons rather than infer a neighboring or nationwide fallback.
 - Local commits are required after each checkpoint; no push and no PR.
 
+## T039 implementation findings
+
+- `PROPOSAL`: explanation and execution are separate. A named immutable
+  revision can expose every rejected/eligible option, while only the active
+  unambiguous revision remains executable.
+- `PROPOSAL`: an explicit operator choice is retained first as append-only
+  `pending_review`; it is not approval or activation. Curators must produce a
+  new unambiguous revision and pass the existing verified-reference gate.
+- Exact idempotent retry evidence must be read before mutable active/staged
+  state. Otherwise a valid first response can become unreproducible during its
+  advertised retry window.
+- Staged assessment and request insertion must share the registry lifecycle
+  lock. An application-layer staged check alone cannot prevent an activation
+  race.
+- Date-specific source composition matters: a base source remains relevant,
+  while a seasonal override source must not block dates outside its retained
+  effective range.
+- `CONFIRMED_RUNTIME`: the least-privileged API role can read a staged revision
+  and append its review handoff, but cannot insert registry revisions or update
+  the active pointer.
+
 ## Session observations
 
 - `planning-with-files` catch-up initially failed because `python` is absent; `python3` is installed and the retry completed.

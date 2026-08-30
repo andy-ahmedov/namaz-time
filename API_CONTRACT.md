@@ -295,3 +295,27 @@ Runtime access is opt-in with `registry_backend: "postgres"` and is valid only
 with `pairing_backend: "postgres"`. The API role reads the active registry;
 the separate `registryctl apply` operator command owns staged revision writes
 and explicit activation.
+
+## T039 explainable registry review handoff
+
+`GET /v1/admin/mosques/{mosqueId}/setup/prayer-policy-options` assesses one
+explicit immutable `revision_id`, canonical `city_id`, mosque path and local
+date. Unlike the active resolution endpoint, it returns every applicable
+option with deterministic precedence, authority evidence/scope, source
+freshness, effective range, payload reference and stable blocked reason. The
+overall status is `resolved`, `ambiguous`, `stale` or `unavailable`. A staged
+response advertises `request_binding` only when at least one highest-tier
+option is actually selectable.
+
+`POST /v1/admin/mosques/{mosqueId}/setup/prayer-policy-binding-requests`
+requires mosque write scope and `Idempotency-Key`. It re-assesses the exact
+staged revision and appends a `pending_review` request for the explicitly named
+selectable policy. Exact retries return the retained response for 24 hours,
+including if registry state changes afterward; changed input conflicts.
+
+This endpoint is a review handoff only. It does not mutate or activate a
+revision, approve a source, publish or sign a snapshot, or change any device
+assignment. Active, stale, unavailable, research-only, expired,
+lower-precedence and schedule-missing choices return
+`registry_binding_not_selectable`. The active signed snapshot and TV
+last-known-good path are unaffected.
