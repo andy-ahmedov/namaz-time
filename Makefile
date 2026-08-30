@@ -14,6 +14,7 @@ ANDROID_REMOTE_SEQUENCE := $(shell sed -n 's/^remoteSequence=//p' $(ANDROID_VERS
 ANDROID_DEBUG_VERSION := $(ANDROID_VERSION_NAME)-dev
 ANDROID_PILOT_VERSION := $(ANDROID_VERSION_NAME)-pilot.$(ANDROID_PILOT_SEQUENCE)
 ANDROID_REMOTE_VERSION := $(ANDROID_VERSION_NAME)-remote.$(ANDROID_REMOTE_SEQUENCE)
+ANDROID_PILOT_ARTIFACT_DIR ?= $(abspath ../namaztime-artifacts/android)
 
 docs-check:
 	bash ./scripts/docs-check.sh
@@ -103,7 +104,7 @@ build-android-pilot:
 	NAMAZTIME_EXPECTED_BUILD_COMMIT="$$build_commit" \
 		bash ./scripts/android-pilot-release-bundle.sh \
 		apps/tv-android/build/outputs/apk/pilot/tv-android-pilot.apk \
-		artifacts/android
+		"$(ANDROID_PILOT_ARTIFACT_DIR)"
 
 verify-android-pilot:
 	test -n "$(NAMAZTIME_PILOT_APK)"

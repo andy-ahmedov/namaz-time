@@ -625,7 +625,7 @@ Backend metrics:
 
 TV diagnostics:
 
-- app/build version;
+- app version/code plus exact Git commit, build variant and clean/dirty state;
 - device model/OS;
 - mosque and timezone;
 - active/previous snapshot IDs;
@@ -636,6 +636,18 @@ TV diagnostics:
 - boot mode and overlay/device-owner status.
 
 Do not include precise user location, Wi-Fi SSID, tokens or full URLs containing secrets in diagnostic export.
+
+### Android application artifact identity
+
+Android application releases and signed prayer schedules use independent
+identities. `apps/tv-android/version.properties` is the validated source for
+base version, monotonic Android code and pilot/remote sequences. Each APK embeds
+the exact Git commit, variant and clean/dirty state; Settings projects these
+values for local support. A signed pilot handover can be created only from a
+clean tree and binds those values, the APK/certificate hashes and the existing
+snapshot ID/hash in a versioned manifest outside the repository. See ADR 0017.
+None of these
+fields authorizes or modifies a prayer source, approval or active snapshot.
 
 ## Architectural decisions
 

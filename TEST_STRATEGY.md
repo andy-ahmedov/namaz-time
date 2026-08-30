@@ -587,6 +587,20 @@ and does not establish physical-TV behavior. Physical overscan, OEM IME and
 representative-distance readability remain `UNKNOWN` until the hardware
 matrix runs.
 
+T042 adds a single validated Android version source plus unit tests for typed
+build identity and the Diagnostics projection. Repository shell tests exercise
+the APK identity checker with valid and mismatched code/variant cases. Strict
+debug/release builds verify package, version/code, exact Git commit and actual
+dirty state from their manifests. Signed-pilot packaging additionally rejects
+a dirty tree, requires the external pilot signing configuration, verifies the
+pinned certificate and bundled authenticated assets, and emits a versioned
+APK/checksum/manifest handover bundle outside the repository. A controlled API
+36 emulator upgrade
+from code 3 to code 4 retains the package first-install identity and renders
+the existing local schedule; screenshots and package facts are recorded under
+[`docs/evidence/t042-android-build-identity/`](docs/evidence/t042-android-build-identity/).
+The physical-TV upgrade path remains `UNKNOWN`.
+
 ## Release evidence
 
 Each release records:

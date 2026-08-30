@@ -301,6 +301,14 @@ Each page:
 - unsaved changes are visible;
 - back either saves explicitly or asks, never silently discards critical time changes.
 
+Diagnostics shows the installed application version and integer Android code,
+followed by build variant, the first 12 characters of the exact Git commit and
+clean/dirty state. These are support/provenance labels only; they do not imply
+that prayer data changed. Snapshot ID, parser, approval and signature-key fields
+remain separately visible so application and schedule identities cannot be
+confused. The release/pilot variants show their own identity, not a generic
+display version.
+
 The Mosque/location page provides two explicit local fields for the displayed
 mosque name and displayed address. Blank means the canonical/pilot fallback.
 The current canonical locality, authority/source and IANA timezone remain
