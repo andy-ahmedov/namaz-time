@@ -130,6 +130,15 @@ func TestPostgresUlyanovskAdminSearchResolveAndRollbackPreserveSignedPilot(t *te
 		!strings.Contains(resolved.Body, `"evidence_label":"CONFIRMED_PUBLIC"`) || !strings.Contains(resolved.Body, `"evidence_label":"UNKNOWN"`) {
 		t.Fatalf("persisted Ulyanovsk resolution = %d %s", resolved.StatusCode, resolved.Body)
 	}
+	activeChoicesURL := server.URL + "/v1/admin/mosques/" + ulyanovskMosqueID + "/setup/schedule-choices?city_id=" + ulyanovskCityID + "&date=2026-08-30"
+	activeChoices := adminRequest(t, http.MethodGet, activeChoicesURL, nil, adminToken, "")
+	if activeChoices.StatusCode != http.StatusOK || strings.Count(activeChoices.Body, `"choice_id":`) != 1 ||
+		!strings.Contains(activeChoices.Body, `"status":"available"`) ||
+		!strings.Contains(activeChoices.Body, `"selection_required":false`) ||
+		!strings.Contains(activeChoices.Body, `"executable":true`) ||
+		!strings.Contains(activeChoices.Body, `"published_snapshot_id":"`+ulyanovskSnapshotID+`"`) {
+		t.Fatalf("persisted Ulyanovsk schedule choice = %d %s", activeChoices.StatusCode, activeChoices.Body)
+	}
 
 	secondDataset := dataset
 	secondDataset.Cities = append([]domain.City(nil), dataset.Cities...)
@@ -181,6 +190,16 @@ func TestPostgresUlyanovskAdminSearchResolveAndRollbackPreserveSignedPilot(t *te
 		!strings.Contains(options.Body, `"allowed_actions":["request_binding"]`) {
 		t.Fatalf("persisted ambiguous options = %d %s", options.StatusCode, options.Body)
 	}
+	ambiguousChoicesURL := server.URL + "/v1/admin/mosques/" + ulyanovskMosqueID + "/setup/schedule-choices?revision_id=" + ambiguousRevision.ID + "&city_id=" + ulyanovskCityID + "&date=2026-08-30"
+	ambiguousChoices := adminRequest(t, http.MethodGet, ambiguousChoicesURL, nil, adminToken, "")
+	if ambiguousChoices.StatusCode != http.StatusOK || strings.Count(ambiguousChoices.Body, `"choice_id":`) != 2 ||
+		!strings.Contains(ambiguousChoices.Body, `"status":"available"`) ||
+		!strings.Contains(ambiguousChoices.Body, `"selection_required":true`) ||
+		strings.Count(ambiguousChoices.Body, `"selectable":true`) != 2 ||
+		strings.Count(ambiguousChoices.Body, `"executable":false`) != 2 ||
+		!strings.Contains(ambiguousChoices.Body, `"allowed_actions":["request_binding"]`) {
+		t.Fatalf("persisted ambiguous schedule choices = %d %s", ambiguousChoices.StatusCode, ambiguousChoices.Body)
+	}
 	bindingBody := []byte(`{"revision_id":"` + ambiguousRevision.ID + `","city_id":"` + ulyanovskCityID + `","policy_id":"` + secondPolicy.ID + `","date":"2026-08-30","reason":"operator selected the reviewed exact-city policy"}`)
 	bindingURL := server.URL + "/v1/admin/mosques/" + ulyanovskMosqueID + "/setup/prayer-policy-binding-requests"
 	created := adminRequest(t, http.MethodPost, bindingURL, bindingBody, adminToken, "idem-t039-binding-integration-0001")
@@ -226,6 +245,14 @@ func TestPostgresUlyanovskAdminSearchResolveAndRollbackPreserveSignedPilot(t *te
 		!strings.Contains(staleOptions.Body, `"blocked_reason":"source_stale"`) ||
 		!strings.Contains(staleOptions.Body, `"allowed_actions":[]`) {
 		t.Fatalf("persisted stale options = %d %s", staleOptions.StatusCode, staleOptions.Body)
+	}
+	staleChoicesURL := server.URL + "/v1/admin/mosques/" + ulyanovskMosqueID + "/setup/schedule-choices?revision_id=" + staleRevision.ID + "&city_id=" + ulyanovskCityID + "&date=2026-08-30"
+	staleChoices := adminRequest(t, http.MethodGet, staleChoicesURL, nil, adminToken, "")
+	if staleChoices.StatusCode != http.StatusOK || !strings.Contains(staleChoices.Body, `"status":"unavailable"`) ||
+		!strings.Contains(staleChoices.Body, `"automatic_resolution_status":"stale"`) ||
+		!strings.Contains(staleChoices.Body, `"choices":[]`) ||
+		!strings.Contains(staleChoices.Body, `"allowed_actions":[]`) {
+		t.Fatalf("persisted stale schedule choices = %d %s", staleChoices.StatusCode, staleChoices.Body)
 	}
 	staleBindingBody := []byte(`{"revision_id":"` + staleRevision.ID + `","city_id":"` + ulyanovskCityID + `","policy_id":"` + dataset.Policies[0].ID + `","date":"2026-08-30","reason":"must reject stale source"}`)
 	staleBinding := adminRequest(t, http.MethodPost, bindingURL, staleBindingBody, adminToken, "t039-stale")

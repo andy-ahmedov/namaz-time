@@ -300,6 +300,7 @@ func (s *Service) routes() http.Handler {
 	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/devices/{deviceId}/support-bundle", s.handleAdminDeviceSupportBundle)
 	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/setup/cities", s.handleAdminCitySearch)
 	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/setup/prayer-policy", s.handleAdminPrayerPolicy)
+	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/setup/schedule-choices", s.handleAdminCityScheduleChoices)
 	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/setup/prayer-policy-options", s.handleAdminPrayerPolicyOptions)
 	mux.HandleFunc("POST /v1/admin/mosques/{mosqueId}/setup/prayer-policy-binding-requests", s.handleAdminRegistryBindingRequest)
 	return securityHeaders(mux)
@@ -616,6 +617,20 @@ type adminPrayerPolicyOptionsResponse struct {
 	AllowedActions []string                  `json:"allowed_actions"`
 }
 
+type adminCityScheduleChoicesResponse struct {
+	SchemaVersion             string                            `json:"schema_version"`
+	Revision                  registry.RevisionRecord           `json:"revision"`
+	RevisionState             registry.RevisionState            `json:"revision_state"`
+	Status                    registry.CityScheduleChoiceStatus `json:"status"`
+	AutomaticResolutionStatus registry.AssessmentStatus         `json:"automatic_resolution_status"`
+	AutomaticResolutionReason registry.AssessmentReason         `json:"automatic_resolution_reason"`
+	SelectionRequired         bool                              `json:"selection_required"`
+	Date                      string                            `json:"date"`
+	City                      adminCityCandidate                `json:"city"`
+	Choices                   []registry.CityScheduleChoice     `json:"choices"`
+	AllowedActions            []string                          `json:"allowed_actions"`
+}
+
 func (s *Service) handleAdminIssuePairing(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Cache-Control", "no-store")
 	principal, ok := s.authenticateAdminRequest(writer, request)
@@ -761,6 +776,76 @@ func (s *Service) handleAdminPrayerPolicy(writer http.ResponseWriter, request *h
 		Scope: resolved.Scope, Authorities: authorities, Source: resolved.Source,
 		Policy: resolved.Policy, TimeTable: timetable, CalculationProfile: calculationProfile,
 		SourceOverrides: overrides,
+	})
+}
+
+func (s *Service) handleAdminCityScheduleChoices(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	if s.registryBackend == nil {
+		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
+		return
+	}
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	cityID, cityOK := exactQueryValue(request, "city_id", 160)
+	date, dateOK := exactQueryValue(request, "date", len(time.DateOnly))
+	parsedDate, dateErr := time.Parse(time.DateOnly, date)
+	revisionID := ""
+	revisionValues, hasRevision := request.URL.Query()["revision_id"]
+	if hasRevision {
+		var revisionOK bool
+		revisionID, revisionOK = exactQueryValue(request, "revision_id", 160)
+		if !revisionOK {
+			writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+			return
+		}
+	}
+	wantQueryValues := 2
+	if hasRevision {
+		wantQueryValues = 3
+	}
+	if !cityOK || !dateOK || len(request.URL.Query()) != wantQueryValues || len(revisionValues) > 1 ||
+		dateErr != nil || parsedDate.Format(time.DateOnly) != date {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	mosqueID := request.PathValue("mosqueId")
+	if err := s.adminBackend.AuthorizeAdminScope(principal, mosqueID, false); err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	assessment, err := s.registryBackend.AssessRevision(backendContext, revisionID, registry.ResolveRequest{
+		CityID: cityID, MosqueID: mosqueID, Date: date,
+	})
+	if err != nil {
+		writeRegistryOperationError(writer, err)
+		return
+	}
+	projected, err := registry.ProjectCityScheduleChoices(assessment)
+	if err != nil {
+		writeRegistryOperationError(writer, err)
+		return
+	}
+	choices := append([]registry.CityScheduleChoice(nil), projected.Choices...)
+	if choices == nil {
+		choices = []registry.CityScheduleChoice{}
+	}
+	actions := []string{}
+	if projected.RevisionState == registry.RevisionStateStaged && len(choices) > 0 {
+		actions = append(actions, "request_binding")
+	}
+	writeJSON(writer, http.StatusOK, adminCityScheduleChoicesResponse{
+		SchemaVersion: "city-schedule-choices/v1", Revision: projected.Revision,
+		RevisionState: projected.RevisionState, Status: projected.Status,
+		AutomaticResolutionStatus: projected.AutomaticResolutionStatus,
+		AutomaticResolutionReason: projected.AutomaticResolutionReason,
+		SelectionRequired:         projected.SelectionRequired, Date: projected.Date,
+		City:    projectAdminCity(registry.CitySearchResult{City: projected.City, Region: projected.Region}),
+		Choices: choices, AllowedActions: actions,
 	})
 }
 

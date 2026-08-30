@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -905,6 +906,137 @@ func TestAdminRegistryWorkflowExplainsAmbiguityAndRequiresExplicitBinding(t *tes
 	)
 	if rejected.StatusCode != http.StatusConflict || !strings.Contains(rejected.Body, `"code":"registry_binding_not_selectable"`) {
 		t.Fatalf("blocked binding = %d %s", rejected.StatusCode, rejected.Body)
+	}
+}
+
+func TestAdminCityScheduleChoicesExposeEveryEligibleAuthorityWithoutAutoSelection(t *testing.T) {
+	t.Parallel()
+	const (
+		mosqueID   = "mosque-synthetic-schedule-choice"
+		cityID     = "city-synthetic-schedule-choice"
+		revisionID = "revision-synthetic-schedule-choice-0001"
+	)
+	admin := &recordingHTTPAdminBackend{principal: AdminPrincipal{
+		ActorID:     "actor-synthetic-schedule-choice",
+		Memberships: []AdminMembership{{MosqueID: mosqueID, Role: AdminRoleMosqueAdmin}},
+	}}
+	city := domain.City{
+		ID: cityID, Name: "Синтетический город", Aliases: []string{"Synthetic City"}, CountryCode: "RU",
+		RegionID: "region-synthetic-schedule-choice", SettlementType: "PPL", Latitude: 55, Longitude: 49,
+		Timezone: "Europe/Moscow", GeographicSourceID: "synthetic:choice", GeographicRevision: "fixture-v1",
+		GeographicLicense: "synthetic-test-only",
+	}
+	region := domain.Region{
+		ID: "region-synthetic-schedule-choice", Name: "Синтетический субъект",
+		CountryCode: "RU", FederalSubjectCode: "RU-XX",
+	}
+	options := make([]registrydomain.PolicyOption, 0, 8)
+	for index := range 8 {
+		suffix := fmt.Sprintf("%02d", index)
+		authorityID := "authority-http-synthetic-" + suffix
+		sourceID := "source-http-synthetic-" + suffix
+		policyID := "policy-http-synthetic-" + suffix
+		timetableID := "timetable-http-synthetic-" + suffix
+		scope := domain.GeographicScope{
+			ID: "scope-http-synthetic-choice", Kind: domain.GeographicScopeCity,
+			CityID: cityID, RegionID: region.ID, Description: "synthetic schedule-choice API fixture",
+		}
+		timetable := domain.TimeTable{
+			ID: timetableID, SourceID: sourceID, GeographicScopeID: scope.ID, MosqueID: mosqueID,
+			Timezone: city.Timezone, Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"},
+			PublishedSnapshotID: "snapshot-http-synthetic-" + suffix,
+		}
+		options = append(options, registrydomain.PolicyOption{
+			Tier: registrydomain.ResolutionExactCityTimetable, Selectable: true,
+			BlockedReason: registrydomain.OptionEligible, Scope: scope,
+			Authorities: []domain.PrayerAuthority{{
+				ID: authorityID, Name: "Synthetic canonical organization " + suffix, EvidenceLabel: "PROPOSAL",
+			}},
+			Source: domain.PrayerSource{
+				ID: sourceID, Kind: domain.ProviderKindManualImport, AuthorityIDs: []string{authorityID},
+				GeographicScopeID: scope.ID, CanonicalURL: "https://example.invalid/source/" + suffix,
+				Status: domain.PrayerSourceApproved, FreshThrough: "2026-12-31",
+			},
+			Policy: domain.PrayerPolicy{
+				ID: policyID, Kind: domain.PrayerPolicyTimeTable, GeographicScopeID: scope.ID,
+				AuthorityIDs: []string{authorityID}, SourceID: sourceID, TimeTableID: timetableID,
+				MosqueIDs: []string{mosqueID}, Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"},
+				ApprovalID: "approval-http-synthetic-" + suffix,
+			},
+			TimeTable: &timetable, SourceOverrides: []domain.SourceOverride{},
+		})
+	}
+	registryBackend := &recordingHTTPRegistryBackend{assessment: registrydomain.RevisionPolicyAssessment{
+		Revision: registrydomain.RevisionRecord{ID: revisionID, ContentSHA256: strings.Repeat("c", 64)},
+		State:    registrydomain.RevisionStateStaged,
+		Result: registrydomain.PolicyAssessment{
+			Status: registrydomain.AssessmentAmbiguous, Reason: registrydomain.AssessmentReasonSameTierAmbiguous,
+			City: city, Region: region, Date: "2026-08-30", Options: options,
+		},
+	}}
+	config := validServiceConfig(t)
+	config.PairingFixtures = nil
+	config.Assignments = nil
+	config.AdminBackend = admin
+	config.RegistryBackend = registryBackend
+	service, err := NewService(config)
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+	server := httptest.NewServer(service.Handler())
+	t.Cleanup(server.Close)
+
+	choicesURL := server.URL + "/v1/admin/mosques/" + mosqueID + "/setup/schedule-choices?revision_id=" + revisionID + "&city_id=" + cityID + "&date=2026-08-30"
+	choices := adminRequest(t, http.MethodGet, choicesURL, nil, "admin-bearer-token-schedule-choices", "")
+	if choices.StatusCode != http.StatusOK ||
+		!strings.Contains(choices.Body, `"schema_version":"city-schedule-choices/v1"`) ||
+		!strings.Contains(choices.Body, `"status":"available"`) ||
+		!strings.Contains(choices.Body, `"automatic_resolution_status":"ambiguous"`) ||
+		!strings.Contains(choices.Body, `"selection_required":true`) ||
+		!strings.Contains(choices.Body, `"federal_subject_code":"RU-XX"`) ||
+		strings.Count(choices.Body, `"choice_id":`) != 8 ||
+		strings.Count(choices.Body, `"selectable":true`) != 8 ||
+		strings.Count(choices.Body, `"executable":false`) != 8 {
+		t.Fatalf("schedule choices = %d %s", choices.StatusCode, choices.Body)
+	}
+	for index := range 8 {
+		label := "Синтетический город (Synthetic canonical organization " + fmt.Sprintf("%02d", index) + ")"
+		if !strings.Contains(choices.Body, `"display_label":"`+label+`"`) {
+			t.Fatalf("schedule choices omitted %q: %s", label, choices.Body)
+		}
+	}
+	if registryBackend.assessmentID != revisionID || registryBackend.assessRequest.CityID != cityID ||
+		registryBackend.assessRequest.MosqueID != mosqueID {
+		t.Fatalf("schedule-choice assessment call = %q %#v", registryBackend.assessmentID, registryBackend.assessRequest)
+	}
+
+	registryBackend.assessment.Result.Status = registrydomain.AssessmentUnavailable
+	registryBackend.assessment.Result.Reason = registrydomain.AssessmentReasonNoPolicy
+	registryBackend.assessment.Result.Options = nil
+	unavailable := adminRequest(t, http.MethodGet, choicesURL, nil, "admin-bearer-token-schedule-choices", "")
+	if unavailable.StatusCode != http.StatusOK || !strings.Contains(unavailable.Body, `"status":"unavailable"`) ||
+		!strings.Contains(unavailable.Body, `"automatic_resolution_reason":"no_policy"`) ||
+		!strings.Contains(unavailable.Body, `"selection_required":false`) ||
+		!strings.Contains(unavailable.Body, `"choices":[]`) {
+		t.Fatalf("unavailable schedule choices = %d %s", unavailable.StatusCode, unavailable.Body)
+	}
+
+	registryBackend.assessment.State = registrydomain.RevisionStateActive
+	registryBackend.assessment.Result.Status = registrydomain.AssessmentResolved
+	registryBackend.assessment.Result.Reason = registrydomain.AssessmentReasonResolved
+	registryBackend.assessment.Result.Options = options[:1]
+	activeURL := server.URL + "/v1/admin/mosques/" + mosqueID + "/setup/schedule-choices?city_id=" + cityID + "&date=2026-08-30"
+	active := adminRequest(t, http.MethodGet, activeURL, nil, "admin-bearer-token-schedule-choices", "")
+	if active.StatusCode != http.StatusOK || strings.Count(active.Body, `"choice_id":`) != 1 ||
+		!strings.Contains(active.Body, `"executable":true`) ||
+		!strings.Contains(active.Body, `"selection_required":false`) ||
+		!strings.Contains(active.Body, `"allowed_actions":[]`) || registryBackend.assessmentID != "" {
+		t.Fatalf("active schedule choice = %d %s, revision=%q", active.StatusCode, active.Body, registryBackend.assessmentID)
+	}
+
+	invalid := adminRequest(t, http.MethodGet, choicesURL+"&limit=3", nil, "admin-bearer-token-schedule-choices", "")
+	if invalid.StatusCode != http.StatusBadRequest {
+		t.Fatalf("hidden limit parameter accepted = %d %s", invalid.StatusCode, invalid.Body)
 	}
 }
 
