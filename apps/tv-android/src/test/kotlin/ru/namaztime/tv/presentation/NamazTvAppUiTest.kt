@@ -404,6 +404,9 @@ class NamazTvAppUiTest {
 
             override fun retrySearch() = Unit
             override fun selectCity(city: ru.namaztime.tv.sync.CanonicalCityCandidate) = Unit
+            override fun retryScheduleChoices() = Unit
+            override fun selectScheduleChoice(choice: ru.namaztime.tv.sync.DeviceScheduleChoice) = Unit
+            override fun retryScheduleChoiceRequest() = Unit
             override fun backToSearch() = Unit
             override fun resetAfterExit() = Unit
         }

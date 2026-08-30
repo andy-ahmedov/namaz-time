@@ -16,6 +16,8 @@ import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.pressKey
+import java.time.Instant
+import java.time.LocalDate
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
@@ -24,6 +26,11 @@ import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 import ru.namaztime.tv.sync.CanonicalCityCandidate
+import ru.namaztime.tv.sync.DeviceCityScheduleChoiceSet
+import ru.namaztime.tv.sync.DeviceScheduleAuthority
+import ru.namaztime.tv.sync.DeviceScheduleChoice
+import ru.namaztime.tv.sync.DeviceScheduleSource
+import ru.namaztime.tv.sync.PendingDeviceScheduleChoiceRequest
 
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [28, 35])
@@ -171,6 +178,138 @@ class DeviceSetupScreenUiTest {
     }
 
     @Test
+    fun unavailableChoiceStateNeverOffersGenericFallback() {
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(
+                        choices = ScheduleChoicesUiState.Unavailable("no_policy"),
+                    ),
+                    activeSchedule = activeScheduleSummary(),
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onBack = {},
+                )
+            }
+        }
+
+        compose.onNodeWithText("Для этого города утверждённое расписание пока недоступно")
+            .assertIsDisplayed()
+        compose.onNodeWithText("Рассчитать автоматически").assertDoesNotExist()
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun oneChoiceIsExplainedAndRequiresExplicitEnterBeforeRequest() {
+        val item = scheduleChoice(0)
+        var selected: DeviceScheduleChoice? = null
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(listOf(item)),
+                    activeSchedule = activeScheduleSummary(),
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onScheduleChoiceSelected = { selected = it },
+                    onBack = {},
+                )
+            }
+        }
+
+        compose.onNodeWithText(item.authorityLabel).assertIsDisplayed()
+        compose.onNodeWithText("Synthetic city scope 0").assertIsDisplayed()
+        compose.onNodeWithText("official_file · synthetic-source-0").assertIsDisplayed()
+        assertNull(selected)
+
+        compose.onNodeWithTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${item.id}")
+            .performKeyInput { pressKey(Key.Enter) }
+        assertEquals(item.id, selected?.id)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun allEightChoicesAreReachableWithoutTruncationOrDefaultSelection() {
+        val items = List(8) { scheduleChoice(it) }
+        var selected: DeviceScheduleChoice? = null
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(items),
+                    activeSchedule = activeScheduleSummary(),
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onScheduleChoiceSelected = { selected = it },
+                    onBack = {},
+                )
+            }
+        }
+
+        assertNull(selected)
+        compose.onNodeWithTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${items.first().id}")
+            .assertIsFocused()
+            .performKeyInput {
+                repeat(7) { pressKey(Key.DirectionDown) }
+            }
+        compose.onNodeWithTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${items.last().id}")
+            .assertIsDisplayed()
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        assertEquals(items.last().id, selected?.id)
+    }
+
+    @Test
+    fun duplicateAuthorityLabelsRemainDistinguishableByPolicyAndSource() {
+        val first = scheduleChoice(0, authorityLabel = "Синтетическая организация")
+        val second = scheduleChoice(1, authorityLabel = "Синтетическая организация")
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(listOf(first, second)),
+                    activeSchedule = null,
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onBack = {},
+                )
+            }
+        }
+
+        compose.onNodeWithText("synthetic-policy-0 · synthetic-source-0").assertIsDisplayed()
+        compose.onNodeWithText("synthetic-policy-1 · synthetic-source-1").assertIsDisplayed()
+    }
+
+    @Test
+    fun pendingReviewNamesExplicitChoiceAndKeepsLastKnownGoodMessage() {
+        val item = scheduleChoice(0)
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(listOf(item)).copy(
+                        step = DeviceSetupStep.PENDING,
+                        submission = ScheduleChoiceSubmissionUiState.Pending(
+                            request = pendingRequest(item),
+                            choice = item,
+                        ),
+                    ),
+                    activeSchedule = activeScheduleSummary(),
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onBack = {},
+                )
+            }
+        }
+
+        compose.onNodeWithText("Выбрано расписание: ${item.authorityLabel}").assertIsDisplayed()
+        compose.onNodeWithText("Ожидает подтверждения").assertIsDisplayed()
+        compose.onNodeWithText("Текущее расписание продолжает работать до подтверждения нового выбора")
+            .assertIsDisplayed()
+    }
+
+    @Test
     @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
     fun setupFits720pSafeFrame() = assertSetupFitsSafeFrame()
 
@@ -247,5 +386,104 @@ class DeviceSetupScreenUiTest {
         authorityName = "Синтетическая действующая организация",
         sourceName = "synthetic-active-source",
         timezone = "Europe/Ulyanovsk",
+    )
+
+    private fun choiceState(
+        items: List<DeviceScheduleChoice> = emptyList(),
+        choices: ScheduleChoicesUiState = ScheduleChoicesUiState.Available(
+            DeviceCityScheduleChoiceSet(
+                revisionId = "synthetic-revision-0001",
+                revisionState = "staged",
+                status = if (items.isEmpty()) "unavailable" else "available",
+                automaticResolutionStatus = when (items.size) {
+                    0 -> "unavailable"
+                    1 -> "resolved"
+                    else -> "ambiguous"
+                },
+                automaticResolutionReason = when (items.size) {
+                    0 -> "no_policy"
+                    1 -> "resolved"
+                    else -> "same_tier_ambiguous"
+                },
+                selectionRequired = items.size > 1,
+                date = LocalDate.parse("2026-08-30"),
+                city = setupCity(),
+                choices = items,
+                requestAllowed = items.isNotEmpty(),
+            ),
+        ),
+    ) = DeviceSetupUiState(
+        query = "Ульяновск",
+        step = DeviceSetupStep.CHOICES,
+        search = CitySearchUiState.Results(listOf(setupCity())),
+        selectedCity = setupCity(),
+        choices = choices,
+    )
+
+    private fun setupCity() = CanonicalCityCandidate(
+        id = "city-ulyanovsk-0001",
+        canonicalName = "Ульяновск",
+        aliases = listOf("Ulyanovsk"),
+        federalSubjectCode = "RU-ULY",
+        federalSubjectName = "Ульяновская область",
+        settlementType = "city",
+        timezone = "Europe/Ulyanovsk",
+        latitude = 54.3,
+        longitude = 48.4,
+        geographicSourceId = "synthetic:geography",
+        geographicRevision = "fixture-v1",
+        geographicLicense = "synthetic-test-only",
+    )
+
+    private fun scheduleChoice(
+        index: Int,
+        authorityLabel: String = "Синтетическая организация $index",
+    ) = DeviceScheduleChoice(
+        id = "schedule-choice-${index.toString(16).padStart(64, '0')}",
+        displayLabel = "Ульяновск ($authorityLabel)",
+        authorityLabel = authorityLabel,
+        tier = "exact_city_timetable",
+        selectable = true,
+        executable = false,
+        requestable = true,
+        policyId = "synthetic-policy-$index",
+        policyKind = "timetable",
+        approvalId = "synthetic-approval-$index",
+        effectiveFrom = LocalDate.parse("2026-01-01"),
+        effectiveTo = LocalDate.parse("2026-12-31"),
+        scopeId = "synthetic-scope-$index",
+        scopeKind = "city",
+        scopeDescription = "Synthetic city scope $index",
+        authorities = listOf(
+            DeviceScheduleAuthority("synthetic-authority-$index", authorityLabel, "PROPOSAL"),
+        ),
+        source = DeviceScheduleSource(
+            id = "synthetic-source-$index",
+            kind = "official_file",
+            status = "approved",
+            canonicalUrl = "https://example.invalid/synthetic/$index",
+            freshThrough = LocalDate.parse("2026-12-31"),
+        ),
+        scheduleId = "synthetic-timetable-$index",
+        scheduleKind = "timetable",
+        scheduleTimezone = "Europe/Ulyanovsk",
+        publishedSnapshotId = "synthetic-snapshot-$index",
+    )
+
+    private fun pendingRequest(item: DeviceScheduleChoice) = PendingDeviceScheduleChoiceRequest(
+        id = "device-binding-request-synthetic-0001",
+        revisionId = "synthetic-revision-0001",
+        cityId = setupCity().id,
+        policyId = item.policyId,
+        choiceId = item.id,
+        mosqueId = "synthetic-mosque-0001",
+        deviceId = "synthetic-device-0001",
+        date = LocalDate.parse("2026-08-30"),
+        tier = item.tier,
+        status = "pending_review",
+        selectionSha256 = "a".repeat(64),
+        origin = "local_tv_operator",
+        interactionId = "interaction-synthetic-0001",
+        requestedAt = Instant.parse("2026-08-30T09:00:00Z"),
     )
 }

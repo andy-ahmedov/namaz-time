@@ -53,7 +53,7 @@ class MainActivity : ComponentActivity() {
             viewModelFactory {
                 initializer {
                     DeviceSetupViewModel(
-                        cityGateway = setupClient,
+                        setupGateway = setupClient,
                         savedStateHandle = createSavedStateHandle(),
                     )
                 }

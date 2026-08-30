@@ -13,13 +13,15 @@ import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import ru.namaztime.tv.sync.CanonicalCityCandidate
-import ru.namaztime.tv.sync.DeviceCitySearchGateway
+import java.time.LocalDate
+import ru.namaztime.tv.sync.DeviceCityScheduleChoiceSet
+import ru.namaztime.tv.sync.DeviceSetupGateway
 import ru.namaztime.tv.sync.DeviceSetupResult
+import ru.namaztime.tv.sync.PendingDeviceScheduleChoiceRequest
 
 class DeviceSetupViewModelTest {
     private val dispatcher = StandardTestDispatcher()
@@ -147,7 +149,7 @@ class DeviceSetupViewModelTest {
         assertEquals(DeviceSetupStep.SEARCH, recreated.state.value.step)
         assertEquals(null, recreated.state.value.selectedCity)
         assertEquals(0, gateway.selectionRequests)
-        assertFalse(recreated.state.value.pendingReview)
+        assertTrue(recreated.state.value.submission is ScheduleChoiceSubmissionUiState.Idle)
     }
 
     private fun city(name: String, subject: String) = CanonicalCityCandidate(
@@ -187,12 +189,30 @@ private class RecordingCityGateway(
             ),
         )
     },
-) : DeviceCitySearchGateway {
+) : DeviceSetupGateway {
     val queries = mutableListOf<String>()
     var selectionRequests = 0
 
     override suspend fun searchCities(query: String): DeviceSetupResult<List<CanonicalCityCandidate>> {
         queries += query
         return result(query)
+    }
+
+    override suspend fun loadScheduleChoices(
+        cityId: String,
+        date: LocalDate,
+    ): DeviceSetupResult<DeviceCityScheduleChoiceSet> {
+        selectionRequests += 1
+        return DeviceSetupResult.Failure("not_used", retryable = false)
+    }
+
+    override suspend fun requestScheduleChoice(
+        cityId: String,
+        choiceId: String,
+        date: LocalDate,
+        interactionId: String,
+    ): DeviceSetupResult<PendingDeviceScheduleChoiceRequest> {
+        selectionRequests += 1
+        return DeviceSetupResult.Failure("not_used", retryable = false)
     }
 }

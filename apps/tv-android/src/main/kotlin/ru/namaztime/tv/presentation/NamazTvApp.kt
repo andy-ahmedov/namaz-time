@@ -386,6 +386,9 @@ fun NamazTvApp(
                                 onRetrySearch = deviceSetupController::retrySearch,
                                 onCitySelected = deviceSetupController::selectCity,
                                 onBack = backOrExit,
+                                onRetryScheduleChoices = deviceSetupController::retryScheduleChoices,
+                                onScheduleChoiceSelected = deviceSetupController::selectScheduleChoice,
+                                onRetryScheduleChoiceRequest = deviceSetupController::retryScheduleChoiceRequest,
                             )
                         }
                     }

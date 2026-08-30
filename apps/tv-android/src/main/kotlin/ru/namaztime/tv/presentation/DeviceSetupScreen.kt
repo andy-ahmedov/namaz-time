@@ -54,12 +54,18 @@ import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import ru.namaztime.tv.R
 import ru.namaztime.tv.sync.CanonicalCityCandidate
+import ru.namaztime.tv.sync.DeviceScheduleChoice
 
 const val DEVICE_SETUP_SCREEN_TAG = "device-setup-screen"
 const val DEVICE_SETUP_SEARCH_FIELD_TAG = "device-setup-search-field"
 const val DEVICE_SETUP_CITY_LIST_TAG = "device-setup-city-list"
 const val DEVICE_SETUP_CITY_RESULT_TAG_PREFIX = "device-setup-city-result-"
 const val DEVICE_SETUP_RETRY_TAG = "device-setup-retry"
+const val DEVICE_SETUP_CHOICE_LIST_TAG = "device-setup-choice-list"
+const val DEVICE_SETUP_CHOICE_TAG_PREFIX = "device-setup-choice-"
+const val DEVICE_SETUP_CHOICES_RETRY_TAG = "device-setup-choices-retry"
+const val DEVICE_SETUP_REQUEST_RETRY_TAG = "device-setup-request-retry"
+const val DEVICE_SETUP_PENDING_TAG = "device-setup-pending"
 
 data class ActiveScheduleSummaryUi(
     val cityName: String,
@@ -77,6 +83,9 @@ fun DeviceScheduleSetupScreen(
     onRetrySearch: () -> Unit,
     onCitySelected: (CanonicalCityCandidate) -> Unit,
     onBack: () -> Unit,
+    onRetryScheduleChoices: () -> Unit = {},
+    onScheduleChoiceSelected: (DeviceScheduleChoice) -> Unit = {},
+    onRetryScheduleChoiceRequest: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     BackHandler(onBack = onBack)
@@ -115,17 +124,18 @@ fun DeviceScheduleSetupScreen(
                                 .weight(0.66f)
                                 .fillMaxHeight(),
                         )
-                        DeviceSetupStep.CHOICES -> SetupStatusPanel(
-                            title = state.selectedCity?.canonicalName.orEmpty(),
-                            message = appString(R.string.device_setup_choices_loading),
+                        DeviceSetupStep.CHOICES -> ScheduleChoicesPanel(
+                            state = state,
+                            onRetryScheduleChoices = onRetryScheduleChoices,
+                            onScheduleChoiceSelected = onScheduleChoiceSelected,
+                            onRetryScheduleChoiceRequest = onRetryScheduleChoiceRequest,
                             compact = compact,
                             modifier = Modifier
                                 .weight(0.66f)
                                 .fillMaxHeight(),
                         )
-                        DeviceSetupStep.PENDING -> SetupStatusPanel(
-                            title = state.selectedCity?.canonicalName.orEmpty(),
-                            message = appString(R.string.device_setup_pending_review),
+                        DeviceSetupStep.PENDING -> PendingChoicePanel(
+                            state = state,
                             compact = compact,
                             modifier = Modifier
                                 .weight(0.66f)
@@ -442,6 +452,290 @@ private fun CityCandidateButton(
         }
     }
 }
+
+@Composable
+private fun ScheduleChoicesPanel(
+    state: DeviceSetupUiState,
+    onRetryScheduleChoices: () -> Unit,
+    onScheduleChoiceSelected: (DeviceScheduleChoice) -> Unit,
+    onRetryScheduleChoiceRequest: () -> Unit,
+    compact: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val city = state.selectedCity ?: return
+    val available = state.choices as? ScheduleChoicesUiState.Available
+    val firstChoiceRequester = remember(available?.set?.choices?.map { it.id }) { FocusRequester() }
+    val choicesRetryRequester = remember { FocusRequester() }
+    val requestRetryRequester = remember { FocusRequester() }
+    LaunchedEffect(available?.set?.choices?.map { it.id }, state.submission) {
+        if (available?.set?.choices?.isNotEmpty() == true &&
+            state.submission !is ScheduleChoiceSubmissionUiState.Submitting
+        ) {
+            withFrameNanos { }
+            runCatching { firstChoiceRequester.requestFocus() }
+        }
+    }
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(if (compact) 10.dp else 14.dp),
+    ) {
+        Text(
+            text = city.canonicalName,
+            modifier = Modifier.semantics { heading() },
+            color = NamazTvTheme.colors.textPrimary,
+            fontSize = if (compact) 27.sp else 36.sp,
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = appString(
+                R.string.device_setup_selected_city_context,
+                city.federalSubjectName,
+                city.timezone,
+            ),
+            color = NamazTvTheme.colors.textSecondary,
+            fontSize = if (compact) 14.sp else 18.sp,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        when (val choices = state.choices) {
+            ScheduleChoicesUiState.Idle,
+            ScheduleChoicesUiState.Loading,
+            -> SetupMessage(appString(R.string.device_setup_choices_loading), compact)
+            is ScheduleChoicesUiState.Unavailable -> SetupMessage(
+                appString(R.string.device_setup_choices_unavailable),
+                compact,
+                warning = true,
+            )
+            ScheduleChoicesUiState.NotProvisioned -> SetupMessage(
+                appString(R.string.device_setup_not_provisioned),
+                compact,
+                warning = true,
+            )
+            ScheduleChoicesUiState.Unauthorized -> SetupMessage(
+                appString(R.string.device_setup_unauthorized),
+                compact,
+                warning = true,
+            )
+            is ScheduleChoicesUiState.Error -> {
+                SetupMessage(
+                    appString(R.string.device_setup_choices_error),
+                    compact,
+                    warning = true,
+                )
+                if (choices.retryable) {
+                    Button(
+                        onClick = onRetryScheduleChoices,
+                        modifier = Modifier
+                            .testTag(DEVICE_SETUP_CHOICES_RETRY_TAG)
+                            .focusRequester(choicesRetryRequester),
+                        colors = setupButtonColors(),
+                    ) {
+                        Text(appString(R.string.device_setup_retry))
+                    }
+                }
+            }
+            is ScheduleChoicesUiState.Available -> {
+                Text(
+                    text = if (choices.set.selectionRequired) {
+                        appString(R.string.device_setup_choices_multiple)
+                    } else {
+                        appString(R.string.device_setup_choices_single)
+                    },
+                    color = NamazTvTheme.colors.accent,
+                    fontSize = if (compact) 14.sp else 18.sp,
+                    lineHeight = if (compact) 18.sp else 23.sp,
+                )
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .weight(1f)
+                        .testTag(DEVICE_SETUP_CHOICE_LIST_TAG),
+                    verticalArrangement = Arrangement.spacedBy(if (compact) 7.dp else 10.dp),
+                ) {
+                    itemsIndexed(
+                        items = choices.set.choices,
+                        key = { _, choice -> choice.id },
+                    ) { index, choice ->
+                        ScheduleChoiceButton(
+                            choice = choice,
+                            submitting = state.submission is ScheduleChoiceSubmissionUiState.Submitting,
+                            onClick = { onScheduleChoiceSelected(choice) },
+                            firstChoiceRequester = firstChoiceRequester.takeIf { index == 0 },
+                            compact = compact,
+                        )
+                    }
+                }
+                when (val submission = state.submission) {
+                    ScheduleChoiceSubmissionUiState.Idle -> Unit
+                    is ScheduleChoiceSubmissionUiState.Submitting -> SetupMessage(
+                        appString(
+                            R.string.device_setup_choice_submitting,
+                            submission.choice.authorityLabel,
+                        ),
+                        compact,
+                    )
+                    is ScheduleChoiceSubmissionUiState.Error -> {
+                        SetupMessage(
+                            appString(R.string.device_setup_choice_request_error),
+                            compact,
+                            warning = true,
+                        )
+                        if (submission.retryable) {
+                            Button(
+                                onClick = onRetryScheduleChoiceRequest,
+                                modifier = Modifier
+                                    .testTag(DEVICE_SETUP_REQUEST_RETRY_TAG)
+                                    .focusRequester(requestRetryRequester),
+                                colors = setupButtonColors(),
+                            ) {
+                                Text(appString(R.string.device_setup_retry))
+                            }
+                        }
+                    }
+                    is ScheduleChoiceSubmissionUiState.Pending -> Unit
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ScheduleChoiceButton(
+    choice: DeviceScheduleChoice,
+    submitting: Boolean,
+    onClick: () -> Unit,
+    firstChoiceRequester: FocusRequester?,
+    compact: Boolean,
+) {
+    Button(
+        onClick = {
+            if (choice.requestable && !choice.executable && !submitting) onClick()
+        },
+        enabled = choice.selectable && !submitting,
+        colors = setupButtonColors(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .testTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${choice.id}")
+            .then(
+                if (firstChoiceRequester == null) Modifier else Modifier.focusRequester(
+                    firstChoiceRequester,
+                ),
+            ),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = if (compact) 1.dp else 3.dp),
+            verticalArrangement = Arrangement.spacedBy(if (compact) 1.dp else 2.dp),
+        ) {
+            Text(
+                text = choice.authorityLabel,
+                fontSize = if (compact) 17.sp else 21.sp,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = choice.scopeDescription,
+                fontSize = if (compact) 12.sp else 15.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = appString(
+                    R.string.device_setup_choice_source,
+                    choice.source.kind,
+                    choice.source.id,
+                ),
+                fontSize = if (compact) 11.sp else 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = appString(
+                    R.string.device_setup_choice_effective,
+                    choice.effectiveFrom.toString(),
+                    choice.effectiveTo.toString(),
+                    scheduleKindLabel(choice.scheduleKind),
+                ),
+                fontSize = if (compact) 11.sp else 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = appString(
+                    R.string.device_setup_choice_identity,
+                    choice.policyId,
+                    choice.source.id,
+                ),
+                fontSize = if (compact) 10.sp else 12.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            if (choice.executable) {
+                Text(
+                    text = appString(R.string.device_setup_choice_active),
+                    color = NamazTvTheme.colors.backgroundBottom,
+                    fontSize = if (compact) 11.sp else 14.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PendingChoicePanel(
+    state: DeviceSetupUiState,
+    compact: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val pending = state.submission as? ScheduleChoiceSubmissionUiState.Pending
+    val city = state.selectedCity
+    Column(
+        modifier = modifier.testTag(DEVICE_SETUP_PENDING_TAG),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 12.dp else 18.dp),
+    ) {
+        Text(
+            text = city?.canonicalName.orEmpty(),
+            modifier = Modifier.semantics { heading() },
+            color = NamazTvTheme.colors.textPrimary,
+            fontSize = if (compact) 30.sp else 40.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        if (pending == null) {
+            SetupMessage(appString(R.string.device_setup_choice_request_error), compact, warning = true)
+        } else {
+            Text(
+                text = appString(
+                    R.string.device_setup_choice_selected,
+                    pending.choice.authorityLabel,
+                ),
+                color = NamazTvTheme.colors.textPrimary,
+                fontSize = if (compact) 19.sp else 25.sp,
+                lineHeight = if (compact) 25.sp else 32.sp,
+            )
+            Text(
+                text = appString(R.string.device_setup_pending_review),
+                color = NamazTvTheme.colors.accent,
+                fontSize = if (compact) 22.sp else 30.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            SetupMessage(appString(R.string.device_setup_pending_explanation), compact)
+        }
+    }
+}
+
+@Composable
+private fun scheduleKindLabel(kind: String): String = appString(
+    if (kind == "timetable") {
+        R.string.device_setup_schedule_type_timetable
+    } else {
+        R.string.device_setup_schedule_type_calculation
+    },
+)
 
 @Composable
 private fun settlementTypeLabel(type: String): String = appString(
