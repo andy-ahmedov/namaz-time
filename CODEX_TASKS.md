@@ -979,7 +979,8 @@ Ulyanovsk pilot remains byte-identical at SHA-256
 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 
 **Result:** completed locally on 2026-08-30 in checkpoints `6375915`,
-`a5456ec`, `64ed91d`, `08500e5`, `cc02d51`, `824f279` and `ea37c5e`.
+`a5456ec`, `64ed91d`, `08500e5`, `cc02d51`, `824f279`, `ea37c5e`,
+`5bab92f` and `8840ffa`.
 The TV uses only its provisioned device bearer against a server-derived
 device/mosque/revision boundary. PostgreSQL schema v8 can append only an
 audited, idempotent `pending_review` proposal; it cannot approve, publish,
@@ -989,8 +990,10 @@ The Mosque/location page now opens canonical Cyrillic/alias city search with
 debounce and cancellation, disambiguates same-name candidates by subject/type/
 IANA timezone, and exposes the complete 0..N T040 choice set. One or many
 choices all require explicit selection; there is no top-N, preferred authority
-or fallback. RU/EN loading, empty, authorization, failure, unavailable,
-submitting and pending states preserve the signed last-known-good schedule.
+or fallback. Each choice exposes its source, evidence label, approval identity
+and explicit freshness state without creating a second source of truth. RU/EN
+loading, empty, authorization, failure, unavailable, submitting and pending
+states preserve the signed last-known-good schedule.
 Controlled Android 16 TV-emulator evidence records the system IME, duplicate
 cities, one/many choices, D-pad scrolling, unavailable/pending states and
 IME-close focus recovery. This is not physical-TV evidence.
@@ -1001,8 +1004,6 @@ runner on `cc02d51` exposed one additional KSP-resolved JetBrains coroutines
 BOM POM hidden by the local cache; `824f279` pins only its independently
 matched Maven Central SHA-256. A clean Gradle dependency home and the final
 local `make test-android-all` both pass without disabling strict verification.
-The final two commits are intentionally not pushed without a new owner command,
-so no GitHub Actions run exists for them yet.
 
 `make docs-check`, `make test`, `make lint`, `make test-postgres`,
 `make test-android-all`, `go test -race ./...`, `make security-go` and
