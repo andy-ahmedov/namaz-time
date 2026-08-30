@@ -52,6 +52,67 @@ val pilotSigning = pilotSigningPropertiesFile?.let { propertiesFile ->
     )
 }
 
+val versionPropertiesFile = file("version.properties")
+require(versionPropertiesFile.isFile) { "Android version source is missing: $versionPropertiesFile" }
+val versionProperties = Properties().apply {
+    versionPropertiesFile.inputStream().use(::load)
+}
+fun requiredVersionProperty(name: String): String =
+    versionProperties.getProperty(name)?.trim()?.takeIf(String::isNotEmpty)
+        ?: error("Android version property '$name' is required")
+
+val appVersionCode = requiredVersionProperty("versionCode").toIntOrNull()
+    ?: error("Android versionCode must be an integer")
+require(appVersionCode > 0) { "Android versionCode must be positive" }
+val appVersionName = requiredVersionProperty("versionName")
+require(appVersionName.matches(Regex("^[0-9]+\\.[0-9]+\\.[0-9]+$"))) {
+    "Android versionName must be a three-component SemVer core"
+}
+fun positiveSequence(name: String): Int = requiredVersionProperty(name).toIntOrNull()
+    ?.takeIf { it > 0 }
+    ?: error("Android $name must be a positive integer")
+val pilotSequence = positiveSequence("pilotSequence")
+val remoteSequence = positiveSequence("remoteSequence")
+
+fun gitOutput(vararg arguments: String): String = providers.exec {
+    workingDir(rootDir)
+    commandLine("git", *arguments)
+}.standardOutput.asText.get().trim()
+
+val configuredBuildCommit = providers.environmentVariable("NAMAZTIME_BUILD_COMMIT").orNull?.trim()
+val configuredBuildDirty = providers.environmentVariable("NAMAZTIME_BUILD_DIRTY")
+    .orNull
+    ?.trim()
+    ?.let { value ->
+        when (value) {
+            "true" -> true
+            "false" -> false
+            else -> error("NAMAZTIME_BUILD_DIRTY must be true or false")
+        }
+    }
+val gitMetadataAvailable = rootDir.resolve(".git").exists()
+val repositoryCommit = if (gitMetadataAvailable) gitOutput("rev-parse", "HEAD") else null
+val repositoryDirty = if (gitMetadataAvailable) gitOutput("status", "--porcelain").isNotEmpty() else null
+if (repositoryCommit != null && configuredBuildCommit != null) {
+    require(configuredBuildCommit == repositoryCommit) {
+        "NAMAZTIME_BUILD_COMMIT does not match the checked-out Git HEAD"
+    }
+}
+if (repositoryDirty != null && configuredBuildDirty != null) {
+    require(configuredBuildDirty == repositoryDirty) {
+        "NAMAZTIME_BUILD_DIRTY does not match the checked-out Git working tree"
+    }
+}
+val buildCommit = configuredBuildCommit ?: repositoryCommit
+    ?: error("NAMAZTIME_BUILD_COMMIT is required when Git metadata is unavailable")
+require(buildCommit.matches(Regex("^[0-9a-f]{40}$"))) {
+    "NAMAZTIME_BUILD_COMMIT or git HEAD must be a full lowercase commit SHA"
+}
+val buildDirty = configuredBuildDirty ?: repositoryDirty
+    ?: error("NAMAZTIME_BUILD_DIRTY is required when Git metadata is unavailable")
+
+fun buildConfigString(value: String): String = "\"$value\""
+
 android {
     namespace = "ru.namaztime.tv"
     compileSdk = 35
@@ -60,8 +121,13 @@ android {
         applicationId = "ru.namaztime.tv"
         minSdk = 28
         targetSdk = 35
-        versionCode = 3
-        versionName = "0.4.0-pilot-local"
+        versionCode = appVersionCode
+        versionName = appVersionName
+
+        buildConfigField("String", "BUILD_COMMIT", buildConfigString(buildCommit))
+        buildConfigField("boolean", "BUILD_DIRTY", buildDirty.toString())
+        manifestPlaceholders["namaztimeBuildCommit"] = buildCommit
+        manifestPlaceholders["namaztimeBuildState"] = if (buildDirty) "dirty" else "clean"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -81,11 +147,17 @@ android {
     buildTypes {
         debug {
             applicationIdSuffix = ".debug"
+            versionNameSuffix = "-dev"
             buildConfigField("boolean", "PILOT_LOCAL_RUNTIME", "true")
+            buildConfigField("String", "BUILD_VARIANT", buildConfigString("debug"))
+            manifestPlaceholders["namaztimeBuildVariant"] = "debug"
         }
         release {
+            versionNameSuffix = "-remote.$remoteSequence"
             isMinifyEnabled = false
             buildConfigField("boolean", "PILOT_LOCAL_RUNTIME", "false")
+            buildConfigField("String", "BUILD_VARIANT", buildConfigString("release"))
+            manifestPlaceholders["namaztimeBuildVariant"] = "release"
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
@@ -93,7 +165,10 @@ android {
         }
         create("pilot") {
             initWith(getByName("release"))
+            versionNameSuffix = "-pilot.$pilotSequence"
             buildConfigField("boolean", "PILOT_LOCAL_RUNTIME", "true")
+            buildConfigField("String", "BUILD_VARIANT", buildConfigString("pilot"))
+            manifestPlaceholders["namaztimeBuildVariant"] = "pilot"
             signingConfig = signingConfigs.findByName("pilot")
         }
     }
@@ -123,6 +198,7 @@ tasks.matching { it.name == "prePilotBuild" }.configureEach {
         check(pilotSigning != null) {
             "A signed pilot build requires -PnamaztimePilotSigningProperties=/absolute/path/to/pilot-signing.properties"
         }
+        check(!buildDirty) { "A signed pilot build requires a clean Git working tree" }
     }
 }
 

@@ -97,6 +97,10 @@
     <string name="field_installation_mode">Сборка</string>
     <string name="field_snapshot_id">Snapshot ID</string>
     <string name="field_app_version">Версия приложения</string>
+    <string name="field_build_identity">Идентификатор сборки</string>
+    <string name="value_build_identity">%1$s · %2$s · %3$s</string>
+    <string name="value_build_clean">чистая</string>
+    <string name="value_build_dirty">с изменениями</string>
     <string name="field_parser">Парсер</string>
     <string name="field_approval_id">Approval ID</string>
     <string name="field_signing_key">Ключ подписи</string>

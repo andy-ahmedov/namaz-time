@@ -20,6 +20,15 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="false"
         android:theme="@style/Theme.NamazTime">
+        <meta-data
+            android:name="ru.namaztime.tv.BUILD_COMMIT"
+            android:value="${namaztimeBuildCommit}" />
+        <meta-data
+            android:name="ru.namaztime.tv.BUILD_VARIANT"
+            android:value="${namaztimeBuildVariant}" />
+        <meta-data
+            android:name="ru.namaztime.tv.BUILD_STATE"
+            android:value="${namaztimeBuildState}" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

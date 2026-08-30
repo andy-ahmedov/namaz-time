@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
+import ru.namaztime.tv.AppBuildIdentity
 import ru.namaztime.tv.R
 import ru.namaztime.tv.repository.LocalPrayerSchedule
 import ru.namaztime.tv.repository.OperatorIqamahConfiguration
@@ -88,7 +89,7 @@ fun SettingsShell(
     campaignPreview: QrCampaignUiState? = null,
     schedule: LocalPrayerSchedule? = null,
     preferences: OperatorPreferences = OperatorPreferences(),
-    appVersion: String = "",
+    buildIdentity: AppBuildIdentity? = null,
     pilotLocalRuntime: Boolean = false,
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)? = null,
     onMosquePresentationIdentityChanged: ((OperatorMosquePresentationIdentity) -> Unit)? = null,
@@ -212,7 +213,7 @@ fun SettingsShell(
                     campaignPreview = campaignPreview,
                     schedule = schedule,
                     preferences = preferences,
-                    appVersion = appVersion,
+                    buildIdentity = buildIdentity,
                     pilotLocalRuntime = pilotLocalRuntime,
                     onScreenRetentionShiftChanged = onScreenRetentionShiftChanged,
                     onMosquePresentationIdentityChanged = onMosquePresentationIdentityChanged,
@@ -252,7 +253,7 @@ private fun SettingsPage(
     campaignPreview: QrCampaignUiState?,
     schedule: LocalPrayerSchedule?,
     preferences: OperatorPreferences,
-    appVersion: String,
+    buildIdentity: AppBuildIdentity?,
     pilotLocalRuntime: Boolean,
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)?,
     onMosquePresentationIdentityChanged: ((OperatorMosquePresentationIdentity) -> Unit)?,
@@ -542,7 +543,7 @@ private fun SettingsPage(
                 destination = destination,
                 schedule = schedule,
                 preferences = preferences,
-                appVersion = appVersion,
+                buildIdentity = buildIdentity,
                 pilotLocalRuntime = pilotLocalRuntime,
                 campaignPreview = campaignPreview,
                 mosquePresentationIdentity = mosqueIdentityDraft,
@@ -694,7 +695,7 @@ private fun SettingsContent(
     destination: SettingsDestination,
     schedule: LocalPrayerSchedule?,
     preferences: OperatorPreferences,
-    appVersion: String,
+    buildIdentity: AppBuildIdentity?,
     pilotLocalRuntime: Boolean,
     campaignPreview: QrCampaignUiState?,
     mosquePresentationIdentity: OperatorMosquePresentationIdentity,
@@ -829,7 +830,19 @@ private fun SettingsContent(
         )
         SettingsDestination.DIAGNOSTICS -> listOf(
             R.string.field_snapshot_id to schedule.snapshotId,
-            R.string.field_app_version to appVersion,
+            R.string.field_app_version to (
+                buildIdentity?.versionLabel ?: appString(R.string.value_not_available)
+            ),
+            R.string.field_build_identity to buildIdentity?.let { identity ->
+                appString(
+                    R.string.value_build_identity,
+                    identity.variant,
+                    identity.shortCommit,
+                    appString(
+                        if (identity.dirty) R.string.value_build_dirty else R.string.value_build_clean,
+                    ),
+                )
+            }.orEmpty().ifEmpty { appString(R.string.value_not_available) },
             R.string.field_parser to (diagnostics?.parserVersion ?: appString(R.string.value_not_available)),
             R.string.field_approval_id to (diagnostics?.approvalId ?: appString(R.string.value_not_available)),
             R.string.field_signing_key to (diagnostics?.signingKeyId ?: appString(R.string.value_not_available)),

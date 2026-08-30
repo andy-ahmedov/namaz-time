@@ -17,6 +17,7 @@ import ru.namaztime.tv.repository.LocalJumuahSession
 import ru.namaztime.tv.repository.LocalPrayerDay
 import ru.namaztime.tv.repository.LocalPrayerSchedule
 import ru.namaztime.tv.repository.LocalSnapshotDiagnostics
+import ru.namaztime.tv.AppBuildIdentity
 import ru.namaztime.tv.repository.OperatorPreferences
 import ru.namaztime.tv.repository.OPERATOR_IQAMAH_PRAYER_IDS
 import org.junit.Assert.assertEquals
@@ -116,7 +117,13 @@ class SettingsShellUiTest {
                 onExit = {},
                 schedule = pilotSchedule(),
                 preferences = OperatorPreferences(),
-                appVersion = "0.4.0-pilot-local",
+                buildIdentity = AppBuildIdentity(
+                    versionName = "0.5.0-pilot.1",
+                    versionCode = 4,
+                    variant = "pilot",
+                    commit = "0123456789abcdef0123456789abcdef01234567",
+                    dirty = false,
+                ),
                 pilotLocalRuntime = true,
                 onScreenRetentionShiftChanged = { shiftChoice = it },
                 onLanguageChanged = { languageChoice = it },
@@ -184,7 +191,8 @@ class SettingsShellUiTest {
 
         moveDownFrom(SettingsDestination.KIOSK)
         compose.onNodeWithText("ulyanovsk-second-cathedral-2026-pilot-local-v1").assertIsDisplayed()
-        compose.onNodeWithText("0.4.0-pilot-local").assertIsDisplayed()
+        compose.onNodeWithText("0.5.0-pilot.1 (4)").assertIsDisplayed()
+        compose.onNodeWithText("pilot · 0123456789ab · чистая").assertIsDisplayed()
     }
 
     @OptIn(ExperimentalTestApi::class)

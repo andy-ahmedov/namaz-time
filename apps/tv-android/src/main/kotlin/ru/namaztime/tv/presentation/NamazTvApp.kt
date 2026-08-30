@@ -39,6 +39,7 @@ import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
 import ru.namaztime.tv.BuildConfig
+import ru.namaztime.tv.currentAppBuildIdentity
 import ru.namaztime.tv.R
 import ru.namaztime.tv.data.snapshot.SnapshotBootstrapState
 import ru.namaztime.tv.domain.CampaignEngine
@@ -255,7 +256,7 @@ fun NamazTvApp(
                             campaignPreview = campaignPreview,
                             schedule = availableSchedule,
                             preferences = preferences,
-                            appVersion = BuildConfig.VERSION_NAME,
+                            buildIdentity = currentAppBuildIdentity(),
                             pilotLocalRuntime = BuildConfig.PILOT_LOCAL_RUNTIME,
                             onScreenRetentionShiftChanged = { enabled ->
                                 coroutineScope.launch {

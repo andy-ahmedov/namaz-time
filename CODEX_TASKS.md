@@ -1012,3 +1012,39 @@ schema is unchanged. The Ulyanovsk snapshot remains byte-identical with ID
 `ulyanovsk-second-cathedral-2026-pilot-local-v2` and raw SHA-256
 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 T038 remains `DEFERRED`; no real regional source was added.
+
+## T042 — traceable Android APK version and build identity
+
+**Goal:** make every distributable NamazTime Android APK unambiguously
+traceable to an application version, monotonically increasing Android version
+code, build variant, exact Git commit and APK checksum, and expose the same
+identity in TV diagnostics without touching prayer data.
+
+**In scope:** one checked-in Android version source; `0.5.0-pilot.1` / code `4`
+for the next offline pilot; embedded commit/variant/clean-state metadata;
+RU/EN Diagnostics projection; a fail-closed clean-tree signed-pilot packaging
+command that emits a versioned ignored APK plus checksum/manifest; artifact
+verification; tests; and a controlled API 36 emulator update from the already
+installed `0.4.0-pilot-local` / code `3` package.
+
+**Correctness-sensitive unknowns:** physical-TV update behavior remains
+`UNKNOWN`; two operator-chosen offline backups of the permanent APK signing
+key still require owner action; Git tags/GitHub Releases and remote app-update
+transport are not yet selected. These unknowns do not permit an unsigned,
+dirty or untraceable pilot artifact.
+
+**Non-goals:** changing the application ID or APK signing key; changing Room,
+the bundled schedule, approval, signing trust or snapshot bytes; onboarding a
+new prayer source; T038; Google Play; remote self-update; creating a tag,
+GitHub Release, push or PR without a separate owner command.
+
+**Acceptance:** version data has one validated source; debug/release/pilot are
+visibly distinct; Diagnostics shows version/code plus variant/commit and dirty
+state; the pilot packaging path rejects a dirty tree and wrong embedded
+identity; its filename/manifest/checksum map back to the exact clean commit;
+Android accepts code `4` over the existing code `3` package with the same
+certificate and retained install identity; repository gates pass; and
+`ulyanovsk-second-cathedral-2026-pilot-local-v2` remains byte-identical at raw
+SHA-256 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+
+**Status:** `IN_PROGRESS` on 2026-08-31.

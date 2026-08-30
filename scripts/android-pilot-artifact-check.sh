@@ -5,6 +5,9 @@ readonly ROOT="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd -P)"
 readonly APK_PATH="${1:-}"
 readonly EXPECTED_APPLICATION_ID="ru.namaztime.tv"
 readonly EXPECTED_CERT_SHA256="${NAMAZTIME_EXPECTED_PILOT_CERT_SHA256:-}"
+readonly EXPECTED_VERSION_CODE="${NAMAZTIME_EXPECTED_VERSION_CODE:-}"
+readonly EXPECTED_VERSION_NAME="${NAMAZTIME_EXPECTED_VERSION_NAME:-}"
+readonly EXPECTED_BUILD_COMMIT="${NAMAZTIME_EXPECTED_BUILD_COMMIT:-}"
 
 fail() {
   printf 'android-pilot-artifact-check: %s\n' "$*" >&2
@@ -45,11 +48,27 @@ resolve_build_tool() {
 
 [[ -n "$APK_PATH" ]] || fail "usage: $0 /absolute/or/relative/path/to/pilot.apk"
 [[ -f "$APK_PATH" ]] || fail "APK does not exist: $APK_PATH"
+[[ "$EXPECTED_VERSION_CODE" =~ ^[1-9][0-9]*$ ]] ||
+  fail "NAMAZTIME_EXPECTED_VERSION_CODE is required"
+[[ "$EXPECTED_VERSION_NAME" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9A-Za-z.-]+$ ]] ||
+  fail "NAMAZTIME_EXPECTED_VERSION_NAME is required"
+[[ "$EXPECTED_BUILD_COMMIT" =~ ^[0-9a-f]{40}$ ]] ||
+  fail "NAMAZTIME_EXPECTED_BUILD_COMMIT is required"
 command -v unzip >/dev/null 2>&1 || fail "unzip is required"
 command -v sha256sum >/dev/null 2>&1 || fail "sha256sum is required"
 
 readonly AAPT_BIN="$(resolve_build_tool aapt)"
 readonly APKSIGNER_BIN="$(resolve_build_tool apksigner)"
+
+AAPT="$AAPT_BIN" bash "$ROOT/scripts/android-build-identity-check.sh" \
+  "$APK_PATH" \
+  "$EXPECTED_APPLICATION_ID" \
+  "$EXPECTED_VERSION_CODE" \
+  "$EXPECTED_VERSION_NAME" \
+  pilot \
+  clean \
+  "$EXPECTED_BUILD_COMMIT"
+
 readonly TMP_DIR="$(mktemp -d)"
 trap 'rm -rf -- "$TMP_DIR"' EXIT
 
