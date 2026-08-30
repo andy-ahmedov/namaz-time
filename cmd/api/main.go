@@ -22,6 +22,7 @@ import (
 
 	"github.com/andy-ahmedov/namaz-time/internal/devices"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
+	"github.com/andy-ahmedov/namaz-time/internal/registry"
 	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
 	"github.com/andy-ahmedov/namaz-time/internal/trust"
 )
@@ -70,6 +71,7 @@ type runtimeConfig struct {
 	PublicBaseURL                        string                     `json:"public_base_url"`
 	PairingFixtureMode                   string                     `json:"pairing_fixture_mode"`
 	PairingBackend                       string                     `json:"pairing_backend"`
+	RegistryBackend                      string                     `json:"registry_backend"`
 	DatabaseURLEnv                       string                     `json:"database_url_env"`
 	PairingRateLimitKeyEnv               string                     `json:"pairing_rate_limit_key_env"`
 	AdminIdempotencyKeyEnv               string                     `json:"admin_idempotency_key_env"`
@@ -310,6 +312,7 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 	}
 	var pairingBackend devices.PairingBackend
 	var adminBackend devices.AdminFleetBackend
+	var registryBackend devices.AdminRegistryBackend
 	if config.PairingBackend == "postgres" {
 		if len(config.PairingFixtures) > 0 || config.PairingFixtureMode != "" || len(config.Assignments) > 0 {
 			return nil, errors.New("PostgreSQL pairing cannot use ephemeral fixtures or static device assignments")
@@ -396,9 +399,26 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 			return nil, err
 		}
 		adminBackend = adminManager
+		if config.RegistryBackend == "postgres" {
+			registryStore, openErr := registry.OpenPostgresRevisionStore(openContext, databaseURL)
+			if openErr != nil {
+				repository.Close()
+				return nil, openErr
+			}
+			registryReader, readerErr := registry.NewActiveReader(registryStore)
+			if readerErr != nil {
+				registryStore.Close()
+				repository.Close()
+				return nil, readerErr
+			}
+			registryBackend = registryReader
+		} else if config.RegistryBackend != "" {
+			repository.Close()
+			return nil, errors.New("unsupported registry backend")
+		}
 	} else if config.PairingBackend != "" {
 		return nil, errors.New("unsupported pairing backend")
-	} else if config.DatabaseURLEnv != "" || config.PairingRateLimitKeyEnv != "" || config.AdminIdempotencyKeyEnv != "" || len(config.AdminCompatibilityIdempotencyKeyEnvs) > 0 || config.PairingRateLimits != (runtimePairingRateLimits{}) || config.PairingBackendTimeoutSeconds != 0 {
+	} else if config.DatabaseURLEnv != "" || config.PairingRateLimitKeyEnv != "" || config.AdminIdempotencyKeyEnv != "" || len(config.AdminCompatibilityIdempotencyKeyEnvs) > 0 || config.PairingRateLimits != (runtimePairingRateLimits{}) || config.PairingBackendTimeoutSeconds != 0 || config.RegistryBackend != "" {
 		return nil, errors.New("PostgreSQL pairing settings require pairing_backend postgres")
 	}
 	service, err := devices.NewService(devices.ServiceConfig{
@@ -406,6 +426,7 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		PairingFixtures:             pairings,
 		PairingBackend:              pairingBackend,
 		AdminBackend:                adminBackend,
+		RegistryBackend:             registryBackend,
 		BackendTimeout:              time.Duration(config.PairingBackendTimeoutSeconds) * time.Second,
 		Assignments:                 config.Assignments,
 		Snapshots:                   snapshots,
@@ -414,6 +435,9 @@ func loadRuntimeService(configPath string) (*devices.Service, error) {
 		PublicationLedgerHeadSHA256: publicationLedgerHeadSHA256,
 	})
 	if err != nil {
+		if closer, ok := registryBackend.(interface{ Close() }); ok {
+			closer.Close()
+		}
 		if closer, ok := pairingBackend.(interface{ Close() }); ok {
 			closer.Close()
 		}

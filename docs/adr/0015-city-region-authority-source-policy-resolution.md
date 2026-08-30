@@ -76,6 +76,15 @@ This follow-up does not alter the decision: GeoNames has no prayer-authority
 meaning, duplicate names never auto-select, and the executable registry still
 contains only explicitly approved prayer records.
 
+T037 follow-up (2026-08-30): the hard-coded executable Ulyanovsk constructor
+is removed. A reviewed policy-binding document targets the exact pinned T035
+catalog revision/hash, and `registryctl` verifies its pinned approval and
+publication artifacts before PostgreSQL staging/activation. The authenticated
+setup API searches the active revision and resolves only an explicitly chosen
+canonical city ID for an authorized mosque/date. Registry rollback re-verifies
+the retained approval/snapshot references and moves only the active pointer;
+the existing signed USB-pilot snapshot is neither rewritten nor re-signed.
+
 ## Rejected alternatives
 
 - one nationwide authority or `method=Russia`;

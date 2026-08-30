@@ -12,10 +12,14 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/andy-ahmedov/namaz-time/internal/domain"
+	registrydomain "github.com/andy-ahmedov/namaz-time/internal/registry"
 )
 
 const (
@@ -706,6 +710,114 @@ func TestAdminFleetHTTPRequiresAuthScopeAndIdempotency(t *testing.T) {
 	}
 }
 
+func TestAdminRegistrySearchAndResolveRequireExplicitScopedCity(t *testing.T) {
+	t.Parallel()
+	const (
+		mosqueID = "second-cathedral-mosque-ulyanovsk"
+		cityID   = "city-4adcfc15932f3850d5dd5dbaa17e3a4c"
+	)
+	admin := &recordingHTTPAdminBackend{principal: AdminPrincipal{
+		ActorID: "actor-mosque-admin-registry", Memberships: []AdminMembership{{MosqueID: mosqueID, Role: AdminRoleMosqueAdmin}},
+	}}
+	registryBackend := &recordingHTTPRegistryBackend{
+		cities: []registrydomain.CitySearchResult{{
+			City: domain.City{
+				ID: cityID, Name: "Ульяновск", Aliases: []string{"Ulyanovsk", "Синбирск"}, CountryCode: "RU", RegionID: "ru-uly",
+				SettlementType: "PPLA", Latitude: 54.32824, Longitude: 48.38657, Timezone: "Europe/Ulyanovsk",
+				GeographicSourceID: "geonames:479123", GeographicRevision: "2026-08-29", GeographicLicense: "CC BY 4.0",
+			},
+			Region: domain.Region{ID: "ru-uly", Name: "Ульяновская область", CountryCode: "RU", FederalSubjectCode: "RU-ULY"},
+		}},
+		resolution: registrydomain.Resolution{
+			Tier:   registrydomain.ResolutionExactCityTimetable,
+			City:   domain.City{ID: cityID, Name: "Ульяновск", CountryCode: "RU", RegionID: "ru-uly", SettlementType: "PPLA", Timezone: "Europe/Ulyanovsk", GeographicSourceID: "geonames:479123", GeographicRevision: "2026-08-29", GeographicLicense: "CC BY 4.0"},
+			Region: domain.Region{ID: "ru-uly", Name: "Ульяновская область", CountryCode: "RU", FederalSubjectCode: "RU-ULY"},
+			Scope:  domain.GeographicScope{ID: "scope-ulyanovsk-city", Kind: domain.GeographicScopeCity, CityID: cityID, RegionID: "ru-uly", Description: "Second Cathedral Mosque; 2026"},
+			Authorities: []domain.PrayerAuthority{
+				{ID: "rdum-ulyanovsk-oblast", Name: "RDUM", EvidenceLabel: "CONFIRMED_PUBLIC"},
+				{ID: "rdumul-attributed-publisher-unconfirmed", Name: "Attributed publisher", EvidenceLabel: "UNKNOWN"},
+			},
+			Source: domain.PrayerSource{
+				ID: "effective-ulyanovsk-2026-v1", Kind: domain.ProviderKindManualImport,
+				AuthorityIDs:      []string{"rdum-ulyanovsk-oblast", "rdumul-attributed-publisher-unconfirmed"},
+				GeographicScopeID: "scope-ulyanovsk-city", Status: domain.PrayerSourceApproved, FreshThrough: "2026-12-31",
+			},
+			Policy: domain.PrayerPolicy{
+				ID: "policy-ulyanovsk-second-cathedral-2026", Kind: domain.PrayerPolicyTimeTable,
+				GeographicScopeID: "scope-ulyanovsk-city", AuthorityIDs: []string{"rdum-ulyanovsk-oblast", "rdumul-attributed-publisher-unconfirmed"},
+				SourceID: "effective-ulyanovsk-2026-v1", TimeTableID: "timetable-ulyanovsk-second-cathedral-2026", MosqueIDs: []string{mosqueID},
+				ApprovalID: "approval-second-cathedral-mosque-ulyanovsk-2026-002", Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"},
+			},
+			TimeTable: domain.TimeTable{
+				ID: "timetable-ulyanovsk-second-cathedral-2026", SourceID: "effective-ulyanovsk-2026-v1",
+				GeographicScopeID: "scope-ulyanovsk-city", MosqueID: mosqueID, Timezone: "Europe/Ulyanovsk",
+				PublishedSnapshotID: "ulyanovsk-second-cathedral-2026-pilot-local-v2", Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"},
+			},
+			SourceOverrides: []domain.SourceOverride{{
+				ID: "source-override-ulyanovsk-2026-08", BaseSourceID: "official-rdumul-ulyanovsk-2026",
+				OverrideSourceID: "manual-rdumul-ulsk-2026-08", AppliedFields: []string{"dhuhr"},
+				ApprovalID: "approval-second-cathedral-mosque-ulyanovsk-2026-002", Effective: domain.DateRange{From: "2026-08-01", To: "2026-08-31"},
+			}},
+		},
+	}
+	config := validServiceConfig(t)
+	config.PairingFixtures = nil
+	config.Assignments = nil
+	config.AdminBackend = admin
+	config.RegistryBackend = registryBackend
+	service, err := NewService(config)
+	if err != nil {
+		t.Fatalf("NewService() error = %v", err)
+	}
+	server := httptest.NewServer(service.Handler())
+	t.Cleanup(server.Close)
+
+	searchURL := server.URL + "/v1/admin/mosques/" + mosqueID + "/setup/cities?q=" + url.QueryEscape("Ульяновск")
+	unauthorized := adminRequest(t, http.MethodGet, searchURL, nil, "", "")
+	if unauthorized.StatusCode != http.StatusUnauthorized {
+		t.Fatalf("unauthorized search = %d %s", unauthorized.StatusCode, unauthorized.Body)
+	}
+	search := adminRequest(t, http.MethodGet, searchURL, nil, "admin-bearer-token-valid-registry", "")
+	if search.StatusCode != http.StatusOK || search.Header.Get("Cache-Control") != "no-store" ||
+		!strings.Contains(search.Body, `"city_id":"`+cityID+`"`) || !strings.Contains(search.Body, `"federal_subject_code":"RU-ULY"`) ||
+		!strings.Contains(search.Body, `"timezone":"Europe/Ulyanovsk"`) || !strings.Contains(search.Body, `"geographic_license":"CC BY 4.0"`) {
+		t.Fatalf("city search = %d %s", search.StatusCode, search.Body)
+	}
+	if registryBackend.searchQuery != "Ульяновск" || admin.authorizeCalls != 1 {
+		t.Fatalf("search query/scope = %q/%d", registryBackend.searchQuery, admin.authorizeCalls)
+	}
+
+	resolveURL := server.URL + "/v1/admin/mosques/" + mosqueID + "/setup/prayer-policy?city_id=" + cityID + "&date=2026-08-30"
+	resolved := adminRequest(t, http.MethodGet, resolveURL, nil, "admin-bearer-token-valid-registry", "")
+	if resolved.StatusCode != http.StatusOK || !strings.Contains(resolved.Body, `"status":"resolved"`) ||
+		!strings.Contains(resolved.Body, `"tier":"exact_city_timetable"`) ||
+		!strings.Contains(resolved.Body, `"evidence_label":"CONFIRMED_PUBLIC"`) ||
+		!strings.Contains(resolved.Body, `"evidence_label":"UNKNOWN"`) ||
+		!strings.Contains(resolved.Body, `"published_snapshot_id":"ulyanovsk-second-cathedral-2026-pilot-local-v2"`) ||
+		!strings.Contains(resolved.Body, `"source_overrides":[{"id":"source-override-ulyanovsk-2026-08"`) ||
+		strings.Contains(resolved.Body, `"calculation_profile"`) {
+		t.Fatalf("policy resolution = %d %s", resolved.StatusCode, resolved.Body)
+	}
+	if registryBackend.resolveRequest.CityID != cityID || registryBackend.resolveRequest.MosqueID != mosqueID || registryBackend.resolveRequest.Date != "2026-08-30" {
+		t.Fatalf("resolve request = %#v", registryBackend.resolveRequest)
+	}
+
+	invalid := adminRequest(t, http.MethodGet, resolveURL+"&guess=true", nil, "admin-bearer-token-valid-registry", "")
+	if invalid.StatusCode != http.StatusBadRequest {
+		t.Fatalf("extra query parameter = %d %s", invalid.StatusCode, invalid.Body)
+	}
+	registryBackend.resolveErr = registrydomain.ErrPolicyUnavailable
+	unavailable := adminRequest(t, http.MethodGet, resolveURL, nil, "admin-bearer-token-valid-registry", "")
+	if unavailable.StatusCode != http.StatusConflict || !strings.Contains(unavailable.Body, `"code":"prayer_policy_unavailable"`) {
+		t.Fatalf("unavailable resolution = %d %s", unavailable.StatusCode, unavailable.Body)
+	}
+	registryBackend.resolveErr = registrydomain.ErrPolicyAmbiguous
+	ambiguous := adminRequest(t, http.MethodGet, resolveURL, nil, "admin-bearer-token-valid-registry", "")
+	if ambiguous.StatusCode != http.StatusConflict || !strings.Contains(ambiguous.Body, `"code":"prayer_policy_ambiguous"`) {
+		t.Fatalf("ambiguous resolution = %d %s", ambiguous.StatusCode, ambiguous.Body)
+	}
+}
+
 func TestPersistentAssignmentFeedsExistingDeviceReadContract(t *testing.T) {
 	t.Parallel()
 
@@ -957,6 +1069,25 @@ type recordingHTTPAdminBackend struct {
 	supportErr         error
 	supportMosqueID    string
 	supportDeviceID    string
+}
+
+type recordingHTTPRegistryBackend struct {
+	cities         []registrydomain.CitySearchResult
+	searchQuery    string
+	searchErr      error
+	resolution     registrydomain.Resolution
+	resolveRequest registrydomain.ResolveRequest
+	resolveErr     error
+}
+
+func (backend *recordingHTTPRegistryBackend) SearchCities(_ context.Context, query string) ([]registrydomain.CitySearchResult, error) {
+	backend.searchQuery = query
+	return append([]registrydomain.CitySearchResult(nil), backend.cities...), backend.searchErr
+}
+
+func (backend *recordingHTTPRegistryBackend) Resolve(_ context.Context, request registrydomain.ResolveRequest) (registrydomain.Resolution, error) {
+	backend.resolveRequest = request
+	return backend.resolution, backend.resolveErr
 }
 
 func (backend *recordingHTTPAdminBackend) AuthorizeAdminScope(_ AdminPrincipal, _ string, _ bool) error {

@@ -26,14 +26,14 @@ var (
 const RegistrySchemaVersion = 1
 
 type RevisionRecord struct {
-	ID                string
-	SchemaVersion     int
-	ParentRevisionID  string
-	CatalogRevisionID string
-	ContentSHA256     string
-	CreatedAt         time.Time
-	CreatedBy         string
-	Reason            string
+	ID                string    `json:"id"`
+	SchemaVersion     int       `json:"schema_version"`
+	ParentRevisionID  string    `json:"parent_revision_id,omitempty"`
+	CatalogRevisionID string    `json:"catalog_revision_id"`
+	ContentSHA256     string    `json:"content_sha256,omitempty"`
+	CreatedAt         time.Time `json:"created_at"`
+	CreatedBy         string    `json:"created_by"`
+	Reason            string    `json:"reason"`
 }
 
 type VerifiedApproval struct {
@@ -125,7 +125,7 @@ func (service *PersistentService) Stage(ctx context.Context, record RevisionReco
 	record.ContentSHA256 = contentSHA256
 	if record.CreatedAt.IsZero() {
 		record.CreatedAt = now
-	} else if !record.CreatedAt.Equal(record.CreatedAt.UTC()) || record.CreatedAt.After(now) {
+	} else if !isCanonicalUTC(record.CreatedAt) || record.CreatedAt.After(now) {
 		return fmt.Errorf("%w: created time is invalid", ErrRevisionInvalid)
 	}
 	if err := service.store.Stage(ctx, record, dataset); err != nil {
@@ -198,7 +198,7 @@ func (service *PersistentService) verifyExecutable(ctx context.Context, dataset 
 			return fmt.Errorf("verify approval %q: %w", approvalID, err)
 		}
 		if evidence.ID != approvalID || evidence.MosqueID != mosqueID || !validSHA256(evidence.EvidenceSHA256) ||
-			evidence.VerifiedAt.IsZero() || !evidence.VerifiedAt.Equal(evidence.VerifiedAt.UTC()) || evidence.VerifiedAt.After(service.now()) {
+			evidence.VerifiedAt.IsZero() || !isCanonicalUTC(evidence.VerifiedAt) || evidence.VerifiedAt.After(service.now()) {
 			return fmt.Errorf("%w: approval %q", ErrVerifiedReferenceMismatch, approvalID)
 		}
 		approvalByID[evidence.ID] = evidence
@@ -271,7 +271,8 @@ func (service *PersistentService) verifyExecutable(ctx context.Context, dataset 
 		}
 		if evidence.ID != timetable.PublishedSnapshotID || evidence.MosqueID != timetable.MosqueID || evidence.MosqueID != policy.MosqueIDs[0] ||
 			evidence.Timezone != timetable.Timezone || evidence.Effective.From > timetable.Effective.From || evidence.Effective.To < timetable.Effective.To ||
-			!validDateRange(evidence.Effective) || !validSHA256(evidence.PayloadSHA256) || evidence.SigningKeyID == "" || evidence.VerifiedAt.IsZero() || evidence.VerifiedAt.After(service.now()) {
+			!validDateRange(evidence.Effective) || !validSHA256(evidence.PayloadSHA256) || evidence.SigningKeyID == "" || evidence.VerifiedAt.IsZero() ||
+			!isCanonicalUTC(evidence.VerifiedAt) || evidence.VerifiedAt.After(service.now()) {
 			return nil, nil, fmt.Errorf("%w: snapshot %q", ErrVerifiedReferenceMismatch, timetable.PublishedSnapshotID)
 		}
 		snapshotByID[evidence.ID] = evidence
@@ -289,12 +290,29 @@ func (service *PersistentService) verifyExecutable(ctx context.Context, dataset 
 	return approvals, snapshots, nil
 }
 
+func isCanonicalUTC(value time.Time) bool {
+	return value.Location() == time.UTC
+}
+
 func (service *PersistentService) ActiveRevision(ctx context.Context) (RevisionRecord, error) {
 	if service == nil || service.store == nil {
 		return RevisionRecord{}, ErrRevisionUnavailable
 	}
 	record, _, err := service.store.Active(ctx)
 	return record, err
+}
+
+func (service *PersistentService) SearchCities(ctx context.Context, query string) ([]CitySearchResult, error) {
+	if service == nil || service.store == nil {
+		return nil, ErrRevisionUnavailable
+	}
+	searcher, ok := service.store.(interface {
+		SearchActiveCities(context.Context, string) ([]CitySearchResult, error)
+	})
+	if !ok {
+		return nil, ErrRevisionUnavailable
+	}
+	return searcher.SearchActiveCities(ctx, query)
 }
 
 func (service *PersistentService) Resolve(ctx context.Context, request ResolveRequest) (Resolution, error) {

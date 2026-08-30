@@ -81,6 +81,24 @@ func TestServiceRejectsUnsupportedRevisionSchema(t *testing.T) {
 	}
 }
 
+func TestServiceRejectsNonCanonicalUTCRevisionTimestamp(t *testing.T) {
+	store := newFakeRevisionStore()
+	service, err := NewPersistentService(PersistentServiceConfig{
+		Store: store, ApprovalVerifier: &fakeApprovalVerifier{}, SnapshotVerifier: &fakeSnapshotVerifier{}, Now: testNow,
+	})
+	if err != nil {
+		t.Fatalf("NewPersistentService() error = %v", err)
+	}
+	revision := RevisionRecord{
+		ID: "revision-non-utc", SchemaVersion: RegistrySchemaVersion, CatalogRevisionID: "catalog-1",
+		CreatedAt: time.Date(2026, 8, 30, 8, 0, 0, 0, time.FixedZone("UTC+3", 3*60*60)),
+		CreatedBy: "actor-1", Reason: "non-canonical timestamp",
+	}
+	if err := service.Stage(t.Context(), revision, executableDataset()); !errors.Is(err, ErrRevisionInvalid) {
+		t.Fatalf("Stage() error = %v, want invalid revision", err)
+	}
+}
+
 func TestServiceFailsClosedBeforeActivation(t *testing.T) {
 	tests := []struct {
 		name    string
@@ -113,6 +131,24 @@ func TestServiceFailsClosedBeforeActivation(t *testing.T) {
 			mutate: func(_ *Dataset, _ *fakeApprovalVerifier, snapshots *fakeSnapshotVerifier) {
 				value := snapshots.evidence[testSnapshotID]
 				value.MosqueID = "other-mosque"
+				snapshots.evidence[testSnapshotID] = value
+			},
+			wantErr: ErrVerifiedReferenceMismatch,
+		},
+		{
+			name: "approval evidence non canonical UTC",
+			mutate: func(_ *Dataset, approvals *fakeApprovalVerifier, _ *fakeSnapshotVerifier) {
+				value := approvals.evidence[testApprovalID]
+				value.VerifiedAt = time.Date(2026, 8, 30, 8, 0, 0, 0, time.FixedZone("UTC+3", 3*60*60))
+				approvals.evidence[testApprovalID] = value
+			},
+			wantErr: ErrVerifiedReferenceMismatch,
+		},
+		{
+			name: "snapshot evidence non canonical UTC",
+			mutate: func(_ *Dataset, _ *fakeApprovalVerifier, snapshots *fakeSnapshotVerifier) {
+				value := snapshots.evidence[testSnapshotID]
+				value.VerifiedAt = time.Date(2026, 8, 30, 8, 0, 0, 0, time.FixedZone("UTC+3", 3*60*60))
 				snapshots.evidence[testSnapshotID] = value
 			},
 			wantErr: ErrVerifiedReferenceMismatch,

@@ -154,6 +154,14 @@ images. Неполная конфигурация не может заменит
 spec кнопки Settings: rounded-square glass, белая gear, reference-normalized
 позиция/размер и один gold focus без дополнительной белой рамки.
 
+Phase 5 T035–T037 добавляет отдельно от TV лицензированный GeoNames RU каталог
+городов (CC BY 4.0), immutable PostgreSQL registry revisions и первый
+persisted vertical slice Ульяновска. Аутентифицированный setup API возвращает
+все одноимённые города для явного выбора и резолвит только approved
+mosque-bound policy. Существующий signed USB-pilot snapshot не пересоздаётся и
+не меняется; география по-прежнему не назначает религиозную authority, а
+nationwide fallback отсутствует.
+
 ## 5. Запрет на гигантскую первую задачу
 
 Не просить Codex одним промптом реализовать TV, backend, админку, nationwide-парсинг и публикацию. Каждая задача должна иметь один проверяемый результат, явные исключения и команды проверки.

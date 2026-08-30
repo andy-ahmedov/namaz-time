@@ -24,6 +24,7 @@ import (
 
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
+	"github.com/andy-ahmedov/namaz-time/internal/registry"
 	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
 	"github.com/andy-ahmedov/namaz-time/internal/trust"
 )
@@ -79,8 +80,14 @@ type ServiceConfig struct {
 	PublicationLedgerHeadSHA256 string
 	PairingBackend              PairingBackend
 	AdminBackend                AdminFleetBackend
+	RegistryBackend             AdminRegistryBackend
 	BackendTimeout              time.Duration
 	Now                         func() time.Time
+}
+
+type AdminRegistryBackend interface {
+	SearchCities(context.Context, string) ([]registry.CitySearchResult, error)
+	Resolve(context.Context, registry.ResolveRequest) (registry.Resolution, error)
 }
 
 type DeviceManifest struct {
@@ -111,29 +118,31 @@ type snapshotRecord struct {
 }
 
 type Service struct {
-	mu             sync.Mutex
-	pairings       []*pairingRecord
-	assignments    map[string]DeviceAssignment
-	snapshots      map[string]snapshotRecord
-	tokens         map[string]string
-	mosques        map[string]MosqueIdentity
-	publicBase     *url.URL
-	handler        http.Handler
-	pairingBackend PairingBackend
-	adminBackend   AdminFleetBackend
-	backendTimeout time.Duration
-	now            func() time.Time
+	mu              sync.Mutex
+	pairings        []*pairingRecord
+	assignments     map[string]DeviceAssignment
+	snapshots       map[string]snapshotRecord
+	tokens          map[string]string
+	mosques         map[string]MosqueIdentity
+	publicBase      *url.URL
+	handler         http.Handler
+	pairingBackend  PairingBackend
+	adminBackend    AdminFleetBackend
+	registryBackend AdminRegistryBackend
+	backendTimeout  time.Duration
+	now             func() time.Time
 }
 
 func NewService(config ServiceConfig) (*Service, error) {
 	service := &Service{
-		assignments:    make(map[string]DeviceAssignment, len(config.Assignments)),
-		snapshots:      make(map[string]snapshotRecord, len(config.Snapshots)),
-		tokens:         make(map[string]string, len(config.PairingFixtures)),
-		mosques:        make(map[string]MosqueIdentity, len(config.PairingFixtures)),
-		pairingBackend: config.PairingBackend,
-		adminBackend:   config.AdminBackend,
-		now:            config.Now,
+		assignments:     make(map[string]DeviceAssignment, len(config.Assignments)),
+		snapshots:       make(map[string]snapshotRecord, len(config.Snapshots)),
+		tokens:          make(map[string]string, len(config.PairingFixtures)),
+		mosques:         make(map[string]MosqueIdentity, len(config.PairingFixtures)),
+		pairingBackend:  config.PairingBackend,
+		adminBackend:    config.AdminBackend,
+		registryBackend: config.RegistryBackend,
+		now:             config.Now,
 	}
 	if service.now == nil {
 		service.now = time.Now
@@ -156,6 +165,9 @@ func NewService(config ServiceConfig) (*Service, error) {
 	}
 	if config.AdminBackend != nil && len(config.Assignments) > 0 {
 		return nil, errors.New("configure assignment: admin backend and static assignments are mutually exclusive")
+	}
+	if config.RegistryBackend != nil && config.AdminBackend == nil {
+		return nil, errors.New("configure registry: admin backend is required")
 	}
 	if config.PublicBaseURL != "" {
 		publicBase, err := parsePublicBaseURL(config.PublicBaseURL)
@@ -267,6 +279,9 @@ func (s *Service) Close() {
 	if closer, ok := s.pairingBackend.(interface{ Close() }); ok {
 		closer.Close()
 	}
+	if closer, ok := s.registryBackend.(interface{ Close() }); ok {
+		closer.Close()
+	}
 }
 
 func (s *Service) routes() http.Handler {
@@ -282,6 +297,8 @@ func (s *Service) routes() http.Handler {
 	mux.HandleFunc("PUT /v1/admin/mosques/{mosqueId}/devices/{deviceId}/rollout-group", s.handleAdminSetRolloutGroup)
 	mux.HandleFunc("PUT /v1/admin/mosques/{mosqueId}/rollout-groups/{groupId}/assignment", s.handleAdminAssignRolloutGroup)
 	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/devices/{deviceId}/support-bundle", s.handleAdminDeviceSupportBundle)
+	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/setup/cities", s.handleAdminCitySearch)
+	mux.HandleFunc("GET /v1/admin/mosques/{mosqueId}/setup/prayer-policy", s.handleAdminPrayerPolicy)
 	return securityHeaders(mux)
 }
 
@@ -539,6 +556,43 @@ type adminRolloutGroupRequest struct {
 	Reason       string  `json:"reason"`
 }
 
+type adminCityCandidate struct {
+	CityID             string   `json:"city_id"`
+	CanonicalName      string   `json:"canonical_name"`
+	Aliases            []string `json:"aliases"`
+	FederalSubjectCode string   `json:"federal_subject_code"`
+	FederalSubjectName string   `json:"federal_subject_name"`
+	SettlementType     string   `json:"settlement_type"`
+	Timezone           string   `json:"timezone"`
+	Latitude           float64  `json:"latitude"`
+	Longitude          float64  `json:"longitude"`
+	GeographicSourceID string   `json:"geographic_source_id"`
+	GeographicRevision string   `json:"geographic_revision"`
+	GeographicLicense  string   `json:"geographic_license"`
+}
+
+type adminAuthorityResolution struct {
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Branch        string `json:"branch,omitempty"`
+	Website       string `json:"website,omitempty"`
+	EvidenceLabel string `json:"evidence_label"`
+}
+
+type adminPrayerPolicyResponse struct {
+	SchemaVersion      string                     `json:"schema_version"`
+	Status             string                     `json:"status"`
+	Tier               registry.ResolutionTier    `json:"tier"`
+	City               adminCityCandidate         `json:"city"`
+	Scope              domain.GeographicScope     `json:"scope"`
+	Authorities        []adminAuthorityResolution `json:"authorities"`
+	Source             domain.PrayerSource        `json:"source"`
+	Policy             domain.PrayerPolicy        `json:"policy"`
+	TimeTable          *domain.TimeTable          `json:"timetable,omitempty"`
+	CalculationProfile *domain.CalculationProfile `json:"calculation_profile,omitempty"`
+	SourceOverrides    []domain.SourceOverride    `json:"source_overrides"`
+}
+
 func (s *Service) handleAdminIssuePairing(writer http.ResponseWriter, request *http.Request) {
 	writer.Header().Set("Cache-Control", "no-store")
 	principal, ok := s.authenticateAdminRequest(writer, request)
@@ -592,6 +646,140 @@ func (s *Service) handleAdminListDevices(writer http.ResponseWriter, request *ht
 	writeJSON(writer, http.StatusOK, struct {
 		Devices []FleetDevice `json:"devices"`
 	}{Devices: devices})
+}
+
+func (s *Service) handleAdminCitySearch(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	if s.registryBackend == nil {
+		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
+		return
+	}
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	query, ok := exactQueryValue(request, "q", 200)
+	if !ok || len(request.URL.Query()) != 1 {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	if err := s.adminBackend.AuthorizeAdminScope(principal, request.PathValue("mosqueId"), false); err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	results, err := s.registryBackend.SearchCities(backendContext, query)
+	if err != nil {
+		writeRegistryOperationError(writer, err)
+		return
+	}
+	candidates := make([]adminCityCandidate, 0, len(results))
+	for _, result := range results {
+		candidates = append(candidates, projectAdminCity(result))
+	}
+	writeJSON(writer, http.StatusOK, struct {
+		SchemaVersion string               `json:"schema_version"`
+		Query         string               `json:"query"`
+		Candidates    []adminCityCandidate `json:"candidates"`
+	}{SchemaVersion: "city-search/v1", Query: query, Candidates: candidates})
+}
+
+func (s *Service) handleAdminPrayerPolicy(writer http.ResponseWriter, request *http.Request) {
+	writer.Header().Set("Cache-Control", "no-store")
+	if s.registryBackend == nil {
+		writeAPIError(writer, http.StatusNotFound, "admin_resource_not_found", false)
+		return
+	}
+	principal, ok := s.authenticateAdminRequest(writer, request)
+	if !ok {
+		return
+	}
+	cityID, cityOK := exactQueryValue(request, "city_id", 160)
+	date, dateOK := exactQueryValue(request, "date", len(time.DateOnly))
+	parsedDate, dateErr := time.Parse(time.DateOnly, date)
+	if !cityOK || !dateOK || len(request.URL.Query()) != 2 || dateErr != nil || parsedDate.Format(time.DateOnly) != date {
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+		return
+	}
+	mosqueID := request.PathValue("mosqueId")
+	if err := s.adminBackend.AuthorizeAdminScope(principal, mosqueID, false); err != nil {
+		writeAdminOperationError(writer, err)
+		return
+	}
+	backendContext, cancel := context.WithTimeout(request.Context(), s.backendTimeout)
+	defer cancel()
+	resolved, err := s.registryBackend.Resolve(backendContext, registry.ResolveRequest{CityID: cityID, MosqueID: mosqueID, Date: date})
+	if err != nil {
+		writeRegistryOperationError(writer, err)
+		return
+	}
+	authorities := make([]adminAuthorityResolution, 0, len(resolved.Authorities))
+	for _, authority := range resolved.Authorities {
+		authorities = append(authorities, adminAuthorityResolution{
+			ID: authority.ID, Name: authority.Name, Branch: authority.Branch,
+			Website: authority.Website, EvidenceLabel: authority.EvidenceLabel,
+		})
+	}
+	var timetable *domain.TimeTable
+	var calculationProfile *domain.CalculationProfile
+	if resolved.Policy.Kind == domain.PrayerPolicyTimeTable {
+		timetable = &resolved.TimeTable
+	} else {
+		calculationProfile = &resolved.CalculationProfile
+	}
+	overrides := append([]domain.SourceOverride(nil), resolved.SourceOverrides...)
+	if overrides == nil {
+		overrides = []domain.SourceOverride{}
+	}
+	writeJSON(writer, http.StatusOK, adminPrayerPolicyResponse{
+		SchemaVersion: "prayer-policy-resolution/v1", Status: "resolved", Tier: resolved.Tier,
+		City:  projectAdminCity(registry.CitySearchResult{City: resolved.City, Region: resolved.Region}),
+		Scope: resolved.Scope, Authorities: authorities, Source: resolved.Source,
+		Policy: resolved.Policy, TimeTable: timetable, CalculationProfile: calculationProfile,
+		SourceOverrides: overrides,
+	})
+}
+
+func projectAdminCity(result registry.CitySearchResult) adminCityCandidate {
+	aliases := append([]string(nil), result.City.Aliases...)
+	if aliases == nil {
+		aliases = []string{}
+	}
+	return adminCityCandidate{
+		CityID: result.City.ID, CanonicalName: result.City.Name, Aliases: aliases,
+		FederalSubjectCode: result.Region.FederalSubjectCode, FederalSubjectName: result.Region.Name,
+		SettlementType: result.City.SettlementType, Timezone: result.City.Timezone,
+		Latitude: result.City.Latitude, Longitude: result.City.Longitude,
+		GeographicSourceID: result.City.GeographicSourceID, GeographicRevision: result.City.GeographicRevision,
+		GeographicLicense: result.City.GeographicLicense,
+	}
+}
+
+func exactQueryValue(request *http.Request, name string, maximumRunes int) (string, bool) {
+	query := request.URL.Query()
+	values, exists := query[name]
+	if !exists || len(values) != 1 {
+		return "", false
+	}
+	value := values[0]
+	if value == "" || strings.TrimSpace(value) != value || len([]rune(value)) > maximumRunes || strings.ContainsAny(value, "\x00\r\n") {
+		return "", false
+	}
+	return value, true
+}
+
+func writeRegistryOperationError(writer http.ResponseWriter, err error) {
+	switch {
+	case errors.Is(err, registry.ErrInvalidResolveRequest), errors.Is(err, registry.ErrRevisionInvalid):
+		writeAPIError(writer, http.StatusBadRequest, "invalid_request", false)
+	case errors.Is(err, registry.ErrPolicyAmbiguous):
+		writeAPIError(writer, http.StatusConflict, "prayer_policy_ambiguous", false)
+	case errors.Is(err, registry.ErrPolicyUnavailable), errors.Is(err, registry.ErrRevisionUnavailable):
+		writeAPIError(writer, http.StatusConflict, "prayer_policy_unavailable", false)
+	default:
+		writeAPIError(writer, http.StatusInternalServerError, "internal_error", true)
+	}
 }
 
 func (s *Service) handleAdminDeviceSupportBundle(writer http.ResponseWriter, request *http.Request) {

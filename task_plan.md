@@ -6,7 +6,7 @@ Determine, with clean-room evidence, how 1Muslim 5.9.5 resolves prayer times (es
 
 ## Current Phase
 
-Phase 9 — T037 Ulyanovsk persisted end-to-end (`in_progress`)
+Phase 10 — T039 operator workflow (`pending checkpoint after T037 commit`)
 
 ## Phases
 
@@ -117,16 +117,17 @@ Phase 9 — T037 Ulyanovsk persisted end-to-end (`in_progress`)
 - [x] Add migrations and rollback; enforce approval, ambiguity, stale/unavailable and no-silent-fallback semantics.
 - [x] Prove deterministic registry revisions and revision rollback.
 - [x] Update docs/task status and run PostgreSQL/checkpoint gates.
-- [ ] Create the local T036 commit before starting T037 implementation edits.
-- **Status:** in_progress
+- [x] Create the local T036 commit before starting T037 implementation edits.
+- **Status:** complete
 
 ### Phase 9: T037 Ulyanovsk persisted end-to-end
 
-- [ ] Replace the hard-coded executable Ulyanovsk runtime seed with imported/persisted catalog and registry records.
-- [ ] Add the minimal setup/admin search API proving city → RU-ULY → authority/source/policy → timetable → mosque → existing signed snapshot.
-- [ ] Prove snapshot bytes/ID/hash/signature unchanged, USB pilot remains compatible, rollback is non-destructive and duplicate/unknown/ambiguous city is not auto-selected.
-- [ ] Update docs/task status, run checkpoint gates and create a local T037 commit.
-- **Status:** pending
+- [x] Replace the hard-coded executable Ulyanovsk runtime seed with imported/persisted catalog and registry records.
+- [x] Add the minimal setup/admin search API proving city → RU-ULY → authority/source/policy → timetable → mosque → existing signed snapshot.
+- [x] Prove snapshot bytes/ID/hash/signature unchanged, USB pilot remains compatible, rollback is non-destructive and duplicate/unknown/ambiguous city is not auto-selected.
+- [x] Update docs/task status and run checkpoint gates.
+- [ ] Create the local T037 commit before T039 implementation edits.
+- **Status:** complete pending checkpoint commit
 
 ### Phase 10: T039 operator workflow (conditional)
 

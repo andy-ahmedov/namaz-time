@@ -826,6 +826,22 @@ resolves the same `effective-ulyanovsk-2026-v1` and
 `ulyanovsk-second-cathedral-2026-pilot-local-v2`; signed bytes remain identical;
 failure leaves the existing pilot usable.
 
+**Result:** completed locally on 2026-08-30. The executable in-memory seed was
+removed and replaced by strict policy bindings targeting the exact pinned
+GeoNames catalog revision/hash. A bounded operator command verifies the real
+signed mosque approval and publication/trust chain before immutable PostgreSQL
+activation. The authenticated setup API returns every exact city candidate and
+resolves only an explicit canonical city/mosque/date. A real PostgreSQL/HTTP
+test proves `Ульяновск` → canonical `city-4adc…3a4c` → `RU-ULY` → retained
+`CONFIRMED_PUBLIC`/`UNKNOWN` authority identities → existing effective source,
+policy, timetable, mosque and signed snapshot; successor activation and
+rollback leave the snapshot ID, raw SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`,
+signing key and bytes unchanged. Duplicate/unknown cities do not auto-select;
+ambiguous/unavailable policy errors fail closed. Go, full-catalog preflight,
+PostgreSQL migration/restore, Android pilot unit and docs gates pass. No
+schedule row, signature, TV UI/Room path or nationwide source coverage changed.
+
 ## T038 — second official regional source adapter
 
 **Goal:** prove the architecture on one non-Ulyanovsk locality using a directly

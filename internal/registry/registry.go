@@ -24,15 +24,15 @@ type Registry struct {
 }
 
 type Dataset struct {
-	Cities              []domain.City
-	Regions             []domain.Region
-	Scopes              []domain.GeographicScope
-	Authorities         []domain.PrayerAuthority
-	Sources             []domain.PrayerSource
-	Policies            []domain.PrayerPolicy
-	CalculationProfiles []domain.CalculationProfile
-	TimeTables          []domain.TimeTable
-	SourceOverrides     []domain.SourceOverride
+	Cities              []domain.City               `json:"cities"`
+	Regions             []domain.Region             `json:"regions"`
+	Scopes              []domain.GeographicScope    `json:"scopes"`
+	Authorities         []domain.PrayerAuthority    `json:"authorities"`
+	Sources             []domain.PrayerSource       `json:"sources"`
+	Policies            []domain.PrayerPolicy       `json:"policies"`
+	CalculationProfiles []domain.CalculationProfile `json:"calculation_profiles"`
+	TimeTables          []domain.TimeTable          `json:"timetables"`
+	SourceOverrides     []domain.SourceOverride     `json:"source_overrides"`
 }
 
 type ResolveRequest struct {
@@ -117,76 +117,6 @@ func cloneDataset(dataset Dataset) Dataset {
 		cloned.SourceOverrides[index].AppliedFields = append([]string(nil), cloned.SourceOverrides[index].AppliedFields...)
 	}
 	return cloned
-}
-
-// NewPilotRegistry returns the first curated city entry. The coordinates are
-// from OpenStreetMap relation 2049867, not from a competitor dataset.
-func NewPilotRegistry() Registry {
-	const (
-		cityID      = "ru-uly-ulyanovsk"
-		regionID    = "ru-uly"
-		scopeID     = "scope-ulyanovsk-city"
-		authorityID = "rdum-ulyanovsk-oblast"
-		sourceID    = "effective-ulyanovsk-2026-v1"
-		timeTableID = "timetable-ulyanovsk-second-cathedral-2026"
-		mosqueID    = "second-cathedral-mosque-ulyanovsk"
-	)
-	dataset := Dataset{
-		Cities: []domain.City{{
-			ID:                "ru-uly-ulyanovsk",
-			Name:              "Ульяновск",
-			Aliases:           []string{"Ulyanovsk"},
-			CountryCode:       "RU",
-			RegionID:          "ru-uly",
-			Latitude:          54.3150278,
-			Longitude:         48.4033730,
-			Timezone:          "Europe/Ulyanovsk",
-			GeographicSource:  "https://www.openstreetmap.org/relation/2049867",
-			GeographicLicense: "OpenStreetMap contributors, ODbL 1.0",
-		}},
-		Regions: []domain.Region{{
-			ID: regionID, Name: "Ульяновская область", CountryCode: "RU", FederalSubjectCode: "RU-ULY",
-		}},
-		Scopes: []domain.GeographicScope{{
-			ID: scopeID, Kind: domain.GeographicScopeCity, CityID: cityID, RegionID: regionID,
-			Description: "Second Cathedral Mosque of Ulyanovsk; Gregorian 2026",
-		}},
-		Authorities: []domain.PrayerAuthority{{
-			ID: authorityID, Name: "Региональное духовное управление мусульман Ульяновской области в составе ЦДУМ России",
-			Branch: "Годовой календарь времени намазов для г. Ульяновска на 2026 год", Website: "https://rdumul.ru/", EvidenceLabel: "CONFIRMED_PUBLIC",
-		}, {
-			ID: "rdumul-attributed-publisher-unconfirmed", Name: "rdumul.ru-attributed schedule publisher (legal name unconfirmed)",
-			Branch: "Ulyanovsk schedule shown in the supplied image", Website: "https://rdumul.ru/", EvidenceLabel: "UNKNOWN",
-		}},
-		Sources: []domain.PrayerSource{
-			{ID: sourceID, Kind: domain.ProviderKindManualImport, AuthorityIDs: []string{authorityID, "rdumul-attributed-publisher-unconfirmed"}, GeographicScopeID: scopeID},
-			{ID: "official-rdumul-ulyanovsk-2026", Kind: domain.ProviderKindOfficialFile, AuthorityIDs: []string{authorityID}, GeographicScopeID: scopeID, CanonicalURL: "https://rdumul.ru/"},
-			{ID: "manual-rdumul-ulsk-2026-08", Kind: domain.ProviderKindManualImport, AuthorityIDs: []string{"rdumul-attributed-publisher-unconfirmed"}, GeographicScopeID: scopeID},
-		},
-		Policies: []domain.PrayerPolicy{{
-			ID: "policy-ulyanovsk-second-cathedral-2026", Kind: domain.PrayerPolicyTimeTable,
-			GeographicScopeID: scopeID, AuthorityIDs: []string{authorityID, "rdumul-attributed-publisher-unconfirmed"}, SourceID: sourceID, TimeTableID: timeTableID,
-			MosqueIDs: []string{mosqueID}, Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"},
-			ApprovalID: "approval-second-cathedral-mosque-ulyanovsk-2026-002",
-		}},
-		TimeTables: []domain.TimeTable{{
-			ID: timeTableID, SourceID: sourceID, GeographicScopeID: scopeID, MosqueID: mosqueID,
-			Timezone: "Europe/Ulyanovsk", Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"},
-			PublishedSnapshotID: "ulyanovsk-second-cathedral-2026-pilot-local-v2",
-			SourceOverrideIDs:   []string{"source-override-ulyanovsk-2026-08"},
-		}},
-		SourceOverrides: []domain.SourceOverride{{
-			ID: "source-override-ulyanovsk-2026-08", BaseSourceID: "official-rdumul-ulyanovsk-2026",
-			OverrideSourceID: "manual-rdumul-ulsk-2026-08", Effective: domain.DateRange{From: "2026-08-01", To: "2026-08-31"},
-			AppliedFields: []string{"fajr", "sunrise", "zenith", "dhuhr", "dhuhr_congregation", "asr", "maghrib", "isha", "hijri_day", "hijri_month", "hijri_year", "flags"},
-			ApprovalID:    "approval-second-cathedral-mosque-ulyanovsk-2026-002",
-		}},
-	}
-	registry, err := New(dataset)
-	if err != nil {
-		panic(err)
-	}
-	return registry
 }
 
 func validateDataset(dataset Dataset) error {

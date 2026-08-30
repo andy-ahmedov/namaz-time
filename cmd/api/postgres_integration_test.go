@@ -36,6 +36,7 @@ func TestRuntimeLoadsRestartSafePostgresPairingWithoutLiteralSecrets(t *testing.
 	config := map[string]any{
 		"public_base_url":                 "https://api.example.invalid",
 		"pairing_backend":                 "postgres",
+		"registry_backend":                "postgres",
 		"database_url_env":                "NAMAZ_DATABASE_URL_TEST",
 		"pairing_rate_limit_key_env":      "NAMAZ_PAIR_RATE_KEY_TEST",
 		"admin_idempotency_key_env":       "NAMAZ_ADMIN_IDEMPOTENCY_KEY_TEST",
@@ -152,6 +153,27 @@ func TestRuntimeLoadsRestartSafePostgresPairingWithoutLiteralSecrets(t *testing.
 	}
 	if adminIssueResponse.StatusCode != http.StatusCreated || !bytes.Contains(adminIssueBody, []byte("pairing_code")) {
 		t.Fatalf("admin issue response = %d %s", adminIssueResponse.StatusCode, adminIssueBody)
+	}
+	registrySearchRequest, err := http.NewRequest(
+		http.MethodGet,
+		server.URL+"/v1/admin/mosques/mosque-runtime-0001/setup/cities?q=Ulyanovsk",
+		nil,
+	)
+	if err != nil {
+		t.Fatalf("create registry search request: %v", err)
+	}
+	registrySearchRequest.Header.Set("Authorization", "Bearer "+adminToken)
+	registrySearchResponse, err := http.DefaultClient.Do(registrySearchRequest)
+	if err != nil {
+		t.Fatalf("registry search request: %v", err)
+	}
+	registrySearchBody, readErr := io.ReadAll(registrySearchResponse.Body)
+	registrySearchResponse.Body.Close()
+	if readErr != nil {
+		t.Fatalf("read registry search response: %v", readErr)
+	}
+	if registrySearchResponse.StatusCode != http.StatusOK || !bytes.Contains(registrySearchBody, []byte(`"candidates":[]`)) {
+		t.Fatalf("empty active registry search response = %d %s", registrySearchResponse.StatusCode, registrySearchBody)
 	}
 	pairResponse := postPair(t, server.URL, issued.Code)
 	server.Close()
@@ -312,6 +334,13 @@ func createLeastPrivilegeRuntimeRole(t *testing.T, ownerPool *pgxpool.Pool, owne
 		GRANT SELECT ON schema_migrations, mosques, devices, pairing_codes,
 			pairing_rate_buckets, audit_events, admin_actors, admin_credentials,
 			admin_memberships, device_assignments, admin_requests, device_health TO namaz_runtime_test;
+		GRANT SELECT ON registry_revisions, registry_regions, registry_cities,
+			registry_city_aliases, registry_scopes, registry_authorities, registry_sources,
+			registry_source_authorities, registry_policies, registry_policy_authorities,
+			registry_policy_mosques, registry_calculation_profiles, registry_timetables,
+			registry_source_overrides, registry_source_override_fields,
+			registry_timetable_overrides, registry_active_revision, registry_audit_events,
+			registry_verified_approvals, registry_verified_snapshots TO namaz_runtime_test;
 		GRANT INSERT ON devices, pairing_codes, pairing_rate_buckets, audit_events,
 			device_assignments, admin_requests, device_health TO namaz_runtime_test;
 		GRANT UPDATE ON devices, pairing_codes, pairing_rate_buckets,

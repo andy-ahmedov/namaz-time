@@ -1,7 +1,7 @@
 # Persisted executable prayer-policy registry
 
 Date: 2026-08-30
-Status: T036 implemented; no nationwide prayer-source rollout
+Status: T037 verified-reference adapters and first persisted vertical slice implemented; no nationwide prayer-source rollout
 
 ## Outcome
 
@@ -49,7 +49,11 @@ validated Dataset
 An ID is not proof. `ApprovalReferenceVerifier` and
 `SnapshotReferenceVerifier` return independently verified evidence. Activation
 records its hashes and timestamps; it cannot manufacture approval or signature
-state. T037 supplies adapters to the existing Ulyanovsk evidence chain.
+state. T037 supplies `ArtifactReferenceVerifier`, which independently checks
+the signed mosque approval receipt, approval trust bundle, production
+publication trust transition, test/staging/production key separation,
+publication admission, exact snapshot identity and exact raw payload hash.
+Manifest paths and hashes are pinned; private keys are neither read nor stored.
 
 Activation fails closed when:
 
@@ -79,6 +83,14 @@ the active pointer to it while appending a `rollback` audit event. It does not
 delete a newer revision, mutate a timetable, rewrite an approval, or alter a
 published signed snapshot.
 
+`cmd/registryctl` is the bounded operator entry point. `validate` composes a
+strict reviewed policy-binding document with the exact catalog revision/hash
+and verifies pinned reference artifacts without a database. `apply` reads the
+database URL only from a named environment variable, stages the immutable
+revision, re-verifies executable references and activates it with an explicit
+actor/reason. The 96 MB generated geographic catalog and raw source dumps stay
+outside Git.
+
 Migration rollback from v6 to v5 removes only registry tables/functions and
 preserves the existing fleet tables. This is a schema rollback, not a recovery
 mechanism for an active production registry; operators must export/retain the
@@ -100,6 +112,13 @@ Results are deterministically ordered by federal-subject code, canonical name
 and city ID. `UniqueActiveCity` succeeds only when exactly one result exists;
 zero or multiple matches never select a city automatically.
 
+The API runtime opens a separate read-only registry reader only when
+`registry_backend` is `postgres`. Authenticated setup search returns all exact
+candidates with federal subject, timezone and geographic provenance. Policy
+resolution requires the selected `city_id`, mosque path and local Gregorian
+date; unavailable and ambiguous results fail with stable `409` codes and do
+not alter the active registry or any device assignment.
+
 ## Verification evidence
 
 - `CONFIRMED_RUNTIME`: the local Docker-backed PostgreSQL 18 gate applies v6,
@@ -109,5 +128,10 @@ zero or multiple matches never select a city automatically.
   without deleting fleet state, and reapplies v6.
 - `CONFIRMED_RUNTIME`: the backup/restore drill restores v6 and verifies the
   least-privileged runtime role described above.
+- `CONFIRMED_RUNTIME`: the T037 PostgreSQL/HTTP gate activates the real
+  Ulyanovsk binding against its real approval/publication evidence, resolves
+  `Ульяновск` to `RU-ULY`, the Second Cathedral Mosque and the existing signed
+  snapshot, activates a successor revision, rolls back and proves exact
+  snapshot bytes/SHA-256 remain unchanged.
 - `UNKNOWN`: production backup retention, RPO/RTO and external approval/source
   store recovery have not been exercised; the local drill makes no such claim.

@@ -192,7 +192,7 @@ a retryable `500` instead of exhausting the connection pool indefinitely.
 The private JSON config never accepts a literal `database_url`. Migrations run
 out of band through the short-lived `cmd/migrate` process with a schema-owner
 credential. API startup carries only the least-privileged runtime DSN, opens a
-bounded pgx pool, verifies the exact current migration ledger (v4) without
+bounded pgx pool, verifies the exact current migration ledger (v6) without
 changing it, and fails
 closed if the database, exact schema or key is unavailable.
 Remote PostgreSQL endpoints must use certificate and hostname verification
@@ -267,3 +267,31 @@ has no bearer/pairing secret, installation public key, capability list,
 snapshot URL, network/account/location field, arbitrary map, log or history.
 `generated_at` and health `received_at` are server times; `reported_at` and
 `reported_snapshot_id` remain explicitly non-authoritative device claims.
+
+## T037 persisted city/source setup reads
+
+The optional PostgreSQL registry reader adds two authenticated, mosque-scoped
+read endpoints:
+
+- `GET /v1/admin/mosques/{mosqueId}/setup/cities?q=…`;
+- `GET /v1/admin/mosques/{mosqueId}/setup/prayer-policy?city_id=…&date=…`.
+
+The first returns every exact canonical-name or explicit-alias match in
+deterministic subject/name/ID order. It does not claim uniqueness or select a
+duplicate. The second requires an operator-selected canonical city ID, the
+authorized mosque path and a local Gregorian date. It returns the explicit
+scope, authority evidence labels, approved source, policy and existing
+timetable/snapshot reference from the active immutable registry revision.
+
+Both endpoints require the existing admin bearer and mosque read membership,
+return `Cache-Control: no-store`, reject unknown query parameters and make no
+write or publication side effect. Same-tier ambiguity returns
+`prayer_policy_ambiguous`; absent, stale, unavailable or inactive state returns
+`prayer_policy_unavailable`. Neither condition chooses a neighboring city,
+generic Russia method or another source, and neither changes the TV's
+last-known-good snapshot.
+
+Runtime access is opt-in with `registry_backend: "postgres"` and is valid only
+with `pairing_backend: "postgres"`. The API role reads the active registry;
+the separate `registryctl apply` operator command owns staged revision writes
+and explicit activation.

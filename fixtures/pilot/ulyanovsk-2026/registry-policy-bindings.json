@@ -1,0 +1,136 @@
+{
+  "schema_version": "namaztime-policy-bindings/v1",
+  "registry_revision": {
+    "id": "registry-ulyanovsk-pilot-2026-v1",
+    "schema_version": 1,
+    "catalog_revision_id": "catalog-geonames-ru-2026-08-29-58af26706f194677",
+    "catalog_content_sha256": "58af26706f194677d5d703c512fd9290d9b97657b26713c4c52f9685593f29f2",
+    "created_at": "2026-08-30T06:30:00Z",
+    "created_by": "operator:phase5-t037",
+    "reason": "Persist the approved Ulyanovsk pilot binding without changing its signed snapshot"
+  },
+  "scopes": [
+    {
+      "id": "scope-ulyanovsk-city",
+      "kind": "city",
+      "city_id": "city-4adcfc15932f3850d5dd5dbaa17e3a4c",
+      "region_id": "ru-uly",
+      "description": "Second Cathedral Mosque of Ulyanovsk; Gregorian 2026"
+    }
+  ],
+  "authorities": [
+    {
+      "id": "rdum-ulyanovsk-oblast",
+      "name": "Региональное духовное управление мусульман Ульяновской области в составе ЦДУМ России",
+      "branch": "Годовой календарь времени намазов для г. Ульяновска на 2026 год",
+      "website": "https://rdumul.ru/",
+      "evidence_label": "CONFIRMED_PUBLIC"
+    },
+    {
+      "id": "rdumul-attributed-publisher-unconfirmed",
+      "name": "rdumul.ru-attributed schedule publisher (legal name unconfirmed)",
+      "branch": "Ulyanovsk schedule shown in the supplied image",
+      "website": "https://rdumul.ru/",
+      "evidence_label": "UNKNOWN"
+    }
+  ],
+  "sources": [
+    {
+      "id": "effective-ulyanovsk-2026-v1",
+      "kind": "manual_import",
+      "authority_ids": [
+        "rdum-ulyanovsk-oblast",
+        "rdumul-attributed-publisher-unconfirmed"
+      ],
+      "geographic_scope_id": "scope-ulyanovsk-city",
+      "status": "approved",
+      "fresh_through": "2026-12-31"
+    },
+    {
+      "id": "official-rdumul-ulyanovsk-2026",
+      "kind": "official_file",
+      "authority_ids": [
+        "rdum-ulyanovsk-oblast"
+      ],
+      "geographic_scope_id": "scope-ulyanovsk-city",
+      "canonical_url": "https://rdumul.ru/",
+      "status": "approved",
+      "fresh_through": "2026-12-31"
+    },
+    {
+      "id": "manual-rdumul-ulsk-2026-08",
+      "kind": "manual_import",
+      "authority_ids": [
+        "rdumul-attributed-publisher-unconfirmed"
+      ],
+      "geographic_scope_id": "scope-ulyanovsk-city",
+      "status": "approved",
+      "fresh_through": "2026-12-31"
+    }
+  ],
+  "policies": [
+    {
+      "id": "policy-ulyanovsk-second-cathedral-2026",
+      "kind": "timetable",
+      "geographic_scope_id": "scope-ulyanovsk-city",
+      "authority_ids": [
+        "rdum-ulyanovsk-oblast",
+        "rdumul-attributed-publisher-unconfirmed"
+      ],
+      "source_id": "effective-ulyanovsk-2026-v1",
+      "timetable_id": "timetable-ulyanovsk-second-cathedral-2026",
+      "mosque_ids": [
+        "second-cathedral-mosque-ulyanovsk"
+      ],
+      "effective": {
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "approval_id": "approval-second-cathedral-mosque-ulyanovsk-2026-002"
+    }
+  ],
+  "calculation_profiles": [],
+  "timetables": [
+    {
+      "id": "timetable-ulyanovsk-second-cathedral-2026",
+      "source_id": "effective-ulyanovsk-2026-v1",
+      "geographic_scope_id": "scope-ulyanovsk-city",
+      "mosque_id": "second-cathedral-mosque-ulyanovsk",
+      "timezone": "Europe/Ulyanovsk",
+      "effective": {
+        "from": "2026-01-01",
+        "to": "2026-12-31"
+      },
+      "published_snapshot_id": "ulyanovsk-second-cathedral-2026-pilot-local-v2",
+      "source_override_ids": [
+        "source-override-ulyanovsk-2026-08"
+      ]
+    }
+  ],
+  "source_overrides": [
+    {
+      "id": "source-override-ulyanovsk-2026-08",
+      "base_source_id": "official-rdumul-ulyanovsk-2026",
+      "override_source_id": "manual-rdumul-ulsk-2026-08",
+      "effective": {
+        "from": "2026-08-01",
+        "to": "2026-08-31"
+      },
+      "applied_fields": [
+        "fajr",
+        "sunrise",
+        "zenith",
+        "dhuhr",
+        "dhuhr_congregation",
+        "asr",
+        "maghrib",
+        "isha",
+        "hijri_day",
+        "hijri_month",
+        "hijri_year",
+        "flags"
+      ],
+      "approval_id": "approval-second-cathedral-mosque-ulyanovsk-2026-002"
+    }
+  ]
+}

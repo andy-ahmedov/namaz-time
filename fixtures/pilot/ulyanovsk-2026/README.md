@@ -138,3 +138,23 @@ Dhuhr iqamah `13:15` on all seven weekdays and the same Friday Jumu'ah time,
 and keeps Fajr/Asr/Maghrib/Isha at adhan +5 minutes. No Ramadan or holiday
 exception is invented. The raw PDF/photo/CSV and collective-Dhuhr evidence are
 unchanged; 24 August Dhuhr adhan is the accepted photo onset value `12:48`.
+
+## Persisted registry binding
+
+T037 adds two metadata-only control-plane inputs without modifying any prayer
+row or signed artifact:
+
+- `registry-policy-bindings.json` binds the canonical T035 GeoNames city
+  `city-4adcfc15932f3850d5dd5dbaa17e3a4c` (`geonames:479123`) to the existing
+  authority/source/policy/override/timetable/snapshot identifiers. It targets
+  the exact catalog revision and content SHA-256 and contains no schedule rows.
+- `registry-reference-artifacts.json` pins the existing mosque policy,
+  approval receipt/trust and publication snapshot/receipt/trust paths by raw
+  SHA-256. These hashes locate reviewed inputs; activation independently
+  verifies their signatures, identities, ranges, timezone and environment
+  separation.
+
+The policy remains scoped only to `second-cathedral-mosque-ulyanovsk`. The
+annual RDUM identity remains `CONFIRMED_PUBLIC`, while the August attributed
+publisher remains `UNKNOWN`. The registry never promotes that composite to a
+city-wide or oblast-wide authority.

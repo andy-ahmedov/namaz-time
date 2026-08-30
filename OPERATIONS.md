@@ -167,6 +167,7 @@ names, not credential values:
 {
   "public_base_url": "https://api.example.invalid",
   "pairing_backend": "postgres",
+  "registry_backend": "postgres",
   "database_url_env": "NAMAZ_DATABASE_URL",
   "pairing_rate_limit_key_env": "NAMAZ_PAIRING_RATE_KEY",
   "admin_idempotency_key_env": "NAMAZ_ADMIN_IDEMPOTENCY_KEY_CURRENT",
@@ -252,12 +253,12 @@ or credential:
 ```bash
 go run ./cmd/migrate \
   -database-url-env NAMAZ_MIGRATION_DATABASE_URL \
-  -target-version 4
+  -target-version 6
 ```
 
 The command applies embedded migrations under a transaction-scoped advisory
 lock and exits. Only then start the API with `NAMAZ_DATABASE_URL` for the
-least-privileged runtime role. API startup performs a read-only exact-v4 ledger
+least-privileged runtime role. API startup performs a read-only exact-v6 ledger
 check and refuses missing, lower, gapped or future schemas. The runtime role must
 not own schema/functions/triggers.
 
@@ -269,10 +270,18 @@ bounded `DELETE` only on expired rate buckets; and `INSERT`-only on audit and
 admin idempotency tables. It needs no DDL, trigger/function ownership,
 `schema_migrations` mutation, admin actor/credential/membership writes, or
 audit/idempotency update/delete/truncate. It requires `SELECT` on
-`schema_migrations` solely for startup verification. Verify the grants in
+`schema_migrations` solely for startup verification. When
+`registry_backend` is enabled, it also requires `SELECT` on active registry
+tables but no registry write/audit/DDL privilege. Verify the grants in
 staging rather than granting broad schema ownership.
 
-For a controlled T014-to-T013 rollback, stop rollout writes, take a verified
+For a controlled v6-to-v5 rollback, stop registry activation and API setup
+reads, export/verify the database, and run `-target-version 5`; migration
+`000006` down removes only registry tables and functions while preserving fleet
+state. Remove `registry_backend` before starting a v5 binary/config. This is a
+schema rollback, not recovery of registry rows; normal registry rollback uses
+the active revision pointer instead. For a controlled T014-to-T013 rollback,
+stop rollout writes, take a verified
 database backup, and run `-target-version 3`; migration `000004` down removes
 only cohort labels/indexes while preserving every per-device assignment,
 pairing/admin row and latest health state. For T013-to-T012, stop heartbeat/write
@@ -282,7 +291,7 @@ drops only latest health and `last_seen_at`. For T012-to-T011, then run target
 `1`; migration `000002` down drops admin identities, idempotency evidence and
 assignments while v1 mosque/device/pairing/rate/audit state remains. The command
 rejects target `0`; complete schema removal exists only as a repository test
-helper. The current v4 binary refuses to start on any lower target until v4 is
+helper. The current v6 binary refuses to start on any lower target until v6 is
 reapplied.
 
 Run the restart/concurrency/migration suite in a disposable local PostgreSQL 18
@@ -308,8 +317,8 @@ privileged database/secret-manager operation:
 4. insert either one global `service_admin` membership with `mosque_id = NULL`,
    or explicit mosque-local memberships;
 5. grant the runtime role only required DML/sequence privileges, then verify it
-   cannot create actors/credentials, alter
-   schema, disable audit triggers or read unrelated secret-manager material.
+   cannot create actors/credentials, alter schema, disable audit triggers or
+   read unrelated secret-manager material.
 
 Never place the token or database URL in runtime JSON, command arguments,
 shell history, logs or Git. Suspending the actor, revoking the credential, or
@@ -371,6 +380,41 @@ Treat `reported_at` and `reported_snapshot_id` as device claims; only
 bearer/admin tokens into tickets. The schema cannot contain pairing codes,
 installation keys, capability lists, snapshot URLs, IP/MAC/SSID/BSSID, precise
 location, accounts, installed apps, arbitrary maps, logs or raw source data.
+
+## T037 registry activation
+
+The generated T035 catalog and raw GeoNames dumps remain ignored and outside
+Git. After reproducing the pinned catalog, verify the reviewed Ulyanovsk
+binding and its existing approval/publication evidence offline:
+
+```bash
+go run ./cmd/registryctl validate \
+  -catalog geodata/generated/russia-cities-2026-08-29.json \
+  -bindings fixtures/pilot/ulyanovsk-2026/registry-policy-bindings.json \
+  -artifacts fixtures/pilot/ulyanovsk-2026/registry-reference-artifacts.json \
+  -artifact-root .
+```
+
+Activation uses a registry-writer DSN exposed only through a named environment
+variable, never a literal CLI/config value:
+
+```bash
+go run ./cmd/registryctl apply \
+  -catalog geodata/generated/russia-cities-2026-08-29.json \
+  -bindings fixtures/pilot/ulyanovsk-2026/registry-policy-bindings.json \
+  -artifacts fixtures/pilot/ulyanovsk-2026/registry-reference-artifacts.json \
+  -artifact-root . \
+  -database-url-env NAMAZTIME_REGISTRY_DATABASE_URL \
+  -actor operator-stable-id \
+  -reason "activate reviewed Ulyanovsk pilot registry"
+```
+
+Record the reported revision/catalog/content hashes and activation audit ID.
+Do not rerun import with unreviewed catalog bytes. Registry rollback is an
+explicit service/operator action that re-verifies the target revision; do not
+use migration-down as a routine rollback. The signed USB-pilot snapshot remains
+an independent immutable artifact and must retain raw SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 
 ## Monitoring and SLO proposals
 

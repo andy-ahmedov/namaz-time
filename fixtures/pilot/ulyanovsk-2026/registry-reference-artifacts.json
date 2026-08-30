@@ -1,0 +1,50 @@
+{
+  "schema_version": "namaztime-registry-reference-artifacts/v1",
+  "approvals": [
+    {
+      "approval_id": "approval-second-cathedral-mosque-ulyanovsk-2026-002",
+      "mosque_id": "second-cathedral-mosque-ulyanovsk",
+      "prayer_policy": {
+        "file": "fixtures/pilot/ulyanovsk-2026/mosque-prayer-policy.json",
+        "sha256": "7d28078cfa82d1fa99e3d0994b60ea4095a9b13bd9fb8a939e1f98c8a9b8f395"
+      },
+      "receipt": {
+        "file": "fixtures/pilot/ulyanovsk-2026/approval-receipt.json",
+        "sha256": "36e889022c2db28ffa8221e1d104631f4a64f1c0d0211f89e942e4527453186c"
+      },
+      "trust_bundle": {
+        "file": "fixtures/pilot/ulyanovsk-2026/approver-trust-bundle.json",
+        "sha256": "29ab69e969e75bee879cbe5f73993e711c160da754f4182653c32cb058ad2974"
+      }
+    }
+  ],
+  "snapshots": [
+    {
+      "snapshot_id": "ulyanovsk-second-cathedral-2026-pilot-local-v2",
+      "snapshot": {
+        "file": "apps/tv-android/src/pilot/assets/pilot-local-ulyanovsk-2026-snapshot.json",
+        "sha256": "78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b"
+      },
+      "receipt": {
+        "file": "fixtures/pilot/ulyanovsk-2026/pilot-local/publication-receipt.json",
+        "sha256": "ddcba5fe5cd99d12553b189e4dc689210432052f8718c7df65482451ae5291be"
+      },
+      "trust_bundle": {
+        "file": "fixtures/pilot/ulyanovsk-2026/pilot-local/production-trust-bundle.json",
+        "sha256": "2fc9b7a34cbba4bf57ba5242aec6b782d41877ff6863006e83a3d40bc34eb085"
+      },
+      "previous_trust_bundle": {
+        "file": "fixtures/pilot/ulyanovsk-2026/pilot-local/production-trust-bundle-revision-2.json",
+        "sha256": "55d58bef5426876b8f47be721409d211644cf5bcbad24ddfdc7903ee5549c4a7"
+      },
+      "test_trust_bundle": {
+        "file": "fixtures/pilot/ulyanovsk-2026/pilot-local/test-trust-bundle.json",
+        "sha256": "82c7e7e943f5796ab689265a2d24862fc1f869f5ea574f7a940d2adaf74c1f77"
+      },
+      "staging_trust_bundle": {
+        "file": "fixtures/pilot/ulyanovsk-2026/pilot-local/staging-trust-bundle.json",
+        "sha256": "db4d936d6894d6ff60bfa422c12a886bfc0f553b47a7e1201fa9e2560b25d0bd"
+      }
+    }
+  ]
+}

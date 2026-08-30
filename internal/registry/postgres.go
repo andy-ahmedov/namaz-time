@@ -3,9 +3,11 @@ package registry
 import (
 	"context"
 	"crypto/sha256"
+	"crypto/tls"
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"net"
 	"strings"
 	"time"
 
@@ -28,6 +30,74 @@ type CitySearchResult struct {
 
 func NewPostgresRevisionStore(pool *pgxpool.Pool) *PostgresRevisionStore {
 	return &PostgresRevisionStore{pool: pool}
+}
+
+func OpenPostgresRevisionStore(ctx context.Context, databaseURL string) (*PostgresRevisionStore, error) {
+	if strings.TrimSpace(databaseURL) == "" {
+		return nil, errors.New("open registry PostgreSQL: database URL is required")
+	}
+	config, err := pgxpool.ParseConfig(databaseURL)
+	if err != nil {
+		return nil, errors.New("open registry PostgreSQL: parse database URL")
+	}
+	if err := validateRegistryPostgresTransport(config); err != nil {
+		return nil, fmt.Errorf("open registry PostgreSQL: %w", err)
+	}
+	config.MaxConns = 10
+	config.MinConns = 1
+	config.MaxConnLifetime = 30 * time.Minute
+	config.MaxConnIdleTime = 5 * time.Minute
+	pool, err := pgxpool.NewWithConfig(ctx, config)
+	if err != nil {
+		return nil, errors.New("open registry PostgreSQL: create pool")
+	}
+	if err := pool.Ping(ctx); err != nil {
+		pool.Close()
+		return nil, errors.New("open registry PostgreSQL: ping database")
+	}
+	return NewPostgresRevisionStore(pool), nil
+}
+
+func validateRegistryPostgresTransport(config *pgxpool.Config) error {
+	if config == nil || config.ConnConfig == nil {
+		return errors.New("PostgreSQL connection config is missing")
+	}
+	if err := validateRegistryPostgresEndpoint(config.ConnConfig.Host, config.ConnConfig.TLSConfig); err != nil {
+		return err
+	}
+	for _, fallback := range config.ConnConfig.Fallbacks {
+		if err := validateRegistryPostgresEndpoint(fallback.Host, fallback.TLSConfig); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func validateRegistryPostgresEndpoint(host string, tlsConfig *tls.Config) error {
+	if registryPostgresEndpointIsLocal(host) {
+		return nil
+	}
+	if tlsConfig == nil {
+		return errors.New("remote PostgreSQL endpoint requires authenticated TLS")
+	}
+	if tlsConfig.InsecureSkipVerify {
+		return errors.New("remote PostgreSQL endpoint requires certificate and hostname verification")
+	}
+	return nil
+}
+
+func registryPostgresEndpointIsLocal(host string) bool {
+	if strings.HasPrefix(host, "/") || strings.EqualFold(host, "localhost") {
+		return true
+	}
+	ip := net.ParseIP(strings.Trim(host, "[]"))
+	return ip != nil && ip.IsLoopback()
+}
+
+func (store *PostgresRevisionStore) Close() {
+	if store != nil && store.pool != nil {
+		store.pool.Close()
+	}
 }
 
 func (store *PostgresRevisionStore) Stage(ctx context.Context, record RevisionRecord, dataset Dataset) error {

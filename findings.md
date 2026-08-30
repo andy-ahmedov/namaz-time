@@ -157,6 +157,15 @@
 - Test strategy prioritizes wrong source/silent fallback and replacement of good data immediately after prayer-time correctness. T035–T037 tests must therefore cover duplicate/ambiguous identity, timezone, activation atomicity and prior-revision survival before API presentation details.
 - PostgreSQL integration already has a Docker-backed migration/rollback harness and a least-privileged runtime-role pattern; T036 should extend that established stack rather than introduce a second database test framework.
 
+## T037 implementation findings
+
+- `CONFIRMED_RUNTIME`: the exact signed Ulyanovsk snapshot raw bytes remain SHA-256 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b` through registry activation, successor activation and rollback; the registry only retains its ID/evidence reference.
+- `CONFIRMED_RUNTIME`: strict full-catalog composition resolves GeoNames `479123` / canonical city `city-4adcfc15932f3850d5dd5dbaa17e3a4c` to the existing Ulyanovsk binding and stable composed registry SHA-256 `0114c41e6e7d58fc5886b5a4363567348a0c5bb56835e5d9d830dc0b4fef8e5f`.
+- `CONFIRMED_RUNTIME`: the approval ID is not trusted by name. T037 verifies the mosque prayer-policy hash, signed approval receipt and trust bundle; publication verification additionally checks trust transition, environment separation, admission receipt, Ed25519 signature, snapshot identity, mosque, timezone and effective range.
+- `PROPOSAL`: keep the bulk catalog and prayer-policy bindings as independently versioned inputs. A bindings revision names the exact catalog revision/hash so a geographic refresh cannot silently change the executable registry.
+- `PROPOSAL`: setup search is authenticated and returns all exact candidates; policy resolution accepts only an explicitly selected canonical city ID, mosque path and local date. It has no unique-city guessing endpoint and no write side effect.
+- `UNKNOWN`: T037 proves a local PostgreSQL/runtime vertical slice, not a deployed production registry, external RPO/RTO, physical-TV acceptance or any second-region source policy.
+
 ## T035 geographic source evaluation
 
 - `CONFIRMED_PUBLIC`: OpenStreetMap data is ODbL 1.0; use requires attribution and public distribution of a derivative database under ODbL/compatible terms, with parallel distribution obligations when technological restrictions are applied. It is technically rich and frequently updated but creates avoidable share-alike/database-distribution obligations for this proprietary repository/product.

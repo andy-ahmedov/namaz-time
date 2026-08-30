@@ -1,6 +1,6 @@
 //go:build integration
 
-package registry
+package registry_test
 
 import (
 	"context"
@@ -11,8 +11,22 @@ import (
 
 	"github.com/andy-ahmedov/namaz-time/internal/devices"
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
+	. "github.com/andy-ahmedov/namaz-time/internal/registry"
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
+)
+
+const (
+	testCityID     = "city-test-ulyanovsk"
+	testRegionID   = "ru-uly"
+	testScopeID    = "scope-test-ulyanovsk"
+	testAuthority  = "authority-test"
+	testSourceID   = "source-test"
+	testPolicyID   = "policy-test"
+	testTimetable  = "timetable-test"
+	testMosqueID   = "mosque-test-ulyanovsk"
+	testApprovalID = "approval-test"
+	testSnapshotID = "snapshot-test"
 )
 
 func TestPostgresRegistryRevisionActivationSearchAndRollback(t *testing.T) {
@@ -149,6 +163,67 @@ func executableDatasetWithDuplicateKirov() Dataset {
 		domain.City{ID: "city-kirov-klu", Name: "Киров", Aliases: []string{"Kirov"}, CountryCode: "RU", RegionID: "ru-klu", SettlementType: "PPLA2", Latitude: 54.06889, Longitude: 34.29891, Timezone: "Europe/Moscow", GeographicSource: "https://www.geonames.org/548410", GeographicSourceID: "geonames:548410", GeographicRevision: "2026-08-29", GeographicLicense: "CC BY 4.0"},
 	)
 	return dataset
+}
+
+func executableDataset() Dataset {
+	return Dataset{
+		Cities: []domain.City{{
+			ID: testCityID, Name: "Ульяновск", Aliases: []string{"Ulyanovsk"}, CountryCode: "RU", RegionID: testRegionID,
+			SettlementType: "PPLA", Latitude: 54.32824, Longitude: 48.38657, Timezone: "Europe/Ulyanovsk",
+			GeographicSource: "https://www.geonames.org/479123", GeographicSourceID: "geonames:479123",
+			GeographicRevision: "2026-08-29", GeographicLicense: "CC BY 4.0",
+		}},
+		Regions:     []domain.Region{{ID: testRegionID, Name: "Ульяновская область", CountryCode: "RU", FederalSubjectCode: "RU-ULY"}},
+		Scopes:      []domain.GeographicScope{{ID: testScopeID, Kind: domain.GeographicScopeCity, CityID: testCityID, RegionID: testRegionID, Description: "test scope"}},
+		Authorities: []domain.PrayerAuthority{{ID: testAuthority, Name: "Test authority", EvidenceLabel: "CONFIRMED_PUBLIC"}},
+		Sources: []domain.PrayerSource{{
+			ID: testSourceID, Kind: domain.ProviderKindManualImport, AuthorityIDs: []string{testAuthority}, GeographicScopeID: testScopeID,
+			Status: domain.PrayerSourceApproved, FreshThrough: "2026-12-31",
+		}},
+		Policies: []domain.PrayerPolicy{{
+			ID: testPolicyID, Kind: domain.PrayerPolicyTimeTable, GeographicScopeID: testScopeID, AuthorityIDs: []string{testAuthority},
+			SourceID: testSourceID, TimeTableID: testTimetable, MosqueIDs: []string{testMosqueID},
+			Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"}, ApprovalID: testApprovalID,
+		}},
+		TimeTables: []domain.TimeTable{{
+			ID: testTimetable, SourceID: testSourceID, GeographicScopeID: testScopeID, MosqueID: testMosqueID,
+			Timezone: "Europe/Ulyanovsk", Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"}, PublishedSnapshotID: testSnapshotID,
+		}},
+	}
+}
+
+func testNow() time.Time { return time.Date(2026, 8, 30, 6, 0, 0, 0, time.UTC) }
+
+func repeatHex(character string) string {
+	result := ""
+	for range 64 {
+		result += character
+	}
+	return result
+}
+
+type fakeApprovalVerifier struct {
+	evidence map[string]VerifiedApproval
+}
+
+func (verifier *fakeApprovalVerifier) VerifyApproval(_ context.Context, approvalID string) (VerifiedApproval, error) {
+	value, ok := verifier.evidence[approvalID]
+	if !ok {
+		return VerifiedApproval{}, ErrVerifiedReferenceMissing
+	}
+	return value, nil
+}
+
+type fakeSnapshotVerifier struct {
+	evidence map[string]VerifiedSnapshot
+}
+
+func (verifier *fakeSnapshotVerifier) VerifySnapshot(_ context.Context, snapshotID string) (VerifiedSnapshot, error) {
+	value, ok := verifier.evidence[snapshotID]
+	if !ok {
+		return VerifiedSnapshot{}, ErrVerifiedReferenceMissing
+	}
+	return value, nil
 }
 
 func assertRegistryAppendOnly(t *testing.T, pool *pgxpool.Pool) {

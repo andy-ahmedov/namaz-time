@@ -531,6 +531,18 @@ v6. The backup/restore drill additionally proves its runtime role can select
 registry state but cannot insert/update it, update audit rows, or create schema
 objects.
 
+T037 adds real-evidence and vertical-slice regressions. Unit tests compose the
+reviewed Ulyanovsk bindings with the canonical GeoNames city, reject catalog
+hash drift and mutable nested inputs, verify the approval/publication trust
+chains, reject tampered snapshot bytes and pin the existing snapshot ID,
+SHA-256, signing-key ID and signature. The real PostgreSQL/HTTP gate requires
+admin mosque scope, searches `Ульяновск`, returns duplicate `Киров` candidates
+without auto-selection, rejects unknown uniqueness, resolves the explicit
+city/mosque/date to the existing timetable/snapshot, activates a successor and
+rolls back while comparing the signed bytes before/after. The Android pilot
+unit suite continues to authenticate and import the same packaged snapshot;
+no TV network or display path is added.
+
 ## Release evidence
 
 Each release records:

@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: Mosque Prayer TV Synchronization API
-  version: 0.6.1
+  version: 0.7.0
   description: >-
     Draft contract for pairing a television, retrieving a small manifest,
     downloading an immutable signed prayer-time snapshot, and reporting
@@ -335,6 +335,82 @@ paths:
           $ref: '#/components/responses/ErrorResponse'
         '500':
           $ref: '#/components/responses/ErrorResponse'
+  /v1/admin/mosques/{mosqueId}/setup/cities:
+    get:
+      operationId: searchSetupCities
+      security:
+        - adminBearer: []
+      summary: Return every exact canonical or alias match for explicit operator selection
+      parameters:
+        - $ref: '#/components/parameters/MosqueId'
+        - name: q
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+      responses:
+        '200':
+          description: Deterministically ordered candidates; duplicate names are never auto-selected
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CitySearchResponse'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
+  /v1/admin/mosques/{mosqueId}/setup/prayer-policy:
+    get:
+      operationId: resolveSetupPrayerPolicy
+      security:
+        - adminBearer: []
+      summary: Resolve one explicitly selected canonical city for the scoped mosque and local date
+      parameters:
+        - $ref: '#/components/parameters/MosqueId'
+        - name: city_id
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 160
+        - name: date
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: One approved executable binding from the active registry revision
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PrayerPolicyResolution'
+        '400':
+          $ref: '#/components/responses/ErrorResponse'
+        '401':
+          $ref: '#/components/responses/ErrorResponse'
+        '404':
+          $ref: '#/components/responses/ErrorResponse'
+        '409':
+          $ref: '#/components/responses/ErrorResponse'
+        '500':
+          $ref: '#/components/responses/ErrorResponse'
   /v1/admin/mosques/{mosqueId}/rollout-groups/{groupId}/assignment:
     put:
       operationId: assignFleetRolloutGroupSnapshot
@@ -432,6 +508,301 @@ components:
           schema:
             $ref: '#/components/schemas/ErrorEnvelope'
   schemas:
+    CitySearchResponse:
+      type: object
+      additionalProperties: false
+      required: [schema_version, query, candidates]
+      properties:
+        schema_version:
+          const: city-search/v1
+        query:
+          type: string
+          minLength: 1
+          maxLength: 200
+        candidates:
+          type: array
+          items:
+            $ref: '#/components/schemas/CityCandidate'
+    CityCandidate:
+      type: object
+      additionalProperties: false
+      required:
+        - city_id
+        - canonical_name
+        - aliases
+        - federal_subject_code
+        - federal_subject_name
+        - settlement_type
+        - timezone
+        - latitude
+        - longitude
+        - geographic_source_id
+        - geographic_revision
+        - geographic_license
+      properties:
+        city_id:
+          type: string
+          minLength: 1
+          maxLength: 160
+        canonical_name:
+          type: string
+          minLength: 1
+          maxLength: 240
+        aliases:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+            minLength: 1
+            maxLength: 240
+        federal_subject_code:
+          type: string
+          pattern: '^RU-[A-Z]{2,3}$'
+        federal_subject_name:
+          type: string
+          minLength: 1
+          maxLength: 240
+        settlement_type:
+          type: string
+          minLength: 1
+          maxLength: 32
+        timezone:
+          type: string
+          minLength: 3
+          maxLength: 64
+          description: Named IANA timezone ID; fixed numeric offsets are invalid.
+        latitude:
+          type: number
+          minimum: -90
+          maximum: 90
+        longitude:
+          type: number
+          minimum: -180
+          maximum: 180
+        geographic_source_id:
+          type: string
+          minLength: 1
+          maxLength: 200
+        geographic_revision:
+          type: string
+          minLength: 1
+          maxLength: 200
+        geographic_license:
+          type: string
+          minLength: 1
+          maxLength: 200
+    PrayerPolicyResolution:
+      type: object
+      additionalProperties: false
+      required: [schema_version, status, tier, city, scope, authorities, source, policy, source_overrides]
+      oneOf:
+        - required: [timetable]
+          not:
+            required: [calculation_profile]
+        - required: [calculation_profile]
+          not:
+            required: [timetable]
+      properties:
+        schema_version:
+          const: prayer-policy-resolution/v1
+        status:
+          const: resolved
+        tier:
+          type: string
+          enum:
+            - exact_city_timetable
+            - regional_official_timetable
+            - approved_regional_calculation_profile
+            - explicitly_configured_fallback
+        city:
+          $ref: '#/components/schemas/CityCandidate'
+        scope:
+          $ref: '#/components/schemas/GeographicScope'
+        authorities:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PrayerAuthority'
+        source:
+          $ref: '#/components/schemas/RegistryPrayerSource'
+        policy:
+          $ref: '#/components/schemas/RegistryPrayerPolicy'
+        timetable:
+          $ref: '#/components/schemas/RegistryTimeTable'
+        calculation_profile:
+          $ref: '#/components/schemas/RegistryCalculationProfile'
+        source_overrides:
+          type: array
+          items:
+            $ref: '#/components/schemas/RegistrySourceOverride'
+    GeographicScope:
+      type: object
+      additionalProperties: false
+      required: [id, kind, region_id, description]
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum: [city, region]
+        city_id:
+          type: string
+        region_id:
+          type: string
+        description:
+          type: string
+    PrayerAuthority:
+      type: object
+      additionalProperties: false
+      required: [id, name, evidence_label]
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        branch:
+          type: string
+        website:
+          type: string
+          format: uri
+        evidence_label:
+          type: string
+          enum: [CONFIRMED_PUBLIC, CONFIRMED_STATIC, CONFIRMED_RUNTIME, INFERENCE, PROPOSAL, UNKNOWN]
+    RegistryPrayerSource:
+      type: object
+      additionalProperties: false
+      required: [id, kind, authority_ids, geographic_scope_id, status]
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum: [official_api, official_file, official_html, mosque_calendar, calculation_profile, manual_import]
+        authority_ids:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+        geographic_scope_id:
+          type: string
+        canonical_url:
+          type: string
+          format: uri
+        status:
+          const: approved
+        fresh_through:
+          type: string
+          format: date
+    RegistryPrayerPolicy:
+      type: object
+      additionalProperties: false
+      required: [id, kind, geographic_scope_id, authority_ids, source_id, mosque_ids, effective, approval_id]
+      properties:
+        id:
+          type: string
+        kind:
+          type: string
+          enum: [timetable, calculation_profile]
+        geographic_scope_id:
+          type: string
+        authority_ids:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+        source_id:
+          type: string
+        timetable_id:
+          type: string
+        calculation_profile_id:
+          type: string
+        mosque_ids:
+          type: array
+          minItems: 1
+          maxItems: 1
+          items:
+            type: string
+        effective:
+          $ref: '#/components/schemas/DateRange'
+        approval_id:
+          type: string
+    RegistryTimeTable:
+      type: object
+      additionalProperties: false
+      required: [id, source_id, geographic_scope_id, mosque_id, timezone, effective, published_snapshot_id]
+      properties:
+        id:
+          type: string
+        source_id:
+          type: string
+        geographic_scope_id:
+          type: string
+        mosque_id:
+          type: string
+        timezone:
+          type: string
+          minLength: 3
+          maxLength: 64
+        effective:
+          $ref: '#/components/schemas/DateRange'
+        published_snapshot_id:
+          type: string
+        source_override_ids:
+          type: array
+          uniqueItems: true
+          items:
+            type: string
+    RegistryCalculationProfile:
+      type: object
+      additionalProperties: false
+      required: [id, source_id, geographic_scope_id, version, effective, approval_id]
+      properties:
+        id:
+          type: string
+        source_id:
+          type: string
+        geographic_scope_id:
+          type: string
+        version:
+          type: string
+        effective:
+          $ref: '#/components/schemas/DateRange'
+        approval_id:
+          type: string
+    RegistrySourceOverride:
+      type: object
+      additionalProperties: false
+      required: [id, base_source_id, override_source_id, effective, applied_fields, approval_id]
+      properties:
+        id:
+          type: string
+        base_source_id:
+          type: string
+        override_source_id:
+          type: string
+        effective:
+          $ref: '#/components/schemas/DateRange'
+        applied_fields:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            type: string
+        approval_id:
+          type: string
+    DateRange:
+      type: object
+      additionalProperties: false
+      required: [from, to]
+      properties:
+        from:
+          type: string
+          format: date
+        to:
+          type: string
+          format: date
     AdminIssuePairingRequest:
       type: object
       additionalProperties: false

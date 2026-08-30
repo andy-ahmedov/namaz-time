@@ -38,29 +38,29 @@ const (
 // GeographicScope selects where a policy may apply. Authority is always a
 // separate explicit reference and is never inferred from polygon membership.
 type GeographicScope struct {
-	ID          string
-	Kind        GeographicScopeKind
-	CityID      string
-	RegionID    string
-	Description string
+	ID          string              `json:"id"`
+	Kind        GeographicScopeKind `json:"kind"`
+	CityID      string              `json:"city_id,omitempty"`
+	RegionID    string              `json:"region_id"`
+	Description string              `json:"description"`
 }
 
 type PrayerAuthority struct {
-	ID            string
-	Name          string
-	Branch        string
-	Website       string
-	EvidenceLabel string
+	ID            string `json:"id"`
+	Name          string `json:"name"`
+	Branch        string `json:"branch,omitempty"`
+	Website       string `json:"website,omitempty"`
+	EvidenceLabel string `json:"evidence_label"`
 }
 
 type PrayerSource struct {
-	ID                string
-	Kind              ProviderKind
-	AuthorityIDs      []string
-	GeographicScopeID string
-	CanonicalURL      string
-	Status            PrayerSourceStatus
-	FreshThrough      string
+	ID                string             `json:"id"`
+	Kind              ProviderKind       `json:"kind"`
+	AuthorityIDs      []string           `json:"authority_ids"`
+	GeographicScopeID string             `json:"geographic_scope_id"`
+	CanonicalURL      string             `json:"canonical_url,omitempty"`
+	Status            PrayerSourceStatus `json:"status"`
+	FreshThrough      string             `json:"fresh_through,omitempty"`
 }
 
 type PrayerSourceStatus string
@@ -80,43 +80,43 @@ const (
 )
 
 type PrayerPolicy struct {
-	ID                   string
-	Kind                 PrayerPolicyKind
-	GeographicScopeID    string
-	AuthorityIDs         []string
-	SourceID             string
-	TimeTableID          string
-	CalculationProfileID string
-	MosqueIDs            []string
-	Effective            DateRange
-	ApprovalID           string
+	ID                   string           `json:"id"`
+	Kind                 PrayerPolicyKind `json:"kind"`
+	GeographicScopeID    string           `json:"geographic_scope_id"`
+	AuthorityIDs         []string         `json:"authority_ids"`
+	SourceID             string           `json:"source_id"`
+	TimeTableID          string           `json:"timetable_id,omitempty"`
+	CalculationProfileID string           `json:"calculation_profile_id,omitempty"`
+	MosqueIDs            []string         `json:"mosque_ids"`
+	Effective            DateRange        `json:"effective"`
+	ApprovalID           string           `json:"approval_id"`
 }
 
 type CalculationProfile struct {
-	ID                string
-	SourceID          string
-	GeographicScopeID string
-	Version           string
-	Effective         DateRange
-	ApprovalID        string
+	ID                string    `json:"id"`
+	SourceID          string    `json:"source_id"`
+	GeographicScopeID string    `json:"geographic_scope_id"`
+	Version           string    `json:"version"`
+	Effective         DateRange `json:"effective"`
+	ApprovalID        string    `json:"approval_id"`
 }
 
 type TimeTable struct {
-	ID                  string
-	SourceID            string
-	GeographicScopeID   string
-	MosqueID            string
-	Timezone            string
-	Effective           DateRange
-	PublishedSnapshotID string
-	SourceOverrideIDs   []string
+	ID                  string    `json:"id"`
+	SourceID            string    `json:"source_id"`
+	GeographicScopeID   string    `json:"geographic_scope_id"`
+	MosqueID            string    `json:"mosque_id"`
+	Timezone            string    `json:"timezone"`
+	Effective           DateRange `json:"effective"`
+	PublishedSnapshotID string    `json:"published_snapshot_id"`
+	SourceOverrideIDs   []string  `json:"source_override_ids,omitempty"`
 }
 
 type SourceOverride struct {
-	ID               string
-	BaseSourceID     string
-	OverrideSourceID string
-	Effective        DateRange
-	AppliedFields    []string
-	ApprovalID       string
+	ID               string    `json:"id"`
+	BaseSourceID     string    `json:"base_source_id"`
+	OverrideSourceID string    `json:"override_source_id"`
+	Effective        DateRange `json:"effective"`
+	AppliedFields    []string  `json:"applied_fields"`
+	ApprovalID       string    `json:"approval_id"`
 }

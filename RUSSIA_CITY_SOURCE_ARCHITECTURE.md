@@ -1,7 +1,7 @@
 # Russia city/source resolution architecture
 
 Date: 2026-08-30  
-Status: T036 persisted registry implemented; executable prayer coverage remains the Ulyanovsk pilot only
+Status: T037 persisted Ulyanovsk vertical slice implemented; executable prayer coverage remains the Ulyanovsk pilot only
 
 ## Outcome
 
@@ -27,8 +27,8 @@ No nationwide `method=Russia` fallback exists. An unresolved, expired, invalid, 
 
 - `CONFIRMED_PUBLIC`: regional first-party evidence includes a republic-wide approved system in Татарстан, locality-specific annual calendars in Ulyanovsk Oblast, city-only publications in several subjects, partial seasonal artifacts, and parallel organizations in other subjects. These are incompatible with one silent national mapping.
 - `CONFIRMED_STATIC`: IslamApp packages geographic profiles and chooses the most specific matching profile; 1Muslim distinguishes stored timetable cities from calculated catalog cities. These are architectural observations only. No competitor profile, row, coordinate, code, or dataset is used by this foundation.
-- `CONFIRMED_PUBLIC`: the Ulyanovsk seed coordinates come independently from OpenStreetMap city relation `2049867`, with ODbL attribution. Coordinates are catalog metadata, not schedule evidence.
-- `PROPOSAL`: the current implementation uses only the already approved Ulyanovsk source/policy/publication identifiers. It does not calculate or copy a new schedule.
+- `CONFIRMED_PUBLIC`: the canonical Ulyanovsk row comes from the pinned GeoNames RU export under CC BY 4.0 (`geonames:479123`). Coordinates are catalog metadata, not schedule evidence.
+- `CONFIRMED_RUNTIME`: the persisted T037 vertical slice uses only the already approved Ulyanovsk source/policy/publication identifiers. It does not calculate, copy, regenerate, or re-sign a schedule.
 
 ## Entity boundaries
 
@@ -149,11 +149,11 @@ Calculated rows then become ordinary candidates and pass the same diff, approval
 
 ## Ulyanovsk vertical slice
 
-The implemented seed resolves:
+The persisted executable revision resolves:
 
 ```text
 "Ульяновск" / "Ulyanovsk"
-  → city ru-uly-ulyanovsk
+  → city city-4adcfc15932f3850d5dd5dbaa17e3a4c (geonames:479123)
   → region ru-uly / RU-ULY
   → scope scope-ulyanovsk-city
   → source authorities:
@@ -166,7 +166,7 @@ The implemented seed resolves:
   → timezone Europe/Ulyanovsk
 ```
 
-The policy is bound to `second-cathedral-mosque-ulyanovsk` and the 2026 effective range. It is not promoted to every Ulyanovsk mosque or every locality in Ulyanovsk Oblast.
+The policy is bound to `second-cathedral-mosque-ulyanovsk` and the 2026 effective range. It is not promoted to every Ulyanovsk mosque or every locality in Ulyanovsk Oblast. The old executable `NewPilotRegistry` constructor has been removed; reviewed policy bindings are composed with the pinned T035 catalog and staged/activated through the T036 PostgreSQL lifecycle.
 
 The timetable records `source-override-ulyanovsk-2026-08`, which links the retained official annual baseline to the approved August manual source using the existing approval ID. The annual component preserves the confirmed RDUM identity; the August component preserves the source record's legally unconfirmed `rdumul.ru` attribution as `UNKNOWN`. The composite must not promote the latter into confirmed RDUM provenance. It references the existing signed snapshot; it does not regenerate, rewrite, or re-sign it. The Android UI, Room schema, bootstrap asset, signature verifier, publication receipt, and device assignment behavior are unchanged.
 
@@ -194,8 +194,14 @@ pointer. Full details are in `PERSISTED_POLICY_REGISTRY.md`.
 The active-revision search repository returns all exact canonical/alias
 matches in deterministic subject/name/ID order. Its unique-result operation
 returns false for zero or multiple records. A minimal authenticated setup/admin
-API is deliberately T037 work; T036 does not expose a public unauthenticated
-registry route.
+API exposes `GET /v1/admin/mosques/{mosqueId}/setup/cities?q=…` and
+`GET /v1/admin/mosques/{mosqueId}/setup/prayer-policy?city_id=…&date=…`.
+Both require the existing admin principal plus explicit mosque read scope and
+return `no-store`; the second endpoint accepts a canonical city ID rather than
+guessing from a name. Runtime registry access is opt-in through
+`registry_backend: "postgres"` and uses the least-privileged PostgreSQL role.
+The reviewed import/activation command and evidence are documented in
+`ULYANOVSK_PERSISTED_E2E.md`.
 
 No registry fields are added to the signed TV snapshot contract in this slice. Existing source provenance is already inside the signed snapshot; resolver audit metadata can remain control-plane data until a contract change has a concrete device use case.
 
@@ -238,6 +244,13 @@ verify research/stale/unavailable rejection, same-tier activation conflicts,
 verified mosque-scoped approval and snapshot bindings, immutable canonical
 hashes, deterministic duplicate search, append-only revisions, active-revision
 rollback with reference re-verification, and v6↔v5 migration behavior.
+
+T037 additionally verifies the retained approval receipt and trust bundle,
+the production publication trust transition and environment separation, and
+the publication receipt/signature over the exact existing snapshot bytes. A
+real PostgreSQL/HTTP test covers authenticated search, explicit resolution,
+duplicate and unknown city handling, successor activation, rollback, and the
+unchanged snapshot SHA-256.
 
 ## Remaining unknowns and intentionally deferred work
 

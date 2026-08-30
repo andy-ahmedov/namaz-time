@@ -236,6 +236,25 @@
 - Documented the persisted lifecycle, verification boundary, append-only/rollback semantics and database-role split in `PERSISTED_POLICY_REGISTRY.md` and related architecture/model/test docs.
 - T036 fresh checkpoint passes `go test ./...`, `make test-postgres` (including v6 backup/restore), `make docs-check`, `make format-check`, `make lint-go`, `go test -race ./...`, and `make security-go`; `govulncheck` reports no vulnerabilities. The ignored APK was restored with unchanged SHA-256 `4fea3403ec5d288163fbe649220bda86ccaaad3b8d76ba57227d7b2aea434bfb`.
 
+### T037: persisted Ulyanovsk end-to-end
+
+- **Status:** complete pending checkpoint commit.
+- Removed `NewPilotRegistry`; added strict reviewed bindings targeting the exact T035 catalog revision/hash and retaining both Ulyanovsk authority evidence identities.
+- Added a pinned artifact manifest and verifier that cryptographically rechecks the real mosque approval, approval trust, publication trust transition/environment separation, receipt/signature and exact signed snapshot identity.
+- Added `registryctl validate/apply`; the full ignored 166,557-city catalog composes to stable registry SHA-256 `0114c41e6e7d58fc5886b5a4363567348a0c5bb56835e5d9d830dc0b4fef8e5f`.
+- Added an opt-in PostgreSQL registry reader and authenticated mosque-scoped city search/policy resolution API plus OpenAPI 0.7.0 contract.
+- Added real PostgreSQL/HTTP coverage for Ulyanovsk resolution, duplicate/unknown city non-selection, successor activation and rollback.
+- Pinned the existing USB pilot snapshot ID/signing key/signature and raw SHA-256 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`; bytes remain unchanged.
+- Checkpoint gates pass: `go test ./...`, full catalog `registryctl validate`, `make docs-check`, `make test-contracts`, `make test-postgres` with restore, and `make test-android-unit`. The ignored APK/catalog were restored; APK SHA-256 remains `4fea3403...434bfb`.
+
+### T037 error log
+
+| Error | Attempt | Resolution |
+|---|---:|---|
+| Registry integration test acquired an import cycle after devices began importing registry | 1 | Converted the integration test to external `registry_test` package and supplied isolated exported-API fixtures. |
+| New UTC assertions used `time.Equal(value.UTC())`, which cannot distinguish location representation | 1 | Replaced with canonical `time.UTC` location validation and added non-UTC revision/approval/snapshot tests. |
+| `registryctl validate` initially checked policy approvals but not override/profile references | 1 | Added a red missing-override test, then deterministic deduplicated verification for every referenced approval and published snapshot. |
+
 ## 5-Question Reboot Check
 
 | Question | Answer |

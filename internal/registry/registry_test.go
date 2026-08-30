@@ -8,78 +8,6 @@ import (
 	"github.com/andy-ahmedov/namaz-time/internal/registry"
 )
 
-func TestPilotRegistrySearchFindsCanonicalUlyanovsk(t *testing.T) {
-	catalog := registry.NewPilotRegistry()
-
-	got := catalog.SearchCities("  ульяновск  ")
-	if len(got) != 1 {
-		t.Fatalf("SearchCities() returned %d cities, want 1", len(got))
-	}
-	city := got[0]
-	if city.ID != "ru-uly-ulyanovsk" || city.RegionID != "ru-uly" {
-		t.Fatalf("SearchCities() city identity = %#v, want canonical Ulyanovsk in RU-ULY", city)
-	}
-	if city.Timezone != "Europe/Ulyanovsk" {
-		t.Fatalf("SearchCities() timezone = %q, want Europe/Ulyanovsk", city.Timezone)
-	}
-	if city.Latitude != 54.3150278 || city.Longitude != 48.4033730 {
-		t.Fatalf("SearchCities() coordinates = %.7f, %.7f, want independent OSM city relation", city.Latitude, city.Longitude)
-	}
-	if city.GeographicSource != "https://www.openstreetmap.org/relation/2049867" {
-		t.Fatalf("SearchCities() geographic source = %q, want public relation provenance", city.GeographicSource)
-	}
-}
-
-func TestPilotRegistrySearchMatchesExplicitAlias(t *testing.T) {
-	catalog := registry.NewPilotRegistry()
-
-	got := catalog.SearchCities("ULYANOVSK")
-	if len(got) != 1 || got[0].ID != "ru-uly-ulyanovsk" {
-		t.Fatalf("SearchCities() = %#v, want canonical Ulyanovsk alias match", got)
-	}
-}
-
-func TestPilotRegistryResolvesApprovedUlyanovskTimetable(t *testing.T) {
-	catalog := registry.NewPilotRegistry()
-
-	got, err := catalog.Resolve(registry.ResolveRequest{
-		CityID:   "ru-uly-ulyanovsk",
-		MosqueID: "second-cathedral-mosque-ulyanovsk",
-		Date:     "2026-08-30",
-	})
-	if err != nil {
-		t.Fatalf("Resolve() error = %v", err)
-	}
-	if got.Tier != registry.ResolutionExactCityTimetable {
-		t.Fatalf("Resolve() tier = %q, want exact city timetable", got.Tier)
-	}
-	if got.Region.FederalSubjectCode != "RU-ULY" || got.Scope.CityID != "ru-uly-ulyanovsk" {
-		t.Fatalf("Resolve() geography = region %#v scope %#v", got.Region, got.Scope)
-	}
-	if len(got.Authorities) != 2 {
-		t.Fatalf("Resolve() authorities = %#v, want both retained source-component identities", got.Authorities)
-	}
-	authorityEvidence := map[string]string{}
-	for _, authority := range got.Authorities {
-		authorityEvidence[authority.ID] = authority.EvidenceLabel
-	}
-	if authorityEvidence["rdum-ulyanovsk-oblast"] != "CONFIRMED_PUBLIC" || authorityEvidence["rdumul-attributed-publisher-unconfirmed"] != "UNKNOWN" {
-		t.Fatalf("Resolve() authority evidence = %#v, want no promotion of August attribution", authorityEvidence)
-	}
-	if got.Source.ID != "effective-ulyanovsk-2026-v1" || got.Policy.ID != "policy-ulyanovsk-second-cathedral-2026" {
-		t.Fatalf("Resolve() source/policy = %q/%q", got.Source.ID, got.Policy.ID)
-	}
-	if got.TimeTable.ID != "timetable-ulyanovsk-second-cathedral-2026" || got.TimeTable.PublishedSnapshotID != "ulyanovsk-second-cathedral-2026-pilot-local-v2" {
-		t.Fatalf("Resolve() timetable = %#v, want existing signed pilot reference", got.TimeTable)
-	}
-	if got.TimeTable.Timezone != "Europe/Ulyanovsk" || got.TimeTable.SourceOverrideIDs[0] != "source-override-ulyanovsk-2026-08" {
-		t.Fatalf("Resolve() timetable timezone/overrides = %#v", got.TimeTable)
-	}
-	if len(got.SourceOverrides) != 1 || got.SourceOverrides[0].OverrideSourceID != "manual-rdumul-ulsk-2026-08" {
-		t.Fatalf("Resolve() source overrides = %#v, want retained approved August source", got.SourceOverrides)
-	}
-}
-
 func TestRegistryResolveUsesFailClosedPrecedence(t *testing.T) {
 	tests := []struct {
 		name             string
@@ -244,27 +172,28 @@ func TestRegistryOwnsValidatedDatasetCopy(t *testing.T) {
 }
 
 func TestRegistryDoesNotExposeMutableInternalSlices(t *testing.T) {
-	catalog := registry.NewPilotRegistry()
-	cities := catalog.SearchCities("Ульяновск")
+	catalog, err := registry.New(resolutionDataset())
+	if err != nil {
+		t.Fatalf("New() error = %v", err)
+	}
+	cities := catalog.SearchCities("City alias")
 	cities[0].Aliases[0] = "corrupted"
 	resolution, err := catalog.Resolve(registry.ResolveRequest{
-		CityID: "ru-uly-ulyanovsk", MosqueID: "second-cathedral-mosque-ulyanovsk", Date: "2026-08-30",
+		CityID: "city-1", MosqueID: "mosque-1", Date: "2026-08-30",
 	})
 	if err != nil {
 		t.Fatalf("first Resolve() error = %v", err)
 	}
 	resolution.Policy.MosqueIDs[0] = "other-mosque"
-	resolution.TimeTable.SourceOverrideIDs[0] = "other-override"
-	resolution.SourceOverrides[0].AppliedFields[0] = "other-field"
 
-	if got := catalog.SearchCities("Ulyanovsk"); len(got) != 1 {
+	if got := catalog.SearchCities("City alias"); len(got) != 1 {
 		t.Fatalf("SearchCities() after returned value mutation = %#v, want intact alias", got)
 	}
 	got, err := catalog.Resolve(registry.ResolveRequest{
-		CityID: "ru-uly-ulyanovsk", MosqueID: "second-cathedral-mosque-ulyanovsk", Date: "2026-08-30",
+		CityID: "city-1", MosqueID: "mosque-1", Date: "2026-08-30",
 	})
-	if err != nil || got.SourceOverrides[0].AppliedFields[0] != "fajr" {
-		t.Fatalf("second Resolve() = %#v, %v; want immutable policy and override", got, err)
+	if err != nil || got.Policy.MosqueIDs[0] != "mosque-1" {
+		t.Fatalf("second Resolve() = %#v, %v; want immutable policy", got, err)
 	}
 }
 
@@ -272,7 +201,7 @@ func resolutionDataset() registry.Dataset {
 	effective := domain.DateRange{From: "2026-01-01", To: "2026-12-31"}
 	return registry.Dataset{
 		Cities: []domain.City{{
-			ID: "city-1", Name: "City", CountryCode: "RU", RegionID: "region-1",
+			ID: "city-1", Name: "City", Aliases: []string{"City alias"}, CountryCode: "RU", RegionID: "region-1",
 			Latitude: 55, Longitude: 49, Timezone: "Europe/Moscow", GeographicSource: "https://example.test/city",
 			FallbackPolicyID: "fallback-policy",
 		}},
