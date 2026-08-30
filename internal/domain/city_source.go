@@ -59,7 +59,18 @@ type PrayerSource struct {
 	AuthorityIDs      []string
 	GeographicScopeID string
 	CanonicalURL      string
+	Status            PrayerSourceStatus
+	FreshThrough      string
 }
+
+type PrayerSourceStatus string
+
+const (
+	PrayerSourceResearchOnly PrayerSourceStatus = "research_only"
+	PrayerSourceApproved     PrayerSourceStatus = "approved"
+	PrayerSourceStale        PrayerSourceStatus = "stale"
+	PrayerSourceUnavailable  PrayerSourceStatus = "unavailable"
+)
 
 type PrayerPolicyKind string
 

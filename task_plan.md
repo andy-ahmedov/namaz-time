@@ -6,7 +6,7 @@ Determine, with clean-room evidence, how 1Muslim 5.9.5 resolves prayer times (es
 
 ## Current Phase
 
-Phase 8 — T036 persisted executable policy registry (`in_progress`)
+Phase 9 — T037 Ulyanovsk persisted end-to-end (`in_progress`)
 
 ## Phases
 
@@ -113,10 +113,11 @@ Phase 8 — T036 persisted executable policy registry (`in_progress`)
 
 ### Phase 8: T036 persisted executable policy registry
 
-- [ ] Write failing PostgreSQL repository/service tests for cities, aliases, regions/scopes, authorities, sources, policies, timetables/calculation profiles, overrides and revision audit.
-- [ ] Add migrations and rollback; enforce approval, ambiguity, stale/unavailable and no-silent-fallback semantics.
-- [ ] Prove deterministic registry revisions and revision rollback.
-- [ ] Update docs/task status, run PostgreSQL/checkpoint gates and create a local T036 commit.
+- [x] Write failing PostgreSQL repository/service tests for cities, aliases, regions/scopes, authorities, sources, policies, timetables/calculation profiles, overrides and revision audit.
+- [x] Add migrations and rollback; enforce approval, ambiguity, stale/unavailable and no-silent-fallback semantics.
+- [x] Prove deterministic registry revisions and revision rollback.
+- [x] Update docs/task status and run PostgreSQL/checkpoint gates.
+- [ ] Create the local T036 commit before starting T037 implementation edits.
 - **Status:** in_progress
 
 ### Phase 9: T037 Ulyanovsk persisted end-to-end

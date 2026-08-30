@@ -1,7 +1,7 @@
 # Russia city/source resolution architecture
 
 Date: 2026-08-30  
-Status: T035 geographic catalog implemented; executable prayer coverage remains the Ulyanovsk pilot only
+Status: T036 persisted registry implemented; executable prayer coverage remains the Ulyanovsk pilot only
 
 ## Outcome
 
@@ -88,7 +88,12 @@ Errors are typed:
 
 The resolver never returns a partially linked policy. Registry construction validates unique IDs, foreign keys, city/region consistency, coordinate bounds, loadable IANA timezones, source-to-authority/scope bindings, exact evidence-label vocabulary, non-empty approval references and mosque bindings, effective ranges, timetable/profile references, publication IDs, and source-override references.
 
-`PROPOSAL`: an approval ID and published snapshot ID in the in-memory registry are references, not authentication. A future persistence adapter must obtain them from the existing verified approval/publication stores before constructing an executable dataset. Serving and device paths continue to verify the signed snapshot independently.
+`PROPOSAL`: an approval ID and published snapshot ID in a registry revision are
+references, not authentication. The persisted service accepts activation only
+after verifier adapters return exact mosque-scoped approval evidence and exact
+published-snapshot ID/timezone/range/hash/key evidence from their authoritative
+stores. Serving and device paths continue to verify the signed snapshot
+independently.
 
 ## Precedence and failure semantics
 
@@ -178,9 +183,19 @@ Promoting research metadata into the executable registry requires a reviewed cha
 
 ## Persistence and API boundary
 
-The current in-memory Go dataset is the smallest tested domain foundation, not a nationwide database migration or public API.
+Migration v6 and `internal/registry.PostgresRevisionStore` persist the entity
+model as immutable, normalized, schema-versioned revisions. Dataset ordering is
+canonicalized before hashing; the geographic catalog revision and content
+SHA-256 are retained separately. Stage, activation and rollback append audit
+events. Activation records the exact approval/snapshot evidence returned by
+verified-reference adapters and atomically advances one active-revision
+pointer. Full details are in `PERSISTED_POLICY_REGISTRY.md`.
 
-Future persistence should use normalized control-plane tables keyed by immutable IDs and revisioned registry snapshots. An API may expose search results and resolution explanations to the admin/setup UI, but it must not expose a policy as approved unless its source and approval records are complete.
+The active-revision search repository returns all exact canonical/alias
+matches in deterministic subject/name/ID order. Its unique-result operation
+returns false for zero or multiple records. A minimal authenticated setup/admin
+API is deliberately T037 work; T036 does not expose a public unauthenticated
+registry route.
 
 No registry fields are added to the signed TV snapshot contract in this slice. Existing source provenance is already inside the signed snapshot; resolver audit metadata can remain control-plane data until a contract change has a concrete device use case.
 
@@ -217,6 +232,12 @@ No registry fields are added to the signed TV snapshot contract in this slice. E
 - unsupported provider-kind rejection;
 - malformed local-date rejection;
 - defensive ownership of validated input and returned slice fields.
+
+`internal/registry/service_test.go` and the PostgreSQL integration gate also
+verify research/stale/unavailable rejection, same-tier activation conflicts,
+verified mosque-scoped approval and snapshot bindings, immutable canonical
+hashes, deterministic duplicate search, append-only revisions, active-revision
+rollback with reference re-verification, and v6↔v5 migration behavior.
 
 ## Remaining unknowns and intentionally deferred work
 

@@ -795,6 +795,18 @@ changes.
 enter an executable registry revision; same-tier conflicts and stale/missing
 references block activation; previous registry revision remains recoverable.
 
+**Result:** completed locally on 2026-08-30. PostgreSQL migration v6 persists
+immutable schema-v1 revisions across the full T034 entity model, deterministic
+content hashes, one active pointer and append-only activation/rollback evidence.
+The service verifies exact mosque-scoped approval and published-snapshot
+references, rejects research/stale/unavailable sources and same-tier overlap,
+and re-verifies rollback targets. Exact active city/alias search returns all
+deterministically ordered subject-qualified matches and never auto-selects a
+duplicate. Real PostgreSQL tests cover stage/activate/search/rollback,
+append-only guards and v6↔v5 fleet-preserving migration; the restore drill
+proves read-only runtime-role access. The research draft remains non-executable,
+and no TV or signed-snapshot contract changed.
+
 ## T037 — persisted Ulyanovsk end-to-end migration
 
 **Goal:** move the T034 hard-coded pilot seed into T035/T036 storage without

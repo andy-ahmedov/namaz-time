@@ -37,7 +37,18 @@ Resolution does not publish prayer rows. Timetable and calculated candidates sti
 
 The first executable registry entry is Ulyanovsk city bound to the Second Cathedral Mosque's existing 2026 effective source and signed pilot snapshot. The composite preserves the annual RDUM identity as `CONFIRMED_PUBLIC` and the August source's `rdumul.ru` attribution/legal identity as `UNKNOWN`; it does not promote the latter. It is not a city-wide or oblast-wide authority claim.
 
-Registry approval and snapshot IDs are references, not cryptographic proof. Future persistence adapters may construct executable datasets only from the existing verified approval and publication stores. Serving and device verification remain mandatory.
+Registry approval and snapshot IDs are references, not cryptographic proof.
+The T036 persisted service may activate a revision only after verifier adapters
+return the exact mosque-scoped approval evidence and published-snapshot
+ID/timezone/range/hash/key evidence from their authoritative stores. Serving
+and device verification remain mandatory.
+
+Registry revisions use schema version 1, a deterministic canonical dataset
+hash, immutable normalized PostgreSQL rows, append-only evidence/audit records,
+and one atomic active pointer. Rollback re-verifies a retained revision and
+moves only that pointer; it never mutates publication data. Research-only,
+stale, unavailable, unverifiable, or same-tier-overlapping records cannot be
+activated.
 
 ## Consequences
 
@@ -55,7 +66,8 @@ Costs:
 - every city/mosque needs explicit policy onboarding before service is available;
 - a nationwide catalog requires licensed geography, alias maintenance, and duplicate-name UX;
 - ambiguous regions require operator/authority coordination;
-- registry persistence, admin API, and revision rollout remain future work.
+- verified-reference store adapters and the setup/admin API are completed by
+  concrete vertical slices rather than by granting a generic registry ID trust;
 
 T035 follow-up (2026-08-30): GeoNames RU under CC BY 4.0 is the selected
 canonical geography source. Its pinned importer yields stable city IDs,

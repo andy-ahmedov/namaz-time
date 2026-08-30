@@ -520,6 +520,17 @@ tables. This is `CONFIRMED_RUNTIME` evidence for a controlled local backend
 restore only; it does not measure production RPO/RTO or recover external
 snapshot/source/key stores.
 
+T036 advances the PostgreSQL ledger through v6. Unit tests prove canonical
+dataset hashing, verified-reference activation, same-tier ambiguity rejection,
+research/stale/unavailable fail-closed behavior and rollback re-verification.
+The real PostgreSQL gate stages and activates immutable synthetic revisions,
+returns duplicate city names without auto-selection, verifies active/persisted
+hash parity, rolls back the pointer, rejects update/delete/truncate with
+SQLSTATE `55000`, rolls v6 down to v5 while retaining fleet state, and reapplies
+v6. The backup/restore drill additionally proves its runtime role can select
+registry state but cannot insert/update it, update audit rows, or create schema
+objects.
+
 ## Release evidence
 
 Each release records:

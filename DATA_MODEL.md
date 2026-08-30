@@ -532,3 +532,17 @@ All operator queries are scoped by mosque/organization membership. Add composite
 - snapshots: active + previous indefinitely for pilot, then policy-driven;
 - heartbeat detail: latest-only per device; no raw history in T013;
 - pairing codes: delete/expire quickly.
+
+## Executable city/source registry (T036)
+
+PostgreSQL migration v6 adds schema-versioned, immutable registry revisions.
+Each revision owns normalized cities/aliases, regions/scopes, authorities,
+sources, policies, timetable/calculation-profile references and source
+overrides. `catalog_revision_id` binds the licensed geographic input;
+`content_sha256` binds a deterministically sorted schema-v1 dataset.
+
+Executable state is one atomic `registry_active_revision` pointer. All other
+registry and evidence/audit rows reject update/delete/truncate. Activation
+stores verified approval and published-snapshot evidence scoped to the exact
+activation event. A rollback appends evidence and changes only the pointer.
+The research registry is not a database seed and cannot activate itself.

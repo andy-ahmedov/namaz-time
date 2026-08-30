@@ -55,4 +55,5 @@ fi
 
 export NAMAZ_TEST_POSTGRES_URL="postgres://namaz_time_test:local-integration-only@127.0.0.1:${mapped_port}/namaz_time_test?sslmode=disable"
 go test -tags=integration ./internal/devices -count=1
+go test -tags=integration ./internal/registry -count=1
 go test -tags=integration ./cmd/api -count=1

@@ -1,0 +1,25 @@
+DROP TABLE IF EXISTS registry_verified_snapshots;
+DROP TABLE IF EXISTS registry_verified_approvals;
+DROP TABLE IF EXISTS registry_audit_events;
+DROP TABLE IF EXISTS registry_active_revision;
+DROP TABLE IF EXISTS registry_timetable_overrides;
+DROP TABLE IF EXISTS registry_source_override_fields;
+DROP TABLE IF EXISTS registry_source_overrides;
+ALTER TABLE IF EXISTS registry_policies
+    DROP CONSTRAINT IF EXISTS registry_policies_revision_id_timetable_id_fkey,
+    DROP CONSTRAINT IF EXISTS registry_policies_revision_id_calculation_profile_id_fkey;
+DROP TABLE IF EXISTS registry_timetables;
+DROP TABLE IF EXISTS registry_calculation_profiles;
+DROP TABLE IF EXISTS registry_policy_mosques;
+DROP TABLE IF EXISTS registry_policy_authorities;
+DROP TABLE IF EXISTS registry_policies;
+DROP TABLE IF EXISTS registry_source_authorities;
+DROP TABLE IF EXISTS registry_sources;
+DROP TABLE IF EXISTS registry_authorities;
+DROP TABLE IF EXISTS registry_scopes;
+DROP TABLE IF EXISTS registry_city_aliases;
+DROP TABLE IF EXISTS registry_cities;
+DROP TABLE IF EXISTS registry_regions;
+DROP TABLE IF EXISTS registry_revisions;
+DROP FUNCTION IF EXISTS reject_registry_truncate();
+DROP FUNCTION IF EXISTS reject_registry_row_mutation();

@@ -224,6 +224,18 @@
 - T035 checkpoint gate passed after temporarily excluding only ignored local inputs: `make docs-check`, focused Go tests, `make format-check`, `go vet ./...`, and `staticcheck ./...`. The root APK was restored with SHA-256 `4fea3403...434bfb`.
 - **T035 status:** complete; T036 is now in progress. T038 is explicitly deferred.
 
+### T036: persisted executable policy registry
+
+- **Status:** in progress
+- T036 service RED: added activation/fail-closed/rollback tests before production code. `go test ./internal/registry` fails on the deliberately absent revision store, verified-reference evidence, service and source-status APIs.
+- First T036 GREEN compile found one missing brace in the new overlap helper before tests could run; corrected the local syntax once and retained the same test contract.
+- T036 service GREEN: `go test ./internal/registry` passes verified activation, research/stale/missing proof/mismatch/ambiguity rejection and rollback re-verification.
+- T036 PostgreSQL RED: added the real revision/activation/search/rollback/up-down/append-only test and wired it into `test-postgres`; integration-tag compilation fails on the deliberately absent `NewPostgresRevisionStore`.
+- T036 PostgreSQL GREEN: migration v6 and `PostgresRevisionStore` now persist/load all registry entities, aliases/junctions, verified references, active pointer and append-only audit. Real `make test-postgres` passes devices/registry/API integration plus v6 backup/restore (`postgres-restore-drill: PASS`).
+- Added an explicit schema-v1 revision contract, defensive fail-closed relation loading, and restore-drill assertions that the runtime role can read but cannot write registry state.
+- Documented the persisted lifecycle, verification boundary, append-only/rollback semantics and database-role split in `PERSISTED_POLICY_REGISTRY.md` and related architecture/model/test docs.
+- T036 fresh checkpoint passes `go test ./...`, `make test-postgres` (including v6 backup/restore), `make docs-check`, `make format-check`, `make lint-go`, `go test -race ./...`, and `make security-go`; `govulncheck` reports no vulnerabilities. The ignored APK was restored with unchanged SHA-256 `4fea3403ec5d288163fbe649220bda86ccaaad3b8d76ba57227d7b2aea434bfb`.
+
 ## 5-Question Reboot Check
 
 | Question | Answer |

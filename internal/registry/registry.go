@@ -451,7 +451,8 @@ func (r Registry) resolvePolicy(policy domain.PrayerPolicy, tier ResolutionTier,
 		return Resolution{}, false
 	}
 	source, sourceOK := findByID(r.sources, policy.SourceID, func(item domain.PrayerSource) string { return item.ID })
-	if !sourceOK || !sameStrings(source.AuthorityIDs, policy.AuthorityIDs) || source.GeographicScopeID != scope.ID {
+	if !sourceOK || !sameStrings(source.AuthorityIDs, policy.AuthorityIDs) || source.GeographicScopeID != scope.ID ||
+		(source.Status != "" && source.Status != domain.PrayerSourceApproved) || (source.FreshThrough != "" && request.Date > source.FreshThrough) {
 		return Resolution{}, false
 	}
 	authorities := make([]domain.PrayerAuthority, 0, len(policy.AuthorityIDs))

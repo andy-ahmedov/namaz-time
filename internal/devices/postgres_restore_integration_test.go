@@ -108,19 +108,22 @@ func TestPostgresBackupRestorePreservesCurrentFleetState(t *testing.T) {
 			migrationRows, pairingRows, auditRows, requestRows,
 		)
 	}
-	var runtimeCanUpdateAudit, runtimeCanCreateSchemaObject bool
+	var runtimeCanUpdateAudit, runtimeCanReadRegistry, runtimeCanInsertRegistry, runtimeCanUpdateRegistry, runtimeCanCreateSchemaObject bool
 	if err := runtimePool.QueryRow(ctx, `
 		SELECT
 			has_table_privilege(current_user, 'audit_events', 'UPDATE'),
+			has_table_privilege(current_user, 'registry_active_revision', 'SELECT'),
+			has_table_privilege(current_user, 'registry_active_revision', 'INSERT'),
+			has_table_privilege(current_user, 'registry_active_revision', 'UPDATE'),
 			has_schema_privilege(current_user, 'public', 'CREATE')`).Scan(
-		&runtimeCanUpdateAudit, &runtimeCanCreateSchemaObject,
+		&runtimeCanUpdateAudit, &runtimeCanReadRegistry, &runtimeCanInsertRegistry, &runtimeCanUpdateRegistry, &runtimeCanCreateSchemaObject,
 	); err != nil {
 		t.Fatalf("inspect restored runtime privileges: %v", err)
 	}
-	if runtimeCanUpdateAudit || runtimeCanCreateSchemaObject {
+	if runtimeCanUpdateAudit || !runtimeCanReadRegistry || runtimeCanInsertRegistry || runtimeCanUpdateRegistry || runtimeCanCreateSchemaObject {
 		t.Fatalf(
-			"restored runtime role is over-privileged: update_audit=%v create_schema_object=%v",
-			runtimeCanUpdateAudit, runtimeCanCreateSchemaObject,
+			"restored runtime privileges: update_audit=%v registry_select=%v registry_insert=%v registry_update=%v create_schema_object=%v",
+			runtimeCanUpdateAudit, runtimeCanReadRegistry, runtimeCanInsertRegistry, runtimeCanUpdateRegistry, runtimeCanCreateSchemaObject,
 		)
 	}
 
