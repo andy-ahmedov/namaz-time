@@ -386,6 +386,62 @@ class NamazTvAppUiTest {
     }
 
     @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun mosqueSettingsOpensDeviceScopedCanonicalCitySearch() {
+        val approved = schedule().copy(
+            mosqueId = "second-cathedral-mosque-ulyanovsk",
+            mosqueName = "Вторая Соборная мечеть Ульяновска",
+            locality = "Ульяновск, ул. Дзержинского, 18А",
+        )
+        val setupState = MutableStateFlow(DeviceSetupUiState())
+        val setupController = object : DeviceSetupController {
+            override val state = setupState
+
+            override fun onQueryChanged(query: String) {
+                setupState.value = setupState.value.copy(query = query)
+            }
+
+            override fun retrySearch() = Unit
+            override fun selectCity(city: ru.namaztime.tv.sync.CanonicalCityCandidate) = Unit
+            override fun backToSearch() = Unit
+            override fun resetAfterExit() = Unit
+        }
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(approved),
+                bootstrapState = MutableStateFlow(SnapshotBootstrapState.Ready(approved.snapshotId)),
+                deviceSetupController = setupController,
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        openSettingsDestination(SettingsDestination.MOSQUE)
+        compose.onNodeWithTag(SettingsDestination.MOSQUE.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+        }
+        compose.onNodeWithTag(SETTINGS_MOSQUE_NAME_FIELD_TAG).performKeyInput {
+            pressKey(Key.DirectionDown)
+        }
+        compose.onNodeWithTag(SETTINGS_MOSQUE_ADDRESS_FIELD_TAG).performKeyInput {
+            pressKey(Key.DirectionDown)
+        }
+        compose.onNodeWithTag(SETTINGS_MOSQUE_IDENTITY_SAVE_TAG).performKeyInput {
+            pressKey(Key.DirectionDown)
+        }
+        compose.onNodeWithTag(SETTINGS_DEVICE_SETUP_ACTION_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+
+        compose.onNodeWithTag(DEVICE_SETUP_SCREEN_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(DEVICE_SETUP_SEARCH_FIELD_TAG).assertIsFocused()
+        compose.onNodeWithText("Ульяновск").assertIsDisplayed()
+        assertEquals(approved.snapshotId, schedule().snapshotId)
+    }
+
+    @Test
     fun redesignedDisplayExposesBrandPrayerAndIqamahVisualAnchors() {
         compose.setContent {
             NamazTvApp(

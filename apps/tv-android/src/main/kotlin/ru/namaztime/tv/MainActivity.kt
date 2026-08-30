@@ -6,6 +6,10 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.datastore.preferences.preferencesDataStore
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.createSavedStateHandle
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import ru.namaztime.tv.data.local.NamazDatabase
 import ru.namaztime.tv.data.local.SnapshotImporter
 import ru.namaztime.tv.data.local.SnapshotReplacementPolicy
@@ -19,8 +23,12 @@ import ru.namaztime.tv.data.snapshot.PILOT_LOCAL_SNAPSHOT_ID_PREFIX
 import ru.namaztime.tv.data.snapshot.PilotLocalSnapshotTrust
 import ru.namaztime.tv.data.snapshot.SnapshotActivationGate
 import ru.namaztime.tv.presentation.NamazTvApp
+import ru.namaztime.tv.presentation.DeviceSetupViewModel
 import ru.namaztime.tv.repository.DataStoreOperatorPreferencesRepository
 import ru.namaztime.tv.repository.RoomPrayerScheduleRepository
+import ru.namaztime.tv.sync.DeviceSetupClient
+import ru.namaztime.tv.sync.EncryptedDeviceProvisioningStore
+import ru.namaztime.tv.sync.HttpUrlConnectionDeviceSyncTransport
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -36,6 +44,21 @@ class MainActivity : ComponentActivity() {
         )
         val database = NamazDatabase.open(applicationContext)
         val scheduleRepository = RoomPrayerScheduleRepository(database.snapshotDao())
+        val setupClient = DeviceSetupClient(
+            transport = HttpUrlConnectionDeviceSyncTransport(),
+            provisioningStore = EncryptedDeviceProvisioningStore(applicationContext),
+        )
+        val setupViewModel = ViewModelProvider(
+            this,
+            viewModelFactory {
+                initializer {
+                    DeviceSetupViewModel(
+                        cityGateway = setupClient,
+                        savedStateHandle = createSavedStateHandle(),
+                    )
+                }
+            },
+        )[DeviceSetupViewModel::class.java]
         val pilotLocalVerifier = if (BuildConfig.PILOT_LOCAL_RUNTIME) {
             PilotLocalSnapshotTrust.verifier(applicationContext)
         } else {
@@ -73,6 +96,7 @@ class MainActivity : ComponentActivity() {
                 operatorPreferencesRepository = preferencesRepository,
                 prayerScheduleRepository = scheduleRepository,
                 bootstrapState = bootstrapper.state,
+                deviceSetupController = setupViewModel,
             )
         }
         lifecycleScope.launch(Dispatchers.IO) {

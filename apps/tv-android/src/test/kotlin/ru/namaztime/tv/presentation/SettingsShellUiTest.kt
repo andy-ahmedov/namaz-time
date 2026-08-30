@@ -78,6 +78,32 @@ class SettingsShellUiTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
+    fun mosquePageOpensCanonicalCitySetupWithoutAnActiveSchedule() {
+        var openCount = 0
+        compose.setContent {
+            NamazTvTheme {
+                SettingsShell(
+                    initialDestination = SettingsDestination.MOSQUE,
+                    onDestinationChanged = {},
+                    onExit = {},
+                    schedule = null,
+                    onOpenDeviceSetup = { openCount += 1 },
+                )
+            }
+        }
+
+        compose.onNodeWithTag(SettingsDestination.MOSQUE.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+        }
+        compose.onNodeWithTag(SETTINGS_DEVICE_SETUP_ACTION_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+
+        assertEquals(1, openCount)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
     @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
     fun everySectionShowsRealPilotStateAndLocalActionsAreEffective() {
         var shiftChoice: Boolean? = null

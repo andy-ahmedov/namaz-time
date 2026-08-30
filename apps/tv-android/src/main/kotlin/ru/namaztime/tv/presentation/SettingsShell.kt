@@ -77,6 +77,7 @@ const val SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG = "settings-custom-background-pi
 const val SETTINGS_SHELL_TAG = "settings-shell"
 const val SETTINGS_NAVIGATION_PANEL_TAG = "settings-navigation-panel"
 const val SETTINGS_CONTENT_PANEL_TAG = "settings-content-panel"
+const val SETTINGS_DEVICE_SETUP_ACTION_TAG = "settings-device-setup-action"
 
 @Composable
 fun SettingsShell(
@@ -91,6 +92,7 @@ fun SettingsShell(
     pilotLocalRuntime: Boolean = false,
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)? = null,
     onMosquePresentationIdentityChanged: ((OperatorMosquePresentationIdentity) -> Unit)? = null,
+    onOpenDeviceSetup: (() -> Unit)? = null,
     onBackgroundStyleChanged: ((String) -> Unit)? = null,
     onLanguageChanged: ((String) -> Unit)? = null,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)? = null,
@@ -214,6 +216,7 @@ fun SettingsShell(
                     pilotLocalRuntime = pilotLocalRuntime,
                     onScreenRetentionShiftChanged = onScreenRetentionShiftChanged,
                     onMosquePresentationIdentityChanged = onMosquePresentationIdentityChanged,
+                    onOpenDeviceSetup = onOpenDeviceSetup,
                     onBackgroundStyleChanged = onBackgroundStyleChanged,
                     onLanguageChanged = onLanguageChanged,
                     onQrConfigurationChanged = onQrConfigurationChanged,
@@ -253,6 +256,7 @@ private fun SettingsPage(
     pilotLocalRuntime: Boolean,
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)?,
     onMosquePresentationIdentityChanged: ((OperatorMosquePresentationIdentity) -> Unit)?,
+    onOpenDeviceSetup: (() -> Unit)?,
     onBackgroundStyleChanged: ((String) -> Unit)?,
     onLanguageChanged: ((String) -> Unit)?,
     onQrConfigurationChanged: ((OperatorQrConfiguration) -> Unit)?,
@@ -355,16 +359,29 @@ private fun SettingsPage(
         destination == SettingsDestination.IQAMAH ||
         destination == SettingsDestination.DONATION
     val localActions = when (destination) {
-        SettingsDestination.MOSQUE -> if (schedule == null) emptyList() else onMosquePresentationIdentityChanged?.let { change ->
-            listOf(
-                LocalSettingsAction(
-                    label = appString(R.string.save_mosque_identity_settings),
-                    invoke = { change(mosqueIdentityDraft) },
-                    testTag = SETTINGS_MOSQUE_IDENTITY_SAVE_TAG,
-                    enabled = isValidMosquePresentationIdentity(mosqueIdentityDraft),
-                ),
-            )
-        }.orEmpty()
+        SettingsDestination.MOSQUE -> buildList {
+            if (schedule != null) {
+                onMosquePresentationIdentityChanged?.let { change ->
+                    add(
+                        LocalSettingsAction(
+                            label = appString(R.string.save_mosque_identity_settings),
+                            invoke = { change(mosqueIdentityDraft) },
+                            testTag = SETTINGS_MOSQUE_IDENTITY_SAVE_TAG,
+                            enabled = isValidMosquePresentationIdentity(mosqueIdentityDraft),
+                        ),
+                    )
+                }
+            }
+            onOpenDeviceSetup?.let { open ->
+                add(
+                    LocalSettingsAction(
+                        label = appString(R.string.device_setup_open_action),
+                        invoke = open,
+                        testTag = SETTINGS_DEVICE_SETUP_ACTION_TAG,
+                    ),
+                )
+            }
+        }
         SettingsDestination.CAMPAIGNS -> onQrConfigurationChanged?.let { change ->
             listOf(
                 LocalSettingsAction(

@@ -74,9 +74,12 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
 
 private const val DISPLAY_ROUTE = "display"
 private const val SETTINGS_ROUTE = "settings"
+@Serializable
+internal data object DeviceSetupRoute
 const val DISPLAY_UNAVAILABLE_TAG = "display-unavailable"
 const val UNAVAILABLE_PANEL_TAG = "unavailable-panel"
 
@@ -87,6 +90,7 @@ fun NamazTvApp(
     bootstrapState: Flow<SnapshotBootstrapState> = flowOf(
         SnapshotBootstrapState.Diagnostic("NO_LOCAL_SNAPSHOT"),
     ),
+    deviceSetupController: DeviceSetupController? = null,
     clock: Clock = Clock.systemUTC(),
     tickIntervalMillis: Long? = 1_000L,
 ) {
@@ -241,6 +245,13 @@ fun NamazTvApp(
                                 }
                             },
                             onExit = { navController.popBackStack() },
+                            onOpenDeviceSetup = deviceSetupController?.let {
+                                {
+                                    navController.navigate(DeviceSetupRoute) {
+                                        launchSingleTop = true
+                                    }
+                                }
+                            },
                             campaignPreview = campaignPreview,
                             schedule = availableSchedule,
                             preferences = preferences,
@@ -356,10 +367,42 @@ fun NamazTvApp(
                             },
                         )
                     }
+                    if (deviceSetupController != null) {
+                        composable<DeviceSetupRoute> {
+                            val setupState by deviceSetupController.state.collectAsStateWithLifecycle()
+                            val backOrExit = {
+                                if (setupState.step == DeviceSetupStep.SEARCH) {
+                                    deviceSetupController.resetAfterExit()
+                                    navController.popBackStack()
+                                } else {
+                                    deviceSetupController.backToSearch()
+                                }
+                                Unit
+                            }
+                            DeviceScheduleSetupScreen(
+                                state = setupState,
+                                activeSchedule = availableSchedule?.toActiveScheduleSummaryUi(),
+                                onQueryChanged = deviceSetupController::onQueryChanged,
+                                onRetrySearch = deviceSetupController::retrySearch,
+                                onCitySelected = deviceSetupController::selectCity,
+                                onBack = backOrExit,
+                            )
+                        }
+                    }
                 }
             }
         }
     }
+}
+
+private fun LocalPrayerSchedule.toActiveScheduleSummaryUi(): ActiveScheduleSummaryUi {
+    val identity = toMosqueDisplayIdentity()
+    return ActiveScheduleSummaryUi(
+        cityName = identity.locality ?: locality ?: mosqueName,
+        authorityName = attribution ?: authorityName,
+        sourceName = sourceId,
+        timezone = timezoneId,
+    )
 }
 
 @Composable
