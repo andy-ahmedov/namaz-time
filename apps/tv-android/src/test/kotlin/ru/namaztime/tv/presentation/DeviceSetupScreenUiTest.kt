@@ -201,6 +201,38 @@ class DeviceSetupScreenUiTest {
 
     @Test
     @OptIn(ExperimentalTestApi::class)
+    fun choiceLoadFailureFocusesRetryAndKeepsActiveScheduleVisible() {
+        var retried = false
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(
+                        choices = ScheduleChoicesUiState.Error(
+                            code = "setup_server_error",
+                            retryable = true,
+                        ),
+                    ),
+                    activeSchedule = activeScheduleSummary(),
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onRetryScheduleChoices = { retried = true },
+                    onBack = {},
+                )
+            }
+        }
+
+        compose.waitForIdle()
+        compose.onNodeWithText("Не удалось загрузить варианты расписания").assertIsDisplayed()
+        compose.onNodeWithText("synthetic-active-source").assertIsDisplayed()
+        compose.onNodeWithTag(DEVICE_SETUP_CHOICES_RETRY_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        assertEquals(true, retried)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
     fun oneChoiceIsExplainedAndRequiresExplicitEnterBeforeRequest() {
         val item = scheduleChoice(0)
         var selected: DeviceScheduleChoice? = null
@@ -307,6 +339,43 @@ class DeviceSetupScreenUiTest {
         compose.onNodeWithText("Ожидает подтверждения").assertIsDisplayed()
         compose.onNodeWithText("Текущее расписание продолжает работать до подтверждения нового выбора")
             .assertIsDisplayed()
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun failedExplicitRequestFocusesRetryAndLeavesLastKnownGoodMessage() {
+        val item = scheduleChoice(0)
+        var retried = false
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(listOf(item)).copy(
+                        submission = ScheduleChoiceSubmissionUiState.Error(
+                            choice = item,
+                            interactionId = "interaction-synthetic-0001",
+                            code = "setup_io",
+                            retryable = true,
+                        ),
+                    ),
+                    activeSchedule = activeScheduleSummary(),
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onRetryScheduleChoiceRequest = { retried = true },
+                    onBack = {},
+                )
+            }
+        }
+
+        compose.waitForIdle()
+        compose.onNodeWithText("Не удалось отправить выбор. Текущее расписание не изменено.")
+            .assertIsDisplayed()
+        compose.onNodeWithText("Текущее расписание продолжает работать до подтверждения нового выбора")
+            .assertIsDisplayed()
+        compose.onNodeWithTag(DEVICE_SETUP_REQUEST_RETRY_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        assertEquals(true, retried)
     }
 
     @Test

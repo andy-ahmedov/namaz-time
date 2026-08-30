@@ -383,3 +383,14 @@ append-only audit identifies device and mosque. The operation cannot approve,
 publish, activate, sign, assign or change the active/Room snapshot. A revoked
 or cross-device bearer receives `401`; stale, active, unavailable or otherwise
 non-requestable choices receive fail-closed `409`.
+
+The Android client constructs these URLs only from the HTTPS origin of its
+already authenticated manifest and its provisioned device ID; it does not
+accept a setup origin, mosque ID or revision from presentation state. Responses
+are capped at 512 KiB and decoded with unknown-field rejection. The POST body
+is capped at 16 KiB and contains no bearer, mosque, revision, admin actor,
+approval or publication fields. Client cancellation is propagated so
+superseded city searches and abandoned choice loads cannot later replace the
+current UI state. Every response must echo the expected city/date and, for a
+proposal, the provisioned device/mosque principal plus the same interaction
+identity; mismatch fails closed.

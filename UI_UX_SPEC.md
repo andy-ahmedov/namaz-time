@@ -303,8 +303,37 @@ Each page:
 
 The Mosque/location page provides two explicit local fields for the displayed
 mosque name and displayed address. Blank means the canonical/pilot fallback.
-The canonical source locality and IANA timezone are shown as read-only context;
-there are no city, timezone, mosque-ID or provenance editing controls.
+The current canonical locality, authority/source and IANA timezone remain
+read-only active-schedule context. A separate `Change city or schedule` action
+opens the T041 review-request flow; it never edits the active city, timezone,
+mosque ID or provenance locally.
+
+The T041 flow is:
+
+1. focus the canonical-city search field and use the system Android TV IME;
+2. search the T035 catalog after a short debounce, cancelling a superseded
+   request;
+3. render every canonical candidate with federal subject, settlement type and
+   IANA timezone, requiring an explicit choice even for duplicate names;
+4. render the complete T040 eligible schedule-choice set for that city;
+5. require an explicit choice even when only one schedule is available; and
+6. submit only a non-authoritative `pending_review` proposal.
+
+Zero choices show `No approved schedule is available for this city yet` and no
+calculation or neighboring-region fallback. Two or more choices use a
+scrollable D-pad list without top-N, preference or implicit first-item
+selection; focus color communicates navigation only. Every row shows the
+authority label, geographic scope, source identity, effective range, schedule
+kind and policy/source identity so duplicate authority labels remain
+distinguishable. List order never implies religious priority.
+
+The current signed last-known-good schedule remains visible in the left
+context panel and stays active after a failed or pending request. A successful
+request names the chosen authority and says `Awaiting review`; it does not
+approve, publish, sign, assign or alter Room. `Back` from choices returns to the
+preserved city query. While the system IME is visible, the first `Back` closes
+only the keyboard and keeps meaningful focus on the search field; the next
+`Back` follows normal navigation.
 
 ## First-run flows
 
@@ -326,7 +355,10 @@ there are no city, timezone, mosque-ID or provenance editing controls.
 2. wait with retry/expiry state;
 3. receive mosque/config snapshot;
 4. show source and today's values for confirmation;
-5. activate.
+5. activate;
+6. later city/schedule changes use the device-scoped T041 discovery flow and
+   remain pending until the existing operator approval/publication pipeline
+   completes.
 
 ## Accessibility and focus tests
 

@@ -6,6 +6,7 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
@@ -28,6 +29,7 @@ import ru.namaztime.tv.sync.DeviceSetupGateway
 import ru.namaztime.tv.sync.DeviceSetupResult
 import ru.namaztime.tv.sync.PendingDeviceScheduleChoiceRequest
 
+@OptIn(ExperimentalCoroutinesApi::class)
 class DeviceSetupChoiceViewModelTest {
     private val dispatcher = StandardTestDispatcher()
 

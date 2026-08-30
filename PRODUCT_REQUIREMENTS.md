@@ -99,6 +99,24 @@ Maintains sources and devices without being able to silently publish unapproved 
 - `FR-SY-006`: keep a previous valid snapshot for rollback;
 - `FR-SY-007`: support canary rollout and emergency revoke/rollback.
 
+### City and authoritative schedule setup
+
+- `FR-ST-001`: a provisioned TV can search the canonical Russia city catalog
+  by Cyrillic name or stored alias without receiving an admin credential;
+- `FR-ST-002`: same-name settlements remain separate candidates identified by
+  federal subject, settlement type and IANA timezone and are never selected
+  automatically;
+- `FR-ST-003`: after explicit city selection, expose every eligible
+  highest-precedence authoritative schedule choice without top-N, hidden
+  ranking or implicit first-choice selection;
+- `FR-ST-004`: zero choices fail closed without generic calculation,
+  neighboring-region or nationwide fallback;
+- `FR-ST-005`: a TV choice creates only an audited, device/mosque-scoped
+  `pending_review` proposal; it cannot approve, publish, sign, activate or
+  assign a schedule;
+- `FR-ST-006`: search, choice loading, failed submission, back navigation and
+  process recreation preserve the current signed last-known-good Room schedule.
+
 ### Diagnostics
 
 - `FR-DI-001`: show app/device version, mosque, timezone, snapshot, last sync and coverage;

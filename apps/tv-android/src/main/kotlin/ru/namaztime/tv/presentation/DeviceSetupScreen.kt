@@ -7,12 +7,15 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.isImeVisible
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -41,6 +44,7 @@ import androidx.compose.ui.input.key.key
 import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -75,6 +79,7 @@ data class ActiveScheduleSummaryUi(
 )
 
 /** Renders the device-scoped canonical-city and schedule-choice setup flow. */
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun DeviceScheduleSetupScreen(
     state: DeviceSetupUiState,
@@ -88,7 +93,15 @@ fun DeviceScheduleSetupScreen(
     onRetryScheduleChoiceRequest: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
-    BackHandler(onBack = onBack)
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val imeVisible = WindowInsets.isImeVisible
+    BackHandler {
+        if (imeVisible) {
+            keyboardController?.hide()
+        } else {
+            onBack()
+        }
+    }
     TvSafeFrame(
         testTag = DEVICE_SETUP_SCREEN_TAG,
         modifier = modifier,
@@ -340,6 +353,7 @@ private fun SetupSearchField(
 ) {
     var focused by remember { mutableStateOf(false) }
     val colors = NamazTvTheme.colors
+    val keyboardController = LocalSoftwareKeyboardController.current
     BasicTextField(
         value = value,
         onValueChange = onValueChange,
@@ -351,11 +365,19 @@ private fun SetupSearchField(
                 firstResultRequester?.let { down = it }
             }
             .onPreviewKeyEvent { event ->
-                if (event.type == KeyEventType.KeyDown && event.key == Key.DirectionDown) {
-                    firstResultRequester?.requestFocus()
-                    firstResultRequester != null
-                } else {
-                    false
+                if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                when (event.key) {
+                    Key.DirectionDown -> {
+                        firstResultRequester?.requestFocus()
+                        firstResultRequester != null
+                    }
+                    Key.DirectionCenter,
+                    Key.Enter,
+                    -> {
+                        keyboardController?.show()
+                        keyboardController != null
+                    }
+                    else -> false
                 }
             }
             .onFocusChanged { focused = it.isFocused }
@@ -467,12 +489,23 @@ private fun ScheduleChoicesPanel(
     val firstChoiceRequester = remember(available?.set?.choices?.map { it.id }) { FocusRequester() }
     val choicesRetryRequester = remember { FocusRequester() }
     val requestRetryRequester = remember { FocusRequester() }
-    LaunchedEffect(available?.set?.choices?.map { it.id }, state.submission) {
-        if (available?.set?.choices?.isNotEmpty() == true &&
-            state.submission !is ScheduleChoiceSubmissionUiState.Submitting
-        ) {
+    LaunchedEffect(available?.set?.choices?.map { it.id }, state.choices, state.submission) {
+        val target = when {
+            (state.submission as? ScheduleChoiceSubmissionUiState.Error)?.retryable == true -> {
+                requestRetryRequester
+            }
+            (state.choices as? ScheduleChoicesUiState.Error)?.retryable == true -> {
+                choicesRetryRequester
+            }
+            available?.set?.choices?.isNotEmpty() == true &&
+                state.submission !is ScheduleChoiceSubmissionUiState.Submitting -> {
+                firstChoiceRequester
+            }
+            else -> null
+        }
+        if (target != null) {
             withFrameNanos { }
-            runCatching { firstChoiceRequester.requestFocus() }
+            runCatching { target.requestFocus() }
         }
     }
     Column(

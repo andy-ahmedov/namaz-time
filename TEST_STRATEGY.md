@@ -556,6 +556,37 @@ state and the sole active executable choice. PostgreSQL and pilot regressions
 pin active/staged/stale projections plus the unchanged Ulyanovsk snapshot raw
 SHA-256.
 
+T041 adds four coupled test layers. Android client tests enforce the exact
+device-scoped HTTPS origin, provisioned bearer/path identity, strict unknown
+field rejection, 512 KiB response bound, 16 KiB request bound, principal/date/
+choice echo validation, 401/403/409/5xx/I/O mapping and cancellation
+propagation. Go HTTP and real PostgreSQL tests reject wrong, revoked and
+cross-device credentials plus arbitrary mosque/revision injection; the only
+write is one idempotent append-only `pending_review` proposal under the
+least-privileged runtime role.
+
+ViewModel/Compose tests cover empty/debounced/superseded search, loading,
+network failure, no result, Cyrillic and alias results, duplicate canonical
+cities, 0/1/2/5/8 schedule choices, no implicit selection, duplicate authority
+labels, unavailable/stale rejection, explicit request failure/retry, preserved
+query/back state and process recreation. D-pad tests traverse all eight choice
+rows and adaptive bounds run at 720p, 1080p-density and 4K-density profiles.
+The Room integration regression authenticates and imports the real signed
+Ulyanovsk pilot, submits a pending proposal through the Android client and
+proves the active selection, prayer rows, raw snapshot bytes, snapshot ID and
+SHA-256 remain unchanged at
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+
+`CONFIRMED_RUNTIME` controlled Android 16 / API 36 TV-emulator evidence records
+city search with the system IME, same-name candidates, one choice, a complete
+multi-choice list with D-pad scrolling, unavailable and pending states. It also
+records `Center` opening the IME and the first `Back` hiding it while focus
+remains on the search field. This evidence is stored under
+[`docs/evidence/t041-android-tv-setup/`](docs/evidence/t041-android-tv-setup/)
+and does not establish physical-TV behavior. Physical overscan, OEM IME and
+representative-distance readability remain `UNKNOWN` until the hardware
+matrix runs.
+
 ## Release evidence
 
 Each release records:

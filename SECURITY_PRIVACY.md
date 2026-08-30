@@ -267,6 +267,23 @@ Remote work is not scheduled in local-only/unprovisioned mode. These permissions
 do not authorize UI network reads, analytics, identifiers or background source
 scraping.
 
+## T041 device-scoped setup boundary
+
+The Android TV never stores or receives the admin bearer used by T039/T040.
+City/schedule setup reuses only the provisioned device credential. The server
+binds the path principal to that bearer, derives the mosque, chooses the
+immutable review revision from private configuration and returns only bounded
+setup projections. A client cannot supply `mosque_id`, `revision_id`, an admin
+actor or approval/publication state.
+
+Android derives the setup endpoint from the exact HTTPS scheme/host/port of its
+authenticated manifest, strictly decodes bounded responses and rejects unknown
+fields or mismatched device/mosque/city/date echoes. An explicit TV choice can
+append only an audited `pending_review` proposal with origin
+`local_tv_operator`; it cannot update the active registry pointer, snapshot
+assignment, signing state or Room. Revocation, cross-device paths, stale or
+non-requestable choices fail closed and leave last-known-good active.
+
 ## Asset upload safety
 
 - server-side content-type sniffing;
