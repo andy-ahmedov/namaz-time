@@ -180,6 +180,14 @@ func TestPostgresUlyanovskAdminSearchResolveAndRollbackPreserveSignedPilot(t *te
 		!strings.Contains(deviceSearch.Body, `"city_id":"`+ulyanovskCityID+`"`) {
 		t.Fatalf("device Ulyanovsk search = %d %s", deviceSearch.StatusCode, deviceSearch.Body)
 	}
+	deviceAliasSearchURL := activeDeviceServer.URL + "/v1/devices/" + deviceID +
+		"/setup/cities?q=" + url.QueryEscape("Ulyanovsk")
+	deviceAliasSearch := request(t, http.MethodGet, deviceAliasSearchURL, nil, deviceToken, "")
+	if deviceAliasSearch.StatusCode != http.StatusOK || strings.Count(deviceAliasSearch.Body, `"city_id":`) != 1 ||
+		!strings.Contains(deviceAliasSearch.Body, `"city_id":"`+ulyanovskCityID+`"`) ||
+		!strings.Contains(deviceAliasSearch.Body, `"canonical_name":"Ульяновск"`) {
+		t.Fatalf("device Ulyanovsk alias search = %d %s", deviceAliasSearch.StatusCode, deviceAliasSearch.Body)
+	}
 	deviceActiveChoicesURL := activeDeviceServer.URL + "/v1/devices/" + deviceID +
 		"/setup/schedule-choices?city_id=" + ulyanovskCityID + "&date=2026-08-30"
 	deviceActiveChoices := request(t, http.MethodGet, deviceActiveChoicesURL, nil, deviceToken, "")
