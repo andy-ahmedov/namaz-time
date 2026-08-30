@@ -6,7 +6,7 @@ Determine, with clean-room evidence, how 1Muslim 5.9.5 resolves prayer times (es
 
 ## Current Phase
 
-Phase 6
+Complete
 
 ## Phases
 
@@ -55,12 +55,12 @@ Phase 6
 
 ### Phase 6: Falsification review and delivery
 
-- [ ] Re-read the plan/findings and independently try to disprove correlations and inferred causation.
-- [ ] Run narrow tests, then `make docs-check`, `make test`, and `make lint`.
-- [ ] Update behavior docs/contracts only if changed; update `PLANS.md` and `CODEX_TASKS.md`.
-- [ ] Audit Git for APKs, decompilation, secrets, proprietary bulk data, and unrelated changes.
-- [ ] Commit checkpoint 5 and report commands, results, risks, changed files, region counts, implementation state, and next 3–5 tasks.
-- **Status:** pending
+- [x] Re-read the plan/findings and independently try to disprove correlations and inferred causation.
+- [x] Run narrow tests, then `make docs-check`, `make test`, and `make lint`.
+- [x] Update behavior docs/contracts only if changed; update `PLANS.md` and `CODEX_TASKS.md`.
+- [x] Audit Git for APKs, decompilation, secrets, proprietary bulk data, and unrelated changes.
+- [x] Commit checkpoint 5 and report commands, results, risks, changed files, region counts, implementation state, and next 3–5 tasks.
+- **Status:** complete
 
 ## Correctness-sensitive unknowns
 
@@ -90,6 +90,9 @@ Phase 6
 | First synthetic comparison assertion expected four `>5` fields, but the fixture actually contained five. | 1 | Audited the six synthetic deltas, corrected the test expectation to include Asr +6, and reran all four tests successfully. |
 | The first registry validation query addressed `.subjects`, but the draft schema uses `.entries`. | 1 | Corrected the read-only query; all 31 entries have unique subject codes and computed status counts match the declared summary. |
 | DUM RT's former prayer-time helper URL returned HTTP 410 during follow-up. | 1 | Retained the live first-party 2014 policy evidence, marked the selector URL as volatile, and kept the interface subject to source onboarding rather than treating it as a stable API. |
+| A one-off falsification `awk` command projected the wrong annual CSV columns. | 1 | Re-read the header and verified Dhuhr through named JSON/CSV fields plus the reconciliation ledger; discarded the incorrect projection. |
+| Initial registry seed promoted the composite Ulyanovsk source to a single RDUM authority. | 1 | Verified the source records and corrected the model to retain annual RDUM as `CONFIRMED_PUBLIC` and the August attributed publisher identity as `UNKNOWN`. |
+| The first clean-room `rg` audit matched sanitized research terms and the synthetic SQLite test schema. | 1 | Replaced it with exact tracked-extension/path/size/MIME/diff checks that distinguish prohibited artifacts from allowed summaries and synthetic fixtures. |
 
 ## Notes
 

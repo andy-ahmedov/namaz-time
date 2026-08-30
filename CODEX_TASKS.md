@@ -703,3 +703,140 @@ visual reviews report zero Critical, Important or Minor findings and return
 `Ready` / `ACCEPT`. These are `CONFIRMED_RUNTIME` emulator results;
 physical-TV/OEM picker and representative-distance QR acceptance remain
 `UNKNOWN`.
+
+## T034 — clean-room Russia city/source research and Ulyanovsk foundation
+
+**Goal:** determine how 1Muslim 5.9.5 resolves prayer times, reproduce its
+stored Ulyanovsk path without copying proprietary code/data, research Russian
+regional prayer authorities/sources, and make the existing Ulyanovsk pilot the
+first entry of a general fail-closed city/source resolver.
+
+**In scope:** sanitized APK static inventory and ordinary install attempt;
+stored/calculated/network/update data-flow recovery; independent aggregate
+2026 Ulyanovsk comparison; first-party authority/source research with explicit
+confirmed/strong/ambiguous/unknown mapping status; IslamApp/1Muslim comparison;
+City/Region/GeographicScope/PrayerAuthority/PrayerSource/PrayerPolicy/
+CalculationProfile/TimeTable/SourceOverride domain boundaries; precedence and
+ambiguity tests; control-plane-only Ulyanovsk seed referencing the unchanged
+approved signed pilot; ADR, plans and falsification review.
+
+**Non-goals:** committing the APK, DEX/decompilation, keys, competitor rows or
+bulk datasets; claiming static paths executed; assigning nationwide authority;
+tuning a generic calculator to mimic official values; adding TV/Compose
+networking; changing signed snapshot bytes, Room, UI or Android permissions;
+activating any subject beyond the existing Ulyanovsk pilot; push or PR.
+
+**Acceptance:** the Ulyanovsk mechanism is identified and compared across 365
+days × six prayers; discrepancies and `UNKNOWN` causes are bounded; public
+research preserves locality and competing-authority ambiguity; the resolver
+implements exact timetable → regional timetable → approved regional
+calculation → explicit fallback → unavailable with same-tier ambiguity;
+Ulyanovsk returns the existing source/policy/snapshot IDs and exact component
+authority evidence; tests/checks pass; five local commits record the work.
+
+**Result:** completed locally on 2026-08-30 in five checkpoint commits. Static
+evidence establishes a hybrid 1Muslim architecture and a stored-table
+Ulyanovsk path; runtime app behavior remains unavailable because the supplied
+base APK requires missing ABI/density splits. The independent 365-day
+comparison and a second one-off implementation agree exactly. Research covers
+31 subjects (6 confirmed, 5 strong, 6 ambiguous, 14 unknown), but only the
+existing Ulyanovsk pilot is executable. Falsification review corrected the
+composite source to preserve annual RDUM as `CONFIRMED_PUBLIC` and the August
+publisher identity as `UNKNOWN`. Full docs/Go/Android/lint/race/vulnerability/
+secret gates and clean-room Git audit pass. No competitor artifact, new
+production regional mapping, TV behavior, or signed snapshot byte changed.
+
+## T035 — licensed canonical Russia city catalog and search
+
+**Goal:** replace the one-city in-memory geographic seed with a revisioned,
+licensed control-plane catalog that can safely distinguish Russian settlements.
+
+**In scope:** source/license decision; deterministic import; canonical stable
+IDs; RU federal-subject codes; settlement type; names and explicit aliases;
+coordinates, IANA timezone and geographic provenance; duplicate-name and
+transliteration search results; update diff, review, rollback and tests.
+
+**Non-goals:** prayer authority inference, embedded competitor/GeoJSON data,
+live geocoding from TV, silent selection among duplicate names, or source
+policy activation.
+
+**Acceptance:** an operator can search duplicate and transliterated names and
+choose a canonical city with visible subject/timezone/provenance; invalid
+timezone/schema drift fails closed; catalog revisions are auditable and
+rollbackable.
+
+## T036 — persisted policy registry with verified reference adapters
+
+**Goal:** persist the T034 entity model while keeping approval and snapshot
+authentication in their existing authoritative stores.
+
+**In scope:** PostgreSQL migrations for regions, scopes, authorities and exact
+evidence labels, sources, policies, calculation/timetable payload references
+and overrides; revision/audit lifecycle; adapter inputs from verified approval
+receipts and verified published-snapshot registry; resolver explanation API;
+foreign-key, scope, mosque, effective-range, ambiguity and rollback tests.
+
+**Non-goals:** treating a non-empty approval/snapshot ID as authentication,
+promoting the research JSON into production, automatic fallback, or TV schema
+changes.
+
+**Acceptance:** only records backed by verified approval/publication state can
+enter an executable registry revision; same-tier conflicts and stale/missing
+references block activation; previous registry revision remains recoverable.
+
+## T037 — persisted Ulyanovsk end-to-end migration
+
+**Goal:** move the T034 hard-coded pilot seed into T035/T036 storage without
+changing the current signed offline result.
+
+**In scope:** canonical Ulyanovsk city and RU-ULY region rows; annual RDUM
+`CONFIRMED_PUBLIC` component; August attributed-publisher `UNKNOWN` component;
+effective source, mosque-bound policy, override and timetable references;
+admin/setup search and explanation; exact snapshot/hash/signing-key comparison;
+rollback test.
+
+**Non-goals:** changing schedule rows, authority evidence, mosque scope,
+timezone, approval, signature, Android bootstrap/UI, or adding another city.
+
+**Acceptance:** search `Ульяновск` plus explicit Second Cathedral Mosque choice
+resolves the same `effective-ulyanovsk-2026-v1` and
+`ulyanovsk-second-cathedral-2026-pilot-local-v2`; signed bytes remain identical;
+failure leaves the existing pilot usable.
+
+## T038 — second official regional source adapter
+
+**Goal:** prove the architecture on one non-Ulyanovsk locality using a directly
+onboarded first-party authority source.
+
+**In scope:** first obtain written geographic scope, source transport/reuse
+terms and approval owner; then implement one allowed provider kind with raw
+capture/metadata, deterministic normalization, fail-closed schema drift,
+validation/diff, reproducible official or synthetic fixtures, approval,
+signing and last-known-good behavior. Татарстан calculation policy and one
+Dagestan locality timetable are candidates only after their missing contracts
+are resolved.
+
+**Non-goals:** choosing the easiest scraped page, inferring undocumented
+angles, subject-wide promotion from a city widget, or silent alternate source.
+
+**Acceptance:** one explicitly named locality/mosque has a complete retained
+source-to-signed-snapshot chain and independently reviewed comparison evidence;
+all other localities remain unavailable.
+
+## T039 — ambiguity, unavailability and staleness operator workflow
+
+**Goal:** make fail-closed regional resolution usable without hiding why a city
+cannot be auto-selected.
+
+**In scope:** admin API/UI projections for candidate authority/source, evidence
+label, geographic scope, effective range, precedence tier, freshness and
+blocked reason; explicit mosque/operator binding and approval handoff; audit;
+tests for Moscow/Ufa-style parallel authorities, expired schedules and missing
+fallback.
+
+**Non-goals:** aggregator recommendations, coordinate-based religious choice,
+automatic nationwide/neighboring fallback, or modifying the TV display path.
+
+**Acceptance:** ambiguous/stale/unavailable results are explained and cannot be
+published until an explicit approved binding exists; devices retain the last-
+known-good signed snapshot.

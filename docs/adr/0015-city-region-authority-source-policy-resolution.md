@@ -17,9 +17,9 @@ NamazTime keeps these source-independent concepts distinct:
 
 - `City` and `Region` for canonical geography and IANA timezone;
 - `GeographicScope` for policy applicability candidates;
-- `PrayerAuthority` for the named religious organization;
-- `PrayerSource` for the allowed provider kind and source identity;
-- `PrayerPolicy` for an approved scope/authority/source/mosque/effective-range binding;
+- `PrayerAuthority` for each named organization/publisher identity and its evidence label;
+- `PrayerSource` for the allowed provider kind, one or more explicit authority references, and source identity;
+- `PrayerPolicy` for a curated scope/authority-reference/source/mosque/effective-range/approval-reference binding;
 - `CalculationProfile` or `TimeTable` as mutually exclusive policy payloads;
 - `SourceOverride` for retained field-level source composition.
 
@@ -35,7 +35,9 @@ Multiple eligible policies at one tier are an error. Insertion order, coordinate
 
 Resolution does not publish prayer rows. Timetable and calculated candidates still pass the existing approval/signing pipeline. TVs receive only versioned signed snapshots, verify them, import atomically into Room, and retain last-known-good on failure. No source/geocoder/resolver network path is added to composables or display reducers.
 
-The first executable registry entry is Ulyanovsk city bound to the Second Cathedral Mosque's existing 2026 effective source and signed pilot snapshot. It is not a city-wide or oblast-wide authority claim.
+The first executable registry entry is Ulyanovsk city bound to the Second Cathedral Mosque's existing 2026 effective source and signed pilot snapshot. The composite preserves the annual RDUM identity as `CONFIRMED_PUBLIC` and the August source's `rdumul.ru` attribution/legal identity as `UNKNOWN`; it does not promote the latter. It is not a city-wide or oblast-wide authority claim.
+
+Registry approval and snapshot IDs are references, not cryptographic proof. Future persistence adapters may construct executable datasets only from the existing verified approval and publication stores. Serving and device verification remain mandatory.
 
 ## Consequences
 
@@ -64,4 +66,3 @@ Costs:
 - silently calculating when an official timetable is stale or unavailable;
 - putting geocoding, source fetches, or policy resolution in the TV display path;
 - bypassing candidate validation, approval, signatures, or last-known-good activation.
-

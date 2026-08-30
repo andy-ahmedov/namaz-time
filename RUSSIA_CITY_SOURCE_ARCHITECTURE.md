@@ -11,7 +11,7 @@ Status: foundation implemented for the Ulyanovsk pilot; nationwide rollout is no
 query
   → canonical City
   → Region + candidate GeographicScope records
-  → explicit PrayerAuthority / PrayerSource bindings
+  → explicit PrayerAuthority reference(s) / PrayerSource bindings
   → PrayerPolicy precedence and ambiguity check
   → TimeTable or CalculationProfile
   → existing validation / diff / approval / publication pipeline
@@ -39,9 +39,9 @@ The initial source-independent types live in `internal/domain/city_source.go`.
 | `City` | Canonical name/aliases, country, region, coordinates, IANA timezone, geographic provenance, optional explicit fallback policy ID | Religious authority or a prayer method |
 | `Region` | Federal-subject identity and ISO 3166-2 code | One canonical authority for every mosque |
 | `GeographicScope` | City or region applicability candidate; later versions may add licensed polygons | Authority, approval, or source trust |
-| `PrayerAuthority` | Named religious organization/branch and first-party identity | Exclusive status outside its recorded binding |
-| `PrayerSource` | Allowed provider kind plus explicit authority and scope references | Approval or publication eligibility by itself |
-| `PrayerPolicy` | Approved binding among scope, authority, source, mosque(s), effective range, and one policy payload | Permission to bypass ingestion or signing |
+| `PrayerAuthority` | One named organization/publisher identity plus its exact evidence label; a composite source can reference several | Exclusive status outside its recorded component binding |
+| `PrayerSource` | Allowed provider kind plus explicit authority-reference list and scope reference | Approval or publication eligibility by itself |
+| `PrayerPolicy` | Curated binding among scope, authority references, source, mosque(s), effective range, approval reference, and one payload | Proof that the approval receipt/signature was verified |
 | `CalculationProfile` | Versioned approved calculation policy reference and effective range | Generic calculator defaults or inferred angles |
 | `TimeTable` | Versioned effective timetable reference, timezone, scope, mosque binding, source overrides, and immutable published snapshot ID | Raw competitor rows or live device fetches |
 | `SourceOverride` | Approved field-level relationship between retained base and override sources over an effective range | Mutation or deletion of either source artifact |
@@ -74,7 +74,7 @@ Output:
 
 - `City` and `Region` identity;
 - selected `GeographicScope`;
-- explicit `PrayerAuthority` and `PrayerSource`;
+- one or more explicit source-component `PrayerAuthority` records, preserving each evidence label, and one `PrayerSource`;
 - approved `PrayerPolicy`;
 - resolution tier;
 - either one `TimeTable` or one `CalculationProfile`.
@@ -86,7 +86,9 @@ Errors are typed:
 - ambiguous policy at one precedence tier;
 - policy unavailable.
 
-The resolver never returns a partially linked policy. Registry construction validates unique IDs, foreign keys, city/region consistency, coordinate bounds, loadable IANA timezones, source-to-authority/scope bindings, policy approvals and mosque bindings, effective ranges, timetable/profile references, publication IDs, and source-override references.
+The resolver never returns a partially linked policy. Registry construction validates unique IDs, foreign keys, city/region consistency, coordinate bounds, loadable IANA timezones, source-to-authority/scope bindings, exact evidence-label vocabulary, non-empty approval references and mosque bindings, effective ranges, timetable/profile references, publication IDs, and source-override references.
+
+`PROPOSAL`: an approval ID and published snapshot ID in the in-memory registry are references, not authentication. A future persistence adapter must obtain them from the existing verified approval/publication stores before constructing an executable dataset. Serving and device paths continue to verify the signed snapshot independently.
 
 ## Precedence and failure semantics
 
@@ -149,7 +151,9 @@ The implemented seed resolves:
   → city ru-uly-ulyanovsk
   → region ru-uly / RU-ULY
   → scope scope-ulyanovsk-city
-  → authority rdum-ulyanovsk-oblast
+  → source authorities:
+       rdum-ulyanovsk-oblast [CONFIRMED_PUBLIC]
+       rdumul-attributed-publisher-unconfirmed [UNKNOWN]
   → source effective-ulyanovsk-2026-v1
   → policy policy-ulyanovsk-second-cathedral-2026
   → timetable timetable-ulyanovsk-second-cathedral-2026
@@ -159,7 +163,7 @@ The implemented seed resolves:
 
 The policy is bound to `second-cathedral-mosque-ulyanovsk` and the 2026 effective range. It is not promoted to every Ulyanovsk mosque or every locality in Ulyanovsk Oblast.
 
-The timetable records `source-override-ulyanovsk-2026-08`, which links the retained official annual baseline to the approved August manual source using the existing approval ID. It references the existing signed snapshot; it does not regenerate, rewrite, or re-sign it. The Android UI, Room schema, bootstrap asset, signature verifier, publication receipt, and device assignment behavior are unchanged.
+The timetable records `source-override-ulyanovsk-2026-08`, which links the retained official annual baseline to the approved August manual source using the existing approval ID. The annual component preserves the confirmed RDUM identity; the August component preserves the source record's legally unconfirmed `rdumul.ru` attribution as `UNKNOWN`. The composite must not promote the latter into confirmed RDUM provenance. It references the existing signed snapshot; it does not regenerate, rewrite, or re-sign it. The Android UI, Room schema, bootstrap asset, signature verifier, publication receipt, and device assignment behavior are unchanged.
 
 ## Research registry versus production registry
 
@@ -206,6 +210,7 @@ No registry fields are added to the signed TV snapshot contract in this slice. E
 - canonical Cyrillic search and explicit Latin alias;
 - independent geographic provenance and `Europe/Ulyanovsk`;
 - exact Ulyanovsk authority/source/policy/timetable/snapshot binding;
+- separate `CONFIRMED_PUBLIC` annual and `UNKNOWN` August source-authority identities in the composite;
 - all four precedence tiers plus fail-closed unavailable behavior;
 - ambiguity rejection at the same tier;
 - invalid registry rejection for duplicate IDs, non-IANA timezone, broken authority links, absent approval, invalid effective range, and broken overrides;

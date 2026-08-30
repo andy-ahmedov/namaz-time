@@ -140,10 +140,11 @@ backend or current Robolectric evidence labels.
 | T032 signed offline pilot artifact | DONE | checkpoint `7767f46`; a dedicated non-debuggable `pilot` variant packages the authenticated local schedule, requires an external PKCS12 keystore, and fails without it. Debug uses `ru.namaztime.tv.debug`. `make build-android-pilot` verifies exact package ID, APK signature, pinned public certificate and required assets; the permanent key exists outside Git/APK with mode 0600. Two operator-chosen offline backups and physical-TV acceptance remain external actions. |
 | T033 pilot UI fidelity and operator customization (requested as T030) | DONE | Six checkpoint commits (`2ffd7e0`, `92c49d0`, `69442af`, `9a186cf`, `8fce081`, `37f3183`) implement the measured main display/shared QR, source-onset Dhuhr plus approved 13:15 Dhuhr/Jumu'ah policy, bounded local identity, built-in-only Appearance and donation filmstrips, gratitude customization and the Room/engine-backed standalone donation hierarchy. Follow-ups `2c0992f` and `30f32bd` close every independent review finding: complete donation-field D-pad traversal, engine-owned current-prayer selection without Sunrise, pre-signer iqamah materialization and unclipped Settings headings. Follow-up `852f98d` records the 2026-08-30 owner clarification by compacting every standalone donation foreground block into a 27.5-percent right rail and leaving the left image unobstructed; adaptive geometry tests and two API 36 review passes cover the correction. Full Go/Android/docs/lint/security gates, debug/release/signed-pilot builds, four fresh API 36 screenshots and independent code/visual reviews pass with no remaining finding; physical-TV/OEM picker and representative-distance QR acceptance remain `UNKNOWN`. |
 
-The independent local Phase 4 queue is complete through T029. After T029, the
+The independent local Phase 4 queue is complete through T033. Before T034, the
 remaining matrix below requires physical hardware, OEM behavior or an open
-deployment decision, so it is not replaced with an invented local task and
-Phase 5 has not started.
+deployment decision. T034 does not claim those physical items complete; it is
+a separate control-plane research/foundation task and does not activate a
+nationwide TV rollout.
 
 - physical matrix: Google TV, common Android TV box, Sber/Salute if targeted;
 - boot/restart behavior per OEM;
@@ -155,14 +156,22 @@ Phase 5 has not started.
 
 ## Phase 5 — regional scale
 
-Do not begin until the first pilot is stable.
+The first pilot remains the only executable city/source entry. Research status
+is not production eligibility, and the physical pilot blockers below remain
+unchanged.
 
-- onboard additional authorities through explicit source records;
-- create geographically scoped calculation profiles only when approved;
-- compare against annual official fixtures;
-- add multilingual content and portrait layout;
-- Ramadan and multiple Jumu'ah workflows;
-- source-specific SLAs and support ownership.
+| Task | Status | Acceptance / evidence |
+|---|---|---|
+| T034 clean-room Russia city/source research and Ulyanovsk foundation | DONE | `ONE_MUSLIM_APK_RESEARCH.md`, full-year aggregate comparison, 31-subject first-party research draft, architecture/ADR 0015, and a tested control-plane resolver route Ulyanovsk to the unchanged approved signed pilot. Independent recomputation/falsification corrected composite authority evidence; `make docs-check`, `make test`, `make lint`, Go race/vulnerability and 73-commit secret scans pass; no competitor artifact or signed-snapshot change entered Git. |
+| T035 licensed canonical Russia city catalog and search | TODO | choose/document a licensed geographic source; revisioned canonical IDs, names/aliases, federal subject, coordinates, IANA timezone and provenance; duplicate-name/transliteration UX; deterministic import/diff/rollback tests; no prayer authority inference |
+| T036 persisted policy registry with verified reference adapters | TODO | PostgreSQL schema/migrations for regions/scopes/authorities/sources/policies/payloads/overrides; construct executable datasets only from verified approval/publication records; revision/audit/rollback and same-tier ambiguity tests; research draft remains non-executable |
+| T037 Ulyanovsk persisted end-to-end migration | TODO | move the hard-coded seed into T035/T036 storage; admin/setup search `Ульяновск` → explicit mosque choice → same source/policy/snapshot ID; verify signed bytes/hash are unchanged and rollback retains current pilot |
+| T038 second official regional source adapter | TODO | select one locality only after written scope/reuse/transport confirmation; retain raw artifact/metadata, deterministic normalization, schema-drift fail-close, official fixture/test vectors, approval/signing and no silent fallback; Татарстан calculation profile or Dagestan timetable are gated candidates, not preselected facts |
+| T039 ambiguity, unavailability and staleness operator workflow | TODO | admin UI/API explains candidate authorities, evidence/scope, exact precedence and blocked reason; mosque/operator makes explicit binding; stale/ambiguous/unavailable never auto-selects a nationwide or neighboring method; TV keeps last-known-good |
+
+Later regional work still includes multilingual/portrait behavior, Ramadan and
+multiple Jumu'ah workflows, source-specific SLAs, support ownership, and
+physical-device acceptance. None is implied by T034.
 
 ## Required update after each Codex task
 

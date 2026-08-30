@@ -56,8 +56,15 @@ func TestPilotRegistryResolvesApprovedUlyanovskTimetable(t *testing.T) {
 	if got.Region.FederalSubjectCode != "RU-ULY" || got.Scope.CityID != "ru-uly-ulyanovsk" {
 		t.Fatalf("Resolve() geography = region %#v scope %#v", got.Region, got.Scope)
 	}
-	if got.Authority.ID != "rdum-ulyanovsk-oblast" {
-		t.Fatalf("Resolve() authority = %q, want RDUM Ulyanovsk binding", got.Authority.ID)
+	if len(got.Authorities) != 2 {
+		t.Fatalf("Resolve() authorities = %#v, want both retained source-component identities", got.Authorities)
+	}
+	authorityEvidence := map[string]string{}
+	for _, authority := range got.Authorities {
+		authorityEvidence[authority.ID] = authority.EvidenceLabel
+	}
+	if authorityEvidence["rdum-ulyanovsk-oblast"] != "CONFIRMED_PUBLIC" || authorityEvidence["rdumul-attributed-publisher-unconfirmed"] != "UNKNOWN" {
+		t.Fatalf("Resolve() authority evidence = %#v, want no promotion of August attribution", authorityEvidence)
 	}
 	if got.Source.ID != "effective-ulyanovsk-2026-v1" || got.Policy.ID != "policy-ulyanovsk-second-cathedral-2026" {
 		t.Fatalf("Resolve() source/policy = %q/%q", got.Source.ID, got.Policy.ID)
@@ -147,7 +154,7 @@ func TestRegistryNewRejectsInvalidDataset(t *testing.T) {
 		{
 			name: "source references unknown authority",
 			mutate: func(dataset *registry.Dataset) {
-				dataset.Sources[0].AuthorityID = "missing-authority"
+				dataset.Sources[0].AuthorityIDs = []string{"missing-authority"}
 			},
 		},
 		{
@@ -169,12 +176,28 @@ func TestRegistryNewRejectsInvalidDataset(t *testing.T) {
 			},
 		},
 		{
+			name: "timetable mosque is outside policy binding",
+			mutate: func(dataset *registry.Dataset) {
+				dataset.TimeTables[0].MosqueID = "other-mosque"
+			},
+		},
+		{
 			name: "override references unknown source",
 			mutate: func(dataset *registry.Dataset) {
 				dataset.SourceOverrides = []domain.SourceOverride{{
 					ID: "override-1", BaseSourceID: "city-source", OverrideSourceID: "missing-source",
 					Effective: domain.DateRange{From: "2026-06-01", To: "2026-06-30"}, ApprovalID: "approval-5",
 				}}
+			},
+		},
+		{
+			name: "timetable override crosses geographic scope",
+			mutate: func(dataset *registry.Dataset) {
+				dataset.SourceOverrides = []domain.SourceOverride{{
+					ID: "override-1", BaseSourceID: "region-table-source", OverrideSourceID: "region-calculation-source",
+					Effective: domain.DateRange{From: "2026-06-01", To: "2026-06-30"}, AppliedFields: []string{"dhuhr"}, ApprovalID: "approval-5",
+				}}
+				dataset.TimeTables[0].SourceOverrideIDs = []string{"override-1"}
 			},
 		},
 	}
@@ -258,18 +281,18 @@ func resolutionDataset() registry.Dataset {
 			{ID: "city-scope", Kind: domain.GeographicScopeCity, CityID: "city-1", RegionID: "region-1"},
 			{ID: "region-scope", Kind: domain.GeographicScopeRegion, RegionID: "region-1"},
 		},
-		Authorities: []domain.PrayerAuthority{{ID: "authority-1", Name: "Authority"}},
+		Authorities: []domain.PrayerAuthority{{ID: "authority-1", Name: "Authority", EvidenceLabel: "CONFIRMED_PUBLIC"}},
 		Sources: []domain.PrayerSource{
-			{ID: "city-source", Kind: domain.ProviderKindOfficialFile, AuthorityID: "authority-1", GeographicScopeID: "city-scope"},
-			{ID: "region-table-source", Kind: domain.ProviderKindOfficialFile, AuthorityID: "authority-1", GeographicScopeID: "region-scope"},
-			{ID: "region-calculation-source", Kind: domain.ProviderKindCalculationProfile, AuthorityID: "authority-1", GeographicScopeID: "region-scope"},
-			{ID: "fallback-source", Kind: domain.ProviderKindCalculationProfile, AuthorityID: "authority-1", GeographicScopeID: "city-scope"},
+			{ID: "city-source", Kind: domain.ProviderKindOfficialFile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "city-scope"},
+			{ID: "region-table-source", Kind: domain.ProviderKindOfficialFile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "region-scope"},
+			{ID: "region-calculation-source", Kind: domain.ProviderKindCalculationProfile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "region-scope"},
+			{ID: "fallback-source", Kind: domain.ProviderKindCalculationProfile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "city-scope"},
 		},
 		Policies: []domain.PrayerPolicy{
-			{ID: "city-table-policy", Kind: domain.PrayerPolicyTimeTable, GeographicScopeID: "city-scope", AuthorityID: "authority-1", SourceID: "city-source", TimeTableID: "city-table", MosqueIDs: []string{"mosque-1"}, Effective: effective, ApprovalID: "approval-1"},
-			{ID: "region-table-policy", Kind: domain.PrayerPolicyTimeTable, GeographicScopeID: "region-scope", AuthorityID: "authority-1", SourceID: "region-table-source", TimeTableID: "region-table", MosqueIDs: []string{"mosque-1"}, Effective: effective, ApprovalID: "approval-2"},
-			{ID: "region-calculation-policy", Kind: domain.PrayerPolicyCalculationProfile, GeographicScopeID: "region-scope", AuthorityID: "authority-1", SourceID: "region-calculation-source", CalculationProfileID: "region-profile", MosqueIDs: []string{"mosque-1"}, Effective: effective, ApprovalID: "approval-3"},
-			{ID: "fallback-policy", Kind: domain.PrayerPolicyCalculationProfile, GeographicScopeID: "city-scope", AuthorityID: "authority-1", SourceID: "fallback-source", CalculationProfileID: "fallback-profile", MosqueIDs: []string{"mosque-1"}, Effective: effective, ApprovalID: "approval-4"},
+			{ID: "city-table-policy", Kind: domain.PrayerPolicyTimeTable, GeographicScopeID: "city-scope", AuthorityIDs: []string{"authority-1"}, SourceID: "city-source", TimeTableID: "city-table", MosqueIDs: []string{"mosque-1"}, Effective: effective, ApprovalID: "approval-1"},
+			{ID: "region-table-policy", Kind: domain.PrayerPolicyTimeTable, GeographicScopeID: "region-scope", AuthorityIDs: []string{"authority-1"}, SourceID: "region-table-source", TimeTableID: "region-table", MosqueIDs: []string{"mosque-1"}, Effective: effective, ApprovalID: "approval-2"},
+			{ID: "region-calculation-policy", Kind: domain.PrayerPolicyCalculationProfile, GeographicScopeID: "region-scope", AuthorityIDs: []string{"authority-1"}, SourceID: "region-calculation-source", CalculationProfileID: "region-profile", MosqueIDs: []string{"mosque-1"}, Effective: effective, ApprovalID: "approval-3"},
+			{ID: "fallback-policy", Kind: domain.PrayerPolicyCalculationProfile, GeographicScopeID: "city-scope", AuthorityIDs: []string{"authority-1"}, SourceID: "fallback-source", CalculationProfileID: "fallback-profile", MosqueIDs: []string{"mosque-1"}, Effective: effective, ApprovalID: "approval-4"},
 		},
 		CalculationProfiles: []domain.CalculationProfile{
 			{ID: "region-profile", SourceID: "region-calculation-source", GeographicScopeID: "region-scope", Version: "v1", Effective: effective, ApprovalID: "approval-3"},

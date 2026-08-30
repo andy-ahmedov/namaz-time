@@ -64,7 +64,7 @@
 
 ### Phase 4: Russia official-authority/source research
 
-- **Status:** complete pending checkpoint commit
+- **Status:** complete
 - **Started:** 2026-08-30
 - Actions taken:
   - Began first-party web research with DUM RT, DUM RB, CDUM, and RDUM Ulyanovsk.
@@ -95,7 +95,7 @@
 
 ### Phase 5: Architecture and Ulyanovsk vertical slice
 
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-08-30
 - Actions taken:
   - Read the complete `test-driven-development` skill and committed to red-green-refactor for the new resolver behavior.
@@ -106,6 +106,11 @@
   - Bound the first registry entry to the exact existing Ulyanovsk source, approval, August source override, timezone, and published snapshot IDs.
   - Wrote `RUSSIA_CITY_SOURCE_ARCHITECTURE.md` and accepted ADR 0015, explicitly separating geometry from authority and preserving the signed offline pipeline.
   - Extended the resolver result with the actual retained `SourceOverride` metadata, rejected provider kinds outside the six repository-approved kinds, and made validated input/output slices defensive copies.
+  - Began a second independent falsification review using the code-review skills as checklists without spawning a sub-agent.
+  - Recomputed both full-year comparisons with the committed harness and a separate one-off implementation; all field buckets, exact-day counts, within-one-day counts, maxima, and material ranges agree.
+  - Verified the late-August Dhuhr explanation directly against the annual CSV, monthly CSV, effective snapshot, effective policy, and reconciliation ledger.
+  - Found and corrected an authority-provenance overclaim in the initial registry seed: annual RDUM remains `CONFIRMED_PUBLIC`, while the August source's legal publisher identity remains `UNKNOWN` exactly as its source record states.
+  - Clarified that registry approval/snapshot IDs are references and cannot replace approval-receipt or Ed25519 verification.
 - Files created/modified:
   - `internal/domain/city_source.go`
   - `internal/domain/doc.go`
@@ -114,6 +119,19 @@
   - `RUSSIA_CITY_SOURCE_ARCHITECTURE.md`
   - `docs/adr/0015-city-region-authority-source-policy-resolution.md`
   - `docs/adr/README.md`
+
+### Phase 6: Falsification review and delivery
+
+- **Status:** complete
+- **Started:** 2026-08-30
+- Actions taken:
+  - Re-read the requirements, plan, findings, all four research/architecture reports, final implementation diff, source records, effective policy, snapshot and publication receipt.
+  - Recomputed annual/effective statistics with both the committed harness and an independent one-off implementation.
+  - Challenged correlation-as-provenance, regional-site-as-subject-authority, and registry-reference-as-authentication assumptions; retained `INFERENCE`/`UNKNOWN` boundaries and corrected the composite authority overclaim.
+  - Updated `PLANS.md` and `CODEX_TASKS.md` with T034 evidence and T035–T039 concrete next tasks.
+  - Ran all stable repository commands plus race, vulnerability and secret scans.
+  - Audited tracked extensions, paths, file sizes/types, APK ignore/hash, snapshot identity, registry counts and the complete T034 diff.
+  - Prepared the fifth and final local checkpoint; no push or PR was created.
 
 ## Test Results
 
@@ -135,6 +153,13 @@
 | Repository Go tests | `go test ./...` | All Go packages pass | All packages pass | PASS |
 | Go static analysis | `go tool staticcheck ./...` | No findings | No output | PASS |
 | Checkpoint 4 docs/research checks | Temporarily exclude local ignored APK; `make docs-check`; `make test-research` | Docs pass; four research tests pass | PASS; 4/4 | PASS |
+| Independent Ulyanovsk recomputation | Separate one-off SQLite/CSV/JSON comparison, no harness import | Match reported annual/effective buckets and ranges | Exact match to report | PASS |
+| Full repository tests | `make test` with ignored research APK temporarily excluded | Docs, Go, research and Android unit suites pass | Exit 0; Android `BUILD SUCCESSFUL` | PASS |
+| Full repository lint | `make lint` with ignored research APK temporarily excluded | Formatting, vet, staticcheck and Android lint pass | Exit 0; Android `BUILD SUCCESSFUL` | PASS |
+| Go race suite | `make test-go-race` | All Go packages pass under race detector | Exit 0 | PASS |
+| Go vulnerability scan | `make security-go` | No known reachable vulnerabilities | `No vulnerabilities found.` | PASS |
+| Git history secret scan | `make secret-scan` | No leaks | 73 commits / ~8.07 MB; no leaks | PASS |
+| Clean-room Git audit | tracked extensions/paths, MIME/size, APK ignore/hash, snapshot diff/hash, registry counts | No prohibited artifact; existing signed pilot unchanged | PASS | PASS |
 
 ## Error Log
 
@@ -150,13 +175,16 @@
 | 2026-08-30 | Initial synthetic bucket expectation counted four `>5` fields instead of five | 1 | Audited fixture deltas, added the omitted Asr +6 material run, and reran successfully. |
 | 2026-08-30 | Initial registry validation queried absent `.subjects` instead of `.entries` | 1 | Corrected the read-only `jq` query; structure and counts pass. |
 | 2026-08-30 | DUM RT's former prayer-time helper URL returned HTTP 410 | 1 | Marked transport as volatile; retained the live official policy decision as evidence and deferred transport onboarding. |
+| 2026-08-30 | One falsification `awk` projection selected sunrise/zenith columns instead of zenith/Dhuhr | 1 | Read the exact CSV header and verified the intended Dhuhr values through reconciliation rows and named JSON/CSV fields; no conclusion used the incorrect projection. |
+| 2026-08-30 | Initial executable seed assigned the whole composite source to RDUM | 1 | Checked both source records and the signed snapshot, then modeled multiple component authority references with exact `CONFIRMED_PUBLIC`/`UNKNOWN` evidence labels. |
+| 2026-08-30 | First clean-room `rg` audit treated documented tool/table names and a synthetic test schema as forbidden artifacts | 1 | Replaced the overbroad content pattern with tracked-extension, path, size, MIME, Git diff and explicit extracted-artifact audits; documented terms are allowed sanitized evidence. |
 
 ## 5-Question Reboot Check
 
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 6: independent falsification, plan/task updates, repository-wide verification, and final audit. |
+| Where am I? | Complete: all five checkpoints are ready locally; final handoff remains. |
 | Where am I going? | APK research → Ulyanovsk comparison → Russia authority research → architecture/foundation → falsification/verification. |
 | What's the goal? | Evidence-backed clean-room city/source resolution with Ulyanovsk as the first safe vertical slice. |
 | What have I learned? | See `findings.md`. |
-| What have I done? | Created persistent planning logs, checked baseline, and read applicable skills. |
+| What have I done? | Completed static/public research, independent comparison, registry architecture/foundation, falsification, full verification and clean-room audit. |

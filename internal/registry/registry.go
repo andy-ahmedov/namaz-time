@@ -55,7 +55,7 @@ type Resolution struct {
 	City               domain.City
 	Region             domain.Region
 	Scope              domain.GeographicScope
-	Authority          domain.PrayerAuthority
+	Authorities        []domain.PrayerAuthority
 	Source             domain.PrayerSource
 	Policy             domain.PrayerPolicy
 	TimeTable          domain.TimeTable
@@ -104,7 +104,11 @@ func cloneDataset(dataset Dataset) Dataset {
 		cloned.Cities[index].Aliases = append([]string(nil), cloned.Cities[index].Aliases...)
 	}
 	for index := range cloned.Policies {
+		cloned.Policies[index].AuthorityIDs = append([]string(nil), cloned.Policies[index].AuthorityIDs...)
 		cloned.Policies[index].MosqueIDs = append([]string(nil), cloned.Policies[index].MosqueIDs...)
+	}
+	for index := range cloned.Sources {
+		cloned.Sources[index].AuthorityIDs = append([]string(nil), cloned.Sources[index].AuthorityIDs...)
 	}
 	for index := range cloned.TimeTables {
 		cloned.TimeTables[index].SourceOverrideIDs = append([]string(nil), cloned.TimeTables[index].SourceOverrideIDs...)
@@ -148,16 +152,20 @@ func NewPilotRegistry() Registry {
 			Description: "Second Cathedral Mosque of Ulyanovsk; Gregorian 2026",
 		}},
 		Authorities: []domain.PrayerAuthority{{
-			ID: authorityID, Name: "Региональное духовное управление мусульман Ульяновской области", Website: "https://rdumul.ru/",
+			ID: authorityID, Name: "Региональное духовное управление мусульман Ульяновской области в составе ЦДУМ России",
+			Branch: "Годовой календарь времени намазов для г. Ульяновска на 2026 год", Website: "https://rdumul.ru/", EvidenceLabel: "CONFIRMED_PUBLIC",
+		}, {
+			ID: "rdumul-attributed-publisher-unconfirmed", Name: "rdumul.ru-attributed schedule publisher (legal name unconfirmed)",
+			Branch: "Ulyanovsk schedule shown in the supplied image", Website: "https://rdumul.ru/", EvidenceLabel: "UNKNOWN",
 		}},
 		Sources: []domain.PrayerSource{
-			{ID: sourceID, Kind: domain.ProviderKindManualImport, AuthorityID: authorityID, GeographicScopeID: scopeID},
-			{ID: "official-rdumul-ulyanovsk-2026", Kind: domain.ProviderKindOfficialFile, AuthorityID: authorityID, GeographicScopeID: scopeID, CanonicalURL: "https://rdumul.ru/"},
-			{ID: "manual-rdumul-ulsk-2026-08", Kind: domain.ProviderKindManualImport, AuthorityID: authorityID, GeographicScopeID: scopeID},
+			{ID: sourceID, Kind: domain.ProviderKindManualImport, AuthorityIDs: []string{authorityID, "rdumul-attributed-publisher-unconfirmed"}, GeographicScopeID: scopeID},
+			{ID: "official-rdumul-ulyanovsk-2026", Kind: domain.ProviderKindOfficialFile, AuthorityIDs: []string{authorityID}, GeographicScopeID: scopeID, CanonicalURL: "https://rdumul.ru/"},
+			{ID: "manual-rdumul-ulsk-2026-08", Kind: domain.ProviderKindManualImport, AuthorityIDs: []string{"rdumul-attributed-publisher-unconfirmed"}, GeographicScopeID: scopeID},
 		},
 		Policies: []domain.PrayerPolicy{{
 			ID: "policy-ulyanovsk-second-cathedral-2026", Kind: domain.PrayerPolicyTimeTable,
-			GeographicScopeID: scopeID, AuthorityID: authorityID, SourceID: sourceID, TimeTableID: timeTableID,
+			GeographicScopeID: scopeID, AuthorityIDs: []string{authorityID, "rdumul-attributed-publisher-unconfirmed"}, SourceID: sourceID, TimeTableID: timeTableID,
 			MosqueIDs: []string{mosqueID}, Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"},
 			ApprovalID: "approval-second-cathedral-mosque-ulyanovsk-2026-002",
 		}},
@@ -260,16 +268,16 @@ func validateDataset(dataset Dataset) error {
 		}
 	}
 	for _, authority := range dataset.Authorities {
-		if authority.Name == "" {
-			return fmt.Errorf("prayer authority %q lacks a name", authority.ID)
+		if authority.Name == "" || !allowedEvidenceLabel(authority.EvidenceLabel) {
+			return fmt.Errorf("prayer authority %q lacks a name or valid evidence label", authority.ID)
 		}
 	}
 	for _, source := range dataset.Sources {
 		if !allowedProviderKind(source.Kind) {
 			return fmt.Errorf("source %q has unsupported provider kind %q", source.ID, source.Kind)
 		}
-		if _, ok := authorities[source.AuthorityID]; !ok {
-			return fmt.Errorf("source %q references unknown authority %q", source.ID, source.AuthorityID)
+		if err := validateAuthorityReferences("source "+source.ID, source.AuthorityIDs, authorities); err != nil {
+			return err
 		}
 		if _, ok := scopes[source.GeographicScopeID]; !ok {
 			return fmt.Errorf("source %q references unknown scope %q", source.ID, source.GeographicScopeID)
@@ -279,18 +287,18 @@ func validateDataset(dataset Dataset) error {
 		if policy.ApprovalID == "" || len(policy.MosqueIDs) == 0 || !validDateRange(policy.Effective) {
 			return fmt.Errorf("policy %q lacks approval, mosque binding, or valid effective range", policy.ID)
 		}
-		if _, ok := authorities[policy.AuthorityID]; !ok {
-			return fmt.Errorf("policy %q references unknown authority %q", policy.ID, policy.AuthorityID)
+		if err := validateAuthorityReferences("policy "+policy.ID, policy.AuthorityIDs, authorities); err != nil {
+			return err
 		}
 		scope, scopeOK := scopes[policy.GeographicScopeID]
 		source, sourceOK := sources[policy.SourceID]
-		if !scopeOK || !sourceOK || source.AuthorityID != policy.AuthorityID || source.GeographicScopeID != scope.ID {
+		if !scopeOK || !sourceOK || !sameStrings(source.AuthorityIDs, policy.AuthorityIDs) || source.GeographicScopeID != scope.ID {
 			return fmt.Errorf("policy %q has inconsistent source, authority, or scope", policy.ID)
 		}
 		switch policy.Kind {
 		case domain.PrayerPolicyTimeTable:
 			timetable, ok := timetables[policy.TimeTableID]
-			if !ok || policy.CalculationProfileID != "" || timetable.SourceID != policy.SourceID || timetable.GeographicScopeID != policy.GeographicScopeID {
+			if !ok || policy.CalculationProfileID != "" || timetable.SourceID != policy.SourceID || timetable.GeographicScopeID != policy.GeographicScopeID || (timetable.MosqueID != "" && !contains(policy.MosqueIDs, timetable.MosqueID)) {
 				return fmt.Errorf("timetable policy %q has inconsistent timetable", policy.ID)
 			}
 		case domain.PrayerPolicyCalculationProfile:
@@ -313,8 +321,14 @@ func validateDataset(dataset Dataset) error {
 			return fmt.Errorf("timetable %q has invalid IANA timezone %q", timetable.ID, timetable.Timezone)
 		}
 		for _, overrideID := range timetable.SourceOverrideIDs {
-			if _, ok := overrides[overrideID]; !ok {
+			override, ok := overrides[overrideID]
+			if !ok {
 				return fmt.Errorf("timetable %q references unknown source override %q", timetable.ID, overrideID)
+			}
+			baseSource, baseOK := sources[override.BaseSourceID]
+			overrideSource, overrideOK := sources[override.OverrideSourceID]
+			if !baseOK || !overrideOK || baseSource.GeographicScopeID != timetable.GeographicScopeID || overrideSource.GeographicScopeID != timetable.GeographicScopeID || override.Effective.From < timetable.Effective.From || override.Effective.To > timetable.Effective.To {
+				return fmt.Errorf("timetable %q has out-of-scope source override %q", timetable.ID, overrideID)
 			}
 		}
 	}
@@ -436,14 +450,21 @@ func (r Registry) resolvePolicy(policy domain.PrayerPolicy, tier ResolutionTier,
 	if !exists || !scopeMatchesTier(scope, policy.Kind, tier, city, region) {
 		return Resolution{}, false
 	}
-	authority, authorityOK := findByID(r.authorities, policy.AuthorityID, func(item domain.PrayerAuthority) string { return item.ID })
 	source, sourceOK := findByID(r.sources, policy.SourceID, func(item domain.PrayerSource) string { return item.ID })
-	if !authorityOK || !sourceOK || source.AuthorityID != authority.ID || source.GeographicScopeID != scope.ID {
+	if !sourceOK || !sameStrings(source.AuthorityIDs, policy.AuthorityIDs) || source.GeographicScopeID != scope.ID {
 		return Resolution{}, false
+	}
+	authorities := make([]domain.PrayerAuthority, 0, len(policy.AuthorityIDs))
+	for _, authorityID := range policy.AuthorityIDs {
+		authority, found := findByID(r.authorities, authorityID, func(item domain.PrayerAuthority) string { return item.ID })
+		if !found {
+			return Resolution{}, false
+		}
+		authorities = append(authorities, authority)
 	}
 	resolution := Resolution{
 		Tier: tier, City: cloneCity(city), Region: region, Scope: scope,
-		Authority: authority, Source: source, Policy: clonePolicy(policy),
+		Authorities: authorities, Source: cloneSource(source), Policy: clonePolicy(policy),
 	}
 	switch policy.Kind {
 	case domain.PrayerPolicyTimeTable:
@@ -477,8 +498,14 @@ func cloneCity(city domain.City) domain.City {
 }
 
 func clonePolicy(policy domain.PrayerPolicy) domain.PrayerPolicy {
+	policy.AuthorityIDs = append([]string(nil), policy.AuthorityIDs...)
 	policy.MosqueIDs = append([]string(nil), policy.MosqueIDs...)
 	return policy
+}
+
+func cloneSource(source domain.PrayerSource) domain.PrayerSource {
+	source.AuthorityIDs = append([]string(nil), source.AuthorityIDs...)
+	return source
 }
 
 func cloneTimeTable(timetable domain.TimeTable) domain.TimeTable {
@@ -489,6 +516,51 @@ func cloneTimeTable(timetable domain.TimeTable) domain.TimeTable {
 func cloneSourceOverride(override domain.SourceOverride) domain.SourceOverride {
 	override.AppliedFields = append([]string(nil), override.AppliedFields...)
 	return override
+}
+
+func allowedEvidenceLabel(label string) bool {
+	switch label {
+	case "CONFIRMED_PUBLIC", "CONFIRMED_STATIC", "CONFIRMED_RUNTIME", "INFERENCE", "PROPOSAL", "UNKNOWN":
+		return true
+	default:
+		return false
+	}
+}
+
+func validateAuthorityReferences(label string, authorityIDs []string, authorities map[string]domain.PrayerAuthority) error {
+	if len(authorityIDs) == 0 {
+		return fmt.Errorf("%s has no authority references", label)
+	}
+	seen := make(map[string]bool, len(authorityIDs))
+	for _, authorityID := range authorityIDs {
+		if seen[authorityID] {
+			return fmt.Errorf("%s repeats authority %q", label, authorityID)
+		}
+		seen[authorityID] = true
+		if _, ok := authorities[authorityID]; !ok {
+			return fmt.Errorf("%s references unknown authority %q", label, authorityID)
+		}
+	}
+	return nil
+}
+
+func sameStrings(left, right []string) bool {
+	if len(left) != len(right) {
+		return false
+	}
+	counts := make(map[string]int, len(left))
+	for _, value := range left {
+		counts[value]++
+	}
+	for _, value := range right {
+		counts[value]--
+	}
+	for _, count := range counts {
+		if count != 0 {
+			return false
+		}
+	}
+	return true
 }
 
 func scopeMatchesTier(scope domain.GeographicScope, kind domain.PrayerPolicyKind, tier ResolutionTier, city domain.City, region domain.Region) bool {

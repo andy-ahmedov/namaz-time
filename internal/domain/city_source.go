@@ -41,16 +41,17 @@ type GeographicScope struct {
 }
 
 type PrayerAuthority struct {
-	ID      string
-	Name    string
-	Branch  string
-	Website string
+	ID            string
+	Name          string
+	Branch        string
+	Website       string
+	EvidenceLabel string
 }
 
 type PrayerSource struct {
 	ID                string
 	Kind              ProviderKind
-	AuthorityID       string
+	AuthorityIDs      []string
 	GeographicScopeID string
 	CanonicalURL      string
 }
@@ -66,7 +67,7 @@ type PrayerPolicy struct {
 	ID                   string
 	Kind                 PrayerPolicyKind
 	GeographicScopeID    string
-	AuthorityID          string
+	AuthorityIDs         []string
 	SourceID             string
 	TimeTableID          string
 	CalculationProfileID string
