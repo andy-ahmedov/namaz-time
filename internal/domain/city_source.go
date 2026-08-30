@@ -3,24 +3,29 @@ package domain
 // City is geographic catalog data. It identifies a place but does not grant
 // any prayer authority or select a prayer policy.
 type City struct {
-	ID                string
-	Name              string
-	Aliases           []string
-	CountryCode       string
-	RegionID          string
-	Latitude          float64
-	Longitude         float64
-	Timezone          string
-	GeographicSource  string
-	GeographicLicense string
-	FallbackPolicyID  string
+	ID                 string   `json:"id"`
+	Name               string   `json:"name"`
+	Aliases            []string `json:"aliases,omitempty"`
+	CountryCode        string   `json:"country_code"`
+	RegionID           string   `json:"region_id"`
+	SettlementType     string   `json:"settlement_type"`
+	Latitude           float64  `json:"latitude"`
+	Longitude          float64  `json:"longitude"`
+	Timezone           string   `json:"timezone"`
+	Population         int64    `json:"population,omitempty"`
+	GeographicSource   string   `json:"geographic_source"`
+	GeographicSourceID string   `json:"geographic_source_id"`
+	GeographicRevision string   `json:"geographic_revision"`
+	GeographicLicense  string   `json:"geographic_license"`
+	SourceModifiedDate string   `json:"source_modified_date,omitempty"`
+	FallbackPolicyID   string   `json:"fallback_policy_id,omitempty"`
 }
 
 type Region struct {
-	ID                 string
-	Name               string
-	CountryCode        string
-	FederalSubjectCode string
+	ID                 string `json:"id"`
+	Name               string `json:"name"`
+	CountryCode        string `json:"country_code"`
+	FederalSubjectCode string `json:"federal_subject_code"`
 }
 
 type GeographicScopeKind string

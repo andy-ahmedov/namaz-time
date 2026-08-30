@@ -1,0 +1,34 @@
+{
+  "schema_version": "geonames-source-manifest/v1",
+  "source_id": "geonames",
+  "source_revision": "2026-08-29",
+  "country_code": "RU",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "attribution": "GeoNames (https://www.geonames.org/)",
+  "artifacts": [
+    {
+      "role": "gazetteer",
+      "url": "https://download.geonames.org/export/dump/RU.zip",
+      "cache_file": "RU.zip",
+      "archive_member": "RU.txt",
+      "byte_length": 15243650,
+      "sha256": "61acd9cc876089a9e8d1042d581fb221bccf511716bf03f8d6b0fb1cb67bd3fc"
+    },
+    {
+      "role": "alternate_names",
+      "url": "https://download.geonames.org/export/dump/alternatenames/RU.zip",
+      "cache_file": "RU-alternateNames.zip",
+      "archive_member": "RU.txt",
+      "byte_length": 12583968,
+      "sha256": "8bf891e928ff23d7f72017b1724c821138f401e22d9e042be5bc31978ff50df2"
+    },
+    {
+      "role": "admin1_codes",
+      "url": "https://download.geonames.org/export/dump/admin1CodesASCII.txt",
+      "cache_file": "admin1CodesASCII.txt",
+      "byte_length": 151536,
+      "sha256": "590651498043f674accda2b7f46d21286cda0e290b02f8561c5005eee9a5448c"
+    }
+  ]
+}

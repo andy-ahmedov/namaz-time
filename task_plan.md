@@ -6,7 +6,7 @@ Determine, with clean-room evidence, how 1Muslim 5.9.5 resolves prayer times (es
 
 ## Current Phase
 
-Complete
+Phase 8 — T036 persisted executable policy registry (`in_progress`)
 
 ## Phases
 
@@ -99,3 +99,44 @@ Complete
 - Use local checkpoint commits only; never push or create a PR.
 - Preserve all pre-existing user changes and exclude the root APK from Git.
 - Update `findings.md` after at most two browser/view operations and after material discoveries.
+
+## Phase 5 continuation after T034
+
+### Phase 7: T035 canonical Russia city catalog
+
+- [x] Compare legally usable geographic sources (at least OSM and GeoNames): license, provenance, update/reproduction path, timezone and subject suitability.
+- [x] Add a pinned, checksum-verified importer and minimal licensed fixtures; do not commit a bulk dump.
+- [x] Define stable NamazTime city IDs, canonical Russian names, aliases/transliteration, subject, coordinates, IANA timezone and source provenance.
+- [x] Prove deterministic revisions/diffs and fail-closed duplicate-name search.
+- [x] Update docs/task status and run checkpoint gates; create the local T035 commit before T036 edits.
+- **Status:** complete
+
+### Phase 8: T036 persisted executable policy registry
+
+- [ ] Write failing PostgreSQL repository/service tests for cities, aliases, regions/scopes, authorities, sources, policies, timetables/calculation profiles, overrides and revision audit.
+- [ ] Add migrations and rollback; enforce approval, ambiguity, stale/unavailable and no-silent-fallback semantics.
+- [ ] Prove deterministic registry revisions and revision rollback.
+- [ ] Update docs/task status, run PostgreSQL/checkpoint gates and create a local T036 commit.
+- **Status:** in_progress
+
+### Phase 9: T037 Ulyanovsk persisted end-to-end
+
+- [ ] Replace the hard-coded executable Ulyanovsk runtime seed with imported/persisted catalog and registry records.
+- [ ] Add the minimal setup/admin search API proving city → RU-ULY → authority/source/policy → timetable → mosque → existing signed snapshot.
+- [ ] Prove snapshot bytes/ID/hash/signature unchanged, USB pilot remains compatible, rollback is non-destructive and duplicate/unknown/ambiguous city is not auto-selected.
+- [ ] Update docs/task status, run checkpoint gates and create a local T037 commit.
+- **Status:** pending
+
+### Phase 10: T039 operator workflow (conditional)
+
+- [ ] Start only if T035–T037 are complete; expose explicit reasons/actions for duplicate city, ambiguous policy, stale source and unavailable schedule.
+- [ ] Never auto-select a neighboring region or generic Russia calculation method.
+- [ ] Update docs/task status, run checkpoint gates and create a local T039 commit.
+- **Status:** pending
+
+### Phase 11: final verification
+
+- [ ] Run all available docs, unit, lint, race, security and PostgreSQL gates from a clean worktree state except intended commits.
+- [ ] Re-read acceptance criteria and audit Git for third-party dumps, APK/decompilation, keys/secrets and signed-pilot drift.
+- [ ] Report task statuses, commits, chosen geographic source/license, catalog coverage, Ulyanovsk E2E evidence and real blockers; do not push or create a PR.
+- **Status:** pending

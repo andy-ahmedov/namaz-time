@@ -43,6 +43,8 @@ production-signing-seed*
 *.xapk
 research/raw/
 research/private/
+/geodata/cache/
+/geodata/generated/
 **/Params.decrypted*
 **/*decompile*
 **/*disasm*

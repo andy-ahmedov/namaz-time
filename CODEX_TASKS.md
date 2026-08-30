@@ -765,6 +765,17 @@ choose a canonical city with visible subject/timezone/provenance; invalid
 timezone/schema drift fails closed; catalog revisions are auditable and
 rollbackable.
 
+**Result:** completed locally on 2026-08-30. GeoNames RU was selected under CC
+BY 4.0 after an explicit OSM/ODbL comparison. The tracked manifest pins three
+2026-08-29 inputs by byte length/SHA-256; raw archives and the 96 MB generated
+catalog remain outside Git. The deterministic importer produces 166,557
+Russian-named records across 83 mapped subjects, preserves stable source-based
+NamazTime IDs, aliases, feature code, coordinates, IANA timezone and full
+geographic provenance, and fails closed on checksum/schema/admin/timezone
+drift. Exact `Киров` returns nine subject-qualified candidates and cannot be
+auto-selected. Two full imports were byte-identical with an empty deterministic
+diff; narrow docs/Go/lint gates pass. No prayer authority or policy is inferred.
+
 ## T036 — persisted policy registry with verified reference adapters
 
 **Goal:** persist the T034 entity model while keeping approval and snapshot

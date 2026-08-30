@@ -1,7 +1,7 @@
 # Russia city/source resolution architecture
 
 Date: 2026-08-30  
-Status: foundation implemented for the Ulyanovsk pilot; nationwide rollout is not enabled
+Status: T035 geographic catalog implemented; executable prayer coverage remains the Ulyanovsk pilot only
 
 ## Outcome
 
@@ -52,15 +52,15 @@ The existing snapshot `SourceMetadata`, candidate records, approval records, sig
 
 `PROPOSAL`:
 
-1. Search is against a curated, versioned, licensed city catalog.
-2. Canonical IDs are stable and independent from display names and third-party IDs.
-3. Aliases are explicit. The first slice recognizes `Ульяновск` and `Ulyanovsk` case-insensitively after whitespace normalization.
+1. Search is against the pinned GeoNames RU catalog under CC BY 4.0; raw bulk inputs/generated output remain outside Git.
+2. Canonical NamazTime IDs are deterministically derived from the stable GeoNames record identity and remain independent from display names.
+3. Preferred Russian names and current RU/EN/ascii aliases are explicit. Search is exact after case/whitespace normalization.
 4. A catalog entry stores IANA timezone and geographic provenance. Numeric offsets are rejected.
 5. Coordinates can narrow geographic candidates or support an operator map, but cannot select between parallel religious authorities.
 6. Remote geocoding, if later added, belongs in setup/control-plane code and must produce a reviewed canonical match. TV composables and display reducers never call it.
 7. Duplicate place names must return multiple canonical candidates with subject/country context; the resolver must not guess.
 
-The foundation intentionally implements exact name/alias matching, not a production full-text nationwide search index. Transliteration, typo tolerance, settlement hierarchy, renamed places, and duplicate-name UX remain later catalog work.
+The pinned 2026-08-29 import yields 166,557 Russian-named records across 83 mapped GeoNames RU admin1 subjects. It excludes 25,427 rows without a Russian canonical name and 168 rows without a safely mapped current subject. Same-name results retain subject, feature code, coordinates, timezone and provenance; exact `Киров` has nine results and cannot auto-select. Source-provided transliteration is supported; generated transliteration and typo tolerance remain later work.
 
 ## Resolver contract
 
@@ -220,8 +220,8 @@ No registry fields are added to the signed TV snapshot contract in this slice. E
 
 ## Remaining unknowns and intentionally deferred work
 
-- `UNKNOWN`: a licensed nationwide city seed and update/reconciliation process has not been selected.
-- `UNKNOWN`: duplicate-name and settlement-level search UX has not been specified.
+- `UNKNOWN`: GeoNames' RU snapshot covers 83 mapped subjects, not every jurisdiction claimed/administered by Russia. T035 does not combine sources or reclassify another country's rows without a separate legal/scope decision.
+- `PROPOSAL`: T039 may add richer operator presentation, but T035 already returns all exact duplicate-name candidates and never selects one automatically.
 - `UNKNOWN`: no new regional source beyond Ulyanovsk has completed licensing, parser, scope, approval, and publication onboarding.
 - `UNKNOWN`: several subjects have parallel authorities and require operator/mosque choice.
 - `PROPOSAL`: do not add polygons until their license, update source, topology validation, border behavior, and policy linkage are specified.

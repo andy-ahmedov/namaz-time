@@ -57,6 +57,13 @@ Costs:
 - ambiguous regions require operator/authority coordination;
 - registry persistence, admin API, and revision rollout remain future work.
 
+T035 follow-up (2026-08-30): GeoNames RU under CC BY 4.0 is the selected
+canonical geography source. Its pinned importer yields stable city IDs,
+Russian names/aliases, ISO-mapped subjects, coordinates and IANA timezones.
+This follow-up does not alter the decision: GeoNames has no prayer-authority
+meaning, duplicate names never auto-select, and the executable registry still
+contains only explicitly approved prayer records.
+
 ## Rejected alternatives
 
 - one nationwide authority or `method=Russia`;

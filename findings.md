@@ -127,3 +127,51 @@
 - `PROPOSAL`: the Ulyanovsk seed maps public city relation `2049867` and `Europe/Ulyanovsk` to the already approved `effective-ulyanovsk-2026-v1` policy chain and immutable snapshot `ulyanovsk-second-cathedral-2026-pilot-local-v2`. It does not alter schedule rows, signature bytes, Android UI, Room, or device behavior.
 - `UNKNOWN`: falsification review found that the August source record's legal publisher identity is explicitly unconfirmed. The corrected registry preserves two component authorities: annual RDUM as `CONFIRMED_PUBLIC` and the August `rdumul.ru`-attributed publisher as `UNKNOWN`; the composite no longer promotes both to RDUM.
 - `PROPOSAL`: registry approval/snapshot IDs are reference integrity only. The foundation cannot authenticate them and is not wired to publication; a future adapter must construct executable datasets from already verified approval/publication stores.
+
+## Phase 5 continuation requirements (T035–T037, then T039)
+
+- T035 must select a legally reusable geographic source only after checking license, provenance, updateability and fitness; the catalog must never assign prayer authority.
+- T035 must provide stable city identity, Russian canonical names, aliases/transliteration, subject, coordinates, IANA timezone, deterministic revisions/diffs and explicit same-name disambiguation without committing bulk dumps.
+- T036 must move executable resolution to PostgreSQL with full entity persistence, revision audit/rollback and fail-closed approval/ambiguity/staleness behavior.
+- T037 must remove the hard-coded executable Ulyanovsk seed and prove persistence-backed search-to-snapshot resolution without changing the existing signed snapshot bytes, ID, hash or signature.
+- T038 is explicitly deferred because regional source scope/terms remain externally unconfirmed.
+- T039 is conditional on completing T035–T037 and must expose operator-visible reasons rather than infer a neighboring or nationwide fallback.
+- Local commits are required after each checkpoint; no push and no PR.
+
+## Session observations
+
+- `planning-with-files` catch-up initially failed because `python` is absent; `python3` is installed and the retry completed.
+- The previous T034 planning files are complete and retained as historical context; the continuation is tracked as Phases 7–11.
+- ADR 0015 already fixes precedence and failure semantics: exact city timetable → regional official timetable → approved regional calculation profile → explicit fallback → unavailable; same-tier candidates are ambiguous and country/coordinates cannot break ties.
+- The existing T034 in-memory seed treats approval and snapshot IDs only as references. T036 must validate them against existing persisted approval/publication records before making a policy executable.
+- The Ulyanovsk composite intentionally retains two different evidence identities (`CONFIRMED_PUBLIC` annual RDUM and `UNKNOWN` August attribution); persistence must not collapse them into one authority.
+- No registry field needs to enter the signed TV snapshot contract for T035–T037. The target is control-plane selection of an already authenticated snapshot, preserving TV local-only/last-known-good behavior.
+- T035 acceptance already requires visible subject/timezone/provenance for duplicate-name and transliterated results plus auditable catalog rollback; it does not require prayer-source activation.
+- T036 acceptance explicitly requires adapters to verified approval receipts and verified published-snapshot registry, with stale/missing references blocking activation and a recoverable previous revision.
+- T037 must retain the Ulyanovsk annual/override split and exact existing IDs; the research registry remains non-executable and T038 stays deferred.
+- The authority study covers 31 subjects but only Ulyanovsk has production-quality source/approval/signing evidence. This geographic catalog task may cover more places without increasing executable prayer-policy coverage beyond one city.
+- Source onboarding rules reinforce that catalog provenance/licensing is separate from prayer-source permission. T035 may import licensed geography, while T036 must still require exact authority/source approval and authenticated publication references.
+- Existing data-model principles require immutable artifacts/revisions, explicit mosque timezone, append-only audit and relational constraints rather than opaque JSON where correctness depends on links.
+- Public IDs should be opaque/stable and not sequential tenant identifiers. A deterministic city ID therefore needs a documented namespace-derived identity from stable geographic provenance, not a mutable display name or database sequence.
+- Registry rollback must change an active registry revision pointer and never mutate snapshots or prayer publication rows; a failed registry activation must leave the prior revision active.
+- Test strategy prioritizes wrong source/silent fallback and replacement of good data immediately after prayer-time correctness. T035–T037 tests must therefore cover duplicate/ambiguous identity, timezone, activation atomicity and prior-revision survival before API presentation details.
+- PostgreSQL integration already has a Docker-backed migration/rollback harness and a least-privileged runtime-role pattern; T036 should extend that established stack rather than introduce a second database test framework.
+
+## T035 geographic source evaluation
+
+- `CONFIRMED_PUBLIC`: OpenStreetMap data is ODbL 1.0; use requires attribution and public distribution of a derivative database under ODbL/compatible terms, with parallel distribution obligations when technological restrictions are applied. It is technically rich and frequently updated but creates avoidable share-alike/database-distribution obligations for this proprietary repository/product.
+- `CONFIRMED_PUBLIC`: GeoNames' official export states CC BY 4.0, permits commercial use with attribution, provides country dumps, alternate-name dumps, IANA timezone, modification dates and daily modification/delete feeds.
+- `PROPOSAL` (pending byte/coverage verification): choose the GeoNames RU country dump as T035 geography because its stable numeric IDs, direct IANA timezone column, alternate names and permissive attribution license fit a reproducible closed-product importer better than OSM/ODbL.
+- GeoNames admin1 values for Russia are not ISO 3166-2 codes; T035 must pin an explicit reviewed admin1 → `RU-*` mapping and fail closed on unmapped/changed codes. Geography still cannot assign prayer authority.
+- Raw country/alternate-name dumps should be downloaded into an ignored cache, verified by pinned SHA-256/size, and deterministically imported. Git should contain importer code, manifest/provenance, mapping and minimal licensed fixture only—not the bulk dump or generated full catalog.
+- Downloaded 2026-08-29 GeoNames inputs outside Git: `RU.zip` 15,243,650 bytes / SHA-256 `61acd9cc876089a9e8d1042d581fb221bccf511716bf03f8d6b0fb1cb67bd3fc`; alternate names 12,583,968 bytes / SHA-256 `8bf891e928ff23d7f72017b1724c821138f401e22d9e042be5bc31978ff50df2`.
+- Ulyanovsk is GeoNames `479123`, `P.PPLA`, admin1 `81`, coordinates `54.32824,48.38657`, timezone `Europe/Ulyanovsk`; preferred RU/EN alternate names are explicitly present. These geography coordinates differ from T034's OSM centroid but do not affect the signed timetable.
+- A broad active populated-place filter (excluding historical/abandoned/destroyed codes) yields 192,152 GeoNames RU features, 30 IANA timezone strings and 87 source admin1 codes. This is too noisy for silent end-user choice but suitable for a comprehensive operator catalog if settlement feature code, subject and deterministic duplicate context remain visible.
+- GeoNames' `P` feature class includes micro-localities/sections (`PPLX`) and facility/populated-place variants; the importer must preserve source feature code as settlement type instead of inventing Russian legal classifications.
+- The official GeoNames `admin1CodesASCII.txt` input is 151,536 bytes / SHA-256 `590651498043f674accda2b7f46d21286cda0e290b02f8561c5005eee9a5448c`; it currently lists 83 `RU.*` admin1 divisions. A full import can therefore cover those 83 mapped subjects but must report—not silently fill—the six jurisdictions absent from GeoNames' RU coding.
+- GeoNames proves same-name ambiguity concretely: preferred Russian `Киров` maps to at least nine active populated-place records across Kirov, Kaluga, Bryansk, Stavropol, Voronezh, Adygea, Rostov and Chuvashia. Search must return every exact match with subject/type/timezone context in deterministic order.
+- The existing API/migration implementation uses one embedded sequential `schema_migrations` ledger, explicit up/down SQL and a pinned PostgreSQL 18 Docker gate. T036 can extend this ledger while keeping registry repository/service code in `internal/registry`.
+- Full pinned T035 import succeeds in ~3.3 seconds and yields revision `catalog-geonames-ru-2026-08-29-58af26706f194677`: 83 regions, 192,152 eligible source populated-place rows, 166,557 imported cities, 25,427 skipped for no Russian canonical name and 168 explicitly excluded for unmapped admin1.
+- The generated pretty JSON is 96,118,393 bytes (SHA-256 `c9b8ebba82b1418c4ed388a7f818fd9bf69b9817c677864417b2b28d78ec3497`) and remains ignored/untracked. A production database import should consume it; shipping this bulk file in Git or the TV APK is unnecessary.
+- Full catalog Ulyanovsk is stable ID `city-4adcfc15932f3850d5dd5dbaa17e3a4c`, canonical `Ульяновск`, aliases `Ulyanovsk`/`Синбирск`, `RU-ULY`, `Europe/Ulyanovsk`; exact `Киров` returns nine records.
+- A second full import is byte-identical and its deterministic diff contains 0 added/removed/changed with SHA-256 `2e7c2371b7d36999be370fb8dbb6f182b2cd7ecbe7640d5c85e7622ce069e62d`.
