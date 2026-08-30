@@ -93,6 +93,28 @@
   - `research/russia-prayer-source-registry-draft.json`
   - planning logs
 
+### Phase 5: Architecture and Ulyanovsk vertical slice
+
+- **Status:** in_progress
+- **Started:** 2026-08-30
+- Actions taken:
+  - Read the complete `test-driven-development` skill and committed to red-green-refactor for the new resolver behavior.
+  - Re-read the active plan/findings, confirmed no narrower `AGENTS.md` applies under `internal`, `contracts`, or `docs`, and inspected existing domain/snapshot/publication boundaries.
+  - Independently resolved the Ulyanovsk city relation through public OpenStreetMap Nominatim (`54.3150278, 48.4033730`, `RU-ULY`) so no competitor coordinate enters the foundation.
+  - Completed red-green-refactor cycles for canonical city search, alias search, the approved Ulyanovsk timetable binding, resolver precedence, same-tier ambiguity, registry validation, and malformed local dates.
+  - Added source-independent domain entities and a validated in-memory control-plane registry; no TV or signed snapshot contract was changed.
+  - Bound the first registry entry to the exact existing Ulyanovsk source, approval, August source override, timezone, and published snapshot IDs.
+  - Wrote `RUSSIA_CITY_SOURCE_ARCHITECTURE.md` and accepted ADR 0015, explicitly separating geometry from authority and preserving the signed offline pipeline.
+  - Extended the resolver result with the actual retained `SourceOverride` metadata, rejected provider kinds outside the six repository-approved kinds, and made validated input/output slices defensive copies.
+- Files created/modified:
+  - `internal/domain/city_source.go`
+  - `internal/domain/doc.go`
+  - `internal/registry/registry.go`
+  - `internal/registry/registry_test.go`
+  - `RUSSIA_CITY_SOURCE_ARCHITECTURE.md`
+  - `docs/adr/0015-city-region-authority-source-policy-resolution.md`
+  - `docs/adr/README.md`
+
 ## Test Results
 
 | Test | Input | Expected | Actual | Status |
@@ -109,6 +131,10 @@
 | Research harness tests | `make test-research` | Projection, validation, buckets, runs, snapshot parsing | 4 tests pass | PASS |
 | Registry structure | `jq` recompute counts/unique subject codes | 31 unique codes; declared counts match entries | 31 unique; 6 confirmed, 5 strong, 6 ambiguous, 14 unknown | PASS |
 | Documentation policy check | Temporarily exclude local ignored APK, then `make docs-check` | No tracked/research artifact or documentation policy violation | `docs-check: PASS`; APK restored | PASS |
+| Registry/domain narrow tests | `go test ./internal/domain ./internal/registry` | Existing domain and new registry tests pass | PASS | PASS |
+| Repository Go tests | `go test ./...` | All Go packages pass | All packages pass | PASS |
+| Go static analysis | `go tool staticcheck ./...` | No findings | No output | PASS |
+| Checkpoint 4 docs/research checks | Temporarily exclude local ignored APK; `make docs-check`; `make test-research` | Docs pass; four research tests pass | PASS; 4/4 | PASS |
 
 ## Error Log
 
@@ -129,7 +155,7 @@
 
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 5: city/source architecture and the Ulyanovsk registry vertical slice after completing three research phases. |
+| Where am I? | Phase 6: independent falsification, plan/task updates, repository-wide verification, and final audit. |
 | Where am I going? | APK research → Ulyanovsk comparison → Russia authority research → architecture/foundation → falsification/verification. |
 | What's the goal? | Evidence-backed clean-room city/source resolution with Ulyanovsk as the first safe vertical slice. |
 | What have I learned? | See `findings.md`. |

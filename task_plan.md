@@ -6,7 +6,7 @@ Determine, with clean-room evidence, how 1Muslim 5.9.5 resolves prayer times (es
 
 ## Current Phase
 
-Phase 5
+Phase 6
 
 ## Phases
 
@@ -46,12 +46,12 @@ Phase 5
 
 ### Phase 5: Architecture and Ulyanovsk vertical slice
 
-- [ ] Specify City, Region, GeographicScope, PrayerAuthority, PrayerSource, PrayerPolicy, CalculationProfile, TimeTable, and SourceOverride boundaries.
-- [ ] Define precedence: exact city timetable → official regional timetable → approved regional calculation profile → explicitly configured fallback → unavailable.
-- [ ] Write `RUSSIA_CITY_SOURCE_ARCHITECTURE.md` and an ADR.
-- [ ] If evidence is sufficient, implement registry/resolver foundation and tests that route Ulyanovsk to the existing approved signed-offline pilot without weakening publication/signature/provenance.
-- [ ] Commit checkpoint 4.
-- **Status:** pending
+- [x] Specify City, Region, GeographicScope, PrayerAuthority, PrayerSource, PrayerPolicy, CalculationProfile, TimeTable, and SourceOverride boundaries.
+- [x] Define precedence: exact city timetable → official regional timetable → approved regional calculation profile → explicitly configured fallback → unavailable.
+- [x] Write `RUSSIA_CITY_SOURCE_ARCHITECTURE.md` and an ADR.
+- [x] If evidence is sufficient, implement registry/resolver foundation and tests that route Ulyanovsk to the existing approved signed-offline pilot without weakening publication/signature/provenance.
+- [x] Commit checkpoint 4.
+- **Status:** complete
 
 ### Phase 6: Falsification review and delivery
 

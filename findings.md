@@ -73,6 +73,8 @@
 | Fail closed at unavailable/ambiguous policy rather than silently applying a nationwide method. | Required product invariant. |
 | Keep the comparison output aggregate-only while testing every source row in memory. | Provides reproducible statistics without committing a reconstructable competitor timetable. |
 | Keep research confidence separate from resolver eligibility. | A first-party page can justify `confirmed_official` for its stated scope without being licensed, parsed, approved, or safe for production publication. |
+| Seed canonical city coordinates from an independent licensed geographic source, never from a competitor APK. | Geographic identity is clean-room input and remains separate from prayer authority/policy. |
+| Keep registry selection in the control plane and reference immutable published snapshot IDs. | Search/resolution cannot bypass candidate validation, approval, signing, device assignment, Room import, or last-known-good activation. |
 
 ## Issues Encountered
 
@@ -119,3 +121,7 @@
 - `INFERENCE`: the combined first-party evidence rejects a single nationwide authority/method assumption: subject-wide policy (Татарстан), city-only tables (Grozny, Saint Petersburg, Saratov), locality-specific calendars (Ulyanovsk Oblast), partial Ramadan artifacts (Adygea), and parallel authorities (Башкортостан, Moscow, Astrakhan, Penza, Volgograd, Chuvashia) require distinct resolver states.
 - `PROPOSAL`: use IslamApp's explicit geographic scope hierarchy and 1Muslim's visible timetable-versus-calculation distinction only as architectural patterns; add independent public/official data, authority binding, provenance, approval, signature, and fail-closed behavior.
 - `UNKNOWN`: DUM RT's former prayer-time helper URL returned HTTP 410 in follow-up. The official 2014 policy page remains live, but a stable current data transport and version contract still require direct onboarding.
+- `CONFIRMED_PUBLIC`: an independent Nominatim query resolved OpenStreetMap city relation `2049867` for Ульяновск at `54.3150278, 48.4033730`, subject code `RU-ULY`, with ODbL attribution. These coordinates are suitable only as catalog geography and do not establish a prayer authority or policy.
+- `PROPOSAL`: the implemented domain separates `City`, `Region`, `GeographicScope`, `PrayerAuthority`, `PrayerSource`, `PrayerPolicy`, `CalculationProfile`, `TimeTable`, and `SourceOverride`. Registry construction validates their IDs, foreign keys, IANA timezone, effective range, approval, mosque binding, publication, and override references.
+- `PROPOSAL`: resolver precedence is exact city timetable → regional official timetable → approved regional calculation profile → explicitly named fallback → unavailable. Multiple candidates at one tier return ambiguity; insertion order is never authority.
+- `PROPOSAL`: the Ulyanovsk seed maps public city relation `2049867` and `Europe/Ulyanovsk` to the already approved `effective-ulyanovsk-2026-v1` policy chain and immutable snapshot `ulyanovsk-second-cathedral-2026-pilot-local-v2`. It does not alter schedule rows, signature bytes, Android UI, Room, or device behavior.
