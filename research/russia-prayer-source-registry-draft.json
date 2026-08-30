@@ -1,0 +1,353 @@
+{
+  "schema_version": "research-draft-0.1",
+  "generated_on": "2026-08-30",
+  "evidence_label": "CONFIRMED_PUBLIC",
+  "purpose": "Clean-room candidate registry; not a production authority assignment or prayer dataset",
+  "default_resolution": "unavailable",
+  "status_definitions": {
+    "confirmed_official": "A first-party authority source exists and states the represented geographic scope",
+    "strong_evidence": "A first-party authority or schedule exists, but scope, format, policy, or custody is incomplete",
+    "ambiguous": "Multiple plausible authorities/sources or conflicting scopes prevent automatic choice",
+    "unknown": "No sufficiently evidenced first-party prayer source/policy was recovered"
+  },
+  "summary": {
+    "subjects_researched": 31,
+    "confirmed_official": 6,
+    "strong_evidence": 5,
+    "ambiguous": 6,
+    "unknown": 14
+  },
+  "entries": [
+    {
+      "federal_subject_code": "RU-TA",
+      "federal_subject": "Республика Татарстан",
+      "mapping_status": "confirmed_official",
+      "researched_scope": "Republic-wide policy with city/district schedule selection",
+      "authority_candidates": ["Духовное управление мусульман Республики Татарстан"],
+      "source_candidates": [
+        "https://dumrt.ru/ru/news/news_26996.html",
+        "https://dumrt.ru/ru/help-info/prayertime/"
+      ],
+      "policy_summary": "DUМ RT says its 2014 plenary approved a Hanafi, astronomy- and geography-aware system for all Татарстан; exact parameters/version remain to onboard",
+      "resolver_state": "research_only"
+    },
+    {
+      "federal_subject_code": "RU-BA",
+      "federal_subject": "Республика Башкортостан",
+      "mapping_status": "ambiguous",
+      "researched_scope": "Ufa and republic",
+      "authority_candidates": [
+        "Духовное управление мусульман Республики Башкортостан",
+        "Центральное духовное управление мусульман России"
+      ],
+      "source_candidates": ["https://dumrb.ru/", "https://cdum.ru/"],
+      "policy_summary": "Both first-party organizations publish Ufa prayer information; no canonical subject-wide precedence was found",
+      "resolver_state": "blocked_ambiguous"
+    },
+    {
+      "federal_subject_code": "RU-ULY",
+      "federal_subject": "Ульяновская область",
+      "mapping_status": "confirmed_official",
+      "researched_scope": "Ульяновск city; separate locality calendars exist inside the subject",
+      "authority_candidates": ["РДУМ Ульяновской области в составе ЦДУМ России"],
+      "source_candidates": ["https://rdumul.ru/", "official-rdumul-ulyanovsk-2026"],
+      "policy_summary": "Exact approved 2026 Ulyanovsk timetable with retained annual PDF, August override, effective schedule, approval, and signed pilot snapshot",
+      "resolver_state": "existing_approved_pilot"
+    },
+    {
+      "federal_subject_code": "RU-DA",
+      "federal_subject": "Республика Дагестан",
+      "mapping_status": "confirmed_official",
+      "researched_scope": "Official city/district selector",
+      "authority_candidates": ["Муфтият Республики Дагестан"],
+      "source_candidates": ["https://muftiyatrd.ru/vremya-namaza"],
+      "policy_summary": "First-party city/district timetable interface; exact data transport and calculation policy remain to onboard",
+      "resolver_state": "research_only"
+    },
+    {
+      "federal_subject_code": "RU-CE",
+      "federal_subject": "Чеченская Республика",
+      "mapping_status": "confirmed_official",
+      "researched_scope": "Grozny city",
+      "authority_candidates": ["Духовное управление мусульман Чеченской Республики"],
+      "source_candidates": ["https://dumchr.ru/"],
+      "policy_summary": "First-party current Grozny times; no republic-wide scope or archival interface is asserted",
+      "resolver_state": "research_only"
+    },
+    {
+      "federal_subject_code": "RU-IN",
+      "federal_subject": "Республика Ингушетия",
+      "mapping_status": "unknown",
+      "researched_scope": "Republic and Nazran/Magas",
+      "authority_candidates": ["Духовный центр мусульман Республики Ингушетия"],
+      "source_candidates": [],
+      "policy_summary": "No stable current first-party timetable/source interface recovered",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-MOW",
+      "federal_subject": "Москва",
+      "mapping_status": "ambiguous",
+      "researched_scope": "Moscow federal city",
+      "authority_candidates": [
+        "Духовное управление мусульман Российской Федерации / Московская Соборная мечеть",
+        "Духовное собрание мусульман России / Московский муфтият"
+      ],
+      "source_candidates": ["https://www.mihrab.ru/", "https://www.muslim.ru/", "https://dsmr.ru/"],
+      "policy_summary": "Multiple first-party Moscow schedules; mosque/source binding is required",
+      "resolver_state": "blocked_ambiguous"
+    },
+    {
+      "federal_subject_code": "RU-MOS",
+      "federal_subject": "Московская область",
+      "mapping_status": "unknown",
+      "researched_scope": "Oblast municipalities",
+      "authority_candidates": ["Духовное управление мусульман Московской области"],
+      "source_candidates": ["https://www.dummo.ru/"],
+      "policy_summary": "First-party regional organization confirmed; no canonical prayer schedule/policy recovered",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-SPE",
+      "federal_subject": "Санкт-Петербург",
+      "mapping_status": "confirmed_official",
+      "researched_scope": "Saint Petersburg federal city",
+      "authority_candidates": ["ДУМ Санкт-Петербурга и Северо-Западного региона России"],
+      "source_candidates": ["https://dum-spb.ru/"],
+      "policy_summary": "First-party schedule explicitly labeled for Saint Petersburg",
+      "resolver_state": "research_only"
+    },
+    {
+      "federal_subject_code": "RU-LEN",
+      "federal_subject": "Ленинградская область",
+      "mapping_status": "unknown",
+      "researched_scope": "Oblast",
+      "authority_candidates": ["ДУМ Санкт-Петербурга и Северо-Западного региона России"],
+      "source_candidates": ["https://dum-spb.ru/"],
+      "policy_summary": "The recovered source is Saint Petersburg-specific; no oblast policy was confirmed",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-KB",
+      "federal_subject": "Кабардино-Балкарская Республика",
+      "mapping_status": "strong_evidence",
+      "researched_scope": "Current page and 2026 annual graph; presumed Nalchik scope is not explicit",
+      "authority_candidates": ["Духовное управление мусульман Кабардино-Балкарской Республики"],
+      "source_candidates": ["https://www.kbrdum.ru/home"],
+      "policy_summary": "First-party current times and annual download; geographic scope and artifact custody need confirmation",
+      "resolver_state": "research_only"
+    },
+    {
+      "federal_subject_code": "RU-KC",
+      "federal_subject": "Карачаево-Черкесская Республика",
+      "mapping_status": "unknown",
+      "researched_scope": "Republic and Cherkessk",
+      "authority_candidates": ["Духовное управление мусульман Карачаево-Черкесской Республики"],
+      "source_candidates": ["https://dumkchr.ru/"],
+      "policy_summary": "Candidate first-party domain identified, but no stable current schedule/policy was recovered",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-SE",
+      "federal_subject": "Республика Северная Осетия — Алания",
+      "mapping_status": "unknown",
+      "researched_scope": "Republic and Vladikavkaz",
+      "authority_candidates": ["ДУМ Республики Северная Осетия — Алания"],
+      "source_candidates": ["https://minnats.alania.gov.ru/activity/religion", "http://www.islamosetia.ru/"],
+      "policy_summary": "Government page confirms the organization/domain; no current first-party timetable was recovered",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-STA",
+      "federal_subject": "Ставропольский край",
+      "mapping_status": "unknown",
+      "researched_scope": "Krai and Stavropol",
+      "authority_candidates": ["Духовное управление мусульман Ставропольского края"],
+      "source_candidates": ["https://dumsk.com/"],
+      "policy_summary": "Candidate official organization identified; no stable current timetable/policy recovered",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-AD",
+      "federal_subject": "Республика Адыгея",
+      "mapping_status": "strong_evidence",
+      "researched_scope": "Ramadan 2026 artifact; annual/locality scope unresolved",
+      "authority_candidates": ["ДУМ Республики Адыгея и Краснодарского края"],
+      "source_candidates": [
+        "https://dumraikk.ru/",
+        "https://dumraikk.ru/wp-content/uploads/2026/02/ramadan-2026_18feb.pdf"
+      ],
+      "policy_summary": "First-party Ramadan timetable exists; it is not evidence of a complete annual republic policy",
+      "resolver_state": "research_only"
+    },
+    {
+      "federal_subject_code": "RU-KDA",
+      "federal_subject": "Краснодарский край",
+      "mapping_status": "unknown",
+      "researched_scope": "Krai and Krasnodar",
+      "authority_candidates": ["ДУМ Республики Адыгея и Краснодарского края"],
+      "source_candidates": ["https://dumraikk.ru/"],
+      "policy_summary": "Organization jurisdiction is confirmed; no krai/locality annual prayer source scope was confirmed",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-SAR",
+      "federal_subject": "Саратовская область",
+      "mapping_status": "confirmed_official",
+      "researched_scope": "Saratov city",
+      "authority_candidates": ["Духовное управление мусульман Саратовской области"],
+      "source_candidates": ["https://dumso.ru/analytics"],
+      "policy_summary": "First-party navigable monthly schedule explicitly labeled for Saratov",
+      "resolver_state": "research_only"
+    },
+    {
+      "federal_subject_code": "RU-ORE",
+      "federal_subject": "Оренбургская область",
+      "mapping_status": "strong_evidence",
+      "researched_scope": "Orenburg city",
+      "authority_candidates": ["РДУМ Оренбургской области в составе ЦДУМ России"],
+      "source_candidates": ["https://dumoo.ru/"],
+      "policy_summary": "First-party prayer widget and monthly calendar posts; iframe provider, exact format, and oblast scope need confirmation",
+      "resolver_state": "research_only"
+    },
+    {
+      "federal_subject_code": "RU-PNZ",
+      "federal_subject": "Пензенская область",
+      "mapping_status": "ambiguous",
+      "researched_scope": "Oblast and Penza",
+      "authority_candidates": [
+        "РДУМ Пензенской области",
+        "Центральное ДУМ Пензенской области"
+      ],
+      "source_candidates": ["https://muslime-penza.ru/", "https://cdumpo.ru/"],
+      "policy_summary": "Parallel regional organizations; no canonical current timetable source recovered",
+      "resolver_state": "blocked_ambiguous"
+    },
+    {
+      "federal_subject_code": "RU-MO",
+      "federal_subject": "Республика Мордовия",
+      "mapping_status": "strong_evidence",
+      "researched_scope": "Candidate Saransk/republic portal",
+      "authority_candidates": ["Духовное управление мусульман Республики Мордовия"],
+      "source_candidates": ["https://islam-rm.com/"],
+      "policy_summary": "First-party-associated portal exposes prayer times; locality, calculation, and republic scope are not explicit",
+      "resolver_state": "research_only"
+    },
+    {
+      "federal_subject_code": "RU-SAM",
+      "federal_subject": "Самарская область",
+      "mapping_status": "unknown",
+      "researched_scope": "Oblast and Samara",
+      "authority_candidates": ["Regional Muslim administrations require confirmation"],
+      "source_candidates": [],
+      "policy_summary": "No stable current first-party timetable recovered; aggregator calculations rejected",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-NIZ",
+      "federal_subject": "Нижегородская область",
+      "mapping_status": "unknown",
+      "researched_scope": "Oblast and Nizhny Novgorod",
+      "authority_candidates": ["Духовное управление мусульман Нижегородской области"],
+      "source_candidates": ["https://www.islamnn.ru/"],
+      "policy_summary": "Candidate organization/domain identified; no stable current first-party timetable recovered",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-AST",
+      "federal_subject": "Астраханская область",
+      "mapping_status": "ambiguous",
+      "researched_scope": "Astrakhan city plus district-specific policies",
+      "authority_candidates": [
+        "РДУМ Астраханской области в составе ЦДУМ России",
+        "Other Astrakhan Muslim administration affiliated with DUM RF"
+      ],
+      "source_candidates": ["https://islam-astrakhan.ru/", "https://nur-iman.ru/"],
+      "policy_summary": "First-party Astrakhan and Narimanov District schedules exist, but parallel authority and locality scopes prevent a subject-wide default",
+      "resolver_state": "blocked_ambiguous"
+    },
+    {
+      "federal_subject_code": "RU-VGG",
+      "federal_subject": "Волгоградская область",
+      "mapping_status": "ambiguous",
+      "researched_scope": "Oblast and Volgograd",
+      "authority_candidates": [
+        "Центральное ДУМ Волгоградской области",
+        "РДУМ Волгоградской области"
+      ],
+      "source_candidates": ["https://dumvlg.ru/", "https://www.34islam.ru/"],
+      "policy_summary": "Multiple regional administrations; no canonical current schedule recovered",
+      "resolver_state": "blocked_ambiguous"
+    },
+    {
+      "federal_subject_code": "RU-PER",
+      "federal_subject": "Пермский край",
+      "mapping_status": "strong_evidence",
+      "researched_scope": "Perm city",
+      "authority_candidates": ["Региональное духовное управление мусульман Пермского края"],
+      "source_candidates": ["https://islam59.ru/help-info/vremya-namazov/"],
+      "policy_summary": "First-party page is explicitly for Perm; embedded provider/data contract and krai scope need confirmation",
+      "resolver_state": "research_only"
+    },
+    {
+      "federal_subject_code": "RU-ROS",
+      "federal_subject": "Ростовская область",
+      "mapping_status": "unknown",
+      "researched_scope": "Oblast and Rostov-on-Don",
+      "authority_candidates": ["ЦДУМ Ростовской области"],
+      "source_candidates": ["https://islam-rostov.ru/"],
+      "policy_summary": "Candidate organization/domain identified; no stable current first-party timetable recovered",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-TYU",
+      "federal_subject": "Тюменская область",
+      "mapping_status": "unknown",
+      "researched_scope": "Oblast and Tyumen",
+      "authority_candidates": [],
+      "source_candidates": [],
+      "policy_summary": "No stable current first-party timetable/policy recovered; aggregators rejected",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-SVE",
+      "federal_subject": "Свердловская область",
+      "mapping_status": "unknown",
+      "researched_scope": "Oblast and Yekaterinburg",
+      "authority_candidates": ["Regional Muslim administrations require confirmation"],
+      "source_candidates": ["https://new.dumrf.ru/articles/org/regionalnoe-duxovnoe-upravlenie-musulman-sverdlovskoi-obl"],
+      "policy_summary": "Organization metadata found; no stable current first-party timetable/policy recovered",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-KEM",
+      "federal_subject": "Кемеровская область — Кузбасс",
+      "mapping_status": "unknown",
+      "researched_scope": "Oblast and Kemerovo",
+      "authority_candidates": [],
+      "source_candidates": [],
+      "policy_summary": "No stable current first-party timetable/policy recovered; aggregators rejected",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-KHM",
+      "federal_subject": "Ханты-Мансийский автономный округ — Югра",
+      "mapping_status": "unknown",
+      "researched_scope": "Autonomous okrug",
+      "authority_candidates": ["Regional Muslim administrations require confirmation"],
+      "source_candidates": [],
+      "policy_summary": "No stable current first-party timetable/policy recovered",
+      "resolver_state": "unavailable"
+    },
+    {
+      "federal_subject_code": "RU-CU",
+      "federal_subject": "Чувашская Республика — Чувашия",
+      "mapping_status": "ambiguous",
+      "researched_scope": "Republic and Cheboksary",
+      "authority_candidates": ["Multiple current regional Muslim administrations require direct source confirmation"],
+      "source_candidates": ["https://dsmr.ru/10-stranitsy.html", "https://cdum.ru/"],
+      "policy_summary": "Parallel organization evidence exists, but no canonical first-party timetable/source was established",
+      "resolver_state": "blocked_ambiguous"
+    }
+  ]
+}

@@ -27,7 +27,7 @@
 
 ### Phase 2: 1Muslim static/runtime research
 
-- **Status:** complete pending checkpoint commit
+- **Status:** complete
 - **Started:** 2026-08-30
 - Actions taken:
   - Began package/manifest/asset/dependency inventory with Android SDK tools.
@@ -48,7 +48,7 @@
 
 ### Phase 3: Ulyanovsk independent reproduction and comparison
 
-- **Status:** in_progress
+- **Status:** complete
 - **Started:** 2026-08-30
 - Actions taken:
   - Compared all 365 projected ID 1187 rows and six prayer fields with both the official annual CSV and approved effective signed snapshot.
@@ -61,6 +61,37 @@
   - `research/tools/one_muslim_ulyanovsk_compare.py`
   - `research/tools/test_one_muslim_ulyanovsk_compare.py`
   - `Makefile`
+
+### Phase 4: Russia official-authority/source research
+
+- **Status:** complete pending checkpoint commit
+- **Started:** 2026-08-30
+- Actions taken:
+  - Began first-party web research with DUM RT, DUM RB, CDUM, and RDUM Ulyanovsk.
+  - Confirmed Татарстан's republic-wide approved calculation policy and city/district selector.
+  - Identified a real Башкортостан ambiguity between DUM RB and Ufa-based CDUM publications.
+  - Confirmed RDUM Ulyanovsk publishes locality-specific calendars and transition policies rather than one coordinate-free subject schedule.
+  - Confirmed first-party city/district timetable interfaces for Dagestan and first-party Grozny times for Chechnya.
+  - Separated Moscow federal city from Moscow Oblast and recorded competing Moscow city first-party publishers.
+  - Confirmed a Saint Petersburg city schedule while withholding Leningrad Oblast/Northwest scope promotion.
+  - Left Ingushetia `unknown` because no current stable first-party timetable was recovered.
+  - Found DUM KBR's current times and 2026 annual-download link but retained `strong_evidence` pending explicit locality/republic scope.
+  - Identified candidate official organizations for North Ossetia-Alania, Karachay-Cherkessia, and Stavropol while keeping timetable mappings `unknown`.
+  - Confirmed city-scoped official schedule pages for Saratov and Orenburg, and a candidate DUM RM prayer interface for Saransk/Mordovia.
+  - Recorded cross-subject DUM RA/KK organization scope without pretending it supplies a timetable.
+  - Recorded Penza's parallel regional organizations as ambiguous and rejected aggregator schedules for Samara/Nizhny Novgorod as authority evidence.
+  - Confirmed Astrakhan city and Narimanov District first-party schedules while retaining subject-level ambiguity due parallel organizations and locality-specific policy.
+  - Recorded Volgograd's parallel organizations as ambiguous and confirmed a city-scoped Perm official prayer page.
+  - Retained Rostov, Tyumen, Sverdlovsk, Kemerovo, and Khanty-Mansi timetable mappings as unknown.
+  - Corroborated Татарстан's republic-wide 2014 policy decision with official printed tables and noted the site's general CC BY 4.0 statement without assuming attachment-specific license scope.
+  - Completed a sanitized 31-subject registry draft: 6 `confirmed_official`, 5 `strong_evidence`, 6 `ambiguous`, and 14 `unknown`; only Ulyanovsk is marked as an existing approved pilot.
+  - Compared IslamApp, 1Muslim, and the proposed NamazTime resolver across search, geocoding, policy selection, calculation, timetables, updates, offline behavior, fallback, and provenance.
+  - Validated 31 unique subject codes and independently recomputed the declared status and resolver-state counts with `jq`.
+  - Rechecked source volatility: DUM RT's former helper URL returns HTTP 410, so it is retained only as a historical candidate URL while the live first-party policy page remains the evidence basis.
+- Files created/modified:
+  - `RUSSIA_PRAYER_TIME_AUTHORITY_RESEARCH.md`
+  - `research/russia-prayer-source-registry-draft.json`
+  - planning logs
 
 ## Test Results
 
@@ -76,6 +107,8 @@
 | Ulyanovsk annual comparison | ID 1187 projected to 2026 vs annual CSV | 365 dates × 6 fields | 1,912 exact; 246 ±1; 0 ±2–5; 32 >5 | PASS |
 | Ulyanovsk effective comparison | ID 1187 projected to 2026 vs approved snapshot | 365 dates × 6 fields | 1,901 exact; 246 ±1; 0 ±2–5; 43 >5 | PASS |
 | Research harness tests | `make test-research` | Projection, validation, buckets, runs, snapshot parsing | 4 tests pass | PASS |
+| Registry structure | `jq` recompute counts/unique subject codes | 31 unique codes; declared counts match entries | 31 unique; 6 confirmed, 5 strong, 6 ambiguous, 14 unknown | PASS |
+| Documentation policy check | Temporarily exclude local ignored APK, then `make docs-check` | No tracked/research artifact or documentation policy violation | `docs-check: PASS`; APK restored | PASS |
 
 ## Error Log
 
@@ -89,12 +122,14 @@
 | 2026-08-30 | JADX returned status 3 with 620 decode/decompile errors; apktool emitted unresolved-resource warnings | 1 | Usable output retained externally; material findings will be cross-checked against smali/DEX/direct database contents. |
 | 2026-08-30 | Base APK install failed with `INSTALL_FAILED_MISSING_SPLIT` | 1 | Manifest requires ABI/density splits that were not supplied. Record runtime behavior as unavailable and do not bypass packaging/protection. |
 | 2026-08-30 | Initial synthetic bucket expectation counted four `>5` fields instead of five | 1 | Audited fixture deltas, added the omitted Asr +6 material run, and reran successfully. |
+| 2026-08-30 | Initial registry validation queried absent `.subjects` instead of `.entries` | 1 | Corrected the read-only `jq` query; structure and counts pass. |
+| 2026-08-30 | DUM RT's former prayer-time helper URL returned HTTP 410 | 1 | Marked transport as volatile; retained the live official policy decision as evidence and deferred transport onboarding. |
 
 ## 5-Question Reboot Check
 
 | Question | Answer |
 |----------|--------|
-| Where am I? | Phase 3: reproducible Ulyanovsk comparison after completing static research. |
+| Where am I? | Phase 5: city/source architecture and the Ulyanovsk registry vertical slice after completing three research phases. |
 | Where am I going? | APK research → Ulyanovsk comparison → Russia authority research → architecture/foundation → falsification/verification. |
 | What's the goal? | Evidence-backed clean-room city/source resolution with Ulyanovsk as the first safe vertical slice. |
 | What have I learned? | See `findings.md`. |

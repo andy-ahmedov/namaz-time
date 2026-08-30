@@ -6,7 +6,7 @@ Determine, with clean-room evidence, how 1Muslim 5.9.5 resolves prayer times (es
 
 ## Current Phase
 
-Phase 3
+Phase 5
 
 ## Phases
 
@@ -32,17 +32,17 @@ Phase 3
 - [x] Identify the Ulyanovsk coordinates, timezone, calculation/timetable policy, Asr/high-latitude rules, seasonal switches, and offsets evidenced by the app.
 - [x] Build an independent, synthetic research harness if the observed mechanism is reproducible without proprietary code/data.
 - [x] Compare every 2026 effective Ulyanovsk row/prayer; report exact, ±1, ±2–5, >5, maxima, ranges, and late-August Dhuhr behavior.
-- [ ] Commit checkpoint 2.
-- **Status:** in_progress
+- [x] Commit checkpoint 2.
+- **Status:** complete
 
 ### Phase 4: Russia official-authority/source research
 
-- [ ] Research official regional/federal sources, prioritizing named regions and primary authorities.
-- [ ] Keep evidence strength separate from authority choice and record ambiguous/unknown mappings explicitly.
-- [ ] Create `RUSSIA_PRAYER_TIME_AUTHORITY_RESEARCH.md` and a structured registry draft with sanitized metadata/links only.
-- [ ] Compare IslamApp, 1Muslim, and proposed NamazTime architecture without copying competitor datasets.
-- [ ] Commit checkpoint 3.
-- **Status:** pending
+- [x] Research official regional/federal sources, prioritizing named regions and primary authorities.
+- [x] Keep evidence strength separate from authority choice and record ambiguous/unknown mappings explicitly.
+- [x] Create `RUSSIA_PRAYER_TIME_AUTHORITY_RESEARCH.md` and a structured registry draft with sanitized metadata/links only.
+- [x] Compare IslamApp, 1Muslim, and proposed NamazTime architecture without copying competitor datasets.
+- [x] Commit checkpoint 3.
+- **Status:** complete
 
 ### Phase 5: Architecture and Ulyanovsk vertical slice
 
@@ -88,6 +88,8 @@ Phase 3
 | `sudo` package installation requires an unavailable interactive password. | 1 | Installed official JADX 1.5.6 and apktool 3.0.3 releases user-locally; use Android SDK build tools and platform sqlite3. |
 | Ordinary emulator installation fails with `INSTALL_FAILED_MISSING_SPLIT`. | 1 | The supplied base declares required ABI/density splits; record the runtime limit and do not generate modified splits or bypass Pairip/store controls. |
 | First synthetic comparison assertion expected four `>5` fields, but the fixture actually contained five. | 1 | Audited the six synthetic deltas, corrected the test expectation to include Asr +6, and reran all four tests successfully. |
+| The first registry validation query addressed `.subjects`, but the draft schema uses `.entries`. | 1 | Corrected the read-only query; all 31 entries have unique subject codes and computed status counts match the declared summary. |
+| DUM RT's former prayer-time helper URL returned HTTP 410 during follow-up. | 1 | Retained the live first-party 2014 policy evidence, marked the selector URL as volatile, and kept the interface subject to source onboarding rather than treating it as a stable API. |
 
 ## Notes
 
