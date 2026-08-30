@@ -257,7 +257,7 @@
 
 ### T039: explainable operator workflow
 
-- **Status:** complete pending checkpoint commit.
+- **Status:** complete; local commit `f4c7ea9`.
 - Added revision-specific assessment with deterministic precedence and stable
   `resolved`/`ambiguous`/`stale`/`unavailable` reasons plus per-option authority,
   evidence, scope, freshness/range, payload and blocked reason.
@@ -280,8 +280,8 @@
 - Checkpoint gates pass: `make test`, full-catalog `registryctl validate`,
   `make test-postgres` including v7 restore, `go test -race ./...`,
   `make security-go` (no vulnerabilities), `make lint`, and a clean
-  working-tree gitleaks scan. The local T039 commit is the remaining checkpoint
-  step.
+  working-tree gitleaks scan. Post-commit gitleaks then scanned all 78 commits
+  with no findings.
 
 ### T039 error/falsification log
 

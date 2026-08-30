@@ -6,7 +6,7 @@ Determine, with clean-room evidence, how 1Muslim 5.9.5 resolves prayer times (es
 
 ## Current Phase
 
-Phase 10 — T039 operator workflow (`in_progress`)
+Phase 10 — T039 operator workflow (`completed`)
 
 ## Phases
 
@@ -133,12 +133,12 @@ Phase 10 — T039 operator workflow (`in_progress`)
 
 - [x] Start only if T035–T037 are complete; expose explicit reasons/actions for duplicate city, ambiguous policy, stale source and unavailable schedule.
 - [x] Never auto-select a neighboring region or generic Russia calculation method.
-- [x] Run checkpoint gates and record verification evidence; create the local T039 commit next.
-- **Status:** complete pending the immediate checkpoint commit
+- [x] Run checkpoint gates, record verification evidence and create local T039 commit `f4c7ea9`.
+- **Status:** complete
 
 ### Phase 11: final verification
 
 - [x] Run all available docs, unit, lint, race, security and PostgreSQL gates from a clean worktree state except intended commits.
 - [x] Re-read acceptance criteria and audit Git for third-party dumps, APK/decompilation, keys/secrets and signed-pilot drift.
-- [ ] Report task statuses, commits, chosen geographic source/license, catalog coverage, Ulyanovsk E2E evidence and real blockers; do not push or create a PR.
-- **Status:** in progress; checkpoint commit and final report remain
+- [x] Prepare task statuses, commits, chosen geographic source/license, catalog coverage, Ulyanovsk E2E evidence and real blockers; do not push or create a PR.
+- **Status:** complete
