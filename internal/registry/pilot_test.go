@@ -72,6 +72,22 @@ func TestPilotBindingsComposeCanonicalCatalogWithoutChangingSnapshot(t *testing.
 	if got.Authorities[0].EvidenceLabel != "CONFIRMED_PUBLIC" || got.Authorities[1].EvidenceLabel != "UNKNOWN" {
 		t.Fatalf("authority evidence = %#v", got.Authorities)
 	}
+	assessment, err := AssessDataset(dataset, ResolveRequest{CityID: pilotCityID, MosqueID: pilotMosqueID, Date: "2026-08-30"})
+	if err != nil {
+		t.Fatalf("AssessDataset() error = %v", err)
+	}
+	choices, err := ProjectCityScheduleChoices(RevisionPolicyAssessment{
+		Revision: record, State: RevisionStateActive, Result: assessment,
+	})
+	if err != nil {
+		t.Fatalf("ProjectCityScheduleChoices() error = %v", err)
+	}
+	if choices.Status != CityScheduleChoicesAvailable || choices.SelectionRequired || len(choices.Choices) != 1 ||
+		!choices.Choices[0].Selectable || !choices.Choices[0].Executable ||
+		choices.Choices[0].PolicyID != "policy-ulyanovsk-second-cathedral-2026" ||
+		choices.Choices[0].TimeTable == nil || choices.Choices[0].TimeTable.PublishedSnapshotID != pilotSnapshotID {
+		t.Fatalf("Ulyanovsk schedule choices = %#v", choices)
+	}
 	assertPilotSnapshotUnchanged(t)
 }
 
