@@ -1,7 +1,7 @@
 # Persisted executable prayer-policy registry
 
 Date: 2026-08-30
-Status: T039 explainable operator handoff implemented; no nationwide prayer-source rollout
+Status: T040 multi-authority choice projection implemented; no nationwide prayer-source rollout
 
 ## Outcome
 
@@ -103,6 +103,13 @@ city, policy, mosque, local date and precedence tier. It remains
 publish a snapshot or change a device assignment. Rolling v7 back to v6 removes
 these pending requests only, so operators must back them up before rollback.
 
+T040 adds no table or migration. `CityScheduleChoiceSet` is computed from one
+loaded immutable revision and its existing `PolicyAssessment`; it is never a
+source of truth and is not persisted. Existing `registry_authorities.name` is
+already mandatory, immutable and covered by the revision content hash, so no
+separate mutable display label or religious ranking is introduced. PostgreSQL
+v6/v7 rollback and reapply semantics are unchanged.
+
 ## Database roles
 
 The registry writer/activator needs write access and remains an operator-side
@@ -135,6 +142,16 @@ policy from a still-staged revision and appends a `pending_review` request. The
 request is an audit/review handoff, not executable state. See
 `REGISTRY_OPERATOR_WORKFLOW.md`.
 
+T040 adds a separate authenticated
+`GET .../setup/schedule-choices` projection. Omitting `revision_id` assesses the
+active revision; supplying it assesses that exact staged or active revision.
+The result contains every highest-tier eligible choice with stable
+city+policy-derived identity, canonical authority label, evidence/provenance,
+scope, source, effective range and payload reference. It has no cardinality
+cap or top-N filtering. Same-tier multiplicity is available for explicit choice
+discovery while the automatic resolver remains ambiguous and the active
+execution path remains fail closed.
+
 ## Verification evidence
 
 - `CONFIRMED_RUNTIME`: the local Docker-backed PostgreSQL 18 gate applies v7,
@@ -153,5 +170,9 @@ request is an audit/review handoff, not executable state. See
   staged options, persists exactly one idempotent append-only review request,
   leaves the active revision unchanged, then explains and rejects a stale
   source choice.
+- `CONFIRMED_RUNTIME`: the extended PostgreSQL/HTTP gate projects the active
+  Ulyanovsk revision as one executable choice, a staged same-tier revision as
+  two selectable/non-executable choices, and a stale revision as no selectable
+  choices while retaining the T039 blocked explanation.
 - `UNKNOWN`: production backup retention, RPO/RTO and external approval/source
   store recovery have not been exercised; the local drill makes no such claim.

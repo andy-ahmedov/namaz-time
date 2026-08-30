@@ -94,6 +94,26 @@ the normal curator, approval, publication and activation boundaries remain in
 force. Active/stale/unavailable/lower-precedence choices fail closed, and no
 neighboring or nationwide fallback is introduced.
 
+T040 follow-up (2026-08-30): one canonical `City` may expose zero, one or any
+number of eligible authoritative `CityScheduleChoice` projections from one
+immutable revision. This multiplicity is a normal discovery state; it does not
+create authority-specific city rows and does not make the first choice an
+automatic result. Each choice is derived from the existing scope, authority,
+source, policy, approval/effective-range and timetable/calculation-profile
+records. The stable choice ID is derived from canonical city and policy IDs;
+the projection is not persisted and is not a new source of truth.
+
+The automatic resolver continues to reject same-tier ambiguity, and T036 still
+prevents an ambiguous staged revision from becoming the executable active
+revision. T039 `pending_review` remains the only handoff: an explicit choice
+does not approve, publish, activate, sign, or assign content. Neutral
+tier/policy-ID ordering is presentation determinism only. No cardinality limit,
+top-N filter or religious authority ranking exists.
+
+> One canonical city may expose any number of eligible authoritative schedule choices. The system must not arbitrarily truncate or rank same-precedence religious authorities, and presentation multiplicity must never be interpreted as automatic authority selection.
+
+> Transport/UI bounding, if ever needed, must use explicit pagination or equivalent lossless mechanics rather than top-N selection.
+
 ## Rejected alternatives
 
 - one nationwide authority or `method=Russia`;

@@ -109,6 +109,11 @@ the mosque path and send `Cache-Control: no-store`:
 - `GET /v1/admin/mosques/{mosqueId}/setup/prayer-policy?city_id=…&date=…`
   resolves one explicitly selected canonical ID for that mosque and local
   Gregorian date.
+- `GET /v1/admin/mosques/{mosqueId}/setup/schedule-choices?city_id=…&date=…`
+  projects the active Ulyanovsk binding as exactly one selectable/executable
+  choice referencing the same policy, timetable and signed snapshot. Supplying
+  a staged `revision_id` can show multiple eligible choices without selecting
+  or activating one.
 
 Duplicate names remain separate candidates. Zero/multiple matches never pass
 the repository's unique-city operation. Unknown, unavailable or same-tier

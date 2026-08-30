@@ -162,6 +162,12 @@ mosque-bound policy. Существующий signed USB-pilot snapshot не п�
 не меняется; география по-прежнему не назначает религиозную authority, а
 nationwide fallback отсутствует.
 
+T039–T040 добавляют поверх этого полный explainable policy assessment,
+append-only `pending_review` handoff и отдельную setup-проекцию всех допустимых
+schedule choices одного canonical city. Несколько равноправных authorities
+нормальны для отображения, но не выбираются автоматически; top-N лимита и
+религиозного ranking нет. TV/signed snapshot path не изменён.
+
 ## 5. Запрет на гигантскую первую задачу
 
 Не просить Codex одним промптом реализовать TV, backend, админку, nationwide-парсинг и публикацию. Каждая задача должна иметь один проверяемый результат, явные исключения и команды проверки.

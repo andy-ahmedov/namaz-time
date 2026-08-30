@@ -543,6 +543,19 @@ rolls back while comparing the signed bytes before/after. The Android pilot
 unit suite continues to authenticate and import the same packaged snapshot;
 no TV network or display path is added.
 
+T040 adds a synthetic multi-authority matrix for 0, 1, 2, 3, 5 and 8 eligible
+choices with no truncation. Reordered registry inputs must produce the same
+neutral policy-ID order while the resolver remains ambiguous for more than one
+same-tier choice. Stale and missing-schedule options are excluded from the
+selectable projection, lower precedence cannot become selectable, and T039
+retains the full applicable option set. Equal authority labels retain distinct
+choice/policy IDs; canonical authority names are used without generated
+abbreviations. Same-name/alias geography remains separate. HTTP tests cover
+the full eight-choice response, unknown-limit rejection, empty unavailable
+state and the sole active executable choice. PostgreSQL and pilot regressions
+pin active/staged/stale projections plus the unchanged Ulyanovsk snapshot raw
+SHA-256.
+
 ## Release evidence
 
 Each release records:

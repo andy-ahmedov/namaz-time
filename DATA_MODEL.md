@@ -575,3 +575,20 @@ idempotency row makes exact retries stable for the existing 24-hour window.
 Migration rollback v7→v6 removes pending review requests but leaves the active
 registry pointer, publication evidence, device assignments and signed
 snapshots unchanged. Back up retained requests before schema rollback.
+
+## City schedule-choice projection (T040)
+
+`CityScheduleChoiceSet` is an ephemeral read model computed from one
+`RevisionPolicyAssessment`. It stores no new row and owns no authority,
+approval, source or payload data. One choice references the existing policy,
+authority records/evidence labels, source, geographic scope, effective range,
+approval ID and exactly one timetable or calculation profile. Its stable ID is
+derived from the canonical city ID and policy ID.
+
+The projection includes all highest-precedence eligible options without a
+cardinality cap. Zero options is unavailable; one active resolved option may be
+executable; multiple equal-tier options remain selectable for explicit review
+but non-executable and keep automatic resolution ambiguous. Blocked and
+lower-precedence options stay in T039's complete assessment. Existing
+`PrayerAuthority.Name` supplies the canonical presentation name, so migration
+v8, display slots and persisted religious ranking are deliberately absent.

@@ -895,3 +895,40 @@ idempotent replay, stale rejection, active-pointer preservation, migration
 rollback/reapply and signed-pilot byte preservation. The versioned API is the
 operator surface for this slice; no visual web client, neighboring fallback,
 generic Russia method or new regional source was added.
+
+## T040 — multi-authority city schedule choices
+
+**Goal:** keep one canonical geographic `City` while exposing every eligible
+authoritative prayer schedule choice for that city as a separate setup
+projection, without ranking or automatically selecting a religious authority.
+
+**Product decision:** one canonical city may expose any number of eligible
+authoritative schedule choices. The system must not arbitrarily truncate or
+rank same-precedence religious authorities, and presentation multiplicity must
+never be interpreted as automatic authority selection. Transport/UI bounding,
+if ever needed, must use explicit pagination or equivalent lossless mechanics
+rather than top-N selection.
+
+**In scope:** `CityScheduleChoiceSet` derived from existing
+`RevisionPolicyAssessment`; stable city+policy choice identity; canonical
+authority labels/evidence, source, scope, approval/effective range, precedence
+and timetable/calculation-profile provenance; complete 0..N highest-tier
+eligible results; neutral deterministic ordering; a separate authenticated
+`/setup/schedule-choices` v1 endpoint; staged `pending_review` integration;
+synthetic 0/1/2/3/5/8 matrix; persisted and signed-Ulyanovsk regressions.
+
+**Non-goals:** authority-specific duplicate City rows, real T038 onboarding,
+top-N/display slots, religious ranking, auto-selection, promoting blocked or
+lower-precedence policies, changing resolver ambiguity, approval/publication or
+device assignment, visual web admin, Android/Room/TV changes, snapshot rewrite,
+new source scraping, migration solely for presentation metadata, push or PR.
+
+**Acceptance:** `/setup/cities` remains geographic; after explicit canonical
+city selection, setup can retrieve all eligible choices with stable IDs,
+canonical authority label/provenance and exact payload reference. Multiplicity
+is an available discovery result while automatic resolution remains ambiguous;
+stale/unavailable/lower-tier options remain non-selectable and fully visible in
+T039. Eight synthetic choices are not truncated, ordering is stable and never
+selects. Binding remains `pending_review`. Active Ulyanovsk returns exactly one
+executable choice and its signed snapshot raw SHA-256 remains
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.

@@ -1,7 +1,7 @@
 # Russia city/source resolution architecture
 
 Date: 2026-08-30  
-Status: T037 persisted Ulyanovsk vertical slice implemented; executable prayer coverage remains the Ulyanovsk pilot only
+Status: T040 multi-authority setup projection implemented; executable prayer coverage remains the Ulyanovsk pilot only
 
 ## Outcome
 
@@ -45,6 +45,12 @@ The initial source-independent types live in `internal/domain/city_source.go`.
 | `CalculationProfile` | Versioned approved calculation policy reference and effective range | Generic calculator defaults or inferred angles |
 | `TimeTable` | Versioned effective timetable reference, timezone, scope, mosque binding, source overrides, and immutable published snapshot ID | Raw competitor rows or live device fetches |
 | `SourceOverride` | Approved field-level relationship between retained base and override sources over an effective range | Mutation or deletion of either source artifact |
+
+`CityScheduleChoice` is a non-persisted setup projection, not an additional
+entity or source of truth. It references one assessed policy plus its existing
+authority, source, scope, effective range and timetable/calculation-profile
+payload. A canonical city may expose `0..N` eligible choices; this never creates
+authority-specific duplicate city records.
 
 The existing snapshot `SourceMetadata`, candidate records, approval records, signing receipts, and device assignments remain authoritative for publication. The registry does not duplicate or weaken their hashes and signatures.
 
@@ -203,6 +209,15 @@ guessing from a name. Runtime registry access is opt-in through
 The reviewed import/activation command and evidence are documented in
 `ULYANOVSK_PERSISTED_E2E.md`.
 
+T040 adds `GET .../setup/schedule-choices` after the canonical city step. It
+derives the complete highest-tier eligible set from the same T039
+`PolicyAssessment`; lower/stale/unavailable/research options remain visible in
+T039 but are not promoted. Same-tier choices are neutrally ordered by policy ID
+and require explicit selection. The automatic resolver remains ambiguous, and
+the existing pending-review/curation/activation boundary remains unchanged.
+No product cardinality limit or top-N selection exists; future transport
+bounding must be explicitly lossless.
+
 No registry fields are added to the signed TV snapshot contract in this slice. Existing source provenance is already inside the signed snapshot; resolver audit metadata can remain control-plane data until a contract change has a concrete device use case.
 
 ## Timezone, date, and coverage rules
@@ -252,10 +267,15 @@ real PostgreSQL/HTTP test covers authenticated search, explicit resolution,
 duplicate and unknown city handling, successor activation, rollback, and the
 unchanged snapshot SHA-256.
 
+T040 tests add 0/1/2/3/5/8 synthetic choice cardinalities, stable ordering,
+same-label identity, blocked/lower-tier filtering with complete T039 options,
+same-name city and alias separation, staged non-executability, active one-choice
+execution and persisted Ulyanovsk/same-tier/stale API projections.
+
 ## Remaining unknowns and intentionally deferred work
 
 - `UNKNOWN`: GeoNames' RU snapshot covers 83 mapped subjects, not every jurisdiction claimed/administered by Russia. T035 does not combine sources or reclassify another country's rows without a separate legal/scope decision.
-- `PROPOSAL`: T039 may add richer operator presentation, but T035 already returns all exact duplicate-name candidates and never selects one automatically.
+- `PROPOSAL`: a future visual admin may render T040 choices, but T035 already returns all exact duplicate-name candidates and never selects one automatically.
 - `UNKNOWN`: no new regional source beyond Ulyanovsk has completed licensing, parser, scope, approval, and publication onboarding.
 - `UNKNOWN`: several subjects have parallel authorities and require operator/mosque choice.
 - `PROPOSAL`: do not add polygons until their license, update source, topology validation, border behavior, and policy linkage are specified.

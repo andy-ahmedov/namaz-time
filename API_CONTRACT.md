@@ -319,3 +319,39 @@ assignment. Active, stale, unavailable, research-only, expired,
 lower-precedence and schedule-missing choices return
 `registry_binding_not_selectable`. The active signed snapshot and TV
 last-known-good path are unaffected.
+
+## T040 multi-authority city schedule choices
+
+`GET /v1/admin/mosques/{mosqueId}/setup/schedule-choices` is the setup-facing
+projection after one canonical `city_id` has been selected. `revision_id` is
+optional: omission reads the active immutable revision, while an exact value
+allows a staged revision to be reviewed. The local Gregorian `date` and
+mosque-scoped admin bearer remain mandatory. `/setup/cities` continues to
+return geography only; authorities never become duplicate city rows.
+
+The response is `city-schedule-choices/v1` and carries the canonical city,
+federal subject, IANA timezone, revision identity/state, underlying automatic
+resolution status/reason, and the complete set of highest-precedence eligible
+choices. Each choice has a stable city+policy-derived ID, canonical authority
+label and organization records, evidence labels, geographic scope, source,
+approval/effective range, tier, and exact timetable or calculation-profile
+reference. `selectable` means the assessed option may be explicitly chosen;
+`executable` is true only for the sole resolved option in the active revision.
+A staged choice remains non-executable and uses the existing
+`pending_review` handoff.
+
+Multiple equal-tier choices produce `status=available`,
+`selection_required=true`, and preserve the resolver's underlying
+`automatic_resolution_status=ambiguous`. Ordering is neutral tier/policy-ID
+ordering and never selects the first item. Stale, unavailable, research-only,
+out-of-range, missing-schedule and lower-precedence options are not promoted
+into this selectable projection; T039 continues to expose all of them with
+blocked reasons.
+
+There is no product cardinality limit, top-N filter, display slot count or
+religious ranking. The endpoint currently returns the full eligible set. If a
+future payload requires bounding, the contract must add explicit pagination or
+equivalent lossless completeness metadata; it must not omit choices while
+presenting the response as complete. The endpoint is read-only, uses
+`Cache-Control: no-store`, rejects unknown query parameters, and cannot approve,
+publish, activate, sign or assign a snapshot.

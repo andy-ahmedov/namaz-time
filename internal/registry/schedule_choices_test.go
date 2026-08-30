@@ -83,6 +83,50 @@ func TestProjectCityScheduleChoicesMarksOnlyOneResolvedActiveChoiceExecutable(t 
 	}
 }
 
+func TestProjectCityScheduleChoicesPreservesCalculationProfileIdentity(t *testing.T) {
+	dataset := syntheticChoiceDataset(0)
+	dataset.Scopes = append(dataset.Scopes, domain.GeographicScope{
+		ID: "scope-synthetic-calculation-region", Kind: domain.GeographicScopeRegion,
+		RegionID: syntheticChoiceRegionID, Description: "synthetic calculation-profile scope",
+	})
+	dataset.Authorities = append(dataset.Authorities, domain.PrayerAuthority{
+		ID: "authority-synthetic-calculation", Name: "Synthetic calculation organization", EvidenceLabel: "PROPOSAL",
+	})
+	dataset.Sources = append(dataset.Sources, domain.PrayerSource{
+		ID: "source-synthetic-calculation", Kind: domain.ProviderKindCalculationProfile,
+		AuthorityIDs:      []string{"authority-synthetic-calculation"},
+		GeographicScopeID: "scope-synthetic-calculation-region", Status: domain.PrayerSourceApproved,
+		FreshThrough: "2026-12-31",
+	})
+	dataset.Policies = append(dataset.Policies, domain.PrayerPolicy{
+		ID: "policy-synthetic-calculation", Kind: domain.PrayerPolicyCalculationProfile,
+		GeographicScopeID: "scope-synthetic-calculation-region", AuthorityIDs: []string{"authority-synthetic-calculation"},
+		SourceID: "source-synthetic-calculation", CalculationProfileID: "profile-synthetic-calculation-v1",
+		MosqueIDs: []string{syntheticChoiceMosqueID}, Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"},
+		ApprovalID: "approval-synthetic-calculation",
+	})
+	dataset.CalculationProfiles = append(dataset.CalculationProfiles, domain.CalculationProfile{
+		ID: "profile-synthetic-calculation-v1", SourceID: "source-synthetic-calculation",
+		GeographicScopeID: "scope-synthetic-calculation-region", Version: "synthetic-v1",
+		Effective: domain.DateRange{From: "2026-01-01", To: "2026-12-31"}, ApprovalID: "approval-synthetic-calculation",
+	})
+
+	projected, err := ProjectCityScheduleChoices(RevisionPolicyAssessment{
+		Revision: RevisionRecord{ID: "revision-calculation-choice-0001"}, State: RevisionStateStaged,
+		Result: assessSyntheticChoices(t, dataset),
+	})
+	if err != nil {
+		t.Fatalf("ProjectCityScheduleChoices() error = %v", err)
+	}
+	if len(projected.Choices) != 1 || projected.Choices[0].Tier != ResolutionRegionalCalculation ||
+		projected.Choices[0].PolicyKind != domain.PrayerPolicyCalculationProfile ||
+		projected.Choices[0].CalculationProfileID != "profile-synthetic-calculation-v1" ||
+		projected.Choices[0].CalculationProfile == nil || projected.Choices[0].TimeTable != nil ||
+		projected.Choices[0].TimeTableID != "" {
+		t.Fatalf("calculation-profile choice = %#v", projected)
+	}
+}
+
 func TestProjectCityScheduleChoicesUsesNeutralDeterministicOrderWithoutResolvingAmbiguity(t *testing.T) {
 	dataset := syntheticChoiceDataset(8)
 	firstAssessment := assessSyntheticChoices(t, dataset)

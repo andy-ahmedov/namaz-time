@@ -2,7 +2,7 @@
 
 Date: 2026-08-30
 
-Status: T039 control-plane API and append-only review handoff implemented
+Status: T040 choice discovery plus T039 control-plane review handoff implemented
 
 ## Outcome
 
@@ -49,6 +49,32 @@ breaks the tie.
 City ambiguity is handled one step earlier by the exact catalog search. Every
 same-name candidate remains subject-qualified; zero or multiple candidates do
 not produce a canonical selection.
+
+## Setup schedule-choice projection
+
+T040 adds
+`GET /v1/admin/mosques/{mosqueId}/setup/schedule-choices` as a smaller
+setup/presentation projection of the same `PolicyAssessment`. It returns only
+the complete set of highest-precedence eligible choices; this is not a second
+resolver. The T039 endpoint above continues to return the complete applicable
+option set, including lower-precedence, stale, unavailable, research-only,
+out-of-range and schedule-missing records.
+
+One canonical city may return zero, one or any number of choices. More than one
+choice is a normal discovery result with `selection_required=true`; automatic
+resolution remains `ambiguous`, and no insertion/lexical/display order selects
+an authority. Choices are neutrally ordered by precedence tier and stable
+policy ID. `PrayerAuthority.Name` is used directly as the canonical display
+name; NamazTime does not invent abbreviations or use the source/transport name
+as an authority label. Equal labels do not merge choices because policy and
+stable choice IDs remain distinct.
+
+The endpoint accepts an optional immutable `revision_id`. Without it, the sole
+resolved active choice can be marked executable. With a staged revision, all
+eligible choices remain selectable but non-executable and the existing
+`request_binding` action leads only to `pending_review`. No top-N limit exists.
+Any future transport bounding must use explicit pagination or equivalent
+lossless mechanics and must never claim an incomplete set is complete.
 
 ## Explicit review handoff
 
@@ -97,6 +123,11 @@ adapters.
   active Ulyanovsk revision is unchanged.
 - `CONFIRMED_RUNTIME`: the same test stages a stale-source successor, exposes
   its exact blocked reason and rejects a binding request without adding a row.
+- `CONFIRMED_RUNTIME`: T040 unit/HTTP tests project 0, 1, 2, 3, 5 and 8
+  synthetic equal-tier choices without truncation, preserve deterministic
+  ordering and resolver ambiguity, exclude blocked/lower-tier records without
+  removing them from T039, and keep equal presentation labels independently
+  identifiable.
 - `CONFIRMED_RUNTIME`: migration v7 upgrade/rollback/reapply and the current
   backup/restore gate pass while the signed Ulyanovsk snapshot bytes retain
   SHA-256 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
