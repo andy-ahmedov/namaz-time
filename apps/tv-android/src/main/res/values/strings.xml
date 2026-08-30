@@ -60,6 +60,8 @@
     <string name="device_setup_choices_single">Доступен один утверждённый вариант. Проверьте источник и выберите его явно.</string>
     <string name="device_setup_choices_multiple">Выберите один из всех доступных вариантов. Порядок списка не означает приоритет.</string>
     <string name="device_setup_choice_source">%1$s · %2$s</string>
+    <string name="device_setup_choice_provenance_fresh">Основание: %1$s · подтверждение %2$s · актуально до %3$s</string>
+    <string name="device_setup_choice_provenance_undated">Основание: %1$s · подтверждение %2$s · срок актуальности не указан</string>
     <string name="device_setup_choice_effective">%1$s — %2$s · %3$s</string>
     <string name="device_setup_choice_identity">%1$s · %2$s</string>
     <string name="device_setup_schedule_type_timetable">готовое расписание</string>

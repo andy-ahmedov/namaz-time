@@ -642,6 +642,10 @@ private fun ScheduleChoiceButton(
     firstChoiceRequester: FocusRequester?,
     compact: Boolean,
 ) {
+    val evidenceLabels = choice.authorities
+        .map { it.evidenceLabel }
+        .distinct()
+        .joinToString(", ")
     Button(
         onClick = {
             if (choice.requestable && !choice.executable && !submitting) onClick()
@@ -683,6 +687,23 @@ private fun ScheduleChoiceButton(
                     choice.source.id,
                 ),
                 fontSize = if (compact) 11.sp else 14.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                text = choice.source.freshThrough?.let { freshThrough ->
+                    appString(
+                        R.string.device_setup_choice_provenance_fresh,
+                        evidenceLabels,
+                        choice.approvalId,
+                        freshThrough.toString(),
+                    )
+                } ?: appString(
+                    R.string.device_setup_choice_provenance_undated,
+                    evidenceLabels,
+                    choice.approvalId,
+                ),
+                fontSize = if (compact) 10.sp else 12.sp,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )

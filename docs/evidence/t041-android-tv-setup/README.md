@@ -21,7 +21,7 @@ Environment:
 - package: `ru.namaztime.tv.debug`;
 - version: code `3`, name `0.4.0-pilot-local`;
 - debug APK SHA-256 for this capture run:
-  `e579c0325789e0c4e9370fac9f9206e86fa4a0d7eac5d51d9a45ce61fbcdd629`.
+  `45d7a0f979eb3f357a186bf67378eab1bb567bec85f2990f3c6f7ca362405cca`.
 
 The APK is a local build artifact and is intentionally not stored in Git.
 
@@ -53,8 +53,9 @@ the focused node where noted below.
   with different federal subjects, settlement types and IANA timezones. No row
   is activated by rendering it.
 - [One choice](one-choice.png) identifies its synthetic authority, scope,
-  source, effective range and policy/source identity. The gold surface means
-  D-pad focus; it is not a preferred authority or an automatic selection.
+  source, evidence label, approval, freshness, effective range and
+  policy/source identity. The gold surface means D-pad focus; it is not a
+  preferred authority or an automatic selection.
 - [Multiple choices](multiple-choices.png) renders the complete five-item
   synthetic set in neutral order. [Scrolled choices](multiple-choices-scrolled.png)
   records focus on the third item after two `Down` presses and shows the next
@@ -83,8 +84,8 @@ tests.
 | `city-search.png` | `6b9b7bc57793a68182e661c24239111d619676c1d200c4b9e1312358427387a9` |
 | `duplicates.png` | `5acfb0cba8b9b9c527c14e4eeb8ceb8c4a2e19e7b47384765e270a26dd87ef98` |
 | `ime-back-focus.png` | `dd49e6eeced832a9cebdf33c6d352e50e7b20f3f21ebd906af6afd05d12c3559` |
-| `one-choice.png` | `61ca35c2614a5fc8049314c53da9986cdd2b78d8871a525cd96a1d07f449cbd7` |
-| `multiple-choices.png` | `e10a339614900cc4f19d77fa95d9fa49688231a7ff7482db89206e66fb802f61` |
-| `multiple-choices-scrolled.png` | `1a058a04ec38ed7bc6ad52617e6d0f3deb2f8ff43e11a471e46378159a00007b` |
+| `one-choice.png` | `971e358cb96826cd7689f50a33eb93c6b200b2c3f4bc35fb2537d966bd49a2e7` |
+| `multiple-choices.png` | `4dd4525f4814d41b079578a798c5de2105a01f27e449d155fd4014f33ce9cfeb` |
+| `multiple-choices-scrolled.png` | `3582dbaadeff207386fa831d6b182467c9ae1e286abb785b666e0d7cbce668e3` |
 | `unavailable.png` | `7d8e53c57100180ed5248b9be80cbd13dcbae9c18f2b40244a82e1fd7d7b50b7` |
 | `pending.png` | `336c1ecd8db21c15770205890ce07fb39ac7ffef52c7f6d85d0021b7654992fd` |

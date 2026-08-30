@@ -253,6 +253,9 @@ class DeviceSetupScreenUiTest {
         compose.onNodeWithText(item.authorityLabel).assertIsDisplayed()
         compose.onNodeWithText("Synthetic city scope 0").assertIsDisplayed()
         compose.onNodeWithText("official_file · synthetic-source-0").assertIsDisplayed()
+        compose.onNodeWithText(
+            "Основание: PROPOSAL · подтверждение synthetic-approval-0 · актуально до 2026-12-31",
+        ).assertIsDisplayed()
         assertNull(selected)
 
         compose.onNodeWithTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${item.id}")
@@ -293,6 +296,7 @@ class DeviceSetupScreenUiTest {
     }
 
     @Test
+    @OptIn(ExperimentalTestApi::class)
     fun duplicateAuthorityLabelsRemainDistinguishableByPolicyAndSource() {
         val first = scheduleChoice(0, authorityLabel = "Синтетическая организация")
         val second = scheduleChoice(1, authorityLabel = "Синтетическая организация")
@@ -310,7 +314,34 @@ class DeviceSetupScreenUiTest {
         }
 
         compose.onNodeWithText("synthetic-policy-0 · synthetic-source-0").assertIsDisplayed()
+        compose.onNodeWithTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${first.id}")
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${second.id}")
+            .assertIsFocused()
         compose.onNodeWithText("synthetic-policy-1 · synthetic-source-1").assertIsDisplayed()
+    }
+
+    @Test
+    fun undatedFreshnessRemainsExplicitInsteadOfBeingOmitted() {
+        val base = scheduleChoice(0)
+        val undated = base.copy(source = base.source.copy(freshThrough = null))
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(listOf(undated)),
+                    activeSchedule = null,
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onBack = {},
+                )
+            }
+        }
+
+        compose.onNodeWithText(
+            "Основание: PROPOSAL · подтверждение synthetic-approval-0 · срок актуальности не указан",
+        ).assertIsDisplayed()
     }
 
     @Test
@@ -390,6 +421,18 @@ class DeviceSetupScreenUiTest {
     @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
     fun setupFits4kDensitySafeFrame() = assertSetupFitsSafeFrame()
 
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun choiceListFits720pSafeFrame() = assertChoiceSetupFitsSafeFrame()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun choiceListFits1080pDensitySafeFrame() = assertChoiceSetupFitsSafeFrame()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun choiceListFits4kDensitySafeFrame() = assertChoiceSetupFitsSafeFrame()
+
     private fun assertSetupFitsSafeFrame() {
         compose.setContent {
             NamazTvTheme {
@@ -421,6 +464,35 @@ class DeviceSetupScreenUiTest {
         val screen = compose.onNodeWithTag(DEVICE_SETUP_SCREEN_TAG)
             .assertIsDisplayed()
             .getUnclippedBoundsInRoot()
+        val rootWidth = root.right - root.left
+        val rootHeight = root.bottom - root.top
+        assert(screen.left - root.left >= rootWidth * 0.04f)
+        assert(root.right - screen.right >= rootWidth * 0.04f)
+        assert(screen.top - root.top >= rootHeight * 0.04f)
+        assert(root.bottom - screen.bottom >= rootHeight * 0.04f)
+    }
+
+    private fun assertChoiceSetupFitsSafeFrame() {
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(List(8) { scheduleChoice(it) }),
+                    activeSchedule = activeScheduleSummary(),
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onBack = {},
+                )
+            }
+        }
+
+        val root = compose.onRoot().getUnclippedBoundsInRoot()
+        val screen = compose.onNodeWithTag(DEVICE_SETUP_SCREEN_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        compose.onNodeWithTag(DEVICE_SETUP_CHOICE_LIST_TAG).assertIsDisplayed()
+        compose.onNodeWithTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${scheduleChoice(0).id}")
+            .assertIsDisplayed()
         val rootWidth = root.right - root.left
         val rootHeight = root.bottom - root.top
         assert(screen.left - root.left >= rootWidth * 0.04f)

@@ -60,6 +60,8 @@
     <string name="device_setup_choices_single">One approved choice is available. Review its source and select it explicitly.</string>
     <string name="device_setup_choices_multiple">Choose one of all available options. List order does not imply priority.</string>
     <string name="device_setup_choice_source">%1$s · %2$s</string>
+    <string name="device_setup_choice_provenance_fresh">Evidence: %1$s · approval %2$s · fresh through %3$s</string>
+    <string name="device_setup_choice_provenance_undated">Evidence: %1$s · approval %2$s · freshness date not specified</string>
     <string name="device_setup_choice_effective">%1$s — %2$s · %3$s</string>
     <string name="device_setup_choice_identity">%1$s · %2$s</string>
     <string name="device_setup_schedule_type_timetable">published timetable</string>
