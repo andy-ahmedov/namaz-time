@@ -8,6 +8,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -18,6 +19,7 @@ import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
+import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
@@ -400,6 +402,61 @@ class NamazTvAppUiTest {
         assertEquals("second-cathedral-mosque-ulyanovsk", approved.mosqueId)
         assertEquals("Europe/Ulyanovsk", approved.timezoneId)
         assertEquals("Вторая Соборная мечеть Ульяновска", approved.mosqueName)
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun mosqueSettingsKeepsLocalOnlyNoteAndReadOnlyContextAboveActions() {
+        val approved = schedule().copy(
+            mosqueId = "second-cathedral-mosque-ulyanovsk",
+            mosqueName = "Вторая Соборная мечеть Ульяновска",
+            locality = "Ульяновск",
+            diagnostics = schedule().diagnostics?.copy(dataClassification = "production"),
+        )
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(approved),
+                bootstrapState = MutableStateFlow(SnapshotBootstrapState.Ready(approved.snapshotId)),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        openSettingsDestination(SettingsDestination.MOSQUE)
+
+        var headingFontSize = 0f
+        var headingLineHeight = 0f
+        var headingLineCount = 0
+        var headingEllipsized = true
+        compose.onNode(
+            hasText("Мечеть и местоположение") and
+                SemanticsMatcher.expectValue(SemanticsProperties.Heading, Unit),
+        ).assertIsDisplayed().performSemanticsAction(SemanticsActions.GetTextLayoutResult) { action ->
+            val results = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+            assertTrue(action(results))
+            val result = results.single()
+            headingFontSize = result.layoutInput.style.fontSize.value
+            headingLineHeight = result.layoutInput.style.lineHeight.value
+            headingLineCount = result.lineCount
+            headingEllipsized = result.isLineEllipsized(0)
+        }
+        val note = compose.onNodeWithText(
+            "Пустое поле использует утверждённое значение. Эти поля меняют только подписи на этом телевизоре.",
+        ).assertIsDisplayed().getUnclippedBoundsInRoot()
+        val readOnlyContext = compose.onNodeWithText(
+            "Источник: Ульяновск · часовой пояс: Europe/Ulyanovsk (только чтение)",
+        ).assertIsDisplayed().getUnclippedBoundsInRoot()
+        val save = compose.onNodeWithTag(SETTINGS_MOSQUE_IDENTITY_SAVE_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+
+        assertEquals(1, headingLineCount)
+        assertFalse(headingEllipsized)
+        assertTrue("Compact Mosque heading font was ${headingFontSize}sp", headingFontSize <= 30f)
+        assertTrue("Compact Mosque heading line was ${headingLineHeight}sp", headingLineHeight <= 36f)
+        assert(note.bottom <= readOnlyContext.top)
+        assert(readOnlyContext.bottom <= save.top)
     }
 
     @Test

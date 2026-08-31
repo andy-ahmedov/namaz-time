@@ -534,6 +534,7 @@ private fun SettingsPage(
 
     BoxWithConstraints(modifier = modifier.fillMaxHeight()) {
         val compactPreview = maxHeight < 600.dp
+        val compactLongHeading = compactPreview && destination == SettingsDestination.MOSQUE
         val compactSingleLineDescription = compactPreview &&
             (destination == SettingsDestination.APPEARANCE ||
                 destination == SettingsDestination.IQAMAH ||
@@ -546,8 +547,8 @@ private fun SettingsPage(
                 text = appString(destination.titleRes),
                 modifier = Modifier.semantics { heading() },
                 color = NamazTvTheme.colors.textPrimary,
-                fontSize = if (compactPreview) 34.sp else 42.sp,
-                lineHeight = if (compactPreview) 42.sp else 50.sp,
+                fontSize = if (compactLongHeading) 29.sp else if (compactPreview) 34.sp else 42.sp,
+                lineHeight = if (compactLongHeading) 36.sp else if (compactPreview) 42.sp else 50.sp,
                 fontWeight = FontWeight.Bold,
             )
             Text(
