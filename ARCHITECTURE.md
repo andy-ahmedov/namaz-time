@@ -318,10 +318,13 @@ therefore preserves the approved signed policy rather than guessing.
 This projection never mutates or acquires the provenance of the signed Room
 snapshot. The local QR and standalone donation screen similarly have no
 official or approval claim. Donation mode requires an HTTPS QR target and at
-least one bounded structured local detail (recipient, bank, card number,
-SBP/phone or collection link), reuses the existing QR validation/generator,
-and fails closed to schedule mode when persisted input is invalid. DataStore
-reads deterministically migrate the earlier labelled transfer-details blob;
+least one bounded structured local detail (recipient, bank, card number or
+SBP/phone), reuses the existing QR validation/generator, and fails closed to
+schedule mode when persisted input is invalid. T043 removes the redundant
+collection-link field: its dedicated key is never projected and is tombstoned
+on the next normal configuration save. DataStore reads deterministically
+migrate the earlier labelled transfer-details blob while recognizing and
+ignoring legacy collection-link lines;
 the display layer never parses user text. Its five packaged images and
 independent validated app-local custom-photo slot never enter Room; a missing
 custom file falls back to a packaged image. No payment processing or

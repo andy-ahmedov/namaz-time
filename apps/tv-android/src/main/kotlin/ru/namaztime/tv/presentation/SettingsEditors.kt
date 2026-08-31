@@ -87,7 +87,6 @@ const val SETTINGS_DONATION_RECIPIENT_FIELD_TAG = "settings-donation-recipient"
 const val SETTINGS_DONATION_BANK_FIELD_TAG = "settings-donation-bank"
 const val SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG = "settings-donation-card-number"
 const val SETTINGS_DONATION_PHONE_FIELD_TAG = "settings-donation-phone"
-const val SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG = "settings-donation-collection-url"
 const val SETTINGS_DONATION_GRATITUDE_FIELD_TAG = "settings-donation-gratitude"
 const val SETTINGS_DONATION_SELECTED_PREVIEW_TAG = "settings-donation-selected-preview"
 const val SETTINGS_DONATION_FILMSTRIP_TAG = "settings-donation-filmstrip"
@@ -180,7 +179,6 @@ internal fun DonationSettingsEditor(
     val bankRequester = remember { FocusRequester() }
     val cardNumberRequester = remember { FocusRequester() }
     val phoneRequester = remember { FocusRequester() }
-    val collectionUrlRequester = remember { FocusRequester() }
     val gratitudeRequester = remember { FocusRequester() }
     val choices = remember { DonationImageStyle.entries.map { it.id } }
     val imageRequesters = remember { choices.associateWith { FocusRequester() } }
@@ -265,7 +263,7 @@ internal fun DonationSettingsEditor(
                     placeholder = appString(R.string.donation_card_number_hint),
                     requester = cardNumberRequester,
                     previousRequester = recipientRequester,
-                    nextRequester = collectionUrlRequester,
+                    nextRequester = gratitudeRequester,
                     rightRequester = phoneRequester,
                     modifier = Modifier.weight(1f).testTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG),
                     keyboardType = KeyboardType.Number,
@@ -281,7 +279,7 @@ internal fun DonationSettingsEditor(
                     placeholder = appString(R.string.donation_phone_hint),
                     requester = phoneRequester,
                     previousRequester = bankRequester,
-                    nextRequester = collectionUrlRequester,
+                    nextRequester = gratitudeRequester,
                     leftRequester = cardNumberRequester,
                     modifier = Modifier.weight(1f).testTag(SETTINGS_DONATION_PHONE_FIELD_TAG),
                     keyboardType = KeyboardType.Phone,
@@ -289,20 +287,6 @@ internal fun DonationSettingsEditor(
                     monospaced = true,
                 )
             }
-            TvSettingsTextField(
-                value = configuration.collectionUrl,
-                onValueChange = {
-                    onConfigurationChange(configuration.copy(collectionUrl = it.take(320)))
-                },
-                label = appString(R.string.donation_collection_url_label),
-                placeholder = appString(R.string.donation_collection_url_hint),
-                requester = collectionUrlRequester,
-                previousRequester = cardNumberRequester,
-                nextRequester = gratitudeRequester,
-                modifier = Modifier.testTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG),
-                keyboardType = KeyboardType.Uri,
-                compact = true,
-            )
             TvSettingsTextField(
                 value = configuration.gratitudeMessage,
                 onValueChange = {
@@ -315,7 +299,7 @@ internal fun DonationSettingsEditor(
                 label = appString(R.string.donation_gratitude_label),
                 placeholder = appString(R.string.donation_gratitude_hint),
                 requester = gratitudeRequester,
-                previousRequester = collectionUrlRequester,
+                previousRequester = cardNumberRequester,
                 nextRequester = imageRequesters.getValue(choices.first()),
                 modifier = Modifier.testTag(SETTINGS_DONATION_GRATITUDE_FIELD_TAG),
                 compact = true,

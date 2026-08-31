@@ -52,8 +52,12 @@ timezone remain visible as read-only context in Settings.
 T028 adds an independent `schedule`/`donation` display preference and a
 donation configuration containing an HTTPS QR target, local transfer details
 and an allowlisted image ID. T029 replaces the ambiguous transfer-details blob
-with bounded recipient, bank, card-number, SBP/phone and collection-link
-fields. Existing labelled Russian/English blobs are deterministically mapped;
+with structured fields. T043 removes the redundant collection-link field from
+the active model, UI, validation and display. Recipient, bank, card number and
+SBP/phone remain bounded. Existing labelled Russian/English blobs are
+deterministically mapped while legacy collection-link lines are recognized and
+ignored; the former dedicated DataStore key is never projected and is removed
+on the next normal configuration save;
 an unlabelled legacy blob is preserved as recipient text until the operator
 edits and saves it. T033 adds a separate optional gratitude field bounded to
 240 Unicode code points; it is trimmed, rejects control characters and remains

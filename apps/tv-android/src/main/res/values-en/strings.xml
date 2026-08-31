@@ -156,9 +156,6 @@
     <string name="donation_phone_label">SBP / Phone</string>
     <string name="donation_display_phone_label">SBP</string>
     <string name="donation_phone_hint">Phone number for transfer</string>
-    <string name="donation_collection_url_label">Collection link</string>
-    <string name="donation_display_collection_url_label">Link</string>
-    <string name="donation_collection_url_hint">https://example.org/donate</string>
     <string name="donation_gratitude_label">Bottom gratitude message</string>
     <string name="donation_gratitude_hint">Leave blank to use the localized default</string>
     <string name="donation_message_label">Screen message</string>

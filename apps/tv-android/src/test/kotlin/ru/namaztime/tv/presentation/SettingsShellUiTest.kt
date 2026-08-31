@@ -215,7 +215,7 @@ class SettingsShellUiTest {
         compose.onNodeWithTag(SETTINGS_DONATION_BANK_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_PHONE_FIELD_TAG).assertIsDisplayed()
-        compose.onNodeWithTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag("settings-donation-collection-url").assertDoesNotExist()
         compose.onNodeWithTag(SETTINGS_DONATION_GRATITUDE_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_SELECTED_PREVIEW_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_FILMSTRIP_TAG).assertIsDisplayed()

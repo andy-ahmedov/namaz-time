@@ -93,7 +93,6 @@ class NamazTvAppUiTest {
             bank = "Тестовый банк",
             cardNumber = "0000 0000",
             phone = "+7 000 000-00-00",
-            collectionUrl = "https://example.org/collection",
         )
         val preferences = FakeOperatorPreferencesRepository(
             initialPreferences = OperatorPreferences(
@@ -131,8 +130,6 @@ class NamazTvAppUiTest {
         compose.onNodeWithTag(SETTINGS_DONATION_RECIPIENT_FIELD_TAG).assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionDown) }
         compose.onNodeWithTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG).assertIsFocused()
-            .performKeyInput { pressKey(Key.DirectionDown) }
-        compose.onNodeWithTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG).assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionDown) }
         compose.onNodeWithTag(SETTINGS_DONATION_GRATITUDE_FIELD_TAG).assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionDown) }

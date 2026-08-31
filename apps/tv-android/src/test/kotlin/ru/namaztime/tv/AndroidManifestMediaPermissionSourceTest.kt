@@ -31,7 +31,7 @@ class AndroidManifestMediaPermissionSourceTest {
     }
 
     private fun locateManifest(): File {
-        var directory = File(System.getProperty("user.dir")).canonicalFile
+        var directory = File(requireNotNull(System.getProperty("user.dir"))).canonicalFile
         while (true) {
             val fromRoot = File(directory, "apps/tv-android/src/main/AndroidManifest.xml")
             if (fromRoot.isFile) return fromRoot

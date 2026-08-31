@@ -4,10 +4,12 @@ import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithTag
 import androidx.compose.ui.test.performKeyInput
 import androidx.compose.ui.test.pressKey
 import ru.namaztime.tv.domain.QrCodeGenerator
@@ -66,7 +68,7 @@ class DonationDisplayUiTest {
         compose.onNodeWithTag(SETTINGS_DONATION_BANK_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG).assertIsDisplayed()
         compose.onNodeWithTag(SETTINGS_DONATION_PHONE_FIELD_TAG).assertIsDisplayed()
-        compose.onNodeWithTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG).assertIsDisplayed()
+        compose.onNodeWithTag("settings-donation-collection-url").assertDoesNotExist()
         compose.onNodeWithTag(SETTINGS_DONATION_GRATITUDE_FIELD_TAG).assertIsDisplayed()
 
         compose.onNodeWithTag(SettingsDestination.DONATION.navigationTestTag)
@@ -84,9 +86,6 @@ class DonationDisplayUiTest {
             .assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionLeft) }
         compose.onNodeWithTag(SETTINGS_DONATION_CARD_NUMBER_FIELD_TAG)
-            .assertIsFocused()
-            .performKeyInput { pressKey(Key.DirectionDown) }
-        compose.onNodeWithTag(SETTINGS_DONATION_COLLECTION_URL_FIELD_TAG)
             .assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionDown) }
         compose.onNodeWithTag(SETTINGS_DONATION_GRATITUDE_FIELD_TAG)
@@ -192,9 +191,10 @@ class DonationDisplayUiTest {
         compose.onNodeWithText(configuration.bank).assertIsDisplayed()
         compose.onNodeWithText(configuration.cardNumber).assertIsDisplayed()
         compose.onNodeWithText(configuration.phone).assertIsDisplayed()
-        compose.onNodeWithText(configuration.collectionUrl).assertIsDisplayed()
         compose.onNodeWithText("СБП:").assertIsDisplayed()
-        compose.onNodeWithText("Ссылка:").assertIsDisplayed()
+        compose.onNodeWithText("Ссылка:").assertDoesNotExist()
+        compose.onAllNodesWithTag("donation-display-detail-row", useUnmergedTree = true)
+            .assertCountEquals(4)
         compose.onNodeWithText(configuration.httpsUrl).assertDoesNotExist()
         compose.onNodeWithTag(DONATION_DISPLAY_SETTINGS_TAG).assertIsFocused()
 
@@ -302,6 +302,5 @@ class DonationDisplayUiTest {
         bank = "Тестовый банк",
         cardNumber = "2202 2036 1234 5678",
         phone = "+7 (999) 123-45-67",
-        collectionUrl = "example.org/donate",
     )
 }

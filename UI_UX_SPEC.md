@@ -102,9 +102,10 @@ and compact top-right gear sit above one tall right-side donation card; a
 separate long glass gratitude panel sits at the bottom. The left side has no
 title/card and remains primarily photographic. The donation card contains the
 localized donation heading and scan instruction, a large locally generated QR,
-a fading gold diamond divider, a details heading and five equal
-`icon → label → value` rows for recipient, bank, card number, SBP/phone and
-collection link. The footer uses the bounded operator gratitude message when
+a fading gold diamond divider and a details heading. T043 removes the redundant
+collection-link field; the current card contains four equal
+`icon → label → value` rows for recipient, bank, card number and SBP/phone. The
+footer uses the bounded operator gratitude message when
 non-blank; blank uses the exact localized gratitude sentence for the active
 RU/EN UI language. All
 screen-specific icons and ornaments are Compose Canvas/vector drawings;
@@ -120,7 +121,7 @@ Inside the rail, a compact top status block contains localized date/weekday, a
 vertical divider, mosque-local `HH:mm`, a second divider and the current prayer;
 an equal-height Settings gear-card sits beside it. One tall navy/champagne glass
 card stacks the title, fading diamond line, scan instruction, shared framed QR
-and five transfer rows. A separate bottom gratitude card contains mirrored
+and four transfer rows. A separate bottom gratitude card contains mirrored
 arch/lantern drawings. The old NamazTime top pill is absent. Date, time and
 current prayer are projected from the same active Room schedule and
 `PrayerTimeEngine` resolution as the prayer display. Donation mode performs no

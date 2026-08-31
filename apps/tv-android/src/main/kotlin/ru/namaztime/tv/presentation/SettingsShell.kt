@@ -328,9 +328,6 @@ private fun SettingsPage(
     var donationPhone by rememberSaveable(preferences.donationConfiguration.phone) {
         mutableStateOf(preferences.donationConfiguration.phone)
     }
-    var donationCollectionUrl by rememberSaveable(preferences.donationConfiguration.collectionUrl) {
-        mutableStateOf(preferences.donationConfiguration.collectionUrl)
-    }
     var donationGratitudeMessage by rememberSaveable(
         preferences.donationConfiguration.gratitudeMessage,
     ) {
@@ -365,7 +362,6 @@ private fun SettingsPage(
         bank = donationBank,
         cardNumber = donationCardNumber,
         phone = donationPhone,
-        collectionUrl = donationCollectionUrl,
         gratitudeMessage = donationGratitudeMessage,
         imageStyleId = donationImageStyleId,
     )
@@ -607,7 +603,6 @@ private fun SettingsPage(
                     donationBank = updated.bank
                     donationCardNumber = updated.cardNumber
                     donationPhone = updated.phone
-                    donationCollectionUrl = updated.collectionUrl
                     donationGratitudeMessage = updated.gratitudeMessage
                     donationImageStyleId = updated.imageStyleId
                 },

@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
@@ -187,7 +188,6 @@ class OperatorPreferencesRepositoryTest {
             bank = "Тестовый банк",
             cardNumber = "0000 0000",
             phone = "+7 000 000-00-00",
-            collectionUrl = "https://example.org/collection",
             imageStyleId = DONATION_IMAGE_LANTERN_STYLE_ID,
         )
 
@@ -197,6 +197,68 @@ class OperatorPreferencesRepositoryTest {
         val preferences = repository.preferences.first()
         assertEquals(configuration, preferences.donationConfiguration)
         assertEquals(OperatorDisplayMode.DONATION, preferences.displayMode)
+    }
+
+    @Test
+    fun donationProductModelDoesNotExposeACollectionUrlField() {
+        assertFalse(
+            OperatorDonationConfiguration::class.java.declaredFields.any {
+                it.name == "collectionUrl"
+            },
+        )
+    }
+
+    @Test
+    fun legacyCollectionUrlIsIgnoredAndTombstonedOnNextConfigurationSave() = runTest {
+        val legacyKey = stringPreferencesKey("operator_donation_collection_url")
+        val dataStore = PreferenceDataStoreFactory.create(
+            scope = TestScope(UnconfinedTestDispatcher(testScheduler)),
+            produceFile = { File(temporaryFolder.root, "legacy_collection_url.preferences_pb") },
+        )
+        dataStore.edit { values ->
+            values[stringPreferencesKey("operator_donation_https_url")] =
+                "https://example.org/donate"
+            values[legacyKey] = "https://example.org/legacy-collection"
+            values[stringPreferencesKey("operator_display_mode")] = "donation"
+            values[stringPreferencesKey("language_tag")] = "en"
+        }
+        val repository = DataStoreOperatorPreferencesRepository(dataStore)
+
+        val upgraded = repository.preferences.first()
+
+        assertEquals(OperatorDonationConfiguration(), upgraded.donationConfiguration)
+        assertEquals(OperatorDisplayMode.SCHEDULE, upgraded.displayMode)
+        assertEquals("en", upgraded.languageTag)
+
+        repository.setDonationConfiguration(
+            OperatorDonationConfiguration(
+                httpsUrl = "https://example.org/donate",
+                recipient = "Synthetic recipient",
+            ),
+        )
+
+        assertNull(dataStore.data.first()[legacyKey])
+    }
+
+    @Test
+    fun legacyBlobContainingOnlyACollectionLinkDoesNotBecomeRecipientText() = runTest {
+        val dataStore = PreferenceDataStoreFactory.create(
+            scope = TestScope(UnconfinedTestDispatcher(testScheduler)),
+            produceFile = { File(temporaryFolder.root, "legacy_collection_blob.preferences_pb") },
+        )
+        dataStore.edit { values ->
+            values[stringPreferencesKey("operator_donation_https_url")] =
+                "https://example.org/donate"
+            values[stringPreferencesKey("operator_donation_transfer_details")] =
+                "Ссылка на сбор: https://example.org/legacy-collection"
+        }
+
+        val configuration = DataStoreOperatorPreferencesRepository(dataStore)
+            .preferences
+            .first()
+            .donationConfiguration
+
+        assertEquals(OperatorDonationConfiguration(), configuration)
     }
 
     @Test
@@ -305,7 +367,6 @@ class OperatorPreferencesRepositoryTest {
         assertEquals("Тестовый банк", configuration.bank)
         assertEquals("0000 0000", configuration.cardNumber)
         assertEquals("+7 000 000-00-00", configuration.phone)
-        assertEquals("https://example.org/collection", configuration.collectionUrl)
     }
 
     @Test
@@ -335,7 +396,6 @@ class OperatorPreferencesRepositoryTest {
         assertEquals("Synthetic bank", configuration.bank)
         assertEquals("0000 0000", configuration.cardNumber)
         assertEquals("+0 000 000-00-00", configuration.phone)
-        assertEquals("https://example.org/collection", configuration.collectionUrl)
     }
 
     @Test
@@ -360,7 +420,6 @@ class OperatorPreferencesRepositoryTest {
         assertEquals("", configuration.bank)
         assertEquals("", configuration.cardNumber)
         assertEquals("", configuration.phone)
-        assertEquals("", configuration.collectionUrl)
     }
 
     @Test

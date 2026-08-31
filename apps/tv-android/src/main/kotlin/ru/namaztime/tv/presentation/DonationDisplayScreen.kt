@@ -70,6 +70,7 @@ const val DONATION_DISPLAY_SETTINGS_VISUAL_TAG = "donation-display-settings-visu
 const val DONATION_DISPLAY_BRAND_TAG = "donation-display-brand"
 const val DONATION_DISPLAY_QR_TAG = "donation-display-qr"
 const val DONATION_DISPLAY_ROWS_TAG = "donation-display-rows"
+const val DONATION_DISPLAY_DETAIL_ROW_TAG = "donation-display-detail-row"
 const val DONATION_DISPLAY_FOOTER_TAG = "donation-display-footer"
 const val DONATION_DISPLAY_TITLE_TAG = "donation-display-title"
 const val SETTINGS_DONATION_IMAGE_TAG_PREFIX = "settings-donation-image-"
@@ -386,18 +387,15 @@ private fun DonationDetailsRows(
         DonationDetailRow(DonationDetailIcon.BANK, R.string.donation_bank_label, configuration.bank),
         DonationDetailRow(DonationDetailIcon.CARD, R.string.donation_card_number_label, configuration.cardNumber),
         DonationDetailRow(DonationDetailIcon.PHONE, R.string.donation_display_phone_label, configuration.phone),
-        DonationDetailRow(
-            DonationDetailIcon.LINK,
-            R.string.donation_display_collection_url_label,
-            configuration.collectionUrl,
-            true,
-        ),
     )
     Column(modifier) {
         rows.forEachIndexed { index, row ->
             DonationDetailsRow(
                 row = row,
-                modifier = Modifier.width((234f * scale).dp).height((24f * scale).dp),
+                modifier = Modifier
+                    .width((234f * scale).dp)
+                    .height((30f * scale).dp)
+                    .testTag(DONATION_DISPLAY_DETAIL_ROW_TAG),
                 scale = scale,
                 showSeparator = index != rows.lastIndex,
             )
@@ -409,7 +407,6 @@ private data class DonationDetailRow(
     val icon: DonationDetailIcon,
     @param:StringRes val labelRes: Int,
     val value: String,
-    val accentValue: Boolean = false,
 )
 
 @Composable
@@ -438,7 +435,7 @@ private fun DonationDetailsRow(
             Text(
                 text = row.value,
                 modifier = Modifier.weight(1f),
-                color = if (row.accentValue) colors.accent else colors.textPrimary,
+                color = colors.textPrimary,
                 fontSize = (11.5f * scale).sp,
                 fontWeight = FontWeight.Normal,
                 maxLines = 1,

@@ -12,7 +12,6 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.rotate
 import androidx.compose.ui.graphics.drawscope.scale
 
 internal enum class DonationDetailIcon {
@@ -20,7 +19,6 @@ internal enum class DonationDetailIcon {
     BANK,
     CARD,
     PHONE,
-    LINK,
 }
 
 @Composable
@@ -146,31 +144,6 @@ internal fun DonationDetailGlyph(
                     cubicTo(size.width * 0.30f, size.height * 0.12f, size.width * 0.28f, size.height * 0.14f, size.width * 0.27f, size.height * 0.16f)
                 }
                 drawPath(handset, tint, style = stroke)
-            }
-            DonationDetailIcon.LINK -> {
-                rotate(-42f, pivot = Offset(size.width / 2f, size.height / 2f)) {
-                    drawRoundRect(
-                        color = tint,
-                        topLeft = Offset(size.width * 0.08f, size.height * 0.35f),
-                        size = Size(size.width * 0.48f, size.height * 0.30f),
-                        cornerRadius = CornerRadius(size.height * 0.15f),
-                        style = stroke,
-                    )
-                    drawRoundRect(
-                        color = tint,
-                        topLeft = Offset(size.width * 0.44f, size.height * 0.35f),
-                        size = Size(size.width * 0.48f, size.height * 0.30f),
-                        cornerRadius = CornerRadius(size.height * 0.15f),
-                        style = stroke,
-                    )
-                    drawLine(
-                        color = tint,
-                        start = Offset(size.width * 0.39f, size.height * 0.50f),
-                        end = Offset(size.width * 0.61f, size.height * 0.50f),
-                        strokeWidth = width,
-                        cap = StrokeCap.Round,
-                    )
-                }
             }
         }
     }

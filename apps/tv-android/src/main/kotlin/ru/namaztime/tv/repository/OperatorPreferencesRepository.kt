@@ -51,7 +51,6 @@ data class OperatorDonationConfiguration(
     val bank: String = "",
     val cardNumber: String = "",
     val phone: String = "",
-    val collectionUrl: String = "",
     val gratitudeMessage: String = "",
     val imageStyleId: String = DEFAULT_DONATION_IMAGE_STYLE_ID,
 ) {
@@ -59,7 +58,7 @@ data class OperatorDonationConfiguration(
         get() = httpsUrl.isBlank() && !hasAnyTransferDetail
 
     val hasAnyTransferDetail: Boolean
-        get() = listOf(recipient, bank, cardNumber, phone, collectionUrl).any(String::isNotBlank)
+        get() = listOf(recipient, bank, cardNumber, phone).any(String::isNotBlank)
 }
 
 data class OperatorQrConfiguration(
@@ -268,7 +267,7 @@ class DataStoreOperatorPreferencesRepository(
             values[DONATION_BANK] = configuration.bank.trim()
             values[DONATION_CARD_NUMBER] = configuration.cardNumber.trim()
             values[DONATION_PHONE] = configuration.phone.trim()
-            values[DONATION_COLLECTION_URL] = configuration.collectionUrl.trim()
+            values.remove(TOMBSTONED_DONATION_COLLECTION_URL)
             val gratitudeMessage = configuration.gratitudeMessage.trim()
             if (gratitudeMessage.isEmpty()) values.remove(DONATION_GRATITUDE_MESSAGE)
             else values[DONATION_GRATITUDE_MESSAGE] = gratitudeMessage
@@ -323,7 +322,8 @@ class DataStoreOperatorPreferencesRepository(
         val DONATION_BANK = stringPreferencesKey("operator_donation_bank")
         val DONATION_CARD_NUMBER = stringPreferencesKey("operator_donation_card_number")
         val DONATION_PHONE = stringPreferencesKey("operator_donation_phone")
-        val DONATION_COLLECTION_URL = stringPreferencesKey("operator_donation_collection_url")
+        val TOMBSTONED_DONATION_COLLECTION_URL =
+            stringPreferencesKey("operator_donation_collection_url")
         val DONATION_GRATITUDE_MESSAGE =
             stringPreferencesKey("operator_donation_gratitude_message")
         val LEGACY_DONATION_TRANSFER_DETAILS =
@@ -345,7 +345,6 @@ class DataStoreOperatorPreferencesRepository(
                 bank = this[DONATION_BANK].orEmpty(),
                 cardNumber = this[DONATION_CARD_NUMBER].orEmpty(),
                 phone = this[DONATION_PHONE].orEmpty(),
-                collectionUrl = this[DONATION_COLLECTION_URL].orEmpty(),
             )
             val details = if (persistedDetails.hasAnyValue) {
                 persistedDetails
@@ -358,7 +357,6 @@ class DataStoreOperatorPreferencesRepository(
                 bank = details.bank,
                 cardNumber = details.cardNumber,
                 phone = details.phone,
-                collectionUrl = details.collectionUrl,
                 gratitudeMessage = this[DONATION_GRATITUDE_MESSAGE].orEmpty(),
                 imageStyleId = this[DONATION_IMAGE_STYLE_ID]
                     ?.takeIf(SELECTABLE_DONATION_IMAGE_STYLE_IDS::contains)
@@ -373,31 +371,39 @@ private data class OperatorDonationDetails(
     val bank: String = "",
     val cardNumber: String = "",
     val phone: String = "",
-    val collectionUrl: String = "",
 ) {
     val hasAnyValue: Boolean
-        get() = listOf(recipient, bank, cardNumber, phone, collectionUrl).any(String::isNotBlank)
+        get() = listOf(recipient, bank, cardNumber, phone).any(String::isNotBlank)
 }
 
 private fun parseLegacyDonationDetails(raw: String): OperatorDonationDetails {
     val value = raw.trim()
     if (value.isEmpty()) return OperatorDonationDetails()
     val parsed = mutableMapOf<String, String>()
+    var recognizedLabel = false
     value.lineSequence().map(String::trim).filter(String::isNotEmpty).forEach { line ->
-        LEGACY_DONATION_LABELS.firstOrNull { (labels, _) ->
+        val activeLabel = LEGACY_DONATION_LABELS.firstOrNull { (labels, _) ->
             labels.any { label -> line.startsWith("$label:", ignoreCase = true) }
-        }?.let { (labels, field) ->
+        }
+        if (activeLabel != null) {
+            val (labels, field) = activeLabel
+            recognizedLabel = true
             val label = labels.first { line.startsWith("$it:", ignoreCase = true) }
             parsed[field] = line.substring(label.length + 1).trim()
+        } else if (
+            LEGACY_IGNORED_DONATION_LABELS.any { label ->
+                line.startsWith("$label:", ignoreCase = true)
+            }
+        ) {
+            recognizedLabel = true
         }
     }
-    if (parsed.isEmpty()) return OperatorDonationDetails(recipient = value)
+    if (!recognizedLabel) return OperatorDonationDetails(recipient = value)
     return OperatorDonationDetails(
         recipient = parsed["recipient"].orEmpty(),
         bank = parsed["bank"].orEmpty(),
         cardNumber = parsed["cardNumber"].orEmpty(),
         phone = parsed["phone"].orEmpty(),
-        collectionUrl = parsed["collectionUrl"].orEmpty(),
     )
 }
 
@@ -406,8 +412,10 @@ private val LEGACY_DONATION_LABELS = listOf(
     setOf("Банк", "Bank") to "bank",
     setOf("Номер карты", "Card number", "Card") to "cardNumber",
     setOf("СБП / Телефон", "СБП/Телефон", "SBP / Phone", "Phone") to "phone",
-    setOf("Ссылка на сбор", "Collection link", "Fundraiser link") to "collectionUrl",
 )
+
+private val LEGACY_IGNORED_DONATION_LABELS =
+    setOf("Ссылка на сбор", "Collection link", "Fundraiser link")
 
 internal fun OperatorQrConfiguration.toCampaignInput() = CampaignInput(
     id = "operator-local-qr",
@@ -464,8 +472,7 @@ internal fun isValidDonationConfiguration(configuration: OperatorDonationConfigu
         configuration.recipient.length > MAX_DONATION_DETAIL_LENGTH ||
         configuration.bank.length > MAX_DONATION_DETAIL_LENGTH ||
         configuration.cardNumber.length > MAX_DONATION_DETAIL_LENGTH ||
-        configuration.phone.length > MAX_DONATION_DETAIL_LENGTH ||
-        configuration.collectionUrl.length > MAX_DONATION_COLLECTION_URL_LENGTH
+        configuration.phone.length > MAX_DONATION_DETAIL_LENGTH
     ) return false
     val campaign = CampaignEngine().preview(configuration.toDonationCampaignInput())
     if (campaign !is CampaignPreview.Valid) return false
@@ -550,5 +557,4 @@ val OPERATOR_DHUHR_FIXED_TIME_RANGE = (12 * 60)..(16 * 60)
 const val MAX_MOSQUE_DISPLAY_NAME_LENGTH = 80
 const val MAX_MOSQUE_DISPLAY_ADDRESS_LENGTH = 160
 const val MAX_DONATION_DETAIL_LENGTH = 160
-const val MAX_DONATION_COLLECTION_URL_LENGTH = 320
 const val MAX_DONATION_GRATITUDE_LENGTH = 240
