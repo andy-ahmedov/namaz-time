@@ -271,6 +271,18 @@ than centered column arrangements. The shared QR primitive uses the same four
 corners and crescent/two-star center glyph on main and standalone donation
 screens.
 
+T044 makes that watermark contract measurable relative to the complete
+`NextEventCard`, not a nested fractional Canvas. The final arch spans
+`x=4%..27%` of the card (23-percent width), has a symmetric apex at
+`(15.5%,20.5%)`, reaches its shoulder transition at 40 percent height and ends
+at the bottom card edge. Smooth cubic Bézier segments preserve near-vertical
+bases, rounded shoulders and a pointed top. The original filled lantern is
+8.5 percent of card width, hangs slightly left of the apex and uses the shared
+dark-surface/champagne/amber tokens for its metal body, three warm panes and
+soft glow. Both layers remain clipped, non-semantic, non-focusable and behind
+the foreground. `nextTitleTop`, `nextPrayerTop`, `nextDividerTop`,
+`nextCountdownTop`, card dimensions and foreground typography are unchanged.
+
 T033 also changes the Iqamah editor contract. Fajr, Asr, Maghrib and Isha show
 bounded `adhan + N minutes` values; Dhuhr shows a fixed mosque-local `HH:mm`
 value from the signed 13:15 base policy. Every +/− press changes one minute.

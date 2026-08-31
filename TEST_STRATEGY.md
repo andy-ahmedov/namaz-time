@@ -264,6 +264,19 @@ difference review. They are `CONFIRMED_RUNTIME` emulator evidence; physical-TV
 overscan, panel behavior and representative-distance phone scanning remain
 `UNKNOWN`.
 
+T044 adds a pure normalized-geometry regression for the next-event watermark:
+the arch must remain 22–26 percent of full card width, its apex must remain in
+the 18–23 percent height band, its shoulder in the 37–42 percent band and its
+bases must reach the bottom edge. Compose tests additionally require the
+watermark Canvas to equal the complete card bounds and keep the full
+`Фаджр · завтра` title inside the card at 720p, 1080p-density and
+4K-density. Five controlled API 36 screenshot iterations isolate the new arch,
+refine width/apex/shoulders/opacity, evaluate the filled lantern and confirm
+short/long-title Golden Dusk plus Blue Hour acceptance. Evidence is under
+[`docs/evidence/t044-next-prayer-watermark/`](docs/evidence/t044-next-prayer-watermark/).
+This is `CONFIRMED_RUNTIME` emulator evidence, not physical-TV readability or
+overscan evidence.
+
 T033 Checkpoint 2 adds publication tests that keep source Dhuhr onset while
 accepting a fixed-time Dhuhr rule on Friday alongside Jumu'ah. Android
 projection tests prove one operator Dhuhr value changes both resolved Dhuhr

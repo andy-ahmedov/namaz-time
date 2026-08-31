@@ -1140,3 +1140,67 @@ picker/overscan/readability and representative-distance QR scanning remain
 `UNKNOWN`. The packaged Ulyanovsk snapshot remains byte-identical at raw
 SHA-256
 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+
+## T044 — next-prayer card architectural watermark fidelity
+
+**Goal:** refine only the decorative watermark behind the Android TV
+`NextEventCard` so its owner-authorized pointed architectural arch has the
+correct broad silhouette, position and subdued visibility, with a lantern only
+if an original filled rendering remains visually convincing.
+
+**In scope:** normalized geometry relative to the complete next-event card;
+22–25 percent arch width, 19–22 percent apex height, 37–42 percent shoulder
+transition and a bottom edge ending at the card boundary; cubic Bézier arch
+curvature, semantic-color stroke/glow treatment, optional original filled
+lantern, geometry and long-title regressions, at least three controlled API 36
+1920×1080 screenshot iterations, short `Аср`, long `Фаджр · завтра`
+and alternate-background acceptance evidence, and the next traceable pilot
+version `0.5.2-pilot.1` / code `6`.
+
+**Non-goals:** prayer/countdown/next-event logic; title, prayer, divider or
+countdown anchors; card size/shape/border; QR, prayer table or other screen
+redesign; Room, registry, source, approval or persistence changes; signed
+snapshot rewrite; application/signing identity change; new ADR; push or PR.
+
+**Correctness-sensitive unknowns:** emulator review can establish only the
+controlled 960×540 composition; physical-TV overscan, panel response and
+representative-distance subtle-decoration readability remain `UNKNOWN`.
+
+**Acceptance:** the arch remains clipped, non-semantic, non-focusable and
+behind foreground content; normalized bounds prevent another narrow-arch
+regression; `Аср` and `Фаджр · завтра` remain complete with unchanged
+foreground anchors; another built-in background retains subtle visibility;
+the final signed pilot installs in place as code `6`; and
+`ulyanovsk-second-cathedral-2026-pilot-local-v2` stays byte-identical at raw
+SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+
+**Status:** `DONE` on 2026-08-31.
+
+**Result:** checkpoint `5ebf023` moves the watermark Canvas to the complete
+card coordinate space and pins the final normalized arch at `left=0.04`,
+`right=0.27`, `apexX=0.155`, `apexY=0.205`, `shoulderY=0.40` and
+`bottomY=1.0`. Symmetric cubic Bézier segments now form the broad pointed arch;
+an original filled warm lantern was retained after controlled visual review.
+The title, prayer, divider, countdown and card geometry remain unchanged.
+
+TDD first reproduced the old partial-card Canvas (`card.top=124dp` versus
+`watermark.top=143dp`), then geometry and Compose regressions passed at the
+720p, normalized 1080p and 4K density profiles. Seven controlled API 36
+comparison/acceptance captures cover three iterations plus short `Аср`, long
+`Фаджр · завтра`, Golden Dusk and Blue Hour; the signed-pilot screen is recorded
+separately under `docs/evidence/t044-next-prayer-watermark/`.
+
+The clean signed artifact is `0.5.2-pilot.1` / code `6`, APK SHA-256
+`0b27df4f451b7a39fc35afcdbd61427c07a42840b9a6bce497b397a53cf68e09`
+and certificate SHA-256
+`da463b2e623024c49c833a1f23c289fd64753e83d3d1e5eea46e973838472be9`.
+It passed artifact verification and installed in place on the API 36 TV
+emulator without changing `firstInstallTime`. `make docs-check`, `make test`,
+`make lint`, `make test-postgres`, `make test-android-all`,
+`go test -race ./...`, `make security-go` and `make secret-scan` pass. No Room
+or PostgreSQL migration was required because the change is presentation-only.
+The signed Ulyanovsk snapshot remains byte-identical at raw SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+Physical-TV overscan, panel response and representative-distance subtlety
+remain `UNKNOWN`.
