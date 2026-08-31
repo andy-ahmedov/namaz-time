@@ -20,6 +20,7 @@ import ru.namaztime.tv.repository.LocalSnapshotDiagnostics
 import ru.namaztime.tv.AppBuildIdentity
 import ru.namaztime.tv.repository.OperatorPreferences
 import ru.namaztime.tv.repository.OPERATOR_IQAMAH_PRAYER_IDS
+import ru.namaztime.tv.repository.OperatorImageSlot
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -101,6 +102,46 @@ class SettingsShellUiTest {
             .performKeyInput { pressKey(Key.Enter) }
 
         assertEquals(1, openCount)
+    }
+
+    @Test
+    fun backgroundPickerReturnRestoresTheInvokingAppearanceAction() {
+        compose.setContent {
+            NamazTvTheme {
+                SettingsShell(
+                    initialDestination = SettingsDestination.APPEARANCE,
+                    onDestinationChanged = {},
+                    onExit = {},
+                    onPickCustomBackground = {},
+                    imagePickerFocusRequest = OperatorImagePickerFocusRequest(
+                        OperatorImageSlot.BACKGROUND,
+                        token = 1L,
+                    ),
+                )
+            }
+        }
+
+        compose.onNodeWithTag(SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG).assertIsFocused()
+    }
+
+    @Test
+    fun donationPickerReturnRestoresTheInvokingDonationAction() {
+        compose.setContent {
+            NamazTvTheme {
+                SettingsShell(
+                    initialDestination = SettingsDestination.DONATION,
+                    onDestinationChanged = {},
+                    onExit = {},
+                    onPickCustomDonationImage = {},
+                    imagePickerFocusRequest = OperatorImagePickerFocusRequest(
+                        OperatorImageSlot.DONATION,
+                        token = 2L,
+                    ),
+                )
+            }
+        }
+
+        compose.onNodeWithTag(SETTINGS_DONATION_PICKER_TAG).assertIsFocused()
     }
 
     @Test

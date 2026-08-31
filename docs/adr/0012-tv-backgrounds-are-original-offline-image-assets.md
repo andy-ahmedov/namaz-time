@@ -30,8 +30,13 @@ The selected background ID is a validated local operator preference. As amended
 by T033, Appearance shows one large selected preview and one horizontally
 scrolling D-pad filmstrip containing only the eight built-in assets. Custom is
 not a ninth carousel item; it is a separate explicit action below the filmstrip.
-Custom import uses the Android system document picker, requests no storage/media permission, accepts
-only bounded JPEG/PNG/WebP documents, validates byte size, decoded type,
+As amended by ADR 0018, custom import first uses a resolvable Android document
+picker, then the system Photo Picker, and only then an explicit permission-gated
+MediaStore fallback for TV images without either picker. System-picker paths
+request no storage/media permission. The fallback requests only image-read
+access appropriate to the Android version after the operator presses the
+action; it never requests write or all-files access. Every path accepts only
+bounded JPEG/PNG/WebP input, validates byte size, decoded type,
 dimensions and pixel count, then atomically writes a normalized app-local copy.
 The URI itself is not retained. Unsupported/corrupt IDs or a missing/corrupt
 custom copy fail safely to Golden dusk. This setting does not alter, fetch or infer prayer

@@ -1,9 +1,12 @@
 package ru.namaztime.tv.repository
 
-import android.graphics.BitmapFactory
 import android.content.Context
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.test.core.app.ApplicationProvider
 import ru.namaztime.tv.R
+import java.io.ByteArrayOutputStream
+import java.io.File
 import java.util.Base64
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
@@ -41,6 +44,29 @@ class OperatorImageAssetStoreTest {
         BitmapFactory.decodeFile(stored.path, bounds)
         assertTrue(bounds.outWidth >= 640)
         assertTrue(bounds.outHeight >= 360)
+    }
+
+    @Test
+    fun jpegPngAndWebpInputsUseTheSameBoundedNormalizationPath() {
+        val formats = listOf(
+            "image/jpeg" to Bitmap.CompressFormat.JPEG,
+            "image/png" to Bitmap.CompressFormat.PNG,
+            "image/webp" to Bitmap.CompressFormat.WEBP_LOSSY,
+        )
+
+        formats.forEach { (mimeType, format) ->
+            val slot = if (mimeType == "image/jpeg") {
+                OperatorImageSlot.BACKGROUND
+            } else {
+                OperatorImageSlot.DONATION
+            }
+            val result = OperatorImageAssetStore(temporaryFolder.root).importDocument(
+                slot,
+                OperatorImageDocument(mimeType, encodedLandscapeImage(format)),
+            )
+
+            assertEquals(mimeType, OperatorImageImportResult.Imported, result)
+        }
     }
 
     @Test
@@ -111,10 +137,40 @@ class OperatorImageAssetStoreTest {
         assertEquals(OperatorImageImportResult.TooLarge, result)
     }
 
+    @Test
+    fun persistenceFailureHasAStableResultAndDoesNotLeakAnException() {
+        val unusableFilesDir = File(temporaryFolder.root, "not-a-directory").apply {
+            writeText("occupied")
+        }
+        val store = OperatorImageAssetStore(unusableFilesDir)
+
+        val result = store.importDocument(
+            OperatorImageSlot.BACKGROUND,
+            OperatorImageDocument("image/webp", validLandscapeImage()),
+        )
+
+        assertEquals(OperatorImageImportResult.StorageFailed, result)
+        assertNull(store.resolve(OperatorImageSlot.BACKGROUND))
+    }
+
     private fun validLandscapeImage(): ByteArray {
         val context = ApplicationProvider.getApplicationContext<Context>()
         return context.resources.openRawResource(R.drawable.tv_background_golden_dusk).use {
             it.readBytes()
+        }
+    }
+
+    private fun encodedLandscapeImage(format: Bitmap.CompressFormat): ByteArray {
+        val bytes = validLandscapeImage()
+        val source = BitmapFactory.decodeByteArray(
+            bytes,
+            0,
+            bytes.size,
+        )
+        return ByteArrayOutputStream().use { output ->
+            check(source.compress(format, 90, output))
+            source.recycle()
+            output.toByteArray()
         }
     }
 

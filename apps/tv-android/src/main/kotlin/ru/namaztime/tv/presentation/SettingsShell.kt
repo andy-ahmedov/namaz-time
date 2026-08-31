@@ -80,6 +80,11 @@ const val SETTINGS_NAVIGATION_PANEL_TAG = "settings-navigation-panel"
 const val SETTINGS_CONTENT_PANEL_TAG = "settings-content-panel"
 const val SETTINGS_DEVICE_SETUP_ACTION_TAG = "settings-device-setup-action"
 
+data class OperatorImagePickerFocusRequest(
+    val slot: OperatorImageSlot,
+    val token: Long,
+)
+
 @Composable
 fun SettingsShell(
     initialDestination: SettingsDestination,
@@ -104,6 +109,7 @@ fun SettingsShell(
     onPickCustomDonationImage: (() -> Unit)? = null,
     customAssetVersion: Long = 0L,
     donationAssetVersion: Long = 0L,
+    imagePickerFocusRequest: OperatorImagePickerFocusRequest? = null,
     onOpenSystemSettings: (() -> Unit)? = null,
 ) {
     val navigationRequesters = remember {
@@ -119,6 +125,19 @@ fun SettingsShell(
         withFrameNanos { }
         withFrameNanos { }
         runCatching { navigationRequesters.getValue(initialDestination).requestFocus() }
+    }
+
+    LaunchedEffect(imagePickerFocusRequest?.token) {
+        val destination = when (imagePickerFocusRequest?.slot) {
+            OperatorImageSlot.BACKGROUND -> SettingsDestination.APPEARANCE
+            OperatorImageSlot.DONATION -> SettingsDestination.DONATION
+            null -> null
+        }
+        destination?.let {
+            withFrameNanos { }
+            withFrameNanos { }
+            selectedRoute = it.route
+        }
     }
 
     TvSafeFrame(testTag = SETTINGS_SHELL_TAG, modifier = modifier) {
@@ -228,6 +247,7 @@ fun SettingsShell(
                     onPickCustomDonationImage = onPickCustomDonationImage,
                     customAssetVersion = customAssetVersion,
                     donationAssetVersion = donationAssetVersion,
+                    imagePickerFocusRequest = imagePickerFocusRequest,
                     onOpenSystemSettings = onOpenSystemSettings,
                     modifier = Modifier.padding(28.dp),
                 )
@@ -268,6 +288,7 @@ private fun SettingsPage(
     onPickCustomDonationImage: (() -> Unit)?,
     customAssetVersion: Long,
     donationAssetVersion: Long,
+    imagePickerFocusRequest: OperatorImagePickerFocusRequest?,
     onOpenSystemSettings: (() -> Unit)?,
     modifier: Modifier = Modifier,
 ) {
@@ -500,6 +521,19 @@ private fun SettingsPage(
         appearanceActionRequesters
     } else {
         listOf(pageActionRequester) + secondaryActionRequesters
+    }
+
+    LaunchedEffect(imagePickerFocusRequest?.token, destination, actionRequesters) {
+        val expectedDestination = when (imagePickerFocusRequest?.slot) {
+            OperatorImageSlot.BACKGROUND -> SettingsDestination.APPEARANCE
+            OperatorImageSlot.DONATION -> SettingsDestination.DONATION
+            null -> null
+        }
+        if (destination == expectedDestination && actionRequesters.isNotEmpty()) {
+            withFrameNanos { }
+            withFrameNanos { }
+            runCatching { actionRequesters.first().requestFocus() }
+        }
     }
 
     BoxWithConstraints(modifier = modifier.fillMaxHeight()) {

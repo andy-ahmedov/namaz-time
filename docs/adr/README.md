@@ -19,3 +19,4 @@ Create an ADR for durable decisions affecting correctness, source authority, sec
 - [0015 — City, region, authority, source and policy resolution are separate](0015-city-region-authority-source-policy-resolution.md)
 - [0016 — TV setup uses a device-scoped review handoff](0016-tv-setup-uses-device-scoped-review-handoff.md)
 - [0017 — Android artifacts have a traceable build identity](0017-android-artifacts-have-traceable-build-identity.md)
+- [0018 — TV image selection is capability-gated](0018-tv-image-selection-is-capability-gated.md)

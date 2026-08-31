@@ -57,6 +57,17 @@ The current handover version is `0.5.0-pilot.1` with `versionCode=4`. Version
 values come only from `apps/tv-android/version.properties`; do not hand-edit an
 APK filename or manifest to simulate another build.
 
+## Device-local image selection
+
+Appearance and Donation first use a resolvable Android document picker, then
+the system Photo Picker. On a TV with neither, NamazTime opens a D-pad image
+browser backed only by MediaStore. The last path may request read access after
+the operator presses the image action: legacy image/media read through API 32,
+or `READ_MEDIA_IMAGES` on API 33+. Denial leaves the current image unchanged;
+Back/cancel is silent. Never grant or expect write/all-files access. A selected
+JPEG/PNG/WebP is validated and copied into app-private storage, so removing the
+USB drive or revoking the source URI does not remove the displayed local copy.
+
 ## First installation
 
 1. Commit the intended source and documentation, and confirm the working tree

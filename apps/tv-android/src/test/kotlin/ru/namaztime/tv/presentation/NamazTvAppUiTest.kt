@@ -1,11 +1,13 @@
 package ru.namaztime.tv.presentation
 
 import android.content.Context
+import android.net.Uri
 import android.view.View
 import androidx.test.core.app.ApplicationProvider
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.semantics.SemanticsActions
 import androidx.compose.ui.test.ExperimentalTestApi
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assert
@@ -21,6 +23,7 @@ import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.unit.DpRect
@@ -34,6 +37,16 @@ import ru.namaztime.tv.repository.OperatorQrConfiguration
 import ru.namaztime.tv.repository.OperatorQrTextFitPolicy
 import ru.namaztime.tv.repository.OperatorDisplayMode
 import ru.namaztime.tv.repository.OperatorDonationConfiguration
+import ru.namaztime.tv.repository.OperatorImageAssetImporter
+import ru.namaztime.tv.repository.OperatorImageImportResult
+import ru.namaztime.tv.repository.OperatorImageReadPermission
+import ru.namaztime.tv.repository.OperatorImageSelectionCapabilities
+import ru.namaztime.tv.repository.OperatorImageSelectionEnvironment
+import ru.namaztime.tv.repository.OperatorImageSlot
+import ru.namaztime.tv.repository.OperatorMediaImage
+import ru.namaztime.tv.repository.OperatorMediaImageCatalog
+import ru.namaztime.tv.repository.OperatorMediaImagePage
+import ru.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.LocalPrayerDay
 import ru.namaztime.tv.repository.LocalPrayerSchedule
 import ru.namaztime.tv.repository.LocalJumuahSession
@@ -1199,6 +1212,98 @@ class NamazTvAppUiTest {
     }
 
     @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun mediaStoreFallbackImportsBackgroundAndRestoresAppearanceFocus() {
+        val preferences = FakeOperatorPreferencesRepository(
+            initialPreferences = OperatorPreferences(lastSettingsDestination = "appearance"),
+        )
+        val importer = FakeOperatorImageAssetImporter(OperatorImageImportResult.Imported)
+        setImageSelectionContent(preferences, importer)
+        openPersistedSettingsDestination(SettingsDestination.APPEARANCE)
+        compose.onNodeWithTag(SettingsDestination.APPEARANCE.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+        }
+        compose.onNodeWithTag("${SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX}golden_dusk")
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        compose.onNodeWithTag("${MEDIA_IMAGE_PICKER_ITEM_TAG_PREFIX}1")
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+
+        compose.onNodeWithText("Изображение выбрано").assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG).assertIsFocused()
+        assertEquals(CUSTOM_BACKGROUND_STYLE_ID, preferences.currentPreferences.backgroundStyleId)
+        assertEquals(listOf(OperatorImageSlot.BACKGROUND), importer.importedSlots)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun donationImageFailureIsLocalizedAndKeepsTheCurrentChoice() {
+        val initial = OperatorPreferences(lastSettingsDestination = "donation")
+        val preferences = FakeOperatorPreferencesRepository(
+            initialPreferences = initial,
+        )
+        val importer = FakeOperatorImageAssetImporter(OperatorImageImportResult.TooLarge)
+        setImageSelectionContent(preferences, importer)
+        openPersistedSettingsDestination(SettingsDestination.DONATION)
+        compose.onNodeWithTag(SETTINGS_DONATION_PICKER_TAG)
+            .performSemanticsAction(SemanticsActions.RequestFocus)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        compose.onNodeWithTag("${MEDIA_IMAGE_PICKER_ITEM_TAG_PREFIX}1")
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+
+        compose.onNodeWithTag(OPERATOR_IMAGE_FEEDBACK_TAG).assertIsDisplayed()
+        compose.onNodeWithText("Файл слишком большой").assertExists()
+        compose.onNodeWithTag(SETTINGS_DONATION_PICKER_TAG).assertIsFocused()
+        assertEquals(
+            initial.donationConfiguration.imageStyleId,
+            preferences.currentPreferences.donationConfiguration.imageStyleId,
+        )
+        assertEquals(listOf(OperatorImageSlot.DONATION), importer.importedSlots)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun mediaStorePickerCancelIsSilentAndRestoresTheInvokingFocus() {
+        val preferences = FakeOperatorPreferencesRepository(
+            initialPreferences = OperatorPreferences(lastSettingsDestination = "appearance"),
+        )
+        setImageSelectionContent(
+            preferences,
+            FakeOperatorImageAssetImporter(OperatorImageImportResult.Imported),
+        )
+        openPersistedSettingsDestination(SettingsDestination.APPEARANCE)
+        compose.onNodeWithTag(SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG)
+            .performSemanticsAction(SemanticsActions.RequestFocus)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        compose.onNodeWithTag("${MEDIA_IMAGE_PICKER_ITEM_TAG_PREFIX}1")
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionUp) }
+        compose.onNodeWithTag(MEDIA_IMAGE_PICKER_CANCEL_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+
+        compose.onNodeWithTag(MEDIA_IMAGE_PICKER_TAG).assertDoesNotExist()
+        compose.onNodeWithTag(OPERATOR_IMAGE_FEEDBACK_TAG).assertDoesNotExist()
+        compose.onNodeWithTag(SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG).assertIsFocused()
+    }
+
+    @Test
     @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
     fun mainDisplayFits720pAndKeepsSettingsFocused() {
         assertResponsiveDisplayIsVisible()
@@ -1583,6 +1688,26 @@ class NamazTvAppUiTest {
         }
     }
 
+    private fun setImageSelectionContent(
+        preferences: FakeOperatorPreferencesRepository,
+        importer: FakeOperatorImageAssetImporter,
+    ) {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = preferences,
+                prayerScheduleRepository = FakePrayerScheduleRepository(schedule()),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+                imageSelectionEnvironment = FakeOperatorImageSelectionEnvironment,
+                imageAssetImporter = importer,
+                mediaImageCatalog = FakeOperatorMediaImageCatalog,
+            )
+        }
+    }
+
     private fun scheduleWithApprovedDhuhr() = schedule().copy(
         iqamahRules = listOf(
             ru.namaztime.tv.repository.LocalIqamahRule(
@@ -1703,6 +1828,12 @@ class NamazTvAppUiTest {
             compose.onNodeWithTag(SettingsDestination.entries[index].navigationTestTag)
                 .performKeyInput { pressKey(Key.DirectionDown) }
         }
+        compose.onNodeWithTag(destination.navigationTestTag).assertIsFocused()
+    }
+
+    @OptIn(ExperimentalTestApi::class)
+    private fun openPersistedSettingsDestination(destination: SettingsDestination) {
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).performKeyInput { pressKey(Key.Enter) }
         compose.onNodeWithTag(destination.navigationTestTag).assertIsFocused()
     }
 
@@ -1902,4 +2033,47 @@ private class FakePrayerScheduleRepository(schedule: LocalPrayerSchedule?) : Pra
     private val state = MutableStateFlow(schedule)
 
     override fun observeActiveSchedule(): Flow<LocalPrayerSchedule?> = state
+}
+
+private object FakeOperatorImageSelectionEnvironment : OperatorImageSelectionEnvironment {
+    override fun capabilities() = OperatorImageSelectionCapabilities(
+        sdkInt = 35,
+        openDocumentResolvable = false,
+        photoPickerAvailable = false,
+        mediaReadPermissionGranted = true,
+    )
+
+    override fun permissionName(permission: OperatorImageReadPermission): String =
+        "synthetic.permission.${permission.name}"
+}
+
+private object FakeOperatorMediaImageCatalog : OperatorMediaImageCatalog {
+    override suspend fun loadPage(offset: Int, limit: Int): OperatorMediaImagePage =
+        OperatorMediaImagePage(
+            items = if (offset == 0) {
+                listOf(
+                    OperatorMediaImage(
+                        id = "1",
+                        contentUri = "content://synthetic/images/1",
+                        displayName = "owner-image.jpg",
+                        bucketId = "pictures",
+                        bucketName = "Pictures",
+                    ),
+                )
+            } else {
+                emptyList()
+            },
+            nextOffset = null,
+        )
+}
+
+private class FakeOperatorImageAssetImporter(
+    private val result: OperatorImageImportResult,
+) : OperatorImageAssetImporter {
+    val importedSlots = mutableListOf<OperatorImageSlot>()
+
+    override suspend fun import(slot: OperatorImageSlot, uri: Uri): OperatorImageImportResult {
+        importedSlots += slot
+        return result
+    }
 }

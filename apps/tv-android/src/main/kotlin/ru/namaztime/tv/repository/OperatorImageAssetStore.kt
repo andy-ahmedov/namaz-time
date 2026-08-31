@@ -119,13 +119,17 @@ class OperatorImageAssetStore(private val filesDir: File) {
     }
 }
 
+interface OperatorImageAssetImporter {
+    suspend fun import(slot: OperatorImageSlot, uri: Uri): OperatorImageImportResult
+}
+
 class AndroidOperatorImageAssetImporter(
     context: Context,
     private val store: OperatorImageAssetStore = OperatorImageAssetStore(context.filesDir),
-) {
+) : OperatorImageAssetImporter {
     private val applicationContext = context.applicationContext
 
-    suspend fun import(slot: OperatorImageSlot, uri: Uri): OperatorImageImportResult =
+    override suspend fun import(slot: OperatorImageSlot, uri: Uri): OperatorImageImportResult =
         withContext(Dispatchers.IO) {
             val resolver = applicationContext.contentResolver
             val declaredType = try {

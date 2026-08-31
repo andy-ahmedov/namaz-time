@@ -154,9 +154,11 @@ panel behavior.
 T028 expands the Appearance regression to eight built-in previews and a custom
 import. JVM tests reject oversized, unsupported, corrupt and undersized documents,
 preserve the previous app-local copy on rejection, and verify a missing custom
-copy renders the packaged default. The manifest regression forbids both legacy
-storage permissions and `READ_MEDIA_IMAGES`; picker behavior and OEM document
-providers still require the controlled emulator/runtime loop.
+copy renders the packaged default. At that checkpoint the manifest regression
+forbade storage/media permissions because OpenDocument was the only route.
+T043/ADR 0018 supersedes that boundary for TVs without either system picker:
+source/merged-manifest tests allow only legacy read capped at API 32 and
+`READ_MEDIA_IMAGES` on API 33+, while still forbidding write/all-files access.
 
 T024 adds a controlled 960×540 reference-proportion contract: the centered
 composition must occupy 70–76 percent of the full viewport, left and right

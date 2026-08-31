@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
+import android.os.Build
 import androidx.test.core.app.ApplicationProvider
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -16,7 +17,7 @@ import org.robolectric.annotation.Config
 @Config(sdk = [28, 35])
 class AndroidManifestSecurityTest {
     @Test
-    fun syncHasInternetButNoSensitiveLocationIdentityMediaOrStoragePermission() {
+    fun syncAndExplicitMediaFallbackKeepThePermissionSetNarrow() {
         val context = ApplicationProvider.getApplicationContext<Context>()
         val packageInfo = context.packageManager.getPackageInfo(
             context.packageName,
@@ -26,15 +27,20 @@ class AndroidManifestSecurityTest {
 
         assertTrue(Manifest.permission.INTERNET in requested)
         assertTrue(Manifest.permission.ACCESS_NETWORK_STATE in requested)
+        if (Build.VERSION.SDK_INT <= 32) {
+            assertTrue(Manifest.permission.READ_EXTERNAL_STORAGE in requested)
+        } else {
+            assertFalse(Manifest.permission.READ_EXTERNAL_STORAGE in requested)
+        }
+        assertTrue(Manifest.permission.READ_MEDIA_IMAGES in requested)
         val forbidden = setOf(
             Manifest.permission.ACCESS_FINE_LOCATION,
             Manifest.permission.ACCESS_COARSE_LOCATION,
             Manifest.permission.READ_CONTACTS,
             Manifest.permission.CAMERA,
             Manifest.permission.RECORD_AUDIO,
-            Manifest.permission.READ_EXTERNAL_STORAGE,
-            Manifest.permission.READ_MEDIA_IMAGES,
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            Manifest.permission.MANAGE_EXTERNAL_STORAGE,
         )
         assertTrue("forbidden permissions: ${requested.intersect(forbidden)}", requested.intersect(forbidden).isEmpty())
     }

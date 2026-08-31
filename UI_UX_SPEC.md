@@ -137,8 +137,8 @@ ratio. Runtime values come only from the operator's local fields; sample
 banking values from the reference are never defaults. Five packaged image
 choices remain available in one D-pad LazyRow below a large selected-image
 preview. The app-local custom photo is deliberately not a sixth thumbnail; a
-separate `Choose custom image` action below the filmstrip uses the validated
-system document picker. A
+separate `Choose custom image` action below the filmstrip uses the shared T043
+capability-gated picker flow. A
 focused Settings control is always visible; Settings exposes an explicit
 action to return to the prayer schedule. No payment flow is present.
 
@@ -167,10 +167,14 @@ the eight built-in choices. Left/right moves thumbnail focus, the selected or
 focused thumbnail has a restrained champagne outline, and focus-driven
 scrolling keeps all eight entries reachable. The custom image is not a ninth
 thumbnail. `Choose image from TV` is an explicit action below the filmstrip and
-continues to use the system document picker. Only allowlisted IDs are persisted.
-The picker imports bounded JPEG/PNG/WebP into a validated app-local copy without
-broad storage permissions. Missing/corrupt custom media and unknown persisted
-IDs fall back to Golden dusk; all backgrounds use the same bounded dark scrim.
+uses the shared T043 capability-gated picker flow. Only allowlisted IDs are
+persisted. The picker imports bounded JPEG/PNG/WebP into a validated app-local
+copy without broad storage permissions. It prefers a resolvable OpenDocument
+surface, then the system Photo Picker, and uses a D-pad MediaStore image browser
+only when both are unavailable. That fallback asks for the platform image-read
+permission only after the explicit action; it never requests write or all-files
+access. Missing/corrupt custom media and unknown persisted IDs fall back to
+Golden dusk; all backgrounds use the same bounded dark scrim.
 For the T024 main-display pass, the
 product-owner-supplied `design.png` is the geometric visual specification for
 composition, proportion, hierarchy, spacing and decorative rhythm. T025 also

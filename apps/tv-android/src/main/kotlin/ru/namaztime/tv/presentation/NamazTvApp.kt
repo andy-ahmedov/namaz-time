@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,11 +55,23 @@ import ru.namaztime.tv.repository.LocalPrayerSchedule
 import ru.namaztime.tv.repository.OperatorPreferences
 import ru.namaztime.tv.repository.OperatorPreferencesRepository
 import ru.namaztime.tv.repository.AndroidOperatorImageAssetImporter
+import ru.namaztime.tv.repository.AndroidOperatorImageSelectionEnvironment
+import ru.namaztime.tv.repository.AndroidOperatorMediaImageCatalog
 import ru.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.CUSTOM_DONATION_IMAGE_STYLE_ID
 import ru.namaztime.tv.repository.OperatorDisplayMode
 import ru.namaztime.tv.repository.OperatorImageImportResult
+import ru.namaztime.tv.repository.OperatorImageAssetImporter
+import ru.namaztime.tv.repository.OperatorImageSelectionCoordinator
+import ru.namaztime.tv.repository.OperatorImageSelectionDecision
+import ru.namaztime.tv.repository.OperatorImageSelectionEnvironment
+import ru.namaztime.tv.repository.OperatorImageSelectionFeedback
 import ru.namaztime.tv.repository.OperatorImageSlot
+import ru.namaztime.tv.repository.OperatorMediaImage
+import ru.namaztime.tv.repository.OperatorMediaImageCatalog
+import ru.namaztime.tv.repository.OperatorMediaImagePager
+import ru.namaztime.tv.repository.OperatorMediaImagePickerContent
+import ru.namaztime.tv.repository.OPERATOR_IMAGE_MIME_TYPES
 import ru.namaztime.tv.repository.PrayerScheduleRepository
 import ru.namaztime.tv.repository.toCampaignInputs
 import ru.namaztime.tv.repository.toCampaignInput
@@ -84,6 +97,12 @@ internal data object DeviceSetupRoute
 const val DISPLAY_UNAVAILABLE_TAG = "display-unavailable"
 const val UNAVAILABLE_PANEL_TAG = "unavailable-panel"
 
+private data class MediaImagePickerSession(
+    val slot: OperatorImageSlot,
+    val content: OperatorMediaImagePickerContent = OperatorMediaImagePickerContent(),
+    val loading: Boolean = true,
+)
+
 @Composable
 fun NamazTvApp(
     operatorPreferencesRepository: OperatorPreferencesRepository,
@@ -94,6 +113,9 @@ fun NamazTvApp(
     deviceSetupController: DeviceSetupController? = null,
     clock: Clock = Clock.systemUTC(),
     tickIntervalMillis: Long? = 1_000L,
+    imageSelectionEnvironment: OperatorImageSelectionEnvironment? = null,
+    imageAssetImporter: OperatorImageAssetImporter? = null,
+    mediaImageCatalog: OperatorMediaImageCatalog? = null,
 ) {
     val preferences by operatorPreferencesRepository.preferences.collectAsStateWithLifecycle(
         initialValue = OperatorPreferences(),
@@ -101,46 +123,164 @@ fun NamazTvApp(
     val navController = rememberNavController()
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
-    val imageImporter = remember(context) { AndroidOperatorImageAssetImporter(context) }
+    val imageEnvironment = remember(context, imageSelectionEnvironment) {
+        imageSelectionEnvironment ?: AndroidOperatorImageSelectionEnvironment(context)
+    }
+    val imageImporter = remember(context, imageAssetImporter) {
+        imageAssetImporter ?: AndroidOperatorImageAssetImporter(context)
+    }
+    val mediaCatalog = remember(context, mediaImageCatalog) {
+        mediaImageCatalog ?: AndroidOperatorMediaImageCatalog(context)
+    }
+    val mediaPager = remember(mediaCatalog) { OperatorMediaImagePager(mediaCatalog) }
+    val imageSelectionCoordinator = remember { OperatorImageSelectionCoordinator() }
     var customAssetVersion by remember { mutableLongStateOf(0L) }
     var donationAssetVersion by remember { mutableLongStateOf(0L) }
-    val backgroundPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-        uri ->
-        if (uri != null) {
-            coroutineScope.launch {
-                if (imageImporter.import(OperatorImageSlot.BACKGROUND, uri) ==
-                    OperatorImageImportResult.Imported
-                ) {
-                    try {
-                        operatorPreferencesRepository.setBackgroundStyleId(
-                            CUSTOM_BACKGROUND_STYLE_ID,
-                        )
-                        customAssetVersion += 1L
-                    } catch (_: IOException) {
-                        // The imported app-local copy remains available for a later selection.
+    var pendingExternalSlot by remember { mutableStateOf<OperatorImageSlot?>(null) }
+    var pendingPermissionSlot by remember { mutableStateOf<OperatorImageSlot?>(null) }
+    var mediaPickerSession by remember { mutableStateOf<MediaImagePickerSession?>(null) }
+    var imageSelectionFeedback by remember {
+        mutableStateOf<OperatorImageSelectionFeedback?>(null)
+    }
+    var imageFocusToken by remember { mutableLongStateOf(0L) }
+    var imagePickerFocusRequest by remember {
+        mutableStateOf<OperatorImagePickerFocusRequest?>(null)
+    }
+
+    fun finishImageSelection(
+        slot: OperatorImageSlot,
+        feedback: OperatorImageSelectionFeedback?,
+    ) {
+        imageSelectionFeedback = feedback
+        imageFocusToken += 1L
+        imagePickerFocusRequest = OperatorImagePickerFocusRequest(slot, imageFocusToken)
+    }
+
+    fun importSelectedImage(slot: OperatorImageSlot, uri: Uri) {
+        coroutineScope.launch {
+            val importResult = try {
+                imageImporter.import(slot, uri)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                OperatorImageImportResult.Inaccessible
+            }
+            val finalResult = if (importResult == OperatorImageImportResult.Imported) {
+                try {
+                    when (slot) {
+                        OperatorImageSlot.BACKGROUND -> {
+                            operatorPreferencesRepository.setBackgroundStyleId(
+                                CUSTOM_BACKGROUND_STYLE_ID,
+                            )
+                            customAssetVersion += 1L
+                        }
+                        OperatorImageSlot.DONATION -> {
+                            operatorPreferencesRepository.setDonationImageStyleId(
+                                CUSTOM_DONATION_IMAGE_STYLE_ID,
+                            )
+                            donationAssetVersion += 1L
+                        }
                     }
+                    importResult
+                } catch (_: IOException) {
+                    OperatorImageImportResult.StorageFailed
                 }
+            } else {
+                importResult
+            }
+            finishImageSelection(
+                slot,
+                imageSelectionCoordinator.importResultFeedback(finalResult),
+            )
+        }
+    }
+
+    fun openMediaStore(slot: OperatorImageSlot) {
+        mediaPickerSession = MediaImagePickerSession(slot = slot)
+        coroutineScope.launch {
+            try {
+                val content = mediaPager.loadNext()
+                if (mediaPickerSession?.slot == slot) {
+                    mediaPickerSession = MediaImagePickerSession(
+                        slot = slot,
+                        content = content,
+                        loading = false,
+                    )
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: SecurityException) {
+                mediaPickerSession = null
+                finishImageSelection(slot, OperatorImageSelectionFeedback.PERMISSION_DENIED)
+            } catch (_: Exception) {
+                mediaPickerSession = null
+                finishImageSelection(slot, OperatorImageSelectionFeedback.INACCESSIBLE)
             }
         }
     }
-    val donationImagePicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
-        uri ->
-        if (uri != null) {
-            coroutineScope.launch {
-                if (imageImporter.import(OperatorImageSlot.DONATION, uri) ==
-                    OperatorImageImportResult.Imported
-                ) {
-                    try {
-                        operatorPreferencesRepository.setDonationImageStyleId(
-                            CUSTOM_DONATION_IMAGE_STYLE_ID,
-                        )
-                        donationAssetVersion += 1L
-                    } catch (_: IOException) {
-                        // The imported app-local copy remains available for a later selection.
-                    }
-                }
+
+    fun handleExternalPickerResult(uri: Uri?) {
+        val slot = pendingExternalSlot ?: return
+        pendingExternalSlot = null
+        if (uri == null) {
+            finishImageSelection(slot, null)
+        } else {
+            importSelectedImage(slot, uri)
+        }
+    }
+
+    val documentPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+        ::handleExternalPickerResult,
+    )
+    val photoPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.PickVisualMedia(),
+        ::handleExternalPickerResult,
+    )
+    val mediaPermission = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission(),
+    ) { granted ->
+        val slot = pendingPermissionSlot ?: return@rememberLauncherForActivityResult
+        pendingPermissionSlot = null
+        if (granted) {
+            openMediaStore(slot)
+        } else {
+            finishImageSelection(
+                slot,
+                imageSelectionCoordinator.permissionResultFeedback(granted = false),
+            )
+        }
+    }
+    val beginImageSelection: (OperatorImageSlot) -> Unit = begin@{ slot ->
+        imageSelectionFeedback = null
+        val decision = try {
+            imageSelectionCoordinator.decide(imageEnvironment.capabilities())
+        } catch (_: Exception) {
+            finishImageSelection(slot, OperatorImageSelectionFeedback.INACCESSIBLE)
+            return@begin
+        }
+        when (decision) {
+            OperatorImageSelectionDecision.OpenDocument -> {
+                pendingExternalSlot = slot
+                documentPicker.launch(OPERATOR_IMAGE_MIME_TYPES)
+            }
+            OperatorImageSelectionDecision.PhotoPicker -> {
+                pendingExternalSlot = slot
+                photoPicker.launch(
+                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly),
+                )
+            }
+            OperatorImageSelectionDecision.MediaStore -> openMediaStore(slot)
+            is OperatorImageSelectionDecision.RequestPermission -> {
+                pendingPermissionSlot = slot
+                mediaPermission.launch(imageEnvironment.permissionName(decision.permission))
             }
         }
+    }
+    LaunchedEffect(imageSelectionFeedback) {
+        val shown = imageSelectionFeedback ?: return@LaunchedEffect
+        delay(5_000L)
+        if (imageSelectionFeedback == shown) imageSelectionFeedback = null
     }
     val campaignEngine = remember { CampaignEngine() }
     val qrCodeGenerator = remember { QrCodeGenerator() }
@@ -347,17 +487,14 @@ fun NamazTvApp(
                                 }
                             },
                             onPickCustomBackground = {
-                                backgroundPicker.launch(
-                                    arrayOf("image/jpeg", "image/png", "image/webp"),
-                                )
+                                beginImageSelection(OperatorImageSlot.BACKGROUND)
                             },
                             onPickCustomDonationImage = {
-                                donationImagePicker.launch(
-                                    arrayOf("image/jpeg", "image/png", "image/webp"),
-                                )
+                                beginImageSelection(OperatorImageSlot.DONATION)
                             },
                             customAssetVersion = customAssetVersion,
                             donationAssetVersion = donationAssetVersion,
+                            imagePickerFocusRequest = imagePickerFocusRequest,
                             onOpenSystemSettings = {
                                 context.startActivity(
                                     Intent(
@@ -392,6 +529,58 @@ fun NamazTvApp(
                                 onRetryScheduleChoiceRequest = deviceSetupController::retryScheduleChoiceRequest,
                             )
                         }
+                    }
+                }
+                mediaPickerSession?.let { session ->
+                    MediaStoreImagePickerScreen(
+                        content = session.content,
+                        loading = session.loading,
+                        onSelect = { image: OperatorMediaImage ->
+                            mediaPickerSession = null
+                            importSelectedImage(session.slot, Uri.parse(image.contentUri))
+                        },
+                        onLoadMore = {
+                            if (!session.loading && session.content.nextOffset != null) {
+                                mediaPickerSession = session.copy(loading = true)
+                                coroutineScope.launch {
+                                    try {
+                                        val content = mediaPager.loadNext(session.content)
+                                        if (mediaPickerSession?.slot == session.slot) {
+                                            mediaPickerSession = session.copy(
+                                                content = content,
+                                                loading = false,
+                                            )
+                                        }
+                                    } catch (cancelled: CancellationException) {
+                                        throw cancelled
+                                    } catch (_: SecurityException) {
+                                        mediaPickerSession = null
+                                        finishImageSelection(
+                                            session.slot,
+                                            OperatorImageSelectionFeedback.PERMISSION_DENIED,
+                                        )
+                                    } catch (_: Exception) {
+                                        mediaPickerSession = null
+                                        finishImageSelection(
+                                            session.slot,
+                                            OperatorImageSelectionFeedback.INACCESSIBLE,
+                                        )
+                                    }
+                                }
+                            }
+                        },
+                        onCancel = {
+                            mediaPickerSession = null
+                            finishImageSelection(session.slot, null)
+                        },
+                    )
+                }
+                imageSelectionFeedback?.let { feedback ->
+                    Box(
+                        modifier = Modifier.fillMaxSize().padding(bottom = 30.dp),
+                        contentAlignment = Alignment.BottomCenter,
+                    ) {
+                        OperatorImageFeedbackBanner(feedback)
                     }
                 }
             }
