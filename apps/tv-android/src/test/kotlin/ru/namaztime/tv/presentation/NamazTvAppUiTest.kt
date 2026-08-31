@@ -7,8 +7,11 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.input.key.Key
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.test.ExperimentalTestApi
+import androidx.compose.ui.test.SemanticsMatcher
+import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
+import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
@@ -25,6 +28,7 @@ import androidx.tv.material3.MaterialTheme
 import ru.namaztime.tv.repository.OperatorPreferences
 import ru.namaztime.tv.repository.OperatorPreferencesRepository
 import ru.namaztime.tv.repository.OperatorQrConfiguration
+import ru.namaztime.tv.repository.OperatorQrTextFitPolicy
 import ru.namaztime.tv.repository.OperatorDisplayMode
 import ru.namaztime.tv.repository.OperatorDonationConfiguration
 import ru.namaztime.tv.repository.LocalPrayerDay
@@ -701,6 +705,24 @@ class NamazTvAppUiTest {
 
     @Test
     @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun acceptedLongQrMessageIsFullyVisibleWithoutEllipsisAt1080pDensity() {
+        assertLongQrMessageIsFullyVisible()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun acceptedLongQrMessageIsFullyVisibleWithoutEllipsisAt720p() {
+        assertLongQrMessageIsFullyVisible()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun acceptedLongQrMessageIsFullyVisibleWithoutEllipsisAt4kDensity() {
+        assertLongQrMessageIsFullyVisible()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
     fun activeCampaignMatchesCanonicalMainDisplayAnchors() {
         compose.setContent {
             NamazTvApp(
@@ -767,6 +789,39 @@ class NamazTvAppUiTest {
         }
     }
 
+    private fun assertLongQrMessageIsFullyVisible() {
+        val message =
+            "Тем же из вас, которые уверовали и расходовали, уготована великая награда."
+        val preferences = FakeOperatorPreferencesRepository(
+            initialPreferences = OperatorPreferences(
+                qrConfiguration = OperatorQrConfiguration(
+                    httpsUrl = "https://example.org/sadaqah",
+                    title = "На строительство школы",
+                    message = message,
+                ),
+            ),
+        )
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = preferences,
+                prayerScheduleRepository = FakePrayerScheduleRepository(schedule()),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        compose.onNodeWithText(message).assertIsDisplayed()
+        compose.onNodeWithTag(QR_CAMPAIGN_SUBTITLE_TAG)
+            .assert(SemanticsMatcher.expectValue(QrSubtitleFullyVisibleKey, true))
+        val panel = compose.onNodeWithTag(QR_CAMPAIGN_PANEL_TAG).getUnclippedBoundsInRoot()
+        val subtitle = compose.onNodeWithTag(QR_CAMPAIGN_SUBTITLE_TAG).getUnclippedBoundsInRoot()
+        assertTrue(subtitle.left >= panel.left && subtitle.right <= panel.right)
+        assertTrue(subtitle.top >= panel.top && subtitle.bottom <= panel.bottom)
+    }
+
     @Test
     fun expiredCampaignIsHiddenWithoutBreakingPrayerDisplay() {
         assertCampaignIsSafelyHidden(campaign().copy(endsAt = "2026-08-19T23:00:00Z"))
@@ -781,7 +836,10 @@ class NamazTvAppUiTest {
     @OptIn(ExperimentalTestApi::class)
     @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
     fun futureCampaignCanBePreviewedFromDpadSettingsWithoutActivatingOnDisplay() {
+        val longMessage =
+            "Тем же из вас, которые уверовали и расходовали, уготована великая награда."
         val future = campaign().copy(
+            subtitle = longMessage,
             startsAt = "2026-08-21T00:00:00Z",
             endsAt = "2026-08-22T00:00:00Z",
         )
@@ -818,7 +876,41 @@ class NamazTvAppUiTest {
             assert(child.left >= panel.left && child.right <= panel.right)
             assert(child.top >= panel.top && child.bottom <= panel.bottom)
         }
+        compose.onNodeWithText(longMessage).assertIsDisplayed()
+        compose.onNodeWithTag(QR_CAMPAIGN_SUBTITLE_TAG)
+            .assert(SemanticsMatcher.expectValue(QrSubtitleFullyVisibleKey, true))
         assert(panel.bottom <= action.top)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun qrMessageThatCannotFitShowsValidationAndCannotBeSaved() {
+        val firstRejectedWordCount = (1..OperatorQrTextFitPolicy.MAX_INPUT_CODE_POINTS).first {
+            OperatorQrTextFitPolicy.fit("Ж ".repeat(it).trim()) == null
+        }
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(schedule()),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        openSettingsDestination(SettingsDestination.CAMPAIGNS)
+        compose.onNodeWithTag(SettingsDestination.CAMPAIGNS.navigationTestTag)
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag(SETTINGS_QR_URL_FIELD_TAG)
+            .performTextReplacement("https://example.org/sadaqah")
+        compose.onNodeWithTag(SETTINGS_QR_MESSAGE_FIELD_TAG)
+            .performTextReplacement("Ж ".repeat(firstRejectedWordCount).trim())
+
+        compose.onNodeWithText("Текст слишком длинный для блока QR").assertIsDisplayed()
+        compose.onNodeWithTag(SETTINGS_QR_SAVE_TAG).assertIsNotEnabled()
     }
 
     @Test

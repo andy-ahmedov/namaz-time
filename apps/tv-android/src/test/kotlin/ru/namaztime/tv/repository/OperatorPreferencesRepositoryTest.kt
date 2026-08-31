@@ -16,8 +16,13 @@ import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
+import org.robolectric.annotation.Config
 
 @OptIn(ExperimentalCoroutinesApi::class)
+@RunWith(RobolectricTestRunner::class)
+@Config(sdk = [28, 35])
 class OperatorPreferencesRepositoryTest {
     @get:Rule
     val temporaryFolder = TemporaryFolder()
@@ -138,6 +143,39 @@ class OperatorPreferencesRepositoryTest {
         repository.setQrConfiguration(configuration)
 
         assertEquals(configuration, repository.preferences.first().qrConfiguration)
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun qrMessageThatCannotFitThePublicPanelCannotBeStored() = runTest {
+        repositoryFor(this).setQrConfiguration(
+            OperatorQrConfiguration(
+                httpsUrl = "https://example.org/sadaqah",
+                title = "На ремонт мечети",
+                message = "Ж".repeat(500),
+            ),
+        )
+    }
+
+    @Test
+    fun legacyOverlongQrMessageFailsSafeWithoutDiscardingUrlOrTitle() = runTest {
+        val dataStore = PreferenceDataStoreFactory.create(
+            scope = TestScope(UnconfinedTestDispatcher(testScheduler)),
+            produceFile = { File(temporaryFolder.root, "legacy_overlong_qr.preferences_pb") },
+        )
+        dataStore.edit { values ->
+            values[stringPreferencesKey("operator_qr_https_url")] =
+                "https://example.org/sadaqah"
+            values[stringPreferencesKey("operator_qr_title")] = "На ремонт мечети"
+            values[stringPreferencesKey("operator_qr_message")] = "Ж".repeat(500)
+            values[stringPreferencesKey("language_tag")] = "en"
+        }
+
+        val preferences = DataStoreOperatorPreferencesRepository(dataStore).preferences.first()
+
+        assertEquals("https://example.org/sadaqah", preferences.qrConfiguration.httpsUrl)
+        assertEquals("На ремонт мечети", preferences.qrConfiguration.title)
+        assertEquals("", preferences.qrConfiguration.message)
+        assertEquals("en", preferences.languageTag)
     }
 
     @Test

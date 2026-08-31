@@ -130,6 +130,7 @@
     <string name="qr_purpose_hint">Например: на ремонт мечети</string>
     <string name="qr_message_label">Мотивационный текст</string>
     <string name="qr_message_hint">Аят, хадис или призыв к благому</string>
+    <string name="qr_message_too_long">Текст слишком длинный для блока QR</string>
     <string name="save_qr_settings">Сохранить QR-код</string>
     <string name="donation_qr_link_label">HTTPS-ссылка для QR</string>
     <string name="donation_transfer_details_title">Реквизиты</string>

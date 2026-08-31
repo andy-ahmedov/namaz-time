@@ -68,6 +68,7 @@ import ru.namaztime.tv.repository.OperatorDonationConfiguration
 import ru.namaztime.tv.repository.OperatorImageSlot
 import ru.namaztime.tv.repository.OperatorMosquePresentationIdentity
 import ru.namaztime.tv.repository.OperatorQrConfiguration
+import ru.namaztime.tv.repository.OperatorQrTextFitPolicy
 
 const val SETTINGS_QR_URL_FIELD_TAG = "settings-qr-url"
 const val SETTINGS_MOSQUE_NAME_FIELD_TAG = "settings-mosque-display-name"
@@ -473,7 +474,15 @@ internal fun QrSettingsEditor(
             )
             TvSettingsTextField(
                 value = configuration.message,
-                onValueChange = { onConfigurationChange(configuration.copy(message = it.take(500))) },
+                onValueChange = {
+                    onConfigurationChange(
+                        configuration.copy(
+                            message = it.takeCodePoints(
+                                OperatorQrTextFitPolicy.MAX_INPUT_CODE_POINTS,
+                            ),
+                        ),
+                    )
+                },
                 label = appString(R.string.qr_message_label),
                 placeholder = appString(R.string.qr_message_hint),
                 requester = messageRequester,
@@ -482,6 +491,15 @@ internal fun QrSettingsEditor(
                 modifier = Modifier.testTag(SETTINGS_QR_MESSAGE_FIELD_TAG),
                 singleLine = false,
             )
+            if (configuration.message.isNotBlank() &&
+                OperatorQrTextFitPolicy.fit(configuration.message) == null
+            ) {
+                Text(
+                    text = appString(R.string.qr_message_too_long),
+                    color = NamazTvTheme.colors.warning,
+                    fontSize = if (compact) 13.sp else 15.sp,
+                )
+            }
         }
         campaignPreview?.let { preview ->
             QrCampaignPanel(

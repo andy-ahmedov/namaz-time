@@ -130,6 +130,7 @@
     <string name="qr_purpose_hint">For example: mosque repairs</string>
     <string name="qr_message_label">Motivational text</string>
     <string name="qr_message_hint">An ayah, hadith, or invitation to good</string>
+    <string name="qr_message_too_long">The text is too long for the QR panel</string>
     <string name="save_qr_settings">Save QR code</string>
     <string name="donation_qr_link_label">HTTPS link for QR</string>
     <string name="donation_transfer_details_title">Transfer details</string>

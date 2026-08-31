@@ -167,11 +167,13 @@ class DataStoreOperatorPreferencesRepository(
                 backgroundStyleId = values[BACKGROUND_STYLE_ID]
                     ?.takeIf(SELECTABLE_BACKGROUND_STYLE_IDS::contains)
                     ?: DEFAULT_BACKGROUND_STYLE_ID,
-                qrConfiguration = OperatorQrConfiguration(
-                    httpsUrl = values[QR_HTTPS_URL].orEmpty(),
-                    title = values[QR_TITLE].orEmpty(),
-                    message = values[QR_MESSAGE].orEmpty(),
-                ).takeIf(::isValidQrConfiguration) ?: OperatorQrConfiguration(),
+                qrConfiguration = safePersistedQrConfiguration(
+                    OperatorQrConfiguration(
+                        httpsUrl = values[QR_HTTPS_URL].orEmpty(),
+                        title = values[QR_TITLE].orEmpty(),
+                        message = values[QR_MESSAGE].orEmpty(),
+                    ),
+                ),
                 iqamahConfiguration = OperatorIqamahConfiguration(
                     fajrOffsetMinutes = values[IQAMAH_OFFSET_FAJR].validIqamahOffsetOrNull(),
                     dhuhrFixedTimeMinutes = values[DHUHR_FIXED_TIME_MINUTES]
@@ -420,9 +422,26 @@ internal fun OperatorQrConfiguration.toCampaignInput() = CampaignInput(
 
 internal fun isValidQrConfiguration(configuration: OperatorQrConfiguration): Boolean {
     if (configuration.isEmpty) return true
+    if (configuration.message.isNotBlank() &&
+        OperatorQrTextFitPolicy.fit(configuration.message) == null
+    ) return false
     val campaign = CampaignEngine().preview(configuration.toCampaignInput())
     if (campaign !is CampaignPreview.Valid) return false
     return runCatching { OPERATOR_QR_GENERATOR.generate(campaign.campaign.httpsUrl) }.isSuccess
+}
+
+private fun safePersistedQrConfiguration(
+    configuration: OperatorQrConfiguration,
+): OperatorQrConfiguration {
+    if (isValidQrConfiguration(configuration)) return configuration
+    if (configuration.message.isNotBlank() &&
+        OperatorQrTextFitPolicy.fit(configuration.message) == null
+    ) {
+        return configuration.copy(message = "")
+            .takeIf(::isValidQrConfiguration)
+            ?: OperatorQrConfiguration()
+    }
+    return OperatorQrConfiguration()
 }
 
 internal fun OperatorDonationConfiguration.toDonationCampaignInput() = CampaignInput(

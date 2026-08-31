@@ -1070,3 +1070,45 @@ uses the existing last-known-good schedule. Physical-TV behavior remains
 snapshot remains byte-identical at raw SHA-256
 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 No migration, tag, GitHub Release, push or remote update mechanism was added.
+
+## T043 — Android TV operator UX correctness and media-picker hardening
+
+**Goal:** correct the four owner-reported Android TV defects—truncated main QR
+copy, overflowing Iqamah controls, a dead-end custom-image action on TVs without
+a document provider, and the redundant donation collection-link field—without
+changing prayer/source/registry/approval/snapshot semantics.
+
+**In scope:** one measured QR text-fit contract shared by Settings preview and
+the public panel, reject-before-save validation plus deterministic legacy-safe
+rendering; a compact five-row Iqamah editor with explicit per-prayer “use
+schedule” reset and one-minute controls; a testable OpenDocument → system Photo
+Picker → permission-gated MediaStore capability cascade with a bounded D-pad
+fallback, localized import results and focus restoration; removal/tombstoning
+of the donation collection-link field from model, persistence writes,
+validation, focus, Settings and four-row display; RU/EN/adaptive tests;
+controlled API 36 runtime evidence; and Android version `0.5.1` / code `5`.
+
+**Correctness-sensitive unknowns:** actual physical-TV picker/provider and
+permission presentation remains `UNKNOWN`; the controlled emulator can prove
+only its own capability path. QR representative-distance scanning and physical
+overscan remain separate acceptance. Existing over-limit persisted QR copy must
+fail safe without corrupting any other operator preference.
+
+**Non-goals:** general visual redesign; filesystem manager; all-files/write
+storage permission; startup media scan; arbitrary files; remote asset upload;
+new prayer source or region; registry/city/setup behavior change; Room or
+PostgreSQL migration; snapshot rewrite/re-sign; T038; application ID/signing
+identity change; push or PR.
+
+**Acceptance:** accepted QR copy has no ellipsis/clip at 720p/1080p/4K and the
+first unsafe input cannot be saved; all five Iqamah rows plus Save/Return fit at
+960×540 and each prayer can clear only its local override; custom-image actions
+never launch an unresolvable intent and at least one emulator import succeeds;
+permission denial/revocation/cancel and every import result are bounded; legacy
+collection-link data neither reappears nor counts as active detail and is
+tombstoned on the next save; Donation renders exactly four detail rows; strict
+repository gates pass; and the Ulyanovsk pilot snapshot remains byte-identical
+at raw SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+
+**Status:** `IN_PROGRESS` on 2026-08-31.

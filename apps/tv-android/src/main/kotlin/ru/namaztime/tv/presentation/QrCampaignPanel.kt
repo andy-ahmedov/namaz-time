@@ -18,7 +18,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
@@ -33,6 +36,9 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.drawscope.inset
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,6 +49,7 @@ import androidx.tv.material3.Text
 import ru.namaztime.tv.R
 import ru.namaztime.tv.domain.QrCodeMatrix
 import ru.namaztime.tv.domain.ResolvedCampaign
+import ru.namaztime.tv.repository.OperatorQrTextFitPolicy
 
 const val QR_CAMPAIGN_PANEL_TAG = "qr-campaign-panel"
 const val QR_CAMPAIGN_PREVIEW_TAG = "qr-campaign-preview"
@@ -56,6 +63,8 @@ const val QR_BOTTOM_ORNAMENT_TAG = "qr-bottom-ornament"
 const val QR_CENTER_BRAND_BADGE_TAG = "qr-center-brand-badge"
 internal const val REFERENCE_QR_BADGE_FRACTION = 0.30f
 internal const val REFERENCE_QR_CORNER_ARM_FRACTION = 0.13f
+val QrSubtitleFullyVisibleKey = SemanticsPropertyKey<Boolean>("QrSubtitleFullyVisible")
+private var SemanticsPropertyReceiver.qrSubtitleFullyVisible by QrSubtitleFullyVisibleKey
 
 internal data class ReferenceQrCorner(
     val horizontalDirection: Int,
@@ -142,6 +151,9 @@ internal fun QrCampaignPanel(
                     modifier = Modifier.testTag(QR_ELEGANT_FRAME_TAG),
                 )
                 state.subtitle?.let { subtitle ->
+                    val fit = remember(subtitle) { OperatorQrTextFitPolicy.fit(subtitle) }
+                    var fullyVisible by remember(subtitle, fit) { mutableStateOf(fit != null) }
+                    if (fit == null) return@let
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         verticalAlignment = Alignment.CenterVertically,
@@ -156,13 +168,18 @@ internal fun QrCampaignPanel(
                             text = subtitle,
                             modifier = Modifier
                                 .weight(1f)
+                                .semantics {
+                                    qrSubtitleFullyVisible = fullyVisible
+                                }
                                 .testTag(QR_CAMPAIGN_SUBTITLE_TAG),
                             color = NamazTvTheme.colors.textSecondary,
-                            fontSize = if (compact) 11.sp else 14.sp,
-                            lineHeight = if (compact) 14.sp else 18.sp,
+                            fontSize = if (compact) fit.fontSizeSp.sp else 14.sp,
+                            lineHeight = if (compact) fit.lineHeightSp.sp else 18.sp,
                             textAlign = TextAlign.Start,
-                            maxLines = if (compact) 3 else 4,
-                            overflow = TextOverflow.Ellipsis,
+                            onTextLayout = { result ->
+                                fullyVisible = !result.hasVisualOverflow &&
+                                    result.lineCount <= OperatorQrTextFitPolicy.MAX_LINES
+                            },
                         )
                     }
                 }
