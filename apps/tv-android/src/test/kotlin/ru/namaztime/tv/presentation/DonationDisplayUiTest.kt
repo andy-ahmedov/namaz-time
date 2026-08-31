@@ -42,6 +42,28 @@ class DonationDisplayUiTest {
     fun donationDisplayFits4kDensitySafeFrame() = assertDonationDisplayFits()
 
     @Test
+    @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun ordinaryMaghribLabelIsNotEllipsizedInDonationStatus() {
+        val configuration = configuration()
+        compose.setContent {
+            NamazTvTheme {
+                DonationDisplayScreen(
+                    configuration = configuration,
+                    qrState = qrState(configuration),
+                    status = status().copy(currentPrayerLabel = "Магриб"),
+                    customAssetVersion = 0L,
+                    onOpenSettings = {},
+                )
+            }
+        }
+
+        val bounds = compose.onNodeWithText("Магриб").getUnclippedBoundsInRoot()
+        assert((bounds.right - bounds.left).value >= 56f) {
+            "ordinary six-letter prayer label needs an unclipped status cell, got $bounds"
+        }
+    }
+
+    @Test
     @OptIn(ExperimentalTestApi::class)
     @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
     fun donationSettingsUsesFiveBuiltInFilmstripAndSeparateCustomAction() {

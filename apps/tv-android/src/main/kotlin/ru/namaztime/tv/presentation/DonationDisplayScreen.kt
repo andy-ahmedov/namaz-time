@@ -270,7 +270,7 @@ private fun DonationStatusBlock(
         DonationStatusDivider(metrics)
         Text(
             text = status.currentPrayerLabel,
-            modifier = Modifier.weight(0.72f),
+            modifier = Modifier.weight(0.86f),
             color = colors.textPrimary,
             fontSize = (15f * metrics.scale).sp,
             fontWeight = FontWeight.Normal,
