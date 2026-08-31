@@ -541,7 +541,9 @@ private fun SettingsPage(
                 destination == SettingsDestination.DONATION)
         Column(
             modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(if (compactPreview) 10.dp else 16.dp),
+            verticalArrangement = Arrangement.spacedBy(
+                if (compactLongHeading) 8.dp else if (compactPreview) 10.dp else 16.dp,
+            ),
         ) {
             Text(
                 text = appString(destination.titleRes),

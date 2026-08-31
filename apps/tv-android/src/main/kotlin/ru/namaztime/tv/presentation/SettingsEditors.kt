@@ -113,7 +113,7 @@ internal fun MosqueIdentitySettingsEditor(
     val addressRequester = remember { FocusRequester() }
     Column(
         modifier = modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 12.dp),
     ) {
         TvSettingsTextField(
             value = identity.displayName,
@@ -151,6 +151,7 @@ internal fun MosqueIdentitySettingsEditor(
             text = appString(R.string.mosque_identity_local_only_note),
             color = NamazTvTheme.colors.textSecondary,
             fontSize = if (compact) 14.sp else 16.sp,
+            lineHeight = if (compact) 18.sp else 22.sp,
         )
         Text(
             text = appString(
@@ -160,6 +161,7 @@ internal fun MosqueIdentitySettingsEditor(
             ),
             color = NamazTvTheme.colors.textSecondary,
             fontSize = if (compact) 14.sp else 16.sp,
+            lineHeight = if (compact) 18.sp else 22.sp,
             maxLines = 2,
         )
     }

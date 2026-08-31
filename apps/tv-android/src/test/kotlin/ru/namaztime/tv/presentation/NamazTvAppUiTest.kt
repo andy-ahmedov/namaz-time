@@ -444,9 +444,21 @@ class NamazTvAppUiTest {
         val note = compose.onNodeWithText(
             "Пустое поле использует утверждённое значение. Эти поля меняют только подписи на этом телевизоре.",
         ).assertIsDisplayed().getUnclippedBoundsInRoot()
-        val readOnlyContext = compose.onNodeWithText(
-            "Источник: Ульяновск · часовой пояс: Europe/Ulyanovsk (только чтение)",
-        ).assertIsDisplayed().getUnclippedBoundsInRoot()
+        var contextLineCount = 0
+        var contextLineHeight = Float.NaN
+        var contextEllipsized = true
+        val readOnlyContextNode = compose.onNodeWithText(
+            "Источник: Ульяновск\nЧасовой пояс: Europe/Ulyanovsk (только чтение)",
+        ).assertIsDisplayed()
+        readOnlyContextNode.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { action ->
+            val results = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+            assertTrue(action(results))
+            val result = results.single()
+            contextLineCount = result.lineCount
+            contextLineHeight = result.layoutInput.style.lineHeight.value
+            contextEllipsized = (0 until result.lineCount).any(result::isLineEllipsized)
+        }
+        val readOnlyContext = readOnlyContextNode.getUnclippedBoundsInRoot()
         val save = compose.onNodeWithTag(SETTINGS_MOSQUE_IDENTITY_SAVE_TAG)
             .assertIsDisplayed()
             .getUnclippedBoundsInRoot()
@@ -455,6 +467,12 @@ class NamazTvAppUiTest {
         assertFalse(headingEllipsized)
         assertTrue("Compact Mosque heading font was ${headingFontSize}sp", headingFontSize <= 30f)
         assertTrue("Compact Mosque heading line was ${headingLineHeight}sp", headingLineHeight <= 36f)
+        assertEquals(2, contextLineCount)
+        assertFalse(contextEllipsized)
+        assertTrue(
+            "Compact read-only context line was ${contextLineHeight}sp",
+            contextLineHeight.isFinite() && contextLineHeight <= 18f,
+        )
         assert(note.bottom <= readOnlyContext.top)
         assert(readOnlyContext.bottom <= save.top)
     }

@@ -31,7 +31,7 @@
     <string name="save_mosque_identity_settings">Сохранить название и адрес</string>
     <string name="device_setup_open_action">Изменить город или расписание</string>
     <string name="mosque_identity_local_only_note">Пустое поле использует утверждённое значение. Эти поля меняют только подписи на этом телевизоре.</string>
-    <string name="mosque_canonical_location_and_timezone">Источник: %1$s · часовой пояс: %2$s (только чтение)</string>
+    <string name="mosque_canonical_location_and_timezone">Источник: %1$s\nЧасовой пояс: %2$s (только чтение)</string>
     <string name="device_setup_title">Город и расписание</string>
     <string name="device_setup_current_schedule">Текущее активное расписание</string>
     <string name="device_setup_no_active_schedule">Активное расписание отсутствует</string>

@@ -31,7 +31,7 @@
     <string name="save_mosque_identity_settings">Save name and address</string>
     <string name="device_setup_open_action">Change city or schedule</string>
     <string name="mosque_identity_local_only_note">A blank field uses the approved value. These fields change labels only on this TV.</string>
-    <string name="mosque_canonical_location_and_timezone">Source: %1$s · timezone: %2$s (read-only)</string>
+    <string name="mosque_canonical_location_and_timezone">Source: %1$s\nTimezone: %2$s (read-only)</string>
     <string name="device_setup_title">City and schedule</string>
     <string name="device_setup_current_schedule">Current active schedule</string>
     <string name="device_setup_no_active_schedule">No active schedule</string>
