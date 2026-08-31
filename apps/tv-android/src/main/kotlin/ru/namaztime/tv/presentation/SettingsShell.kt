@@ -506,6 +506,7 @@ private fun SettingsPage(
         val compactPreview = maxHeight < 600.dp
         val compactSingleLineDescription = compactPreview &&
             (destination == SettingsDestination.APPEARANCE ||
+                destination == SettingsDestination.IQAMAH ||
                 destination == SettingsDestination.DONATION)
         Column(
             modifier = Modifier.fillMaxSize(),

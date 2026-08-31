@@ -44,12 +44,15 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.SemanticsPropertyKey
+import androidx.compose.ui.semantics.SemanticsPropertyReceiver
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Button
@@ -91,6 +94,10 @@ const val SETTINGS_DONATION_FILMSTRIP_TAG = "settings-donation-filmstrip"
 const val SETTINGS_DONATION_SAVE_TAG = "settings-donation-save"
 const val SETTINGS_DONATION_PICKER_TAG = "settings-donation-picker"
 const val SETTINGS_DONATION_MODE_TAG = "settings-donation-mode"
+val IqamahScheduleLabelFullyVisibleKey =
+    SemanticsPropertyKey<Boolean>("IqamahScheduleLabelFullyVisible")
+private var SemanticsPropertyReceiver.iqamahScheduleLabelFullyVisible by
+    IqamahScheduleLabelFullyVisibleKey
 
 @Composable
 internal fun MosqueIdentitySettingsEditor(
@@ -522,13 +529,16 @@ internal fun IqamahSettingsEditor(
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
-    val decrementRequesters = remember {
-        OPERATOR_IQAMAH_PRAYER_IDS.associateWith { FocusRequester() }
-    }
-    val incrementRequesters = remember(entryRequester) {
+    val resetRequesters = remember(entryRequester) {
         OPERATOR_IQAMAH_PRAYER_IDS.associateWith { FocusRequester() }.toMutableMap().apply {
             this[OPERATOR_IQAMAH_PRAYER_IDS.first()] = entryRequester
         }
+    }
+    val decrementRequesters = remember {
+        OPERATOR_IQAMAH_PRAYER_IDS.associateWith { FocusRequester() }
+    }
+    val incrementRequesters = remember {
+        OPERATOR_IQAMAH_PRAYER_IDS.associateWith { FocusRequester() }
     }
     Column(
         modifier = modifier.fillMaxWidth(),
@@ -542,14 +552,21 @@ internal fun IqamahSettingsEditor(
                 onValueChange = { value ->
                     onConfigurationChange(configuration.withEditorValue(prayerId, value))
                 },
+                resetRequester = resetRequesters.getValue(prayerId),
                 decrementRequester = decrementRequesters.getValue(prayerId),
                 incrementRequester = incrementRequesters.getValue(prayerId),
+                previousResetRequester = resetRequesters[
+                    OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index - 1)
+                ],
                 previousDecrementRequester = decrementRequesters[
                     OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index - 1)
                 ],
                 previousIncrementRequester = incrementRequesters[
                     OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index - 1)
                 ],
+                nextResetRequester = resetRequesters[
+                    OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index + 1)
+                ] ?: saveRequester,
                 nextDecrementRequester = decrementRequesters[
                     OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index + 1)
                 ] ?: saveRequester,
@@ -575,10 +592,13 @@ private fun IqamahOffsetRow(
     value: Int?,
     approvedDhuhrTimeMinutes: Int?,
     onValueChange: (Int?) -> Unit,
+    resetRequester: FocusRequester,
     decrementRequester: FocusRequester,
     incrementRequester: FocusRequester,
+    previousResetRequester: FocusRequester?,
     previousDecrementRequester: FocusRequester?,
     previousIncrementRequester: FocusRequester?,
+    nextResetRequester: FocusRequester,
     nextDecrementRequester: FocusRequester,
     nextIncrementRequester: FocusRequester,
     compact: Boolean,
@@ -587,6 +607,12 @@ private fun IqamahOffsetRow(
     val range = if (isDhuhr) OPERATOR_DHUHR_FIXED_TIME_RANGE else OPERATOR_IQAMAH_OFFSET_RANGE
     val baseValue = if (isDhuhr) approvedDhuhrTimeMinutes else 0
     val effectiveValue = value ?: baseValue
+    val scheduleLabel = if (isDhuhr && value == null && effectiveValue != null) {
+        appString(R.string.iqamah_use_schedule_time_value, effectiveValue.asClockText())
+    } else {
+        appString(R.string.iqamah_use_schedule_value)
+    }
+    var scheduleLabelFullyVisible by remember(scheduleLabel) { mutableStateOf(true) }
     fun updateBy(delta: Int) {
         val current = effectiveValue ?: return
         val updated = (current + delta).coerceIn(range)
@@ -597,39 +623,84 @@ private fun IqamahOffsetRow(
             .fillMaxWidth()
             .testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX$prayerId"),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        horizontalArrangement = Arrangement.spacedBy(if (compact) 6.dp else 10.dp),
     ) {
         Text(
             text = appString(prayerNameResource(prayerId)),
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.width(if (compact) 64.dp else 90.dp),
             color = NamazTvTheme.colors.textPrimary,
-            fontSize = if (compact) 17.sp else 21.sp,
+            fontSize = if (compact) 16.sp else 21.sp,
         )
+        Button(
+            onClick = { onValueChange(null) },
+            contentPadding = PaddingValues(horizontal = 6.dp, vertical = 0.dp),
+            colors = ButtonDefaults.colors(
+                containerColor = if (value == null) {
+                    NamazTvTheme.colors.accentSoft
+                } else {
+                    NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.72f)
+                },
+                contentColor = if (value == null) {
+                    NamazTvTheme.colors.accent
+                } else {
+                    NamazTvTheme.colors.textPrimary
+                },
+                focusedContainerColor = NamazTvTheme.colors.accent,
+                focusedContentColor = NamazTvTheme.colors.backgroundBottom,
+            ),
+            modifier = Modifier
+                .width(if (compact) 176.dp else 220.dp)
+                .height(if (compact) 36.dp else 42.dp)
+                .testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-reset")
+                .semantics { selected = value == null }
+                .focusRequester(resetRequester)
+                .focusProperties {
+                    right = decrementRequester
+                    previousResetRequester?.let { up = it }
+                    down = nextResetRequester
+                },
+        ) {
+            Text(
+                text = scheduleLabel,
+                modifier = Modifier
+                    .testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-schedule-label")
+                    .semantics {
+                        iqamahScheduleLabelFullyVisible = scheduleLabelFullyVisible
+                    },
+                fontSize = if (compact) 13.sp else 16.sp,
+                maxLines = 1,
+                softWrap = false,
+                onTextLayout = { result ->
+                    scheduleLabelFullyVisible = !result.hasVisualOverflow && result.lineCount == 1
+                },
+            )
+        }
         IqamahOffsetButton(
             label = "−",
             enabled = effectiveValue != null && effectiveValue > range.first,
             onClick = { updateBy(-IQAMAH_OFFSET_STEP) },
             requester = decrementRequester,
-            leftRequester = null,
+            leftRequester = resetRequester,
             rightRequester = incrementRequester,
             upRequester = previousDecrementRequester,
             downRequester = nextDecrementRequester,
+            compact = compact,
             modifier = Modifier.testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-decrement"),
         )
         Text(
             text = when {
-                isDhuhr && effectiveValue != null && value == null -> appString(
-                    R.string.iqamah_use_schedule_time_value,
-                    effectiveValue.asClockText(),
-                )
                 isDhuhr && effectiveValue != null -> effectiveValue.asClockText()
                 value != null -> appString(R.string.iqamah_offset_minutes_value, value)
-                else -> appString(R.string.iqamah_use_schedule_value)
+                else -> "—"
             },
-            modifier = Modifier.width(if (compact) 116.dp else 160.dp),
+            modifier = Modifier
+                .width(if (compact) 60.dp else 90.dp)
+                .testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-value"),
             color = NamazTvTheme.colors.textPrimary,
-            fontSize = if (compact) 16.sp else 19.sp,
+            fontSize = if (compact) 14.sp else 19.sp,
             fontFamily = FontFamily.Monospace,
+            textAlign = TextAlign.Center,
+            maxLines = 1,
         )
         IqamahOffsetButton(
             label = "+",
@@ -646,6 +717,7 @@ private fun IqamahOffsetRow(
             rightRequester = null,
             upRequester = previousIncrementRequester,
             downRequester = nextIncrementRequester,
+            compact = compact,
             modifier = Modifier.testTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-increment"),
         )
     }
@@ -661,6 +733,7 @@ private fun IqamahOffsetButton(
     rightRequester: FocusRequester?,
     upRequester: FocusRequester?,
     downRequester: FocusRequester,
+    compact: Boolean,
     modifier: Modifier = Modifier,
 ) {
     Button(
@@ -674,8 +747,8 @@ private fun IqamahOffsetButton(
             focusedContentColor = NamazTvTheme.colors.backgroundBottom,
         ),
         modifier = modifier
-            .width(52.dp)
-            .height(40.dp)
+            .width(if (compact) 38.dp else 52.dp)
+            .height(if (compact) 36.dp else 40.dp)
             .focusRequester(requester)
             .focusProperties {
                 leftRequester?.let { left = it }
@@ -684,7 +757,7 @@ private fun IqamahOffsetButton(
                 down = downRequester
             },
     ) {
-        Text(label, fontSize = 22.sp, fontWeight = FontWeight.SemiBold)
+        Text(label, fontSize = if (compact) 19.sp else 22.sp, fontWeight = FontWeight.SemiBold)
     }
 }
 

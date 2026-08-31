@@ -9,7 +9,7 @@
     <string name="settings_source_title">Источник расписания</string>
     <string name="settings_source_description">Происхождение и одобрение доступны только для чтения на телевизоре.</string>
     <string name="settings_iqamah_title">Икамат</string>
-    <string name="settings_iqamah_description">Локальные смещения после азана и единое время Зухра/Джума.</string>
+    <string name="settings_iqamah_description">Настроить время Икамата</string>
     <string name="settings_appearance_title">Оформление</string>
     <string name="settings_appearance_description">Локальные параметры единого TV-интерфейса.</string>
     <string name="settings_campaigns_title">QR-код</string>

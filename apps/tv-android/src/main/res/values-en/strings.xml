@@ -9,7 +9,7 @@
     <string name="settings_source_title">Prayer source</string>
     <string name="settings_source_description">Provenance and approval are read-only on the TV.</string>
     <string name="settings_iqamah_title">Iqamah</string>
-    <string name="settings_iqamah_description">Local adhan offsets and one shared Dhuhr/Jumu’ah time.</string>
+    <string name="settings_iqamah_description">Configure iqamah times</string>
     <string name="settings_appearance_title">Appearance</string>
     <string name="settings_appearance_description">Local settings for the unified TV interface.</string>
     <string name="settings_campaigns_title">QR code</string>

@@ -12,6 +12,7 @@ import androidx.compose.ui.test.assert
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsFocused
 import androidx.compose.ui.test.assertIsNotEnabled
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextEquals
 import androidx.compose.ui.test.assertTextContains
 import androidx.compose.ui.test.getUnclippedBoundsInRoot
@@ -25,6 +26,8 @@ import androidx.compose.ui.test.pressKey
 import androidx.compose.ui.unit.DpRect
 import androidx.compose.ui.unit.dp
 import androidx.tv.material3.MaterialTheme
+import ru.namaztime.tv.repository.OPERATOR_IQAMAH_PRAYER_IDS
+import ru.namaztime.tv.repository.OperatorIqamahConfiguration
 import ru.namaztime.tv.repository.OperatorPreferences
 import ru.namaztime.tv.repository.OperatorPreferencesRepository
 import ru.namaztime.tv.repository.OperatorQrConfiguration
@@ -1020,16 +1023,25 @@ class NamazTvAppUiTest {
             pressKey(Key.DirectionRight)
         }
         expected.entries.forEachIndexed { index, (prayerId, expectation) ->
+            val prefix = "$SETTINGS_IQAMAH_FIELD_TAG_PREFIX$prayerId"
             compose.onNodeWithTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX$prayerId")
                 .assertIsDisplayed()
-            compose.onNodeWithTag("$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-increment")
+            compose.onNodeWithTag("$prefix-reset")
+                .assertIsFocused()
+                .performKeyInput {
+                    pressKey(Key.DirectionRight)
+                    pressKey(Key.DirectionRight)
+                }
+            compose.onNodeWithTag("$prefix-increment")
                 .assertIsFocused()
                 .performKeyInput {
                     repeat(expectation.first) { pressKey(Key.Enter) }
+                    pressKey(Key.DirectionLeft)
+                    pressKey(Key.DirectionLeft)
                     if (index < expected.size - 1) pressKey(Key.DirectionDown)
                 }
-            }
-        compose.onNodeWithTag("${SETTINGS_IQAMAH_FIELD_TAG_PREFIX}isha-increment").performKeyInput {
+        }
+        compose.onNodeWithTag("${SETTINGS_IQAMAH_FIELD_TAG_PREFIX}isha-reset").performKeyInput {
             pressKey(Key.DirectionDown)
         }
         compose.onNodeWithTag(SETTINGS_IQAMAH_SAVE_TAG)
@@ -1045,6 +1057,145 @@ class NamazTvAppUiTest {
             compose.onNodeWithTag("$PRAYER_ROW_TEST_TAG_PREFIX$prayerId")
                 .assertTextContains(expectation.second)
         }
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun compactIqamahEditorFitsAt720p() = assertCompactIqamahEditorFits()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun compactIqamahEditorFitsAt1080pDensity() = assertCompactIqamahEditorFits()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun compactIqamahEditorFitsAt4kDensity() = assertCompactIqamahEditorFits()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun compactIqamahEnglishScheduleLabelsStaySingleLine() {
+        setIqamahSettingsContent(
+            FakeOperatorPreferencesRepository(
+                initialPreferences = OperatorPreferences(languageTag = "en"),
+            ),
+        )
+        openSettingsDestination(SettingsDestination.IQAMAH)
+
+        compose.onNodeWithText("Configure iqamah times").assertIsDisplayed()
+        compose.onNodeWithText("Use schedule · 13:15").assertIsDisplayed()
+        OPERATOR_IQAMAH_PRAYER_IDS.forEach { prayerId ->
+            compose.onNodeWithTag(
+                "$SETTINGS_IQAMAH_FIELD_TAG_PREFIX${prayerId}-schedule-label",
+                useUnmergedTree = true,
+            ).assert(SemanticsMatcher.expectValue(IqamahScheduleLabelFullyVisibleKey, true))
+        }
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun everyIqamahControlIsDpadReachableWithoutUsingOrderAsAnAction() {
+        setIqamahSettingsContent()
+        openSettingsDestination(SettingsDestination.IQAMAH)
+        compose.onNodeWithTag(SettingsDestination.IQAMAH.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+        }
+
+        OPERATOR_IQAMAH_PRAYER_IDS.forEachIndexed { index, prayerId ->
+            val prefix = "$SETTINGS_IQAMAH_FIELD_TAG_PREFIX$prayerId"
+            compose.onNodeWithTag("$prefix-reset").assertIsFocused().performKeyInput {
+                pressKey(Key.DirectionRight)
+            }
+            compose.onNodeWithTag("$prefix-decrement").assertIsFocused().performKeyInput {
+                pressKey(Key.DirectionRight)
+            }
+            compose.onNodeWithTag("$prefix-increment").assertIsFocused().performKeyInput {
+                pressKey(Key.DirectionLeft)
+                pressKey(Key.DirectionLeft)
+                if (index < OPERATOR_IQAMAH_PRAYER_IDS.lastIndex) pressKey(Key.DirectionDown)
+            }
+        }
+
+        compose.onNodeWithTag("${SETTINGS_IQAMAH_FIELD_TAG_PREFIX}isha-reset")
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_IQAMAH_SAVE_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG).assertIsFocused()
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun iqamahResetClearsOnlySelectedLocalOverridesBeforeSave() {
+        val initial = OperatorIqamahConfiguration(
+            fajrOffsetMinutes = 7,
+            dhuhrFixedTimeMinutes = 13 * 60 + 20,
+            asrOffsetMinutes = 9,
+            maghribOffsetMinutes = 4,
+            ishaOffsetMinutes = 11,
+        )
+        val preferences = FakeOperatorPreferencesRepository(
+            initialPreferences = OperatorPreferences(iqamahConfiguration = initial),
+        )
+        setIqamahSettingsContent(preferences)
+        openSettingsDestination(SettingsDestination.IQAMAH)
+        compose.onNodeWithTag(SettingsDestination.IQAMAH.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+        }
+        compose.onNodeWithTag("${SETTINGS_IQAMAH_FIELD_TAG_PREFIX}fajr-reset")
+            .assertIsFocused()
+            .performKeyInput {
+                pressKey(Key.Enter)
+                pressKey(Key.DirectionDown)
+            }
+        compose.onNodeWithTag("${SETTINGS_IQAMAH_FIELD_TAG_PREFIX}dhuhr-reset")
+            .assertIsFocused()
+            .performKeyInput {
+                pressKey(Key.Enter)
+                repeat(4) { pressKey(Key.DirectionDown) }
+            }
+        compose.onNodeWithTag(SETTINGS_IQAMAH_SAVE_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+
+        assertEquals(
+            initial.copy(fajrOffsetMinutes = null, dhuhrFixedTimeMinutes = null),
+            preferences.currentPreferences.iqamahConfiguration,
+        )
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun iqamahPlusMinusUseOneMinuteAndResetRestoresScheduleState() {
+        setIqamahSettingsContent()
+        openSettingsDestination(SettingsDestination.IQAMAH)
+        val prefix = "${SETTINGS_IQAMAH_FIELD_TAG_PREFIX}fajr"
+        compose.onNodeWithTag(SettingsDestination.IQAMAH.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+        }
+        compose.onNodeWithTag("$prefix-reset").performKeyInput {
+            pressKey(Key.DirectionRight)
+            pressKey(Key.DirectionRight)
+        }
+        compose.onNodeWithTag("$prefix-increment").assertIsFocused().performKeyInput {
+            pressKey(Key.Enter)
+            pressKey(Key.DirectionLeft)
+        }
+        compose.onNodeWithTag("$prefix-value").assertTextEquals("+1 мин")
+        compose.onNodeWithTag("$prefix-decrement").assertIsFocused().performKeyInput {
+            pressKey(Key.Enter)
+            pressKey(Key.DirectionLeft)
+        }
+        compose.onNodeWithTag("$prefix-value").assertTextEquals("+0 мин")
+        compose.onNodeWithTag("$prefix-reset")
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+            .assertIsSelected()
+        compose.onNodeWithTag("$prefix-value").assertTextEquals("—")
     }
 
     @Test
@@ -1386,6 +1537,69 @@ class NamazTvAppUiTest {
         compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
     }
 
+    private fun assertCompactIqamahEditorFits() {
+        setIqamahSettingsContent()
+        openSettingsDestination(SettingsDestination.IQAMAH)
+        compose.onNodeWithText("Настроить время Икамата").assertIsDisplayed()
+        val panel = compose.onNodeWithTag(SETTINGS_CONTENT_PANEL_TAG).getUnclippedBoundsInRoot()
+        OPERATOR_IQAMAH_PRAYER_IDS.forEach { prayerId ->
+            val prefix = "$SETTINGS_IQAMAH_FIELD_TAG_PREFIX$prayerId"
+            listOf(prefix, "$prefix-reset", "$prefix-decrement", "$prefix-value", "$prefix-increment")
+                .forEach { tag ->
+                    val bounds = compose.onNodeWithTag(tag)
+                        .assertIsDisplayed()
+                        .getUnclippedBoundsInRoot()
+                    assertTrue("$tag left", bounds.left >= panel.left)
+                    assertTrue("$tag right", bounds.right <= panel.right)
+                    assertTrue("$tag top", bounds.top >= panel.top)
+                    assertTrue("$tag bottom", bounds.bottom <= panel.bottom)
+                }
+            compose.onNodeWithTag("$prefix-schedule-label", useUnmergedTree = true)
+                .assert(SemanticsMatcher.expectValue(IqamahScheduleLabelFullyVisibleKey, true))
+        }
+        compose.onNodeWithText("По расписанию · 13:15").assertIsDisplayed()
+        listOf(SETTINGS_IQAMAH_SAVE_TAG, SETTINGS_PAGE_ACTION_TEST_TAG).forEach { tag ->
+            val bounds = compose.onNodeWithTag(tag).assertIsDisplayed().getUnclippedBoundsInRoot()
+            assertTrue("$tag left", bounds.left >= panel.left)
+            assertTrue("$tag right", bounds.right <= panel.right)
+            assertTrue("$tag top", bounds.top >= panel.top)
+            assertTrue("$tag bottom", bounds.bottom <= panel.bottom)
+        }
+    }
+
+    private fun setIqamahSettingsContent(
+        preferences: FakeOperatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+    ) {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = preferences,
+                prayerScheduleRepository = FakePrayerScheduleRepository(scheduleWithApprovedDhuhr()),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+    }
+
+    private fun scheduleWithApprovedDhuhr() = schedule().copy(
+        iqamahRules = listOf(
+            ru.namaztime.tv.repository.LocalIqamahRule(
+                id = "approved-dhuhr-1315",
+                prayer = "dhuhr",
+                validFrom = "2026-08-19",
+                validTo = "2026-08-21",
+                weekdaysMask = 127,
+                priority = 100,
+                mode = "fixed_time",
+                fixedTime = "13:15",
+                offsetMinutes = null,
+                reason = "synthetic approved policy",
+            ),
+        ),
+    )
+
     private fun assertResponsiveDisplayIsVisible(
         localSchedule: LocalPrayerSchedule = schedule(),
         displayClock: Clock = fixedClock,
@@ -1606,6 +1820,9 @@ private class FakeOperatorPreferencesRepository(
     private val state = MutableStateFlow(initialPreferences)
 
     override val preferences: Flow<OperatorPreferences> = state
+
+    val currentPreferences: OperatorPreferences
+        get() = state.value
 
     override suspend fun setLastSettingsDestination(route: String) {
         if (failWrites) throw IOException("synthetic preference storage failure")

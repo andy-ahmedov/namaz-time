@@ -273,6 +273,13 @@ Changing Dhuhr updates both its iqamah (including Friday) and Jumu'ah as one
 local setting. Sunrise remains absent. Returning to “Use schedule” clears only
 the device-local projection and reveals the signed base policy.
 
+As amended by T043, the compact TV editor renders all five prayer rows as
+`Prayer | Use schedule | − | value | +`. The schedule control is a visible,
+D-pad-focusable reset for each individual prayer, not a long-press gesture.
+At 960×540 it is one line high (`Use schedule · HH:mm` for an approved Dhuhr
+base), and all rows plus Save and Return remain inside the Settings panel. The
+neutral focus order never changes the prayer semantics above.
+
 For mosque ID `second-cathedral-mosque-ulyanovsk`, the public main display and
 Mosque settings summary use the concise presentation identity `Вторая Соборная
 Мечеть` / `Ульяновск`. This is a UI-only alias: the canonical signed snapshot,

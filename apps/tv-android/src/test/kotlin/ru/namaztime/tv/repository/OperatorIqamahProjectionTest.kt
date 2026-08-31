@@ -57,6 +57,29 @@ class OperatorIqamahProjectionTest {
         )
     }
 
+    @Test
+    fun clearingIndividualOverridesRestoresApprovedFajrAndDhuhrWithoutChangingOthers() {
+        val custom = OperatorIqamahConfiguration(
+            fajrOffsetMinutes = 12,
+            dhuhrFixedTimeMinutes = 13 * 60 + 25,
+            asrOffsetMinutes = 17,
+        )
+        val reset = custom
+            .withEditorValue("fajr", null)
+            .withEditorValue("dhuhr", null)
+        val result = engine.resolve(
+            scheduleWithBasePolicy().toTimeEngineInput(reset, now),
+            now,
+        ) as PrayerTimeResolution.Available
+
+        assertEquals(null, reset.fajrOffsetMinutes)
+        assertEquals(null, reset.dhuhrFixedTimeMinutes)
+        assertEquals(17, reset.asrOffsetMinutes)
+        assertEquals("04:05", result.prayers.getValue("fajr").iqamah.toString())
+        assertEquals("13:15", result.prayers.getValue("dhuhr").iqamah.toString())
+        assertEquals("18:17", result.prayers.getValue("asr").iqamah.toString())
+    }
+
     private fun scheduleWithBasePolicy() = schedule().copy(
         iqamahRules = listOf(
             LocalIqamahRule(
