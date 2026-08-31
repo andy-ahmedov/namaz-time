@@ -14,16 +14,16 @@ class BuildIdentityTest {
 
     @Test
     fun checkedInVersionAndGeneratedDebugIdentityAreTraceable() {
-        assertEquals(4, BuildConfig.VERSION_CODE)
-        assertEquals("0.5.0-dev", BuildConfig.VERSION_NAME)
+        assertEquals(5, BuildConfig.VERSION_CODE)
+        assertEquals("0.5.1-dev", BuildConfig.VERSION_NAME)
         assertEquals("debug", BuildConfig.BUILD_VARIANT)
         assertTrue(BuildConfig.BUILD_COMMIT.matches(Regex("[0-9a-f]{40}")))
 
         val identity = currentAppBuildIdentity()
 
-        assertEquals("0.5.0-dev (4)", identity.versionLabel)
+        assertEquals("0.5.1-dev (5)", identity.versionLabel)
         assertEquals(BuildConfig.BUILD_COMMIT.take(12), identity.shortCommit)
-        assertEquals("0.5.0-dev+g${BuildConfig.BUILD_COMMIT.take(12)}" +
+        assertEquals("0.5.1-dev+g${BuildConfig.BUILD_COMMIT.take(12)}" +
             if (BuildConfig.BUILD_DIRTY) ".dirty" else "", identity.telemetryVersion)
         assertTrue(identity.telemetryVersion.length <= 64)
     }
@@ -31,13 +31,13 @@ class BuildIdentityTest {
     @Test
     fun identityValidationRejectsValuesThatCannotIdentifyAnArtifact() {
         val valid = AppBuildIdentity(
-            versionName = "0.5.0-pilot.1",
-            versionCode = 4,
+            versionName = "0.5.1-pilot.1",
+            versionCode = 5,
             variant = "pilot",
             commit = "a".repeat(40),
             dirty = false,
         )
-        assertEquals("0.5.0-pilot.1 (4)", valid.versionLabel)
+        assertEquals("0.5.1-pilot.1 (5)", valid.versionLabel)
         assertEquals("a".repeat(12), valid.shortCommit)
         assertFalse(valid.dirty)
 

@@ -159,8 +159,8 @@ class SettingsShellUiTest {
                 schedule = pilotSchedule(),
                 preferences = OperatorPreferences(),
                 buildIdentity = AppBuildIdentity(
-                    versionName = "0.5.0-pilot.1",
-                    versionCode = 4,
+                    versionName = "0.5.1-pilot.1",
+                    versionCode = 5,
                     variant = "pilot",
                     commit = "0123456789abcdef0123456789abcdef01234567",
                     dirty = false,
@@ -232,7 +232,7 @@ class SettingsShellUiTest {
 
         moveDownFrom(SettingsDestination.KIOSK)
         compose.onNodeWithText("ulyanovsk-second-cathedral-2026-pilot-local-v1").assertIsDisplayed()
-        compose.onNodeWithText("0.5.0-pilot.1 (4)").assertIsDisplayed()
+        compose.onNodeWithText("0.5.1-pilot.1 (5)").assertIsDisplayed()
         compose.onNodeWithText("pilot · 0123456789ab · чистая").assertIsDisplayed()
     }
 

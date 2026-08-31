@@ -53,7 +53,7 @@ certificate, snapshot or trust assets differ. Debug uses the separate
 `ru.namaztime.tv.debug` application ID and debug key, so it cannot accidentally
 occupy the retained mosque application's identity.
 
-The current handover version is `0.5.0-pilot.1` with `versionCode=4`. Version
+The current handover version is `0.5.1-pilot.1` with `versionCode=5`. Version
 values come only from `apps/tv-android/version.properties`; do not hand-edit an
 APK filename or manifest to simulate another build.
 
