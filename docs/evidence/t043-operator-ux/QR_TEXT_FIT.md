@@ -26,6 +26,9 @@ DataStore validation. Existing persisted configurations whose subtitle no
 longer fits retain their valid URL/title while only the unsafe subtitle is
 projected as empty. Other operator preferences are left intact.
 
-`CONFIRMED_RUNTIME` is reserved for the controlled emulator audit at the final
-T043 checkpoint. Physical-TV readability and overscan remain `UNKNOWN` until
-tested on that hardware.
+`CONFIRMED_RUNTIME`: on the controlled Android 16 / API 36, 1920×1080 emulator,
+the owner-scenario long English message renders completely in the main QR card
+without ellipsis, clipping or overlap; see `screenshots/01-main-qr-long-message.png`
+and `RUNTIME_VALIDATION.md`. Physical-TV readability, overscan and a
+representative-distance phone scan remain `UNKNOWN` until tested on that
+hardware.

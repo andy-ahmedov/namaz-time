@@ -230,6 +230,20 @@ tests assert the Settings field and focus node are absent, D-pad moves directly
 to gratitude, and the fixed details region contains exactly four 30-dp rows at
 720p, 1080p-density and 4K-density. The HTTPS QR payload remains unchanged.
 
+T043 also adds measured QR fit validation shared by save, preview and public
+display; compact five-row Iqamah/reset coverage; and the ADR 0018 picker
+capability/permission/import/focus matrix. Controlled Android 16 / API 36,
+1920×1080 evidence confirms the long QR message, five Iqamah rows and explicit
+reset, system Photo Picker fallback with one actual private-copy import, the
+removed donation field and four-row public display. The targeted audit also
+corrected a narrow Donation prayer-status cell and compact Mosque source/
+timezone clipping. Evidence and screenshot hashes are under
+[`docs/evidence/t043-operator-ux/`](docs/evidence/t043-operator-ux/). The
+last-resort MediaStore browser is automated evidence on this emulator because
+the system Photo Picker remained available; physical-TV picker behavior,
+overscan, hall readability and representative-distance QR scanning remain
+`UNKNOWN`.
+
 T026 adds token regressions for high-opacity photographic-background surfaces
 and the minimum bounded scrim, while the existing semantic contrast tests guard
 the muted palette. QR raster tests prove modules are dark navy rather than pure

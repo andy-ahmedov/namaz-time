@@ -19,6 +19,13 @@ Date: 2026-08-31
   28/32/33/35 routing, provider absence, Photo Picker, permission grant/denial/
   revocation, cancellation, both image slots, focus restoration, JPEG/PNG/WebP,
   all stable failure results and app-private persistence failure.
+- `CONFIRMED_RUNTIME`: with the controlled API 36 emulator's document-provider
+  stub disabled, both Settings actions opened the usable system Photo Picker.
+  One real PNG selection was validated, copied into the app-private background
+  slot and rendered without granting `READ_MEDIA_IMAGES`; focus returned to
+  the invoking Appearance action. The last-resort MediaStore screen was not
+  selected because Photo Picker was available. Screenshots and exact artifact
+  identity are in `RUNTIME_VALIDATION.md`.
 - `UNKNOWN`: the exact picker/provider set, permission presentation and D-pad
   behavior on a physical pilot television remain pending its acceptance run.
 

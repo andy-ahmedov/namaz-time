@@ -1111,4 +1111,32 @@ repository gates pass; and the Ulyanovsk pilot snapshot remains byte-identical
 at raw SHA-256
 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 
-**Status:** `IN_PROGRESS` on 2026-08-31.
+**Status:** `DONE` on 2026-08-31.
+
+**Result:** checkpoints `6a60a0c`, `f0b9340`, `8e11fbd`, `bf3fc6c` and
+`1cc2119` implement the shared measured QR fit/reject contract, compact
+five-row Iqamah editor with explicit per-prayer signed-schedule reset, ADR 0018
+OpenDocument → Photo Picker → permission-gated MediaStore cascade with bounded
+feedback/focus recovery, complete donation collection-link tombstone/removal
+and Android `0.5.1-pilot.1` / code `5`. Targeted runtime review then produced
+small local corrections `1982d40`, `a674a0e` and `cfa4621` for the Donation
+current-prayer label and Mosque source/timezone visibility; no general redesign
+was introduced.
+
+`CONFIRMED_RUNTIME` on the controlled Android 16 / API 36, 1920×1080 emulator:
+the long QR message is complete; all five Iqamah rows and reset transition are
+visible; missing OpenDocument falls through to the system Photo Picker; one
+actual PNG import reaches an app-private preview with no media grant; Donation
+has no collection-link input and renders four rows; and the final signed clean
+APK installs in place as code `5` while retaining the package's first-install
+identity. Evidence and hashes are under
+`docs/evidence/t043-operator-ux/`.
+
+`make docs-check`, `make test`, `make lint`, `make test-postgres`,
+`make test-android-all`, `go test -race ./...`, `make security-go` and
+`make secret-scan` pass. No Room/PostgreSQL migration, prayer/source/registry
+change or new real source was added. T038 remains `DEFERRED`; physical-TV
+picker/overscan/readability and representative-distance QR scanning remain
+`UNKNOWN`. The packaged Ulyanovsk snapshot remains byte-identical at raw
+SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.

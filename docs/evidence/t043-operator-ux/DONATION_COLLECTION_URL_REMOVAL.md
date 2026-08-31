@@ -32,3 +32,8 @@ structured legacy fields still migrate deterministically.
 If the removed link was the only detail, donation mode fails closed to the
 schedule and unrelated operator preferences remain readable. No Room or prayer
 snapshot migration is involved.
+
+`CONFIRMED_RUNTIME`: controlled API 36 screenshots show Donation Settings
+without the removed field and the standalone display with exactly recipient,
+bank, card number and SBP/phone rows. See `RUNTIME_VALIDATION.md` screenshots
+`07` and `08`.

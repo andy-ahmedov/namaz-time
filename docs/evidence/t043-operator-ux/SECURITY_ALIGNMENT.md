@@ -64,5 +64,9 @@ or source data.
 4. Run strict Android Lint and the repository security/secret gates before
    completion.
 
-Runtime behavior on the controlled API 36 emulator will be recorded separately.
-Physical-TV behavior remains `UNKNOWN` until the pilot hardware run.
+`CONFIRMED_RUNTIME`: the controlled API 36 emulator used the system Photo
+Picker when OpenDocument was unavailable, completed one actual private-copy
+import with `READ_MEDIA_IMAGES` still denied, and restored the invoking
+Settings focus. The disabled test packages were re-enabled afterward. Exact
+artifact and screenshot evidence is in `RUNTIME_VALIDATION.md`. Physical-TV
+behavior remains `UNKNOWN` until the pilot hardware run.

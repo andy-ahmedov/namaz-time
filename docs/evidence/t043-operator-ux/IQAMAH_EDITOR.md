@@ -22,5 +22,9 @@ Robolectric API 35 checks prove all five rows, Isha, Save and Return remain
 inside the panel at the 720p, 960×540/xhdpi and 4K-density profiles. The same
 tests traverse reset, decrement and increment in every row using only D-pad
 events, persist Fajr/Dhuhr resets as `null`, and verify RU/EN schedule labels
-have no visual overflow. Controlled emulator evidence is recorded only at the
-final T043 checkpoint; physical-TV behavior remains `UNKNOWN`.
+have no visual overflow.
+
+`CONFIRMED_RUNTIME`: the controlled Android 16 / API 36, 1920×1080 emulator
+shows all five rows plus both actions; a D-pad change to Fajr `+1 мин` and its
+explicit return to `По расписанию` are captured in screenshots `02`–`04` and
+described in `RUNTIME_VALIDATION.md`. Physical-TV behavior remains `UNKNOWN`.
