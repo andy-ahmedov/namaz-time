@@ -474,9 +474,7 @@ private fun NextEventCard(
         Box(Modifier.fillMaxSize()) {
             NextPrayerWatermark(
                 modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .fillMaxWidth(0.55f)
-                    .fillMaxHeight(0.90f)
+                    .fillMaxSize()
                     .testTag(NEXT_EVENT_WATERMARK_TAG),
             )
             Box(
@@ -537,115 +535,240 @@ private fun NextEventCard(
     }
 }
 
+internal data class NextPrayerWatermarkGeometry(
+    val archLeft: Float,
+    val archRight: Float,
+    val apexX: Float,
+    val apexY: Float,
+    val shoulderY: Float,
+    val verticalSideTopY: Float,
+    val bottomY: Float,
+) {
+    init {
+        listOf(
+            archLeft,
+            archRight,
+            apexX,
+            apexY,
+            shoulderY,
+            verticalSideTopY,
+            bottomY,
+        ).forEach { value ->
+            require(value in 0f..1f) { "watermark geometry must be normalized" }
+        }
+        require(archLeft < apexX && apexX < archRight) { "apex must be inside the arch" }
+        require(apexY < shoulderY && shoulderY < verticalSideTopY) {
+            "arch vertical landmarks must be ordered"
+        }
+        require(verticalSideTopY < bottomY) { "arch sides must reach the bottom" }
+    }
+
+    val archWidth: Float
+        get() = archRight - archLeft
+}
+
+internal val NEXT_PRAYER_WATERMARK_GEOMETRY = NextPrayerWatermarkGeometry(
+    archLeft = 0.04f,
+    archRight = 0.27f,
+    apexX = 0.155f,
+    apexY = 0.205f,
+    shoulderY = 0.40f,
+    verticalSideTopY = 0.49f,
+    bottomY = 1f,
+)
+
 @Composable
 private fun NextPrayerWatermark(modifier: Modifier = Modifier) {
-    val tint = NamazTvTheme.colors.accentOutline
+    val colors = NamazTvTheme.colors
+    val tint = colors.accentOutline
     Canvas(modifier) {
-        val stroke = Stroke(0.65.dp.toPx(), cap = StrokeCap.Round)
-        val glowStroke = Stroke(2.6.dp.toPx(), cap = StrokeCap.Round)
+        val geometry = NEXT_PRAYER_WATERMARK_GEOMETRY
+        val shoulderInset = geometry.archWidth * 0.15f
+        val lowerCurveInset = geometry.archWidth * 0.035f
+        val apexApproach = geometry.archWidth * 0.08f
+        val stroke = Stroke(0.8.dp.toPx(), cap = StrokeCap.Round)
+        val glowStroke = Stroke(3.2.dp.toPx(), cap = StrokeCap.Round)
         val arch = Path().apply {
-            moveTo(size.width * 0.13f, size.height)
-            lineTo(size.width * 0.13f, size.height * 0.44f)
+            moveTo(size.width * geometry.archLeft, size.height * geometry.bottomY)
+            lineTo(size.width * geometry.archLeft, size.height * geometry.verticalSideTopY)
             cubicTo(
-                size.width * 0.13f,
-                size.height * 0.34f,
-                size.width * 0.23f,
-                size.height * 0.31f,
-                size.width * 0.27f,
-                size.height * 0.17f,
+                size.width * (geometry.archLeft - lowerCurveInset),
+                size.height * 0.445f,
+                size.width * (geometry.archLeft + lowerCurveInset * 2f),
+                size.height * 0.415f,
+                size.width * (geometry.archLeft + shoulderInset),
+                size.height * geometry.shoulderY,
             )
             cubicTo(
-                size.width * 0.31f,
-                size.height * 0.31f,
-                size.width * 0.46f,
-                size.height * 0.34f,
-                size.width * 0.46f,
-                size.height * 0.44f,
+                size.width * (geometry.archLeft + geometry.archWidth * 0.32f),
+                size.height * 0.35f,
+                size.width * (geometry.apexX - apexApproach),
+                size.height * 0.245f,
+                size.width * geometry.apexX,
+                size.height * geometry.apexY,
             )
-            lineTo(size.width * 0.46f, size.height)
+            cubicTo(
+                size.width * (geometry.apexX + apexApproach),
+                size.height * 0.245f,
+                size.width * (geometry.archRight - geometry.archWidth * 0.32f),
+                size.height * 0.35f,
+                size.width * (geometry.archRight - shoulderInset),
+                size.height * geometry.shoulderY,
+            )
+            cubicTo(
+                size.width * (geometry.archRight - lowerCurveInset * 2f),
+                size.height * 0.415f,
+                size.width * (geometry.archRight + lowerCurveInset),
+                size.height * 0.445f,
+                size.width * geometry.archRight,
+                size.height * geometry.verticalSideTopY,
+            )
+            lineTo(size.width * geometry.archRight, size.height * geometry.bottomY)
         }
-        drawPath(arch, tint.copy(alpha = 0.035f), style = glowStroke)
-        drawPath(arch, tint.copy(alpha = 0.12f), style = stroke)
+        drawPath(arch, tint.copy(alpha = 0.045f), style = glowStroke)
+        drawPath(arch, tint.copy(alpha = 0.19f), style = stroke)
 
-        val lanternX = size.width * 0.20f
-        val chainTop = size.height * 0.18f
+        val lanternCenterX = size.width * 0.12f
+        val lanternHalfWidth = size.width * 0.0425f
         val lanternTop = size.height * 0.42f
-        drawLine(
-            tint.copy(alpha = 0.12f),
-            Offset(lanternX, chainTop),
-            Offset(lanternX, lanternTop),
-            stroke.width,
-            StrokeCap.Round,
+        val bodyTop = size.height * 0.485f
+        val bodyBottom = size.height * 0.665f
+        val lanternOutline = Stroke(0.7.dp.toPx(), cap = StrokeCap.Round)
+        val lanternGlow = Stroke(2.8.dp.toPx(), cap = StrokeCap.Round)
+
+        drawCircle(
+            color = colors.accent.copy(alpha = 0.075f),
+            radius = size.width * 0.054f,
+            center = Offset(lanternCenterX, size.height * 0.56f),
         )
-        val lantern = Path().apply {
-            moveTo(lanternX, lanternTop)
+        drawLine(
+            color = tint.copy(alpha = 0.25f),
+            start = Offset(lanternCenterX, size.height * 0.235f),
+            end = Offset(lanternCenterX, lanternTop),
+            strokeWidth = 0.65.dp.toPx(),
+            cap = StrokeCap.Round,
+        )
+        drawCircle(
+            color = tint.copy(alpha = 0.28f),
+            radius = 1.1.dp.toPx(),
+            center = Offset(lanternCenterX, lanternTop),
+            style = lanternOutline,
+        )
+
+        val canopy = Path().apply {
+            moveTo(lanternCenterX, lanternTop)
             cubicTo(
-                size.width * 0.18f,
-                size.height * 0.44f,
-                size.width * 0.14f,
-                size.height * 0.47f,
-                size.width * 0.13f,
-                size.height * 0.50f,
+                lanternCenterX - lanternHalfWidth * 0.18f,
+                size.height * 0.435f,
+                lanternCenterX - lanternHalfWidth * 0.58f,
+                size.height * 0.445f,
+                lanternCenterX - lanternHalfWidth * 0.72f,
+                size.height * 0.46f,
             )
-            lineTo(size.width * 0.12f, size.height * 0.69f)
-            lineTo(size.width * 0.15f, size.height * 0.73f)
-            lineTo(lanternX, size.height * 0.75f)
-            lineTo(size.width * 0.25f, size.height * 0.73f)
-            lineTo(size.width * 0.28f, size.height * 0.69f)
-            lineTo(size.width * 0.27f, size.height * 0.50f)
+            lineTo(lanternCenterX - lanternHalfWidth, bodyTop)
+            lineTo(lanternCenterX + lanternHalfWidth, bodyTop)
+            lineTo(lanternCenterX + lanternHalfWidth * 0.72f, size.height * 0.46f)
             cubicTo(
-                size.width * 0.26f,
-                size.height * 0.47f,
-                size.width * 0.22f,
-                size.height * 0.44f,
-                lanternX,
+                lanternCenterX + lanternHalfWidth * 0.58f,
+                size.height * 0.445f,
+                lanternCenterX + lanternHalfWidth * 0.18f,
+                size.height * 0.435f,
+                lanternCenterX,
                 lanternTop,
             )
             close()
         }
-        drawPath(lantern, tint.copy(alpha = 0.035f), style = glowStroke)
-        drawPath(lantern, tint.copy(alpha = 0.18f), style = stroke)
-        drawLine(
-            tint.copy(alpha = 0.18f),
-            Offset(size.width * 0.13f, size.height * 0.53f),
-            Offset(size.width * 0.27f, size.height * 0.53f),
-            stroke.width,
-            StrokeCap.Round,
-        )
-        listOf(0.16f, 0.24f).forEach { paneCenterX ->
-            drawArc(
-                color = tint.copy(alpha = 0.17f),
-                startAngle = 180f,
-                sweepAngle = 180f,
-                useCenter = false,
-                topLeft = Offset(size.width * (paneCenterX - 0.025f), size.height * 0.57f),
-                size = Size(size.width * 0.05f, size.height * 0.08f),
-                style = stroke,
+        drawPath(canopy, colors.surfaceStrong.copy(alpha = 0.78f))
+        drawPath(canopy, tint.copy(alpha = 0.30f), style = lanternGlow)
+        drawPath(canopy, tint.copy(alpha = 0.42f), style = lanternOutline)
+
+        val body = Path().apply {
+            moveTo(lanternCenterX - lanternHalfWidth, bodyTop)
+            lineTo(lanternCenterX - lanternHalfWidth * 0.80f, bodyBottom)
+            quadraticTo(
+                lanternCenterX,
+                size.height * 0.685f,
+                lanternCenterX + lanternHalfWidth * 0.80f,
+                bodyBottom,
             )
-            drawLine(
-                tint.copy(alpha = 0.17f),
-                Offset(size.width * (paneCenterX - 0.025f), size.height * 0.61f),
-                Offset(size.width * (paneCenterX - 0.025f), size.height * 0.68f),
-                stroke.width,
-            )
-            drawLine(
-                tint.copy(alpha = 0.17f),
-                Offset(size.width * (paneCenterX + 0.025f), size.height * 0.61f),
-                Offset(size.width * (paneCenterX + 0.025f), size.height * 0.68f),
-                stroke.width,
-            )
+            lineTo(lanternCenterX + lanternHalfWidth, bodyTop)
+            close()
         }
+        drawPath(body, colors.surfaceStrong.copy(alpha = 0.72f))
+        drawPath(body, tint.copy(alpha = 0.055f), style = lanternGlow)
+        drawPath(body, tint.copy(alpha = 0.40f), style = lanternOutline)
+
+        val paneGap = size.width * 0.0035f
+        val paneWidth = (lanternHalfWidth * 1.52f - paneGap * 2f) / 3f
+        val paneTop = size.height * 0.515f
+        val paneBottom = size.height * 0.635f
+        repeat(3) { index ->
+            val paneLeft = lanternCenterX - lanternHalfWidth * 0.76f +
+                index * (paneWidth + paneGap)
+            val paneRight = paneLeft + paneWidth
+            val lean = (index - 1) * size.width * 0.002f
+            val pane = Path().apply {
+                moveTo(paneLeft + lean, paneTop)
+                lineTo(paneRight + lean, paneTop)
+                lineTo(paneRight - lean * 0.35f, paneBottom)
+                lineTo(paneLeft - lean * 0.35f, paneBottom)
+                close()
+            }
+            drawPath(pane, colors.accent.copy(alpha = 0.34f))
+            drawPath(pane, tint.copy(alpha = 0.34f), style = lanternOutline)
+        }
+
         drawLine(
-            tint.copy(alpha = 0.18f),
-            Offset(size.width * 0.14f, size.height * 0.70f),
-            Offset(size.width * 0.26f, size.height * 0.70f),
-            stroke.width,
-            StrokeCap.Round,
+            color = tint.copy(alpha = 0.40f),
+            start = Offset(lanternCenterX - lanternHalfWidth * 0.88f, bodyTop),
+            end = Offset(lanternCenterX + lanternHalfWidth * 0.88f, bodyTop),
+            strokeWidth = lanternOutline.width,
+            cap = StrokeCap.Round,
+        )
+        drawLine(
+            color = tint.copy(alpha = 0.40f),
+            start = Offset(
+                lanternCenterX - lanternHalfWidth * 0.70f,
+                size.height * 0.655f,
+            ),
+            end = Offset(
+                lanternCenterX + lanternHalfWidth * 0.70f,
+                size.height * 0.655f,
+            ),
+            strokeWidth = lanternOutline.width,
+            cap = StrokeCap.Round,
+        )
+
+        val finialTop = size.height * 0.68f
+        val finial = Path().apply {
+            moveTo(lanternCenterX - lanternHalfWidth * 0.28f, finialTop)
+            quadraticTo(
+                lanternCenterX,
+                size.height * 0.705f,
+                lanternCenterX + lanternHalfWidth * 0.28f,
+                finialTop,
+            )
+            quadraticTo(
+                lanternCenterX,
+                size.height * 0.715f,
+                lanternCenterX - lanternHalfWidth * 0.28f,
+                finialTop,
+            )
+            close()
+        }
+        drawPath(finial, colors.surfaceStrong.copy(alpha = 0.76f))
+        drawPath(finial, tint.copy(alpha = 0.38f), style = lanternOutline)
+        drawLine(
+            color = tint.copy(alpha = 0.33f),
+            start = Offset(lanternCenterX, size.height * 0.705f),
+            end = Offset(lanternCenterX, size.height * 0.735f),
+            strokeWidth = lanternOutline.width,
+            cap = StrokeCap.Round,
         )
         drawCircle(
-            tint.copy(alpha = 0.12f),
-            1.2.dp.toPx(),
-            Offset(lanternX, size.height * 0.80f),
+            color = tint.copy(alpha = 0.34f),
+            radius = 1.15.dp.toPx(),
+            center = Offset(lanternCenterX, size.height * 0.742f),
         )
     }
 }

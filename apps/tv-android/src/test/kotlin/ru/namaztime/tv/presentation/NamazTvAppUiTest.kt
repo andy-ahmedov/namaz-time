@@ -656,6 +656,61 @@ class NamazTvAppUiTest {
 
     @Test
     @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun nextPrayerWatermarkUsesFullCardCoordinatesWithoutObscuringLongTitle() {
+        assertWatermarkUsesFullCardCoordinates()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun nextPrayerWatermarkUsesFullCardCoordinatesAt720p() {
+        assertWatermarkUsesFullCardCoordinates()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun nextPrayerWatermarkUsesFullCardCoordinatesAt4kDensity() {
+        assertWatermarkUsesFullCardCoordinates()
+    }
+
+    private fun assertWatermarkUsesFullCardCoordinates() {
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = FakeOperatorPreferencesRepository(),
+                prayerScheduleRepository = FakePrayerScheduleRepository(
+                    schedule().copy(campaigns = listOf(campaign())),
+                ),
+                bootstrapState = MutableStateFlow(
+                    SnapshotBootstrapState.Ready("synthetic-ulsk-demo-2026-08-v1"),
+                ),
+                clock = Clock.fixed(
+                    Instant.parse("2026-08-19T19:00:00Z"),
+                    ZoneOffset.UTC,
+                ),
+                tickIntervalMillis = null,
+            )
+        }
+
+        val card = compose.onNodeWithTag(NEXT_EVENT_CARD_TAG)
+            .assertIsDisplayed()
+            .getUnclippedBoundsInRoot()
+        val watermark = compose.onNodeWithTag(NEXT_EVENT_WATERMARK_TAG, useUnmergedTree = true)
+            .assertExists()
+            .getUnclippedBoundsInRoot()
+        val longTitle = compose.onNodeWithTag(NEXT_EVENT_NAME_TAG)
+            .assertIsDisplayed()
+            .assertTextEquals("Фаджр · завтра")
+            .getUnclippedBoundsInRoot()
+
+        assertEquals(card.left, watermark.left)
+        assertEquals(card.top, watermark.top)
+        assertEquals(card.right, watermark.right)
+        assertEquals(card.bottom, watermark.bottom)
+        assertTrue(longTitle.left >= card.left && longTitle.right <= card.right)
+        assertTrue(longTitle.top >= card.top && longTitle.bottom <= card.bottom)
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
     fun qrCompositionKeepsTheFullEightDigitClockRegion() {
         compose.setContent {
             NamazTvApp(
