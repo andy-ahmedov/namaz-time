@@ -1,8 +1,8 @@
 {
-  "frames": 63,
-  "qr_decodes": 51,
-  "blur_decodes": 51,
-  "protected_half_comparisons": 51,
+  "frames": 66,
+  "qr_decodes": 54,
+  "blur_decodes": 54,
+  "protected_half_comparisons": 54,
   "minimum_foreground_free_left_percent": 50.15625,
   "standard_changed_pixels": 0,
   "other_screen_regressions_changed_pixels": 0,
@@ -16,5 +16,6 @@
     "blue_hour",
     "night_minaret"
   ],
-  "physical_tv_acceptance": "UNKNOWN"
+  "physical_tv_acceptance": "UNKNOWN",
+  "android_tests": 504
 }

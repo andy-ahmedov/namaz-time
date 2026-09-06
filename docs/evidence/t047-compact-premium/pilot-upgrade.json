@@ -1,0 +1,34 @@
+{
+  "application_id": "ru.namaztime.tv",
+  "baseline_version": "0.6.1-pilot.1",
+  "baseline_code": 8,
+  "final_version": "0.6.2-pilot.1",
+  "final_code": 9,
+  "install": "adb install -r; no uninstall/wipe",
+  "sequence": "8 -> initial internal review code 9 from c4eae93 -> final code 9 rebuilt after paragraph refinement at 1a557d3",
+  "final_installed_apk_sha256": "c91640c1078fddcab69c18b45baab60941773eac255bfba9df0ff2b81ea2288d",
+  "final_build_commit": "1a557d3a4bae0cc34828a81aacdaa6b6e3f6c375",
+  "first_install_time_before": "2026-08-29 10:32:25",
+  "first_install_time_after": "2026-08-29 10:32:25",
+  "retained_qr_payload": "https://example.org/donate",
+  "qr_before_and_after_decoded": true,
+  "retained_visual_preferences": [
+    "RIGHT_SIDE_COMPACT",
+    "Iqamah OFF",
+    "Golden Dusk",
+    "Вторая Соборная Мечеть / Ульяновск",
+    "Support the mosque",
+    "same complete long English paragraph"
+  ],
+  "unchanged_six_adhan_values": [
+    "03:48",
+    "06:00",
+    "12:54",
+    "17:19",
+    "19:33",
+    "21:13"
+  ],
+  "main_activity_resumed": true,
+  "no_live_process_AndroidRuntime_fatal_error": true,
+  "snapshot_sha256": "78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b"
+}

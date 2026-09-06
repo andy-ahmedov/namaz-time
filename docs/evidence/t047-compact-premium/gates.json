@@ -45,5 +45,27 @@
     "green_log": "/tmp/t047-long-paragraph-green.log",
     "green_exit_code": 0,
     "coverage": "12 normalized sp minimum, complete paragraph and no overflow at 720p/1080p/4K"
+  },
+  "signed_handover": {
+    "command": "NAMAZTIME_PILOT_SIGNING_PROPERTIES=/home/andy/.config/namaztime/pilot-signing.properties GRADLE_USER_HOME=/tmp/namaz-time-gradle make build-android-pilot",
+    "exit_code": 0,
+    "log": "/tmp/t047-final-pilot-build.log",
+    "log_sha256": "c4e2bd4ca865b62d8d4a0b4560267a48a4ea3ea1577490f3421ddabe5ea53dd4"
+  },
+  "runtime_matrix": {
+    "profiles": [
+      "720p",
+      "1080p",
+      "4k"
+    ],
+    "frames": 66,
+    "logs": [
+      "/tmp/t047-final-runtime.log",
+      "/tmp/t047-final-runtime-4k.log"
+    ],
+    "exit_codes": [
+      0,
+      0
+    ]
   }
 }

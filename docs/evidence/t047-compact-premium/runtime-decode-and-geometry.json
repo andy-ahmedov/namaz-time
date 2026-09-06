@@ -398,6 +398,32 @@
     "blur_055_pass": true
   },
   {
+    "name": "720p-long-paragraph.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "c2ed581ecbcf62161117580f26b5642b91bec821771b1b7538a73a21f3f1010c",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
     "name": "720p-maximum-copy.png",
     "scenario": "compact",
     "size": [
@@ -908,6 +934,32 @@
     "blur_055_pass": true
   },
   {
+    "name": "1080p-long-paragraph.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "64324a7b8f1cae68dd006fd42566616b54ea368368b606197b747bcf9e3baf72",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
     "name": "1080p-maximum-copy.png",
     "scenario": "compact",
     "size": [
@@ -1416,6 +1468,32 @@
     "sha256": "54e6d8b5773a7ed348811f1fc4dea556c5316ca8733b36ded995fd24dc878811",
     "decode_pass": true,
     "blur_055_pass": true
+  },
+  {
+    "name": "4k-long-paragraph.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "0f7acbf91a664c61e60007137dacfc72aef28238c83d5f4c0c4eeaf3311225e3",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
   },
   {
     "name": "4k-maximum-copy.png",

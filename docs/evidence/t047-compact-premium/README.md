@@ -113,20 +113,20 @@ Controlled capture command (requires Pillow and zxing-cpp):
 ```sh
 make test-android-t047-emulator \
   T047_EVIDENCE_PYTHON=/tmp/t045-tools/bin/python \
-  T047_EVIDENCE_ARGS='--output /tmp/t047-runtime-final --profiles 720p 1080p'
+  T047_EVIDENCE_ARGS='--output /tmp/t047-final-runtime --profiles 720p 1080p'
 adb shell settings put global overlay_display_devices 3840x2160/480
 adb shell dumpsys display
 adb shell dumpsys SurfaceFlinger --display-id
 make test-android-t047-emulator \
   T047_EVIDENCE_PYTHON=/tmp/t045-tools/bin/python \
-  T047_EVIDENCE_ARGS='--output /tmp/t047-runtime-4k --profiles 4k --presentation-display 7 --capture-display 11529215047396539977'
+  T047_EVIDENCE_ARGS='--output /tmp/t047-final-runtime-4k --profiles 4k --presentation-display 8 --capture-display 11529215050034289252'
 adb shell settings delete global overlay_display_devices
 ```
 
 Display IDs must be rediscovered on another session. 4K uses an actual
 3840×2160 secondary Presentation; the capture rejects clamped/upscaled frames.
-The final [runtime ledger](runtime-decode-and-geometry.json) contains 63 original
-frames: 51/51 exact QR decodes, 51/51 bounded blur decodes and 51/51 protected
+The final [runtime ledger](runtime-decode-and-geometry.json) contains 66 original
+frames: 54/54 exact QR decodes, 54/54 bounded blur decodes and 54/54 protected
 left-half comparisons. Minimum foreground-free left is 50.15625% across all six
 retention phases. [Native 4K](11-compact-native-4k.png) is 3840×2160 at density 480.
 The overlay was removed after capture; primary 1920×1080/density 320 restored.
@@ -152,3 +152,28 @@ new monotonic versionCode; do not uninstall or attempt a code downgrade.
 OEM overscan/boot and long-duration retention behavior. Physical matrix,
 seven-day offline/4K memory soak, offline key backups and T038 remain deferred.
 `PHYSICAL_QR_RETEST_REQUIRED` remains in force. No push or PR is authorized.
+
+## Signed handover and local completion
+
+`CONFIRMED_RUNTIME`: the final clean signed APK is
+`namaztime-0.6.2-pilot.1-code9-1a557d3a4bae.apk`, stored outside Git at
+`../namaztime-artifacts/android/namaztime-0.6.2-pilot.1-code9-1a557d3a4bae/`.
+[Canonical manifest](handover-manifest.json) binds the APK to clean commit
+`1a557d3a4bae`, version/code, retained certificate and unchanged snapshot.
+The package, certificate, four authenticated assets and checksum checks pass.
+The installed APK was pulled back and its SHA-256 equals the handover manifest.
+
+[Before code 8](16-signed-pilot-before-code8.png) and
+[final code 9](17-signed-pilot-after-code9.png) retain the six approved adhan
+values, mosque/locality, Golden Dusk, compact preference, Iqamah OFF and local
+campaign/QR. The QR still decodes to the same synthetic example.org destination.
+[Upgrade record](pilot-upgrade.json) preserves the original first-install time.
+Code 8 was upgraded in place to the initial internal code-9 review candidate;
+the final paragraph refinement was then reinstalled as code 9 during this same
+local QA session. The current handover is the **1a557d3a4bae** bundle, which
+supersedes the c4eae93 review candidate. No uninstall, data wipe or signing change.
+MainActivity is resumed, with no live-process AndroidRuntime fatal error.
+
+Implementation checkpoints: `c4eae93` (compact visual system/evidence) and
+`1a557d3` (long-paragraph refinement/regression). Final handover/status is a
+separate documentation commit. T047 is DONE locally; no push/PR was performed.

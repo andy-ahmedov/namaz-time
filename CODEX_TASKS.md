@@ -1280,7 +1280,12 @@ original ornaments, runtime identity/data and shared presentation state.
 
 ## T047 — premium visual art direction for RIGHT_SIDE_COMPACT
 
-Status: IN_PROGRESS. Refine only the T046 compact visual system against the
+Status: DONE locally. Checkpoints `c4eae93` and `1a557d3`; 504 Android tests,
+66 runtime frames, 54 QR/blur/protected-half checks, zero other-screen pixel
+differences and clean signed code-9 in-place handover. Physical TV remains UNKNOWN.
+See `docs/evidence/t047-compact-premium/README.md`.
+
+Scope: Refine only the T046 compact visual system against the
 owner-authorized `new_compact.png`: selected-image luminance, translucent glass,
 TV typography, champagne icons/outlines and luminous active row. Preserve the
 composition, protected left half, shared QR/Iqamah semantics and all signed data.
