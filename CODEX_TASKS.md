@@ -1277,3 +1277,12 @@ original ornaments, runtime identity/data and shared presentation state.
 - Record evidence, version, gates, STANDARD/QR regressions, geometry, commits
   and remaining physical-device unknowns; update PLANS/UI spec. No new ADR,
   downloaded assets, unrelated redesign, push or PR.
+
+## T047 — premium visual art direction for RIGHT_SIDE_COMPACT
+
+Status: IN_PROGRESS. Refine only the T046 compact visual system against the
+owner-authorized `new_compact.png`: selected-image luminance, translucent glass,
+TV typography, champagne icons/outlines and luminous active row. Preserve the
+composition, protected left half, shared QR/Iqamah semantics and all signed data.
+Three screenshot passes and three backgrounds, adaptive/QR/other-screen
+regressions and repository gates precede local versioned handover. No push/PR.

@@ -1,0 +1,46 @@
+{
+  "left_half": {
+    "box": [
+      0,
+      0,
+      960,
+      1080
+    ],
+    "T046_mean_linear_luminance": 0.017866107133582877,
+    "T047_mean_linear_luminance": 0.02325464612369349,
+    "ratio": 1.3016067770007822
+  },
+  "schedule_surface_sample": {
+    "box": [
+      990,
+      265,
+      1000,
+      285
+    ],
+    "T046_mean_linear_luminance": 0.024561844560796763,
+    "T047_mean_linear_luminance": 0.04516422554627763,
+    "ratio": 1.8387961634756207
+  },
+  "clock_surface_sample": {
+    "box": [
+      1790,
+      590,
+      1800,
+      610
+    ],
+    "T046_mean_linear_luminance": 0.03201037899331913,
+    "T047_mean_linear_luminance": 0.04425376696023567,
+    "ratio": 1.3824818184586898
+  },
+  "campaign_surface_sample": {
+    "box": [
+      1234,
+      920,
+      1240,
+      940
+    ],
+    "T046_mean_linear_luminance": 0.014647156743878741,
+    "T047_mean_linear_luminance": 0.02724462235220227,
+    "ratio": 1.860062183303131
+  }
+}

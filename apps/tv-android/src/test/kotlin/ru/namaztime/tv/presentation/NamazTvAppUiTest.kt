@@ -99,6 +99,47 @@ class NamazTvAppUiTest {
     @OptIn(ExperimentalTestApi::class)
     @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
     @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    fun compactLightIsRemovedWhenSettingsOpensAndRestoredOnReturn() {
+        val preferences = FakeOperatorPreferencesRepository()
+        var view: View? = null
+        compose.setContent {
+            view = LocalView.current
+            NamazTvApp(preferences, FakePrayerScheduleRepository(schedule()),
+                MutableStateFlow(SnapshotBootstrapState.Ready(schedule().snapshotId)),
+                clock = fixedClock, tickIntervalMillis = null)
+        }
+        fun corner(): Int {
+            compose.waitForIdle()
+            var pixel = 0
+            compose.runOnIdle {
+                val root = requireNotNull(view)
+                val bitmap = android.graphics.Bitmap.createBitmap(root.width, root.height, android.graphics.Bitmap.Config.ARGB_8888)
+                root.draw(android.graphics.Canvas(bitmap))
+                pixel = bitmap.getPixel(20, 20)
+                bitmap.recycle()
+            }
+            return pixel
+        }
+        val standard = corner()
+        compose.runOnIdle { kotlinx.coroutines.runBlocking { preferences.setScheduleLayoutMode(ru.namaztime.tv.repository.ScheduleLayoutMode.RIGHT_SIDE_COMPACT) } }
+        compose.onNodeWithTag(COMPACT_RIGHT_RAIL_TAG).assertIsDisplayed()
+        val compact = corner()
+        assertTrue("selected image is visibly less dimmed", androidx.core.graphics.ColorUtils.calculateLuminance(compact) > androidx.core.graphics.ColorUtils.calculateLuminance(standard))
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).performKeyInput { pressKey(Key.Enter) }
+        assertEquals("Settings keeps the original scrim even with compact selected", standard, corner())
+        compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG).performSemanticsAction(SemanticsActions.OnClick) { it() }
+        compose.mainClock.advanceTimeBy(1_000)
+        compose.waitForIdle()
+        compose.onNodeWithTag(COMPACT_RIGHT_RAIL_TAG).assertIsDisplayed()
+        assertEquals("return restores only compact light", compact, corner())
+        compose.runOnIdle { kotlinx.coroutines.runBlocking { preferences.setScheduleLayoutMode(ru.namaztime.tv.repository.ScheduleLayoutMode.STANDARD) } }
+        assertEquals("Standard keeps the original selected-image pixels", standard, corner())
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
     fun operatorCanToggleIqamahAndSelectCompactLayoutWithDpad() {
         val preferences = FakeOperatorPreferencesRepository()
         compose.setContent {

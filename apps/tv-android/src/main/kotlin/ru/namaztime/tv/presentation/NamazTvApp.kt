@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.tv.material3.Button
@@ -124,6 +125,7 @@ fun NamazTvApp(
         initialValue = OperatorPreferences(),
     )
     val navController = rememberNavController()
+    val currentEntry by navController.currentBackStackEntryAsState()
     val coroutineScope = rememberCoroutineScope()
     val context = LocalContext.current
     val imageEnvironment = remember(context, imageSelectionEnvironment) {
@@ -347,6 +349,9 @@ fun NamazTvApp(
                 TvAtmosphericBackground(
                     styleId = preferences.backgroundStyleId,
                     customAssetVersion = customAssetVersion,
+                    compact = (currentEntry?.destination?.route ?: DISPLAY_ROUTE) == DISPLAY_ROUTE &&
+                        preferences.scheduleLayoutMode == ScheduleLayoutMode.RIGHT_SIDE_COMPACT &&
+                        !(preferences.displayMode == OperatorDisplayMode.DONATION && donationQrState != null),
                 )
                 NavHost(
                     navController = navController,

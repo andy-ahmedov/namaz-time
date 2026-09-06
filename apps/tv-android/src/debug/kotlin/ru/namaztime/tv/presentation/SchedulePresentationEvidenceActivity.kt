@@ -39,7 +39,7 @@ class SchedulePresentationEvidenceActivity : ComponentActivity() {
             .plusSeconds(intent.getIntExtra("shift", 0) * 600L)
         val english = language == "en"
         val campaign = QrCampaignUiState(
-            "synthetic-t045", "donation", if (english) "Support the mosque" else "На развитие мечети",
+            "synthetic-t045", "donation", intent.getStringExtra("title") ?: if (english) "Support the mosque" else "На развитие мечети",
             intent.getStringExtra("message"), QrCodeGenerator().generate(payload), false,
         )
         val preferences = OperatorPreferences(
@@ -70,7 +70,10 @@ class SchedulePresentationEvidenceActivity : ComponentActivity() {
             AppLanguageProvider(language) {
                 NamazTvTheme {
                     Box(Modifier.fillMaxSize()) {
-                        TvAtmosphericBackground()
+                        TvAtmosphericBackground(
+                            styleId = intent.getStringExtra("background") ?: "golden_dusk",
+                            compact = scenario == "compact" || scenario == "background",
+                        )
                         when (scenario) {
                             "background" -> Unit
                             "settings-iqamah", "settings-appearance", "settings-qr" -> SettingsShell(

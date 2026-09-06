@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Capture T046 on a controlled emulator; requires Pillow and zxing-cpp."""
+"""Capture compact presentation on a controlled emulator; requires Pillow and zxing-cpp."""
 import argparse
 import hashlib
 import io
@@ -30,6 +30,7 @@ def main():
     parser.add_argument("--profiles", nargs="+", choices=["720p", "1080p", "4k"], default=["720p", "1080p"])
     parser.add_argument("--presentation-display", type=int)
     parser.add_argument("--capture-display")
+    parser.add_argument("--extra-backgrounds", nargs="*", choices=["blue_hour", "night_minaret"], default=[])
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     records = []
@@ -43,13 +44,17 @@ def main():
             adb("shell", "wm", "density", density)
         time.sleep(1)
 
-        def capture(case, scenario="compact", language="ru", iqamah=False, qr=True, payload="short", shift=0, instant=None, message=MESSAGE):
+        background_style = "golden_dusk"
+
+        def capture(case, scenario="compact", language="ru", iqamah=False, qr=True, payload="short", shift=0, instant=None, message=MESSAGE, title=None):
             adb("shell", "am", "force-stop", "ru.namaztime.tv.debug")
             command = ["am", "start", "-W", "-n", "ru.namaztime.tv.debug/ru.namaztime.tv.presentation.SchedulePresentationEvidenceActivity",
-                       "--es", "scenario", scenario, "--es", "language", language, "--ez", "iqamah", str(iqamah).lower(),
+                       "--es", "scenario", scenario, "--es", "background", background_style, "--es", "language", language, "--ez", "iqamah", str(iqamah).lower(),
                        "--ez", "qr", str(qr).lower(), "--es", "payload", PAYLOADS[payload], "--ei", "shift", str(shift)]
             if message:
                 command += ["--es", "message", message]
+            if title:
+                command += ["--es", "title", title]
             if instant:
                 command += ["--es", "instant", instant]
             if profile == "4k":
@@ -65,7 +70,7 @@ def main():
             name = f"{profile}-{case}.png"
             (args.output / name).write_bytes(raw)
             record = dict(name=name, scenario=scenario, size=size, density=density, language=language,
-                          iqamah=iqamah, qr=qr, payload=payload, shift=shift, instant=instant,
+                          iqamah=iqamah, qr=qr, payload=payload, shift=shift, instant=instant, background=background_style,
                           sha256=hashlib.sha256(raw).hexdigest())
             if qr and scenario != "background":
                 record["decode_pass"] = PAYLOADS[payload] in [result.text for result in zxingcpp.read_barcodes(image)]
@@ -92,7 +97,13 @@ def main():
         for shift in range(1, 6):
             capture(f"shift-{shift}", shift=shift)
         capture("standard", scenario="standard", message=None)
-    assert all(record.get("decode_pass", True) and record.get("left_half_unchanged", True) for record in records)
+        if args.extra_backgrounds:
+            capture("maximum-copy", title=("Информация о работе и мероприятиях нашей общины. " * 4)[:160],
+                    message="Первая строка\nВторая строка\nТретья строка\nЧетвёртая строка\nПятая строка\nШестая строка")
+        for background_style in args.extra_backgrounds:
+            background = capture(background_style + "-background", scenario="background", qr=False)
+            capture(background_style + "-compact")
+    assert all(record.get("decode_pass", True) and record.get("blur_055_pass", True) and record.get("left_half_unchanged", True) for record in records)
 
 
 if __name__ == "__main__":

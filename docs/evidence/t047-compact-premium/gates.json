@@ -1,0 +1,42 @@
+{
+  "repository": {
+    "command": "GOCACHE=/tmp/namaz-time-go-cache GRADLE_USER_HOME=/tmp/namaz-time-gradle make docs-check test lint test-android-all",
+    "exit_code": 0,
+    "log": "/tmp/t047-gates.log",
+    "log_sha256": "676a2d02e5d1967a423c0adfc5252c0a71ced78f4eb6bd472fb14465b69d1f13"
+  },
+  "go_race": {
+    "command": "GOCACHE=/tmp/namaz-time-go-cache go test -race ./...",
+    "exit_code": 0,
+    "log": "/tmp/t047-race.log",
+    "log_sha256": "5705847688a25ade1b8e542f5fb08335821342ec4ebea11a99d2127aeddbafb4"
+  },
+  "security": {
+    "command": "GOCACHE=/tmp/namaz-time-go-cache make security-go",
+    "exit_code": 0,
+    "log": "/tmp/t047-security.log",
+    "log_sha256": "a32d5c22712dfd83ab1cf823a127d0b72e1b9a8049571c2ff1d598b3484b5216"
+  },
+  "secrets": {
+    "command": "make secret-scan",
+    "exit_code": 0,
+    "log": "/tmp/t047-secrets.log",
+    "log_sha256": "b4d798d1ac3200fa07ea7982eeeb330359da3cf08a4ad89eef70e09f3fb2dfe6"
+  },
+  "targeted_android": {
+    "command": "GRADLE_USER_HOME=/tmp/namaz-time-gradle ./gradlew --no-daemon --no-build-cache :apps:tv-android:testDebugUnitTest --tests '*CompactReferenceTest' --tests '*CompactContrastTest' --tests '*RenderedQrTest' --tests '*NamazTvAppUiTest.compact*'",
+    "exit_code": 0,
+    "log": "/tmp/t047-targeted.log",
+    "log_sha256": "99482ac8efcd66ee476e7a881e272724fb9e7025ee4542a4b4f6a34d650b7875"
+  },
+  "android_tests": {
+    "tests": 501,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "postgres_restore": {
+    "status": "not run",
+    "basis": "T047 changes no backend/schema/provider/publication path; TEST_STRATEGY lists the explicit integration gate but does not require it for every visual-only task. Owner requests PostgreSQL only if completion policy mandates it."
+  }
+}

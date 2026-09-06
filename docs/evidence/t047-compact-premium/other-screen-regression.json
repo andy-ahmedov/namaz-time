@@ -1,0 +1,22 @@
+{
+  "standard": {
+    "bbox": null,
+    "changed_pixels": 0
+  },
+  "donation": {
+    "bbox": null,
+    "changed_pixels": 0
+  },
+  "settings-appearance": {
+    "bbox": null,
+    "changed_pixels": 0
+  },
+  "settings-qr": {
+    "bbox": null,
+    "changed_pixels": 0
+  },
+  "settings-iqamah": {
+    "bbox": null,
+    "changed_pixels": 0
+  }
+}

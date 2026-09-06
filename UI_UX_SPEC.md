@@ -508,3 +508,57 @@ Both layouts still consume one `PrayerDisplayUiState` and existing clock,
 engine, Iqamah policy and campaign resolution. STANDARD/Donation geometry and
 QR primitive are unchanged. The application patch is 0.6.1 / code 8; no Room,
 snapshot, source, permission or preference migration is needed.
+
+## T047 — compact premium visual treatment
+
+`PROPOSAL`: T047 refines the T046 composition using owner-authorized
+`new_compact.png` as the `CONFIRMED_PUBLIC` visual target, including glass,
+luminance hierarchy, typography, outlines and active-row quality. The owner
+explicitly permits this visual use; the reference is not packaged or committed,
+and its branding, example identity/times and QR badge are not used.
+
+`CompactVisualStyle` is an explicit compact-only palette. Graphite/navy glass
+uses a 72% opaque lighter top and 82% opaque darker bottom, a neutral 0.7 dp
+outline, restrained inset top reflection and a faint warm surface light.
+Campaign outline and filled divider diamonds use champagne. No real-time blur,
+heavy shadow, additional image or global saturation/brightness filter is used.
+Shared theme/panel defaults, Settings and standalone Donation stay unchanged.
+
+The selected image still uses the single background renderer, including its
+existing custom-image fallback. Only the compact public display uses a 12%
+global navy scrim and a horizontal localized scrim: transparent through 35%
+of the screen, smoothly reaching 54% at the midpoint and held across the rail.
+The brighter photographic left area and translucent foreground preserve depth;
+the additional right scrim provides a >=4.5:1 modeled text contrast even on a
+white custom image. Opening Settings restores the original background scrim.
+
+The rail/safe area and equal columns remain T046. The header gains 8 normalized
+dp of internal height (main begins at y=116 instead of 108); ordinary campaign
+copy changes its measured height by only a few dp. Long accepted copy still
+expands the campaign. The mosque name fits within symmetric Settings clearance,
+with a nominal 34 sp semibold size; pill 15 sp and larger crescent; locality
+remains secondary with wider ornaments. At normalized 540 dp height, schedule
+heading is nominally 18 sp, prayer names 18 sp, OFF adhan 24 sp semibold;
+Iqamah ON preserves distinct columns and adaptive sizes. Prayer icons grow to
+28 dp OFF / 21 dp ON with 5% rounded stroke, opted in only for compact.
+
+Countdown (nominal 50 sp) leads event name (32 sp) and label (17 sp); clock
+(nominal 48 sp) leads date/weekday (15/13 sp). Key values use semibold tabular
+numerals. Full engine-produced strings and accessible seconds are preserved;
+seconds are styled at 60% of the main digit size to emphasize hours/minutes.
+Actual text measurement fits every string without ellipsis, including tomorrow,
+Jumu'ah and maximum campaign copy. Extreme copy retains T046's smaller readable
+sizes. The next state also has a narrow leading marker, matching next-card
+name and spoken suffix; color is not the only indication.
+
+Active rows use a translucent warm-to-clear horizontal gradient, luminous
+outline and leading accent, without an opaque orange fill. Campaign kind/title/
+ordinary subtitle grow to 24/20/16 sp; long titles and six-line messages retain
+the existing fitting policy. QR remains 112 normalized dp or at least two
+physical pixels per module when dense: the shared generator, integer raster,
+quiet zone and no-overlay/no-badge contract are unchanged.
+
+Evidence: [T047 visual review](docs/evidence/t047-compact-premium/README.md).
+Version 0.6.2/code 9; no preference, Room, schedule, source or permission migration.
+STANDARD is checked using identical fixed-clock data. Physical TV distance,
+phone-camera QR and OEM acceptance remain `UNKNOWN`.

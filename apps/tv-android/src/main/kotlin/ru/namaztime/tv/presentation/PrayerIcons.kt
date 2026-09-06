@@ -22,11 +22,12 @@ internal fun PrayerIcon(
     modifier: Modifier = Modifier,
     tint: Color = NamazTvTheme.colors.accent,
     exposeTestTag: Boolean = true,
+    strokeFraction: Float = TV_ICON_STROKE_FRACTION,
 ) {
     Canvas(
         if (exposeTestTag) modifier.testTag("$PRAYER_ICON_TEST_TAG_PREFIX$prayerId") else modifier,
     ) {
-        val stroke = Stroke(width = size.minDimension * TV_ICON_STROKE_FRACTION, cap = StrokeCap.Round)
+        val stroke = Stroke(width = size.minDimension * strokeFraction, cap = StrokeCap.Round)
         val center = Offset(size.width / 2f, size.height / 2f)
         val radius = size.minDimension * 0.205f
         fun horizon(y: Float, startX: Float = 0.16f, endX: Float = 0.84f) {

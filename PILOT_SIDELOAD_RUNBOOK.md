@@ -53,7 +53,7 @@ certificate, snapshot or trust assets differ. Debug uses the separate
 `ru.namaztime.tv.debug` application ID and debug key, so it cannot accidentally
 occupy the retained mosque application's identity.
 
-The current handover version is `0.6.1-pilot.1` with `versionCode=8`. Version
+The current handover version is `0.6.2-pilot.1` with `versionCode=9`. Version
 values come only from `apps/tv-android/version.properties`; do not hand-edit an
 APK filename or manifest to simulate another build.
 
@@ -121,7 +121,7 @@ on a physical television before T045. Its cause is `UNKNOWN`; the central
 physical root cause. T045 removes both, keeps at least four quiet-zone modules,
 and supplies a new code-7 APK without changing the signed schedule.
 
-1. Install the exact `0.6.1-pilot.1` handover APK in place. Verify Diagnostics
+1. Install the exact `0.6.2-pilot.1` handover APK in place. Verify Diagnostics
    and the external manifest agree on commit, version/code and snapshot hash.
 2. Record TV/box model, OS, panel resolution/scaling/overscan, picture mode,
    sharpness, brightness, camera/phone model and lighting. Keep the existing

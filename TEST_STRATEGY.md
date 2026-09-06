@@ -714,3 +714,23 @@ separately. A genuine 3840×2160 Presentation avoids the primary TV display's
 1920 px UI cap; upscaled/clamped images are rejected. Two API 36/1080p
 reference comparison passes and a fixed-clock STANDARD baseline pixel diff
 are separate visual gates. Physical camera/TV acceptance remains `UNKNOWN`.
+
+## T047 compact premium verification
+
+T046 adaptive/QR coverage remains active. Native text tests additionally require
+OFF adhan growth, relative countdown/name/label and clock/date hierarchy,
+ordinary campaign readability and exact full clock/countdown strings. A native
+app-shell regression traverses STANDARD → compact → Settings → compact →
+STANDARD and checks original/bright background pixels through real navigation.
+A color-compositing regression bounds header, glass and active-row text at
+>=4.5:1 on a white custom image using the actual compact scrim/surface roles.
+
+`make test-android-t047-emulator` reuses the controlled presentation capture tool
+with Blue Hour and Night Minaret in addition to Golden Dusk. Set
+`T047_EVIDENCE_PYTHON` to a Python with Pillow/zxing-cpp and
+`T047_EVIDENCE_ARGS` for output/profiles and actual secondary display IDs.
+The runner verifies dimensions, exact QR/0.55 px blur decode and unchanged left
+half against each matching background. It also captures maximum campaign copy.
+Full/crop screenshots for three deliberate 1080p visual passes and identical
+STANDARD/Donation/Settings before-after comparisons are separate visual evidence.
+Physical-TV and camera-distance acceptance remain `UNKNOWN`.

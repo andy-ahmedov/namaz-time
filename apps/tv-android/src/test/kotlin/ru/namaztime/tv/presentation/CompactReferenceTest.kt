@@ -91,8 +91,22 @@ class CompactReferenceTest {
                         .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(timeLayouts) }
                     val root = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG).getUnclippedBoundsInRoot()
                     val scale = (root.bottom - root.top).value / 540f
-                    assertTrue("OFF prayer times must be larger than T045's 20sp at 540dp",
-                        timeLayouts.single().layoutInput.style.fontSize.value > 20f * scale)
+                    assertTrue("OFF prayer times must be larger than T046's 22sp at 540dp",
+                        timeLayouts.single().layoutInput.style.fontSize.value > 22f * scale)
+                    fun font(tag: String): Float {
+                        val result = mutableListOf<TextLayoutResult>()
+                        compose.onNodeWithTag(tag, useUnmergedTree = true)
+                            .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(result) }
+                        return result.single().layoutInput.style.fontSize.value
+                    }
+                    assertTrue("countdown leads the next prayer hierarchy", font(COUNTDOWN_TEST_TAG) > font(NEXT_EVENT_NAME_TAG))
+                    assertTrue("next prayer leads its label", font(NEXT_EVENT_NAME_TAG) > font(NEXT_EVENT_LABEL_TAG))
+                    assertTrue("clock leads date", font(LOCAL_CLOCK_VALUE_TAG) > font(DATE_LABEL_TAG) * 2)
+                    assertTrue("adhan leads prayer name", font("compact-adhan-fajr") > font("compact-prayer-name-fajr"))
+                    assertTrue("campaign title readable at TV size", font(QR_CAMPAIGN_TITLE_TAG) >= 19 * scale)
+                    assertTrue("ordinary campaign message readable at TV size", font(QR_CAMPAIGN_SUBTITLE_TAG) >= 15 * scale)
+                    compose.onNodeWithTag(COUNTDOWN_TEST_TAG).assertTextEquals(state.value.countdown)
+                    compose.onNodeWithTag(LOCAL_CLOCK_VALUE_TAG).assertTextEquals(state.value.mosqueLocalTime)
                     for (tag in listOf(COMPACT_RIGHT_RAIL_TAG, COMPACT_HEADER_TAG, PRAYER_LIST_CARD_TAG,
                         NEXT_EVENT_CARD_TAG, LOCAL_CLOCK_CARD_TAG, QR_CAMPAIGN_PANEL_TAG, QR_CODE_IMAGE_TAG)) {
                         println("T046 geometry $tag ${compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot}")

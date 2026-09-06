@@ -131,3 +131,9 @@ T046_EVIDENCE_ARGS ?= --output artifacts/t046-emulator --profiles 720p 1080p
 .PHONY: test-android-t046-emulator
 test-android-t046-emulator:
 	$(T046_EVIDENCE_PYTHON) scripts/android-t046-evidence.py $(T046_EVIDENCE_ARGS)
+
+T047_EVIDENCE_PYTHON ?= python3
+T047_EVIDENCE_ARGS ?= --output /tmp/namaztime-t047-evidence
+.PHONY: test-android-t047-emulator
+test-android-t047-emulator:
+	$(T047_EVIDENCE_PYTHON) scripts/android-t046-evidence.py --extra-backgrounds blue_hour night_minaret $(T047_EVIDENCE_ARGS)

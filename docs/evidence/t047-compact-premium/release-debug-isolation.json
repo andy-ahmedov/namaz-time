@@ -1,0 +1,14 @@
+{
+  "apk_sha256": "d9ba5387d7852c9161ef8153164aa1af1964a1f05088662f2c2f343235652aa3",
+  "debug_only_types_absent": {
+    "WatermarkEvidenceActivity": true,
+    "DeviceSetupEvidenceActivity": true,
+    "SchedulePresentationEvidenceActivity": true,
+    "DevelopmentScheduleSelection": true,
+    "DevelopmentScheduleSelectionStore": true,
+    "InMemoryDevelopmentScheduleSelectionStore": true,
+    "DevelopmentDeviceSetupGateway": true,
+    "DevelopmentPrayerScheduleRepository": true,
+    "SharedPreferencesDevelopmentScheduleSelectionStore": true
+  }
+}

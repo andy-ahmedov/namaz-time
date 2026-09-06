@@ -302,6 +302,7 @@ internal fun TvAtmosphericBackground(
     styleId: String = DEFAULT_BACKGROUND_STYLE_ID,
     modifier: Modifier = Modifier,
     customAssetVersion: Long = 0L,
+    compact: Boolean = false,
 ) {
     val style = TvBackgroundStyle.fromId(styleId)
     val colors = NamazTvTheme.colors
@@ -325,10 +326,18 @@ internal fun TvAtmosphericBackground(
                 .fillMaxSize()
                 .background(
                     colors.backgroundBottom.copy(
-                        alpha = if (customAvailable) 0.44f else style.scrimAlpha,
+                        alpha = if (compact) CompactVisualStyle.globalScrimAlpha else if (customAvailable) 0.44f else style.scrimAlpha,
                     ),
                 ),
         )
+        if (compact) {
+            Box(Modifier.fillMaxSize().background(Brush.horizontalGradient(
+                0f to Color.Transparent,
+                .35f to Color.Transparent,
+                .50f to CompactVisualStyle.cinematicScrim.copy(alpha = CompactVisualStyle.railScrimAlpha),
+                1f to CompactVisualStyle.cinematicScrim.copy(alpha = CompactVisualStyle.railScrimAlpha),
+            )))
+        }
     }
 }
 
@@ -393,6 +402,7 @@ internal fun TvFadingDiamondDivider(
     modifier: Modifier = Modifier,
     tint: Color = NamazTvTheme.colors.accentOutline,
     diamondPosition: OrnamentDiamondPosition = OrnamentDiamondPosition.CENTER,
+    filledDiamond: Boolean = false,
 ) {
     Canvas(modifier) {
         val centerY = size.height / 2f
@@ -455,6 +465,7 @@ internal fun TvFadingDiamondDivider(
             lineTo(centerX - diamondRadius, centerY)
             close()
         }
+        if (filledDiamond) drawPath(diamond, tint)
         drawPath(
             diamond,
             tint.copy(alpha = 0.12f),

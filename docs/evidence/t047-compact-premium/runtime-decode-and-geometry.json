@@ -1,0 +1,1532 @@
+[
+  {
+    "name": "720p-background.png",
+    "scenario": "background",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "3a064d93e6e9abfe00da72a1a49b1ad4ac886def77e17026da15ed7aabe2d816"
+  },
+  {
+    "name": "720p-target.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "51ddb792bbc6023402813919609db00b4978b9f24f2b64a0fba6a02054717f5d",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-iqamah-on.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "bbfc68651b677779489f72d3a1d0282c50d042e34e57847ddd394b11933e7573",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-no-qr.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "864492621c83bfb52178d987c214173486f16ab245c3ed455da399e0262fe1ab",
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-english.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "en",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "1233a3c5716f78efd081707920c480086ef566f8695bfeca513174a92a7d291e",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-english-iqamah.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "en",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "8d5d3c2b405f9e385ff5e8563b8a9731bce9c1712c24db02e446f9348cb943f7",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-tomorrow.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": "2026-08-19T19:00:00Z",
+    "background": "golden_dusk",
+    "sha256": "1149a3aeb993d0ec96dbdb0477b227348bea4e86a7c24b24ee63f71277766f68",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      644,
+      34,
+      1214,
+      686
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-six-line-message.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "605bd99e266c0208349bd5b86118327cd02af8bb10e8b8ce0cda2a06dfea0773",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-qr-medium.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "49fd7bd839dc1aac718e1ec2f1ef4b4faf6b55d5e94c9f4165c89139cd2d75c5",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-qr-long.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "cb873df577bc558ff4ea25861b0c3a5c8ab18836754e6701ce8c8c5f9939bc9d",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-shift-1.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 1,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "641532b141d07a056b7ccbbccdc6a77891fbedcf21aa0320152536170db1d2f0",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      642,
+      36,
+      1212,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-shift-2.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 2,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "47c437d4b0acb50c4c373051eb458c2a35ee8edc1092878982961d34657e4fe8",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      642,
+      32,
+      1212,
+      684
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-shift-3.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 3,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "126ce34190fb08a16be9673b2bdc30ed57664e6ee16ee48128e6b0b300fb16cc",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      32,
+      1216,
+      684
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-shift-4.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 4,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "db63628fd36b373cf857814ff4f36ad2a06348d7a0f82f0459d55bad0da38ff1",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      644,
+      34,
+      1214,
+      686
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-shift-5.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 5,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "eae889c162e5841b9dcad396de664a3a6a5a5f1761aea4184caa8be77e017741",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      34,
+      1216,
+      686
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-standard.png",
+    "scenario": "standard",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "db5318e4443e4e396e10802ca2a1808e31820407a5f0f14cfb66d814cf81f75d",
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "720p-maximum-copy.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "f63eb99a1be7103fd442725dc69494ea3a76c20e512bfbaf9ac329e9109b7944",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-blue_hour-background.png",
+    "scenario": "background",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "blue_hour",
+    "sha256": "484bfa6a99bb839a1b84ed08bf9113abce4a9afd1066d2df7c1fd927a785271b"
+  },
+  {
+    "name": "720p-blue_hour-compact.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "blue_hour",
+    "sha256": "98d1350cf0d6845c26839eb4166b65aea66e297e85f2f145f4506b9cb3904af3",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-night_minaret-background.png",
+    "scenario": "background",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "night_minaret",
+    "sha256": "c9e83b30e243240a84433d3fbd843b12425b2d3fe02ba17235186f86a9772537"
+  },
+  {
+    "name": "720p-night_minaret-compact.png",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "density": 160,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "night_minaret",
+    "sha256": "200c195da491fae9f89b885c8864265774c53ead4c736acaa065f5dab30640d3",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      646,
+      36,
+      1216,
+      688
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-background.png",
+    "scenario": "background",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "1f10b42a633e6035cfb9fed5d5923aa0c0da917e2ae39982166e19758a37dd54"
+  },
+  {
+    "name": "1080p-target.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "a3c420119eaaaef5860d67728e344e8ab37ce55aef1eac4f9aed4a13eaee30f8",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-iqamah-on.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "2c870d8052b26874cb519b49239a7455287837ad199451a350bc31758dafb89d",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-no-qr.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "4d5e48f7e489afe7a8347dfa98b86af738da1cb000ad41dcda0aaa73da382f9b",
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-english.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "en",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "d2c3f4da51594ca30f03f84d5ac1b501e9bdc37e45d3674f6019ac99a150b8d8",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-english-iqamah.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "en",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "d3000b10b6f2b0eb7b44f3968e0c2be00b50f85229c78381e4454e601aed7ba8",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-tomorrow.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": "2026-08-19T19:00:00Z",
+    "background": "golden_dusk",
+    "sha256": "a38952adca219e3d8b3314cc20edfde5345f55ba74cfa8960a78dedcd8d7c39f",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      968,
+      52,
+      1820,
+      1027
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-six-line-message.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "3affe4232ddd9c6abf0cccf2f21cd313715047845552bb9bd98a225d3c64f82c",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-qr-medium.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "96343faadafa7471ac0609d6239c9391926be3a54852b281b6708720291c5afd",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-qr-long.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "1ed180435455332466531bd7eff0189d9fc102ebdafca803e09d059c0c8dcf03",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-shift-1.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 1,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "769e42f7863a3357beccbacc0133985231c3d693054abe628c7eb5f98e8cb1ea",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      964,
+      56,
+      1816,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-shift-2.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 2,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "5f0dc3cfcaea964f9a18e6b7108ca32fe20cadf6b892313447a9c1d5eade98ea",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      964,
+      48,
+      1816,
+      1023
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-shift-3.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 3,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "6af492ee93cd9713a55bc6a9392951bf65f6ebe680d0061d89db4dd6fa0e0ca0",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      48,
+      1824,
+      1023
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-shift-4.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 4,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "fbdfd7a91a3bac94da9979007c11bc6bceb8c6ab28f32fd3a6bde8fa04592140",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      968,
+      52,
+      1820,
+      1027
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-shift-5.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 5,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "4fbe1d9fe886ab07fd3f61b5389af91afd341076283c6190f548bdb632292044",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      52,
+      1824,
+      1027
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-standard.png",
+    "scenario": "standard",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "2e0a407ed70d541368cf71160801d96a20c5d69839ee3c861cabb09be249a9c6",
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-maximum-copy.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "c0f33a4c859a2d5dac6f03b4abb6f9738a35afddd13c8e44a6f9e288cccb407d",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-blue_hour-background.png",
+    "scenario": "background",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "blue_hour",
+    "sha256": "e7c4be7a54619fccbc964fcb98934dfcda80dad65764255831c21d5b8637e233"
+  },
+  {
+    "name": "1080p-blue_hour-compact.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "blue_hour",
+    "sha256": "c6640739c3614694300871538c07592171b5901d64dd483a4f5410ab4eb298bc",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-night_minaret-background.png",
+    "scenario": "background",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "night_minaret",
+    "sha256": "07692fbaa9868344e20ea7e6292c54c98fe2c4df8ac9a7ec482fb92f56800481"
+  },
+  {
+    "name": "1080p-night_minaret-compact.png",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "density": 320,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "night_minaret",
+    "sha256": "9a4f68166a1b2bf40f914e8fb33d8590c1a61d1d7268d8b8c349625e2eb3b8a8",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      972,
+      56,
+      1824,
+      1031
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-background.png",
+    "scenario": "background",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "29e2f74f59c5981086a919cd0ac41eeac2de4a0e695eb9aa3091ba10ae573618"
+  },
+  {
+    "name": "4k-target.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "2c7da68dfaee0e4654ce29e1ea4f05d99a3f136d9bdd0afba624b2fcbea745c7",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-iqamah-on.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "dd5f8534ef8436135a1cd4b6c869d512ac2ff99f0ec09035264bf89153cd8b39",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-no-qr.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "8f19560db66f5ce2a74393a9d75eeaddc2425c27d2bb940bdaad90aa89015933",
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-english.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "en",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "e04f1ba723d938928f3808caf2d92b3da8845f603fafbddec116b03852cb0079",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-english-iqamah.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "en",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "1e174bbb9095bea8e504c88a2a83db0a98aa9b4f1c4b999647c83ebdee91110d",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-tomorrow.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": "2026-08-19T19:00:00Z",
+    "background": "golden_dusk",
+    "sha256": "4eb13c0a52aa2e00583d61b61396c927b86557aff30154f6fa3dca73f5091ac1",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1932,
+      102,
+      3642,
+      2054
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-six-line-message.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "9b7216f1f8364cbd25b95b56c439e07b8c67dbc9b8d0ff60a6bf8db17ad39f1e",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-qr-medium.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "5b42f7680dfeab6c2ce5e5204af9c59969599a797909ffe9b57e2d4a838b7d0c",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-qr-long.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "6ed9809ac267c437177af470c2e46ef896609cf96545576481957e8399ce55b4",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-shift-1.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 1,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "671609e174beafc312101822d244f2bb71535ded81e8a8282ccd89ce57af61fd",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1926,
+      108,
+      3636,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-shift-2.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 2,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "6e56ad8d96547f4201192a0cb9c1e27ccdd2fddc592a12f39ab37c050f0a24d0",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1926,
+      96,
+      3636,
+      2048
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-shift-3.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 3,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "9765d90a7cf43ac3f6a12795ddc122c16f06bc39c642b3202003feda37937165",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      96,
+      3648,
+      2048
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-shift-4.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 4,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "e4703cec0f05e3defc51814f95ce083cd8efa551d18f2a649558b2f0d43a6414",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1932,
+      102,
+      3642,
+      2054
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-shift-5.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 5,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "6a7506f46ae6d03cb6edb967781a84e5b8349ec0247760c6f6ca28d2894b4d31",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      102,
+      3648,
+      2054
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-standard.png",
+    "scenario": "standard",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "54e6d8b5773a7ed348811f1fc4dea556c5316ca8733b36ded995fd24dc878811",
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "4k-maximum-copy.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "golden_dusk",
+    "sha256": "e269af3d9426660b23af82efcdf98e0151e5643bcdae1fcaa3f8b01e9bf7eebb",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-blue_hour-background.png",
+    "scenario": "background",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "blue_hour",
+    "sha256": "8acbb55eb1418ceb87f5f17b8ab81228c236801d27f3127c1643ca9bb49417c7"
+  },
+  {
+    "name": "4k-blue_hour-compact.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "blue_hour",
+    "sha256": "3ab42a461b4e09463fb3fe7f1e8ce57c3fc39d9700db22a12fa4241ac26a59e4",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-night_minaret-background.png",
+    "scenario": "background",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "night_minaret",
+    "sha256": "7a7ee9a3a470cdc6b73dacfe9aa47fd2e0cf32e5598769b0c7583f46d7d036fa"
+  },
+  {
+    "name": "4k-night_minaret-compact.png",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "density": 480,
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "instant": null,
+    "background": "night_minaret",
+    "sha256": "3da49d9199b3b5d104b8b9ed9150ba76344de7d5380f1618828ca8c4a57d73f7",
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1938,
+      108,
+      3648,
+      2060
+    ],
+    "left_half_unchanged": true
+  }
+]

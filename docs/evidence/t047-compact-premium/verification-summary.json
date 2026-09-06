@@ -1,0 +1,20 @@
+{
+  "frames": 63,
+  "qr_decodes": 51,
+  "blur_decodes": 51,
+  "protected_half_comparisons": 51,
+  "minimum_foreground_free_left_percent": 50.15625,
+  "standard_changed_pixels": 0,
+  "other_screen_regressions_changed_pixels": 0,
+  "native_4k_size": [
+    3840,
+    2160
+  ],
+  "api": 36,
+  "backgrounds": [
+    "golden_dusk",
+    "blue_hour",
+    "night_minaret"
+  ],
+  "physical_tv_acceptance": "UNKNOWN"
+}
