@@ -11,8 +11,8 @@ Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 | Baseline and reference | DONE | clean main/origin `6e86d61`, CI 34037688038 success, 0.6.1/code 8; owner authorizes new_compact.png visual target; T046 is BEFORE |
 | Compact visual system | DONE | isolated glass/color roles, layout-aware selected background, hierarchy/icons/active row; T046 composition and QR contract retained |
 | Three visual passes | DONE | API 36/1080p full/crop after surface, hierarchy, final polish; Golden Dusk/Blue Hour/Night Minaret |
-| Adaptive and regression evidence | DONE | 63 API 36 frames, 51/51 QR and blur decodes, 51/51 protected-half checks, min free-left 50.15625%; native 4K; zero changed pixels in STANDARD/Donation/three Settings sections; 501 Android tests |
-| Gates and handover | IN_PROGRESS | docs/test/lint/strict Android (501 tests), Go race/security and secret gates PASS; version 0.6.2/code 9 and unchanged snapshot; clean checkpoint precedes signed packaging; no push/PR |
+| Adaptive and regression evidence | DONE | 63 API 36 frames, 51/51 QR and blur decodes, 51/51 protected-half checks, min free-left 50.15625%; native 4K; zero changed pixels in STANDARD/Donation/three Settings sections; 504 Android tests |
+| Gates and handover | IN_PROGRESS | docs/test/lint/strict Android (504 tests), Go race/security and secret gates PASS; version 0.6.2/code 9 and unchanged snapshot; clean checkpoint precedes signed packaging; no push/PR |
 
 ## T046 — RIGHT_SIDE_COMPACT owner-reference fidelity
 

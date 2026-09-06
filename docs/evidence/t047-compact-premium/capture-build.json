@@ -2,13 +2,13 @@
   "baseline_commit": "6e86d616da9785fcab7d5da2fb35c8af22f359ef",
   "baseline_ci_run": 34037688038,
   "baseline_ci_conclusion": "success",
-  "capture_apk": "/tmp/t047-capture.apk",
-  "capture_apk_sha256": "054e12678b7f5c16fc85c72c9818e766fead249350de91a792faba3320eca48b",
+  "capture_apk": "/tmp/t047-final-capture.apk",
+  "capture_apk_sha256": "25d4a163ec23777bad988211a0eb438fba58f2a56a852e78f0e067da16c90add",
   "capture_variant": "debug",
   "capture_version": "0.6.2-dev",
   "capture_version_code": 9,
   "capture_build_state": "dirty",
-  "capture_build_commit": "6e86d616da9785fcab7d5da2fb35c8af22f359ef",
+  "capture_build_commit": "c4eae9365495388e7e713f75c6fa77666150db5d",
   "reference_sha256": "020646bc06325a3d6a5047c73d9cc2d938fcceca697424feed205a52733811ca",
   "reference_basis": "Owner explicitly authorizes visual art direction in T047; no branding, sample identity/time or QR logo copying. Local reference only.",
   "snapshot_sha256": "78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b",
@@ -20,5 +20,10 @@
     "build_commit": "0bbe7d0be4c7d1b659f7fe6d6cfb9bd637a41fb6",
     "build_state": "dirty",
     "basis": "Verified installed T046 final evidence APK; source subsequently committed as c878d5e with documentation-only 6e86d61."
+  },
+  "visual_pass3_apk": {
+    "capture_apk": "/tmp/t047-capture.apk",
+    "capture_apk_sha256": "054e12678b7f5c16fc85c72c9818e766fead249350de91a792faba3320eca48b",
+    "capture_build_commit": "6e86d616da9785fcab7d5da2fb35c8af22f359ef"
   }
 }

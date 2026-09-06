@@ -553,7 +553,7 @@ name and spoken suffix; color is not the only indication.
 
 Active rows use a translucent warm-to-clear horizontal gradient, luminous
 outline and leading accent, without an opaque orange fill. Campaign kind/title/
-ordinary subtitle grow to 24/20/16 sp; long titles and six-line messages retain
+ordinary subtitle grow to 24/20/16 sp; long prose uses 12 sp (up from 10), while long titles and six-line messages retain
 the existing fitting policy. QR remains 112 normalized dp or at least two
 physical pixels per module when dense: the shared generator, integer raster,
 quiet zone and no-overlay/no-badge contract are unchanged.

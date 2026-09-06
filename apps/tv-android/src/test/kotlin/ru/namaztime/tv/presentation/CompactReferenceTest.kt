@@ -30,6 +30,31 @@ class CompactReferenceTest {
     @Test @Config(qualifiers = "w1280dp-h720dp-land-xxhdpi")
     fun referenceHierarchyAndAllowedCopy4k() = verify()
 
+    @Test @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun longCampaignParagraphUsesAvailableSpace1080p() = verifyLongParagraph()
+
+    @Test @Config(qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun longCampaignParagraphUsesAvailableSpace720p() = verifyLongParagraph()
+
+    @Test @Config(qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun longCampaignParagraphUsesAvailableSpace4k() = verifyLongParagraph()
+
+    private fun verifyLongParagraph() {
+        val message = "Every sincere contribution supports the mosque, helps our community, welcomes every visitor, and becomes lasting good."
+        compose.setContent { NamazTvTheme {
+            CompactPrayerDisplay(fixture().copy(campaign = fixture().campaign!!.copy(subtitle = message)), {}, requestInitialFocus = false)
+        } }
+        val layouts = mutableListOf<TextLayoutResult>()
+        compose.onNodeWithTag(QR_CAMPAIGN_SUBTITLE_TAG)
+            .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        val layout = layouts.single()
+        assertFalse(layout.hasVisualOverflow)
+        val root = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG).getUnclippedBoundsInRoot()
+        val scale = (root.bottom - root.top).value / 540f
+        assertTrue("long paragraphs must grow beyond T046's 10sp", layout.layoutInput.style.fontSize.value >= 12f * scale)
+        compose.onNodeWithTag(QR_CAMPAIGN_SUBTITLE_TAG).assertTextEquals(message)
+    }
+
     private fun verify() {
         val state = mutableStateOf(fixture())
         compose.setContent { NamazTvTheme { CompactPrayerDisplay(state.value, {}, requestInitialFocus = false) } }

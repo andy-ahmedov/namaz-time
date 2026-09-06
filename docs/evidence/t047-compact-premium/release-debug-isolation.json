@@ -1,5 +1,5 @@
 {
-  "apk_sha256": "d9ba5387d7852c9161ef8153164aa1af1964a1f05088662f2c2f343235652aa3",
+  "apk_sha256": "a793e920263ce7b94d3e4ad0106096dc3dbfe74e13a93219f2e471ba471ea4c4",
   "debug_only_types_absent": {
     "WatermarkEvidenceActivity": true,
     "DeviceSetupEvidenceActivity": true,

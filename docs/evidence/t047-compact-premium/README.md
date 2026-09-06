@@ -83,13 +83,16 @@ Allowed extreme copy expands the campaign through the existing fit policy.
 Nominal 540 dp-height type sizes: mosque 34 semibold with Settings clearance;
 pill 15; heading 18; names 18 and OFF adhan 24 semibold; next label/name/countdown
 17/32/50; date/weekday/clock 15/13/48; campaign kind/title/message 24/20/16.
-Actual font metrics fit long labels; 160-character titles and six-line messages
+Long prose uses 12 sp (previously 10); signed-pilot visual review exposed the
+old automatic reduction despite available space, and three native-density
+regressions now cover the larger paragraph. Actual font metrics fit long labels;
+160-character titles and six-line messages
 retain the previous smaller limits. All six rows, distinct Iqamah values and
 Jumu'ah sessions remain visible. Tabular numbers retain every accessible digit.
 
 ## Verification and reproduction
 
-[Gate record](gates.json): 501 Android tests, no failures/errors/skips;
+[Gate record](gates.json): 504 Android tests, no failures/errors/skips;
 `make docs-check test lint test-android-all`, `go test -race ./...`,
 `make security-go` and full-history `make secret-scan` pass. Release DEX excludes
 all nine [debug-only types](release-debug-isolation.json). PostgreSQL/restore

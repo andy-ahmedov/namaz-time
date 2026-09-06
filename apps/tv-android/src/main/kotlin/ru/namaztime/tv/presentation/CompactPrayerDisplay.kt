@@ -80,7 +80,11 @@ internal fun CompactPrayerDisplay(
             val qrSize = maxOf((112 * scale).dp, with(density) { (campaign.qrCode.moduleCount * 2).toDp() })
             val textWidth = with(density) { (railWidth - qrSize - (52 * scale).dp).roundToPx() }
             val titleSize = (if (campaign.title.length > 55) 12 else 20) * scale
-            val subtitleSize = (if (campaign.subtitle.orEmpty().length > 100 || campaign.subtitle.orEmpty().count { it == '\n' } >= 3) 10 else 16) * scale
+            val subtitleSize = when {
+                campaign.subtitle.orEmpty().count { it == '\n' } >= 3 -> 10
+                campaign.subtitle.orEmpty().length > 100 -> 12
+                else -> 16
+            } * scale
             fun height(text: String, fontSize: Float): Dp = with(density) {
                 measurer.measure(text, TextStyle(fontSize = fontSize.sp, lineHeight = (fontSize * 1.15f).sp),
                     constraints = Constraints(maxWidth = textWidth)).size.height.toDp()

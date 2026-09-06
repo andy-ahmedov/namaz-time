@@ -98,6 +98,7 @@ def main():
             capture(f"shift-{shift}", shift=shift)
         capture("standard", scenario="standard", message=None)
         if args.extra_backgrounds:
+            capture("long-paragraph", message="Every sincere contribution supports the mosque, helps our community, welcomes every visitor, and becomes lasting good.")
             capture("maximum-copy", title=("Информация о работе и мероприятиях нашей общины. " * 4)[:160],
                     message="Первая строка\nВторая строка\nТретья строка\nЧетвёртая строка\nПятая строка\nШестая строка")
         for background_style in args.extra_backgrounds:

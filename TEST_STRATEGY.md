@@ -719,7 +719,9 @@ are separate visual gates. Physical camera/TV acceptance remains `UNKNOWN`.
 
 T046 adaptive/QR coverage remains active. Native text tests additionally require
 OFF adhan growth, relative countdown/name/label and clock/date hierarchy,
-ordinary campaign readability and exact full clock/countdown strings. A native
+ordinary campaign readability and exact full clock/countdown strings. Three
+density-specific regressions also require a long single paragraph to use at
+least 12 normalized sp without losing any characters or overflowing. A native
 app-shell regression traverses STANDARD → compact → Settings → compact →
 STANDARD and checks original/bright background pixels through real navigation.
 A color-compositing regression bounds header, glass and active-row text at

@@ -2,8 +2,8 @@
   "repository": {
     "command": "GOCACHE=/tmp/namaz-time-go-cache GRADLE_USER_HOME=/tmp/namaz-time-gradle make docs-check test lint test-android-all",
     "exit_code": 0,
-    "log": "/tmp/t047-gates.log",
-    "log_sha256": "676a2d02e5d1967a423c0adfc5252c0a71ced78f4eb6bd472fb14465b69d1f13"
+    "log": "/tmp/t047-final-gates.log",
+    "log_sha256": "a4b34d7e392fd59ddbc1d2bfd2c44a7859b7d49909c875741817ab3ae1e79075"
   },
   "go_race": {
     "command": "GOCACHE=/tmp/namaz-time-go-cache go test -race ./...",
@@ -30,7 +30,7 @@
     "log_sha256": "99482ac8efcd66ee476e7a881e272724fb9e7025ee4542a4b4f6a34d650b7875"
   },
   "android_tests": {
-    "tests": 501,
+    "tests": 504,
     "failures": 0,
     "errors": 0,
     "skipped": 0
@@ -38,5 +38,12 @@
   "postgres_restore": {
     "status": "not run",
     "basis": "T047 changes no backend/schema/provider/publication path; TEST_STRATEGY lists the explicit integration gate but does not require it for every visual-only task. Owner requests PostgreSQL only if completion policy mandates it."
+  },
+  "long_paragraph": {
+    "red_log": "/tmp/t047-long-paragraph-red.log",
+    "red_result": "expected font-size assertion failure at the previous 10sp",
+    "green_log": "/tmp/t047-long-paragraph-green.log",
+    "green_exit_code": 0,
+    "coverage": "12 normalized sp minimum, complete paragraph and no overflow at 720p/1080p/4K"
   }
 }
