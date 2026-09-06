@@ -9,6 +9,8 @@ import java.nio.charset.StandardCharsets
 data class QrCodeMatrix(
     val size: Int,
     val darkPixels: BooleanArray,
+    val moduleCount: Int,
+    val darkModules: BooleanArray,
 )
 
 class QrCodeGenerator(
@@ -33,8 +35,21 @@ class QrCodeGenerator(
                 EncodeHintType.MARGIN to quietZoneModules,
             ),
         )
+        // Preserve the native modules (including quiet zone) for final-size rendering.
+        val modules = QRCodeWriter().encode(
+            content, BarcodeFormat.QR_CODE, 0, 0,
+            mapOf(
+                EncodeHintType.CHARACTER_SET to StandardCharsets.UTF_8.name(),
+                EncodeHintType.ERROR_CORRECTION to ErrorCorrectionLevel.H,
+                EncodeHintType.MARGIN to quietZoneModules,
+            ),
+        )
         return QrCodeMatrix(
             size = matrix.width,
+            moduleCount = modules.width,
+            darkModules = BooleanArray(modules.width * modules.height) { index ->
+                modules[index % modules.width, index / modules.width]
+            },
             darkPixels = BooleanArray(matrix.width * matrix.height) { index ->
                 matrix[index % matrix.width, index / matrix.width]
             },

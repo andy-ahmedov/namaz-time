@@ -29,6 +29,34 @@ class OperatorPreferencesRepositoryTest {
     val temporaryFolder = TemporaryFolder()
 
     @Test
+    fun presentationPreferencesPersistWithoutClearingIqamahRules() = runTest {
+        val file = File(temporaryFolder.root, "presentation.preferences_pb")
+        suspend fun openAndUse(action: suspend (OperatorPreferencesRepository) -> Unit) {
+            val job = kotlinx.coroutines.SupervisorJob()
+            val scope = kotlinx.coroutines.CoroutineScope(job + UnconfinedTestDispatcher(testScheduler))
+            val store = PreferenceDataStoreFactory.create(scope = scope, produceFile = { file })
+            try { action(DataStoreOperatorPreferencesRepository(store)) }
+            finally { job.cancel(); job.join() }
+        }
+        val configuration = OperatorIqamahConfiguration(fajrOffsetMinutes = 17, dhuhrFixedTimeMinutes = 795)
+        openAndUse { repository ->
+            assertTrue(repository.preferences.first().showIqamahOnSchedule)
+            assertEquals(ScheduleLayoutMode.STANDARD, repository.preferences.first().scheduleLayoutMode)
+            repository.setIqamahConfiguration(configuration)
+            repository.setShowIqamahOnSchedule(false)
+            repository.setScheduleLayoutMode(ScheduleLayoutMode.RIGHT_SIDE_COMPACT)
+        }
+        openAndUse { repository ->
+            assertFalse(repository.preferences.first().showIqamahOnSchedule)
+            assertEquals(ScheduleLayoutMode.RIGHT_SIDE_COMPACT, repository.preferences.first().scheduleLayoutMode)
+            assertEquals(configuration, repository.preferences.first().iqamahConfiguration)
+            repository.setShowIqamahOnSchedule(true)
+            assertEquals(configuration, repository.preferences.first().iqamahConfiguration)
+            assertEquals(OperatorDisplayMode.SCHEDULE, repository.preferences.first().displayMode)
+        }
+    }
+
+    @Test
     fun lastSettingsDestinationPersistsInDataStore() = runTest {
         val repository = repositoryFor(this)
 

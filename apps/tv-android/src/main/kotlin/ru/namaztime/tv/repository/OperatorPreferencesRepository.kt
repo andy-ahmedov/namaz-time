@@ -21,6 +21,8 @@ data class OperatorPreferences(
     val reducedMotion: Boolean = true,
     val languageTag: String = DEFAULT_LANGUAGE_TAG,
     val screenRetentionShiftEnabled: Boolean = true,
+    val showIqamahOnSchedule: Boolean = true,
+    val scheduleLayoutMode: ScheduleLayoutMode = ScheduleLayoutMode.STANDARD,
     val mosquePresentationIdentity: OperatorMosquePresentationIdentity =
         OperatorMosquePresentationIdentity(),
     val backgroundStyleId: String = DEFAULT_BACKGROUND_STYLE_ID,
@@ -34,6 +36,15 @@ data class OperatorMosquePresentationIdentity(
     val displayName: String = "",
     val displayAddress: String = "",
 )
+
+enum class ScheduleLayoutMode(val id: String) {
+    STANDARD("standard"),
+    RIGHT_SIDE_COMPACT("right_side_compact");
+
+    companion object {
+        fun fromId(id: String?): ScheduleLayoutMode = entries.firstOrNull { it.id == id } ?: STANDARD
+    }
+}
 
 enum class OperatorDisplayMode(val id: String) {
     SCHEDULE("schedule"),
@@ -110,6 +121,10 @@ interface OperatorPreferencesRepository {
 
     suspend fun setLastSettingsDestination(route: String)
 
+    suspend fun setShowIqamahOnSchedule(enabled: Boolean)
+
+    suspend fun setScheduleLayoutMode(mode: ScheduleLayoutMode)
+
     suspend fun setReducedMotion(enabled: Boolean)
 
     suspend fun setLanguageTag(languageTag: String)
@@ -154,6 +169,8 @@ class DataStoreOperatorPreferencesRepository(
             OperatorPreferences(
                 lastSettingsDestination = values[LAST_SETTINGS_DESTINATION],
                 reducedMotion = values[REDUCED_MOTION] ?: true,
+                showIqamahOnSchedule = values[SHOW_IQAMAH_ON_SCHEDULE] ?: true,
+                scheduleLayoutMode = ScheduleLayoutMode.fromId(values[SCHEDULE_LAYOUT_MODE]),
                 languageTag = values[LANGUAGE_TAG]
                     ?.takeIf(SUPPORTED_LANGUAGE_TAGS::contains)
                     ?: DEFAULT_LANGUAGE_TAG,
@@ -189,6 +206,14 @@ class DataStoreOperatorPreferencesRepository(
 
     override suspend fun setLastSettingsDestination(route: String) {
         dataStore.edit { it[LAST_SETTINGS_DESTINATION] = route }
+    }
+
+    override suspend fun setShowIqamahOnSchedule(enabled: Boolean) {
+        dataStore.edit { it[SHOW_IQAMAH_ON_SCHEDULE] = enabled }
+    }
+
+    override suspend fun setScheduleLayoutMode(mode: ScheduleLayoutMode) {
+        dataStore.edit { it[SCHEDULE_LAYOUT_MODE] = mode.id }
     }
 
     override suspend fun setReducedMotion(enabled: Boolean) {
@@ -299,6 +324,8 @@ class DataStoreOperatorPreferencesRepository(
 
     private companion object {
         val LAST_SETTINGS_DESTINATION = stringPreferencesKey("last_settings_destination")
+        val SHOW_IQAMAH_ON_SCHEDULE = booleanPreferencesKey("show_iqamah_on_schedule")
+        val SCHEDULE_LAYOUT_MODE = stringPreferencesKey("schedule_layout_mode")
         val REDUCED_MOTION = booleanPreferencesKey("reduced_motion")
         val LANGUAGE_TAG = stringPreferencesKey("language_tag")
         val SCREEN_RETENTION_SHIFT_ENABLED = booleanPreferencesKey(

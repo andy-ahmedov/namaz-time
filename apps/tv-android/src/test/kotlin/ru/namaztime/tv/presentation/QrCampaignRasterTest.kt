@@ -41,28 +41,26 @@ class QrCampaignRasterTest {
     }
 
     @Test
-    fun `high-correction TV rasters decode with the centered brand badge area obscured`() {
+    fun `final raster has uniform integer module geometry and intact quiet zone`() {
         val target = "https://example.org/sadaqah"
-        val matrix = QrCodeGenerator().generate(target)
-
-        listOf(128, 192, 360, 540).forEach { physicalPixels ->
-            val pixels = qrArgbPixels(matrix, physicalPixels)
-            val badgeSize = (physicalPixels * REFERENCE_QR_BADGE_FRACTION).toInt()
-            val badgeStart = (physicalPixels - badgeSize) / 2
-            repeat(badgeSize) { badgeY ->
-                repeat(badgeSize) { badgeX ->
-                    pixels[(badgeStart + badgeY) * physicalPixels + badgeStart + badgeX] =
-                        0xFF101A28.toInt()
-                }
+        val native = com.google.zxing.qrcode.QRCodeWriter().encode(
+            target, com.google.zxing.BarcodeFormat.QR_CODE, 0, 0,
+            mapOf(com.google.zxing.EncodeHintType.ERROR_CORRECTION to
+                com.google.zxing.qrcode.decoder.ErrorCorrectionLevel.H,
+                com.google.zxing.EncodeHintType.CHARACTER_SET to "UTF-8",
+                com.google.zxing.EncodeHintType.MARGIN to 4),
+        )
+        for (size in listOf(132, 176, 198, 264, 396, 528)) {
+            val pitch = size / native.width
+            val inset = (size - native.width * pitch) / 2
+            val pixels = qrArgbPixels(QrCodeGenerator().generate(target), size)
+            for (y in 0 until size) for (x in 0 until size) {
+                val mx = (x - inset) / pitch
+                val my = (y - inset) / pitch
+                val dark = x >= inset && y >= inset && mx < native.width &&
+                    my < native.height && native[mx, my]
+                assertEquals("size=$size x=$x y=$y", dark, pixels[y * size + x] == 0xFF172331.toInt())
             }
-            val decoded = QRCodeReader().decode(
-                BinaryBitmap(
-                    HybridBinarizer(
-                        RGBLuminanceSource(physicalPixels, physicalPixels, pixels),
-                    ),
-                ),
-            )
-            assertEquals("size=$physicalPixels", target, decoded.text)
         }
     }
 

@@ -671,3 +671,22 @@ Each release records:
 - active source revisions;
 - known limitations;
 - rollback procedure and previous version.
+
+## T045 presentation verification
+
+T045 supersedes the historical badge-obstruction QR tests above: the shared
+primitive must have no overlay or clipping in the matrix/quiet zone. Native
+Robolectric whole-view drawing samples the final QR pixels, decodes three
+HTTPS payload lengths across public surfaces and compares the pixels against
+integer-module rasterization, including a parent-constrained size. Real
+emulator screenshots are decoded separately. Too little space must not crash
+the prayer screen. Physical scan acceptance remains a separate retest.
+
+Native graphics tests measure every required compact block at three resolution/
+density profiles, both languages, QR present/absent, Iqamah ON/OFF and all six
+retention phases. Text layout overflow and containment inside the next-event
+card are checked separately from rail bounds. DataStore close/reopen verifies
+presentation defaults and persistence without clearing the Iqamah configuration;
+D-pad tests reach the switch and both Appearance choices. Standard tests retain
+the existing geometry. Evidence and the final gate record live under
+`docs/evidence/t045-tv-presentation/`.

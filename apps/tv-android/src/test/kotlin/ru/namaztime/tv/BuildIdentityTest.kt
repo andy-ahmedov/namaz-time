@@ -14,16 +14,16 @@ class BuildIdentityTest {
 
     @Test
     fun checkedInVersionAndGeneratedDebugIdentityAreTraceable() {
-        assertEquals(6, BuildConfig.VERSION_CODE)
-        assertEquals("0.5.2-dev", BuildConfig.VERSION_NAME)
+        assertEquals(7, BuildConfig.VERSION_CODE)
+        assertEquals("0.6.0-dev", BuildConfig.VERSION_NAME)
         assertEquals("debug", BuildConfig.BUILD_VARIANT)
         assertTrue(BuildConfig.BUILD_COMMIT.matches(Regex("[0-9a-f]{40}")))
 
         val identity = currentAppBuildIdentity()
 
-        assertEquals("0.5.2-dev (6)", identity.versionLabel)
+        assertEquals("0.6.0-dev (7)", identity.versionLabel)
         assertEquals(BuildConfig.BUILD_COMMIT.take(12), identity.shortCommit)
-        assertEquals("0.5.2-dev+g${BuildConfig.BUILD_COMMIT.take(12)}" +
+        assertEquals("0.6.0-dev+g${BuildConfig.BUILD_COMMIT.take(12)}" +
             if (BuildConfig.BUILD_DIRTY) ".dirty" else "", identity.telemetryVersion)
         assertTrue(identity.telemetryVersion.length <= 64)
     }

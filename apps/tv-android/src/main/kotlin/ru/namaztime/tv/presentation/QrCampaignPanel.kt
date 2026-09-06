@@ -4,9 +4,9 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,14 +16,12 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -33,7 +31,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.drawscope.inset
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.SemanticsPropertyKey
@@ -60,8 +58,6 @@ const val QR_ORNAMENT_DIVIDER_TAG = "qr-ornament-divider"
 const val QR_ELEGANT_FRAME_TAG = "qr-elegant-frame"
 const val QR_SUPPORT_ICON_TAG = "qr-support-icon"
 const val QR_BOTTOM_ORNAMENT_TAG = "qr-bottom-ornament"
-const val QR_CENTER_BRAND_BADGE_TAG = "qr-center-brand-badge"
-internal const val REFERENCE_QR_BADGE_FRACTION = 0.30f
 internal const val REFERENCE_QR_CORNER_ARM_FRACTION = 0.13f
 val QrSubtitleFullyVisibleKey = SemanticsPropertyKey<Boolean>("QrSubtitleFullyVisible")
 private var SemanticsPropertyReceiver.qrSubtitleFullyVisible by QrSubtitleFullyVisibleKey
@@ -230,17 +226,26 @@ internal fun ReferenceQrCode(
                 drawPath(it, tint, style = Stroke(strokeWidth, cap = StrokeCap.Round))
             }
         }
-        Box(
+        BoxWithConstraints(
             modifier = Modifier
                 .size(qrSize)
-                .clip(RoundedCornerShape(qrSize * 0.055f))
                 .background(QR_LIGHT),
             contentAlignment = Alignment.Center,
         ) {
+            val outputSize = with(LocalDensity.current) { minOf(maxWidth, maxHeight).roundToPx() }
+            if (outputSize < state.qrCode.moduleCount) {
+                Text(
+                    appString(R.string.qr_insufficient_space),
+                    color = Color(QR_DARK),
+                    fontSize = 12.sp,
+                    modifier = Modifier.testTag("qr-insufficient-space"),
+                )
+                return@BoxWithConstraints
+            }
             Image(
                 bitmap = rememberQrBitmap(
                     matrix = state.qrCode,
-                    outputSize = with(LocalDensity.current) { qrSize.roundToPx() },
+                    outputSize = outputSize,
                 ),
                 contentDescription = appString(R.string.qr_content_description, state.title),
                 modifier = Modifier
@@ -248,32 +253,9 @@ internal fun ReferenceQrCode(
                     .testTag(QR_CODE_IMAGE_TAG)
                     .background(QR_LIGHT),
                 filterQuality = FilterQuality.None,
+                contentScale = ContentScale.None,
             )
-            DecorativeQrBadge(
-                modifier = Modifier
-                    .size(qrSize * REFERENCE_QR_BADGE_FRACTION)
-                    .testTag(QR_CENTER_BRAND_BADGE_TAG),
-            )
-        }
-    }
-}
 
-@Composable
-private fun DecorativeQrBadge(modifier: Modifier = Modifier) {
-    val colors = NamazTvTheme.colors
-    Canvas(modifier) {
-        val cornerRadius = CornerRadius(size.minDimension * 0.22f)
-        drawRoundRect(colors.backgroundTop.copy(alpha = 0.99f), cornerRadius = cornerRadius)
-        drawRoundRect(
-            colors.accentOutline,
-            cornerRadius = cornerRadius,
-            style = Stroke(0.8.dp.toPx(), cap = StrokeCap.Round),
-        )
-        inset(size.minDimension * 0.17f) {
-            drawCrescentStars(
-                tint = colors.accent,
-                strokeWidth = size.minDimension * 0.055f,
-            )
         }
     }
 }
@@ -372,12 +354,18 @@ internal fun rememberQrBitmap(matrix: QrCodeMatrix, outputSize: Int) =
 
 internal fun qrArgbPixels(matrix: QrCodeMatrix, outputSize: Int): IntArray {
     require(outputSize > 0) { "QR raster size must be positive" }
+    val pitch = outputSize / matrix.moduleCount
+    require(pitch >= 1) { "QR raster cannot fit its modules" }
+    val inset = (outputSize - matrix.moduleCount * pitch) / 2
     return IntArray(outputSize * outputSize) { index ->
-        val targetX = index % outputSize
-        val targetY = index / outputSize
-        val sourceX = targetX * matrix.size / outputSize
-        val sourceY = targetY * matrix.size / outputSize
-        if (matrix.darkPixels[sourceY * matrix.size + sourceX]) QR_DARK else QR_LIGHT_ARGB
+        val x = index % outputSize - inset
+        val y = index / outputSize - inset
+        val moduleX = x / pitch
+        val moduleY = y / pitch
+        if (x >= 0 && y >= 0 && moduleX < matrix.moduleCount &&
+            moduleY < matrix.moduleCount &&
+            matrix.darkModules[moduleY * matrix.moduleCount + moduleX]
+        ) QR_DARK else QR_LIGHT_ARGB
     }
 }
 

@@ -87,8 +87,7 @@ event strip, while a tall right glass panel spans from the prayer-body top to
 the strip bottom. The panel contains `Садака`, an original line/diamond
 divider, the operator-entered purpose, a high-contrast locally generated QR in
 the supplied-reference corner frame, the supplied-reference support-icon
-treatment beside the operator-entered motivation, a small NamazTime center
-badge protected by high QR error correction, and a subdued Islamic geometric
+treatment beside the operator-entered motivation and a subdued Islamic geometric
 lower ornament. Empty/invalid settings remove the third column and
 restore the normal T024 composition. No technical preview label appears in
 public display mode.
@@ -131,10 +130,9 @@ the last-known-good Room snapshot. The engine chooses the latest resolved
 obligatory-prayer adhan, or a later Friday Jumu'ah salah, as the current prayer;
 Sunrise is explicitly excluded and presentation only localizes that result.
 
-The QR uses dark-navy modules on a rounded warm-white surface, a thin
-champagne frame and a NamazTime center badge while retaining a four-module
-quiet zone, high error correction and decode regressions for the actual badge
-ratio. Runtime values come only from the operator's local fields; sample
+The QR uses dark-navy modules on a square warm-white surface, a thin
+external champagne frame, a four-module quiet zone and high error correction.
+T045 removes the center badge and tests the final rendered pixels. Runtime values come only from the operator's local fields; sample
 banking values from the reference are never defaults. Five packaged image
 choices remain available in one D-pad LazyRow below a large selected-image
 preview. The app-local custom photo is deliberately not a sixth thumbnail; a
@@ -250,8 +248,8 @@ opacity fades toward both ends around a small diamond. The next-prayer card has
 a non-semantic low-contrast arch and hanging-lantern watermark. A connected
 star/diamond lattice is reused below the QR and at the right of the bottom
 strip. The QR keeps its local payload and error correction but renders on a
-rounded warm-white surface with dark-navy modules and a decorative NamazTime
-center badge. T033 supersedes the old asymmetric frame with four identical
+square warm-white surface with dark-navy modules. T045 removes the center
+badge and all clipping of the matrix/quiet zone. T033 supersedes the old asymmetric frame with four identical
 short L-shaped corners, mirrored around the QR with equal arms. These decorative layers do
 not read data, accept focus, or introduce network work into display state.
 
@@ -268,8 +266,8 @@ collective prayer and phone/support use original rounded-cap champagne line
 drawings. The next-event watermark is a pointed Islamic arch with a suspended,
 pane-detailed lantern. Next-event/date content uses explicit top anchors rather
 than centered column arrangements. The shared QR primitive uses the same four
-corners and crescent/two-star center glyph on main and standalone donation
-screens.
+external corners on main, Settings preview, compact and standalone donation
+screens. T045 prohibits any overlay inside the QR or its quiet zone.
 
 T044 makes that watermark contract measurable relative to the complete
 `NextEventCard`, not a nested fractional Canvas. The final arch spans
@@ -426,3 +424,38 @@ contract exists.
 ## Content tone
 
 Use calm, factual labels. Avoid marketing claims such as “official” or “most accurate” unless source metadata and approval justify them.
+
+## T045 — public schedule presentation and QR reliability
+
+`showIqamahOnSchedule` is a device-local DataStore preference, default `true`
+for new and upgraded installs. Settings → Икамат exposes the D-pad switch
+“Показывать время Икамата на экране расписания” / “Show Iqamah times on schedule
+screen”. OFF removes the Iqamah header, values, summary, accessibility labels
+and countdown targets from both public schedule geometries. The remaining
+adhan column expands across the time area. ON restores existing values;
+Iqamah configuration, overrides and signed snapshot are never cleared.
+The existing engine's `CountdownPolicy.includeIqamah` selects the next visible
+Adhan/Jumu'ah (including tomorrow's Fajr); no new engine algorithm is introduced.
+
+`ScheduleLayoutMode` persists independently of schedule/donation mode. The
+Appearance choices are “Обычный” / “Standard” and “Компактный справа” / “Compact
+right side”; default STANDARD preserves the existing composition when Iqamah
+is ON, with only shared QR hardening. Donation keeps its existing screen.
+
+RIGHT_SIDE_COMPACT consumes the same `PrayerDisplayUiState`. All foreground,
+including identity, Settings, next prayer/countdown, date/weekday/local clock,
+six prayer rows, optional QR and source attention indicator, occupies the right
+rail. Its left edge is half the **full viewport** plus the 2 dp retention
+budget and 2 dp clearance. The right edge uses the existing overscan-safe inset
+plus shift budget. Every six-phase ±2 dp shift preserves the protected half.
+The background and its existing treatment cover the entire screen. With QR
+absent, the next/clock stack expands across the rail; no placeholder remains.
+The prayer table spans the rail in both visibility states.
+
+All QR screens use `ReferenceQrCode`. The native ZXing modules retain error
+correction H and at least four quiet-zone modules. Rasterization uses a whole
+number of pixels per module directly at the displayed pixel size, centers the
+remaining white padding, disables filtering and preserves square boundaries.
+Branding/frame decoration is exclusively outside matrix and quiet zone.
+Local/emulator decode evidence cannot prove a physical camera/TV outcome:
+status remains `PHYSICAL_QR_RETEST_REQUIRED` until owner acceptance.

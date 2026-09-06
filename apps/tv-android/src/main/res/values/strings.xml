@@ -246,4 +246,8 @@
     <string name="campaign_kind_contacts">КОНТАКТЫ</string>
     <string name="campaign_kind_website">САЙТ</string>
     <string name="campaign_kind_information">ИНФОРМАЦИЯ</string>
+    <string name="show_iqamah_on_schedule">Показывать время Икамата на экране расписания</string>
+    <string name="schedule_layout_standard">Обычный</string>
+    <string name="schedule_layout_compact">Компактный справа</string>
+    <string name="qr_insufficient_space">Ссылка слишком длинная для QR этого размера</string>
 </resources>

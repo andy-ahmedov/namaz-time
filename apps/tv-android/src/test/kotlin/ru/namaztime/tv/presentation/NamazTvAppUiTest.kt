@@ -98,6 +98,150 @@ class NamazTvAppUiTest {
     @Test
     @OptIn(ExperimentalTestApi::class)
     @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    fun operatorCanToggleIqamahAndSelectCompactLayoutWithDpad() {
+        val preferences = FakeOperatorPreferencesRepository()
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = preferences,
+                prayerScheduleRepository = FakePrayerScheduleRepository(schedule()),
+                bootstrapState = MutableStateFlow(SnapshotBootstrapState.Ready(schedule().snapshotId)),
+                clock = fixedClock, tickIntervalMillis = null,
+            )
+        }
+        openSettingsDestination(SettingsDestination.IQAMAH)
+        compose.onNodeWithTag(SettingsDestination.IQAMAH.navigationTestTag)
+            .performKeyInput { pressKey(Key.DirectionRight); pressKey(Key.DirectionUp) }
+        compose.onNodeWithTag("settings-show-iqamah").assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        assertFalse(preferences.currentPreferences.showIqamahOnSchedule)
+        compose.onNodeWithTag("settings-show-iqamah")
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag("${SETTINGS_IQAMAH_FIELD_TAG_PREFIX}fajr-reset").assertIsFocused()
+        compose.onNodeWithTag(SettingsDestination.APPEARANCE.navigationTestTag)
+            .performSemanticsAction(SemanticsActions.RequestFocus)
+            .performKeyInput { pressKey(Key.DirectionRight); pressKey(Key.DirectionUp) }
+        compose.onNodeWithTag("settings-layout-standard").assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag("settings-layout-right_side_compact").assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+        assertEquals(ru.namaztime.tv.repository.ScheduleLayoutMode.RIGHT_SIDE_COMPACT,
+            preferences.currentPreferences.scheduleLayoutMode)
+        compose.onNodeWithTag(SETTINGS_PAGE_ACTION_TEST_TAG)
+            .performSemanticsAction(SemanticsActions.RequestFocus)
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.onNodeWithTag(COMPACT_RIGHT_RAIL_TAG).assertIsDisplayed()
+        compose.onNodeWithTag(MAIN_DISPLAY_SETTINGS_TAG).assertIsFocused()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    fun compactPresentation720p() = assertCompactPresentation()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    fun compactPresentation1080p() = assertCompactPresentation()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    @org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
+    fun compactPresentation4k() = assertCompactPresentation()
+
+    private fun assertCompactPresentation() {
+        val preferences = mutableStateOf(OperatorPreferences(
+            scheduleLayoutMode = ru.namaztime.tv.repository.ScheduleLayoutMode.RIGHT_SIDE_COMPACT,
+            iqamahConfiguration = OperatorIqamahConfiguration(fajrOffsetMinutes = 17),
+        ))
+        val now = mutableStateOf(Instant.parse("2026-08-19T23:20:00Z"))
+        compose.setContent {
+            AppLanguageProvider(preferences.value.languageTag) {
+                NamazTvTheme {
+                    ConnectedDisplayContent(
+                        schedule = schedule(), currentInstant = now.value,
+                        bootstrapState = SnapshotBootstrapState.Ready(schedule().snapshotId),
+                        campaignEngine = CampaignEngine(), qrCodeGenerator = QrCodeGenerator(),
+                        operatorPreferences = preferences.value, onOpenSettings = {},
+                    )
+                }
+            }
+        }
+        for (language in listOf("ru", "en")) for (qr in listOf(false, true)) {
+            for (iqamah in listOf(false, true)) for (shift in 0..5) {
+                compose.runOnIdle {
+                    preferences.value = preferences.value.copy(
+                        languageTag = language, showIqamahOnSchedule = iqamah,
+                        qrConfiguration = if (qr) OperatorQrConfiguration(
+                            "https://example.org/sadaqah", "На развитие мечети", "") else OperatorQrConfiguration(),
+                    )
+                    now.value = Instant.parse("2026-08-19T23:20:00Z").plusSeconds(shift * 600L)
+                }
+                val root = compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG).getUnclippedBoundsInRoot()
+                val rail = compose.onNodeWithTag("compact-right-rail").getUnclippedBoundsInRoot()
+                assertTrue("protected half $rail / $root", rail.left >= (root.right - root.left) / 2)
+                assertTrue(rail.right <= root.right)
+                for (tag in listOf(MOSQUE_NAME_TEST_TAG, NEXT_EVENT_CARD_TAG, COUNTDOWN_TEST_TAG,
+                    DATE_LABEL_TAG, WEEKDAY_LABEL_TAG, LOCAL_CLOCK_VALUE_TAG, PRAYER_LIST_CARD_TAG,
+                    MAIN_DISPLAY_SETTINGS_TAG) + listOf("fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha")
+                    .map { PRAYER_ROW_TEST_TAG_PREFIX + it }) {
+                    val node = compose.onNodeWithTag(tag, useUnmergedTree = true).assertIsDisplayed()
+                    val bounds = node.getUnclippedBoundsInRoot()
+                    assertTrue("$tag $bounds rail=$rail", bounds.left >= rail.left && bounds.right <= rail.right + 1.dp)
+                    assertTrue("$tag vertical $bounds", bounds.top >= rail.top && bounds.bottom <= rail.bottom + 1.dp)
+                }
+                val countdownBounds = compose.onNodeWithTag(COUNTDOWN_TEST_TAG).getUnclippedBoundsInRoot()
+                val nextBounds = compose.onNodeWithTag(NEXT_EVENT_CARD_TAG).getUnclippedBoundsInRoot()
+                assertTrue("countdown must fit its card $countdownBounds / $nextBounds", countdownBounds.bottom <= nextBounds.bottom - 4.dp)
+                for (tag in listOf(COUNTDOWN_TEST_TAG, NEXT_EVENT_NAME_TAG, DATE_LABEL_TAG, WEEKDAY_LABEL_TAG, LOCAL_CLOCK_VALUE_TAG)) {
+                    val layouts = mutableListOf<androidx.compose.ui.text.TextLayoutResult>()
+                    compose.onNodeWithTag(tag, useUnmergedTree = true)
+                        .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+                    assertTrue("$tag has a measured text layout", layouts.isNotEmpty())
+                    assertFalse("$tag text clipped", layouts.any { it.hasVisualOverflow })
+                }
+                if (qr) compose.onNodeWithTag(QR_CODE_IMAGE_TAG).assertIsDisplayed()
+                else compose.onNodeWithTag(QR_CODE_IMAGE_TAG).assertDoesNotExist()
+                if (iqamah) compose.onNodeWithText(if (language == "ru") "Икамат" else "Iqamah").assertIsDisplayed()
+                else {
+                    compose.onNodeWithText(if (language == "ru") "Икамат" else "Iqamah", substring = true).assertDoesNotExist()
+                    compose.onNodeWithTag(IQAMAH_STRIP_TAG).assertDoesNotExist()
+                }
+            }
+        }
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun publicIqamahToggleRemovesSummaryAndValuesAndRestoresConfiguration() {
+        val preferences = mutableStateOf(OperatorPreferences(
+            iqamahConfiguration = OperatorIqamahConfiguration(fajrOffsetMinutes = 17),
+        ))
+        compose.setContent {
+            NamazTvTheme {
+                ConnectedDisplayContent(
+                    schedule = schedule(), currentInstant = Instant.parse("2026-08-19T23:20:00Z"),
+                    bootstrapState = SnapshotBootstrapState.Ready(schedule().snapshotId),
+                    campaignEngine = CampaignEngine(), qrCodeGenerator = QrCodeGenerator(),
+                    operatorPreferences = preferences.value, onOpenSettings = {},
+                )
+            }
+        }
+        compose.onNodeWithTag(NEXT_EVENT_NAME_TAG).assertTextEquals("Фаджр · икамат")
+        compose.runOnIdle { preferences.value = preferences.value.copy(showIqamahOnSchedule = false) }
+        compose.onNodeWithText("Икамат", substring = true).assertDoesNotExist()
+        compose.onNodeWithTag(NEXT_EVENT_NAME_TAG).assertTextEquals("Зухр")
+        compose.onNodeWithTag(IQAMAH_STRIP_TAG).assertDoesNotExist()
+        compose.runOnIdle { preferences.value = preferences.value.copy(showIqamahOnSchedule = true) }
+        compose.onNodeWithTag(NEXT_EVENT_NAME_TAG).assertTextEquals("Фаджр · икамат")
+        assertEquals(17, preferences.value.iqamahConfiguration.fajrOffsetMinutes)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
     fun donationDisplayKeepsSettingsReachableAndCanReturnToScheduleMode() {
         val configuration = OperatorDonationConfiguration(
             httpsUrl = "https://example.org/donate",
@@ -1223,7 +1367,7 @@ class NamazTvAppUiTest {
         compose.onNodeWithText("Садака").assertIsDisplayed()
         compose.onNodeWithTag(QR_ORNAMENT_DIVIDER_TAG).assertIsDisplayed()
         compose.onNodeWithTag(QR_ELEGANT_FRAME_TAG).assertIsDisplayed()
-        compose.onNodeWithTag(QR_CENTER_BRAND_BADGE_TAG).assertIsDisplayed()
+        compose.onNodeWithTag("qr-center-brand-badge").assertDoesNotExist()
         compose.onNodeWithTag(QR_SUPPORT_ICON_TAG).assertIsDisplayed()
         compose.onNodeWithText("На ремонт мечети").assertIsDisplayed()
         compose.onNodeWithText("Спешите к благому — садака приносит пользу людям.")
@@ -2209,6 +2353,16 @@ private class FakeOperatorPreferencesRepository(
     override suspend fun setLastSettingsDestination(route: String) {
         if (failWrites) throw IOException("synthetic preference storage failure")
         state.value = state.value.copy(lastSettingsDestination = route)
+    }
+
+    override suspend fun setShowIqamahOnSchedule(enabled: Boolean) {
+        if (failWrites) throw IOException("synthetic preference storage failure")
+        state.value = state.value.copy(showIqamahOnSchedule = enabled)
+    }
+
+    override suspend fun setScheduleLayoutMode(mode: ru.namaztime.tv.repository.ScheduleLayoutMode) {
+        if (failWrites) throw IOException("synthetic preference storage failure")
+        state.value = state.value.copy(scheduleLayoutMode = mode)
     }
 
     override suspend fun setReducedMotion(enabled: Boolean) {

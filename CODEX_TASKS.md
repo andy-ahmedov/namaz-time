@@ -1204,3 +1204,27 @@ The signed Ulyanovsk snapshot remains byte-identical at raw SHA-256
 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 Physical-TV overscan, panel response and representative-distance subtlety
 remain `UNKNOWN`.
+
+## T045 — physical-TV QR reliability and alternative schedule presentation
+
+**Goal:** harden every shared QR surface, persist public Iqamah visibility and
+add `RIGHT_SIDE_COMPACT` alongside unchanged `STANDARD` schedule geometry.
+
+**In scope:** no QR overlay/clipping, integer module rasterization at final size;
+DataStore visibility default true and independent layout default STANDARD;
+D-pad settings; one shared prayer presentation; foreground strictly in the
+right half including retention shift, six rows, clock/date/countdown/identity,
+optional readable QR with no empty placeholder; RU/EN and 720p/1080p/4K.
+
+**Non-goals:** source/authority/registry/T038, setup semantics, approval, Room
+schema, signed snapshot, application/signing identity or general redesign.
+
+**Acceptance:** final rendered QR decode evidence; persistent visibility without
+clearing Iqamah configuration; standard regression; measured right-rail geometry
+and screenshot-driven emulator iteration for both Iqamah states and QR absence;
+Donation QR; repository docs/test/lint/Postgres/Android/race/security/secret gates;
+0.6.0 code 7 pilot.1 clean signed handover APK; unchanged snapshot SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+Physical-camera outcome remains `PHYSICAL_QR_RETEST_REQUIRED` until owner retest.
+
+**Status:** IN_PROGRESS. Local checkpoint commits only; no push or PR.

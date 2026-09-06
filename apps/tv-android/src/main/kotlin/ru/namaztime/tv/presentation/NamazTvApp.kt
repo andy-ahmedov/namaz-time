@@ -46,6 +46,8 @@ import ru.namaztime.tv.data.snapshot.SnapshotBootstrapState
 import ru.namaztime.tv.domain.CampaignEngine
 import ru.namaztime.tv.domain.CampaignPreview
 import ru.namaztime.tv.domain.CampaignResolution
+import ru.namaztime.tv.repository.ScheduleLayoutMode
+import ru.namaztime.tv.domain.CountdownPolicy
 import ru.namaztime.tv.domain.PrayerTimeEngine
 import ru.namaztime.tv.domain.PrayerTimeResolution
 import ru.namaztime.tv.domain.QrCodeGenerator
@@ -399,6 +401,24 @@ fun NamazTvApp(
                             preferences = preferences,
                             buildIdentity = currentAppBuildIdentity(),
                             pilotLocalRuntime = BuildConfig.PILOT_LOCAL_RUNTIME,
+                            onShowIqamahOnScheduleChanged = { enabled ->
+                                coroutineScope.launch {
+                                    try {
+                                        operatorPreferencesRepository.setShowIqamahOnSchedule(enabled)
+                                    } catch (_: IOException) {
+                                        // Retain the persisted presentation.
+                                    }
+                                }
+                            },
+                            onScheduleLayoutModeChanged = { mode ->
+                                coroutineScope.launch {
+                                    try {
+                                        operatorPreferencesRepository.setScheduleLayoutMode(mode)
+                                    } catch (_: IOException) {
+                                        // Retain the persisted presentation.
+                                    }
+                                }
+                            },
                             onScreenRetentionShiftChanged = { enabled ->
                                 coroutineScope.launch {
                                     try {
@@ -686,7 +706,11 @@ internal fun ConnectedDisplayContent(
     } else {
         DpOffset.Zero
     }
-    val engine = remember { PrayerTimeEngine() }
+    val engine = remember(operatorPreferences.showIqamahOnSchedule) {
+        PrayerTimeEngine(CountdownPolicy(
+            includeIqamah = operatorPreferences.showIqamahOnSchedule,
+        ))
+    }
     val mosqueZone = remember(schedule.timezoneId) { ZoneId.of(schedule.timezoneId) }
     val mosqueLocalDate = remember(currentInstant, mosqueZone) {
         currentInstant.atZone(mosqueZone).toLocalDate()
@@ -707,7 +731,7 @@ internal fun ConnectedDisplayContent(
         )
         return
     }
-    val resolution = remember(timeInput, currentInstant) {
+    val resolution = remember(timeInput, currentInstant, engine) {
         engine.resolve(timeInput, currentInstant)
     }
     if (resolution is PrayerTimeResolution.Unavailable) {
@@ -752,6 +776,7 @@ internal fun ConnectedDisplayContent(
     val displayState = schedule.toPrayerDisplayUiState(
         resolution = resolution as PrayerTimeResolution.Available,
         strings = strings,
+        showIqamahOnSchedule = operatorPreferences.showIqamahOnSchedule,
         displayIdentity = schedule.toMosqueDisplayIdentity(
             operatorPreferences.mosquePresentationIdentity,
         ),
@@ -767,6 +792,12 @@ internal fun ConnectedDisplayContent(
                 currentPrayerLabel = displayState.currentPrayerLabel,
             ),
             customAssetVersion = donationAssetVersion,
+            retentionOffset = retentionOffset,
+            onOpenSettings = onOpenSettings,
+        )
+    } else if (operatorPreferences.scheduleLayoutMode == ScheduleLayoutMode.RIGHT_SIDE_COMPACT) {
+        CompactPrayerDisplay(
+            state = displayState,
             retentionOffset = retentionOffset,
             onOpenSettings = onOpenSettings,
         )

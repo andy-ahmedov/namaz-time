@@ -43,6 +43,8 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.toggleableState
 import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.SemanticsPropertyKey
 import androidx.compose.ui.semantics.SemanticsPropertyReceiver
@@ -497,8 +499,8 @@ internal fun QrSettingsEditor(
         campaignPreview?.let { preview ->
             QrCampaignPanel(
                 state = preview,
-                qrSize = if (compact) 82.dp else 112.dp,
-                modifier = Modifier.width(if (compact) 150.dp else 190.dp),
+                qrSize = if (compact) 132.dp else 174.dp,
+                modifier = Modifier.width(if (compact) 180.dp else 218.dp),
                 compact = true,
             )
         }
@@ -510,11 +512,14 @@ internal fun IqamahSettingsEditor(
     configuration: OperatorIqamahConfiguration,
     onConfigurationChange: (OperatorIqamahConfiguration) -> Unit,
     approvedDhuhrTimeMinutes: Int?,
+    showIqamahOnSchedule: Boolean = true,
+    onShowIqamahChanged: ((Boolean) -> Unit)? = null,
     entryRequester: FocusRequester,
     saveRequester: FocusRequester,
     modifier: Modifier = Modifier,
     compact: Boolean = false,
 ) {
+    val visibilityRequester = remember { FocusRequester() }
     val resetRequesters = remember(entryRequester) {
         OPERATOR_IQAMAH_PRAYER_IDS.associateWith { FocusRequester() }.toMutableMap().apply {
             this[OPERATOR_IQAMAH_PRAYER_IDS.first()] = entryRequester
@@ -530,6 +535,35 @@ internal fun IqamahSettingsEditor(
         modifier = modifier.fillMaxWidth(),
         verticalArrangement = Arrangement.spacedBy(if (compact) 3.dp else 8.dp),
     ) {
+        if (onShowIqamahChanged != null) {
+            Button(
+                onClick = { onShowIqamahChanged(!showIqamahOnSchedule) },
+                scale = ButtonDefaults.scale(focusedScale = 1f),
+                contentPadding = PaddingValues(horizontal = 10.dp, vertical = 0.dp),
+                modifier = Modifier.fillMaxWidth().height(if (compact) 36.dp else 42.dp)
+                    .testTag("settings-show-iqamah")
+                    .focusRequester(visibilityRequester)
+                    .focusProperties { down = entryRequester }
+                    .semantics {
+                        role = androidx.compose.ui.semantics.Role.Switch
+                        toggleableState = androidx.compose.ui.state.ToggleableState(showIqamahOnSchedule)
+                    },
+            ) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(appString(R.string.show_iqamah_on_schedule), Modifier.weight(1f), fontSize = if (compact) 14.sp else 18.sp)
+                    val trackColor = if (showIqamahOnSchedule) NamazTvTheme.colors.accent
+                        else NamazTvTheme.colors.textSecondary
+                    androidx.compose.foundation.Canvas(Modifier.width(34.dp).height(20.dp)) {
+                        drawRoundRect(trackColor.copy(alpha = 0.35f), cornerRadius = androidx.compose.ui.geometry.CornerRadius(size.height / 2))
+                        drawCircle(trackColor, radius = size.height * 0.36f,
+                            center = androidx.compose.ui.geometry.Offset(
+                                if (showIqamahOnSchedule) size.width - size.height / 2 else size.height / 2,
+                                size.height / 2,
+                            ))
+                    }
+                }
+            }
+        }
         OPERATOR_IQAMAH_PRAYER_IDS.forEachIndexed { index, prayerId ->
             IqamahOffsetRow(
                 prayerId = prayerId,
@@ -543,13 +577,13 @@ internal fun IqamahSettingsEditor(
                 incrementRequester = incrementRequesters.getValue(prayerId),
                 previousResetRequester = resetRequesters[
                     OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index - 1)
-                ],
+                ] ?: visibilityRequester.takeIf { onShowIqamahChanged != null },
                 previousDecrementRequester = decrementRequesters[
                     OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index - 1)
-                ],
+                ] ?: visibilityRequester.takeIf { onShowIqamahChanged != null },
                 previousIncrementRequester = incrementRequesters[
                     OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index - 1)
-                ],
+                ] ?: visibilityRequester.takeIf { onShowIqamahChanged != null },
                 nextResetRequester = resetRequesters[
                     OPERATOR_IQAMAH_PRAYER_IDS.getOrNull(index + 1)
                 ] ?: saveRequester,

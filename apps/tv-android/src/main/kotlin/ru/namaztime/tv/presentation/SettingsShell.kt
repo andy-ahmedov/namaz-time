@@ -55,6 +55,7 @@ import androidx.tv.material3.Text
 import ru.namaztime.tv.AppBuildIdentity
 import ru.namaztime.tv.R
 import ru.namaztime.tv.repository.LocalPrayerSchedule
+import ru.namaztime.tv.repository.ScheduleLayoutMode
 import ru.namaztime.tv.repository.OperatorIqamahConfiguration
 import ru.namaztime.tv.repository.OperatorMosquePresentationIdentity
 import ru.namaztime.tv.repository.OperatorDisplayMode
@@ -97,6 +98,8 @@ fun SettingsShell(
     buildIdentity: AppBuildIdentity? = null,
     pilotLocalRuntime: Boolean = false,
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)? = null,
+    onShowIqamahOnScheduleChanged: ((Boolean) -> Unit)? = null,
+    onScheduleLayoutModeChanged: ((ScheduleLayoutMode) -> Unit)? = null,
     onMosquePresentationIdentityChanged: ((OperatorMosquePresentationIdentity) -> Unit)? = null,
     onOpenDeviceSetup: (() -> Unit)? = null,
     onBackgroundStyleChanged: ((String) -> Unit)? = null,
@@ -235,6 +238,8 @@ fun SettingsShell(
                     buildIdentity = buildIdentity,
                     pilotLocalRuntime = pilotLocalRuntime,
                     onScreenRetentionShiftChanged = onScreenRetentionShiftChanged,
+                    onShowIqamahOnScheduleChanged = onShowIqamahOnScheduleChanged,
+                    onScheduleLayoutModeChanged = onScheduleLayoutModeChanged,
                     onMosquePresentationIdentityChanged = onMosquePresentationIdentityChanged,
                     onOpenDeviceSetup = onOpenDeviceSetup,
                     onBackgroundStyleChanged = onBackgroundStyleChanged,
@@ -276,6 +281,8 @@ private fun SettingsPage(
     buildIdentity: AppBuildIdentity?,
     pilotLocalRuntime: Boolean,
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)?,
+    onShowIqamahOnScheduleChanged: ((Boolean) -> Unit)?,
+    onScheduleLayoutModeChanged: ((ScheduleLayoutMode) -> Unit)?,
     onMosquePresentationIdentityChanged: ((OperatorMosquePresentationIdentity) -> Unit)?,
     onOpenDeviceSetup: (() -> Unit)?,
     onBackgroundStyleChanged: ((String) -> Unit)?,
@@ -612,6 +619,8 @@ private fun SettingsPage(
                 entryRequester = pageActionRequester,
                 saveRequester = actionRequesters.firstOrNull() ?: returnActionRequester,
                 onBackgroundStyleChanged = onBackgroundStyleChanged,
+                onShowIqamahOnScheduleChanged = onShowIqamahOnScheduleChanged,
+                onScheduleLayoutModeChanged = onScheduleLayoutModeChanged,
                 customAssetVersion = customAssetVersion,
                 donationAssetVersion = donationAssetVersion,
                 compact = compactPreview,
@@ -742,6 +751,8 @@ private fun SettingsContent(
     entryRequester: FocusRequester,
     saveRequester: FocusRequester,
     onBackgroundStyleChanged: ((String) -> Unit)?,
+    onShowIqamahOnScheduleChanged: ((Boolean) -> Unit)?,
+    onScheduleLayoutModeChanged: ((ScheduleLayoutMode) -> Unit)?,
     customAssetVersion: Long,
     donationAssetVersion: Long,
     compact: Boolean,
@@ -779,6 +790,8 @@ private fun SettingsContent(
             configuration = iqamahConfiguration,
             onConfigurationChange = onIqamahConfigurationChange,
             approvedDhuhrTimeMinutes = schedule.approvedDhuhrFixedTimeMinutes(),
+            showIqamahOnSchedule = preferences.showIqamahOnSchedule,
+            onShowIqamahChanged = onShowIqamahOnScheduleChanged,
             entryRequester = entryRequester,
             saveRequester = saveRequester,
             compact = compact,
@@ -787,15 +800,45 @@ private fun SettingsContent(
         return
     }
     if (destination == SettingsDestination.APPEARANCE) {
-        AppearanceBackgroundGallery(
-            selectedStyleId = preferences.backgroundStyleId,
-            onStyleSelected = onBackgroundStyleChanged,
-            entryRequester = entryRequester,
-            nextRequester = saveRequester,
-            customAssetVersion = customAssetVersion,
-            compact = compact,
-            modifier = modifier,
-        )
+        Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ScheduleLayoutMode.entries.forEach { mode ->
+                    Button(
+                        onClick = { onScheduleLayoutModeChanged?.invoke(mode) },
+                        colors = ButtonDefaults.colors(
+                            containerColor = if (preferences.scheduleLayoutMode == mode) {
+                                NamazTvTheme.colors.accentSoft
+                            } else NamazTvTheme.colors.surfaceStrong,
+                            contentColor = NamazTvTheme.colors.textPrimary,
+                            focusedContainerColor = NamazTvTheme.colors.accent,
+                            focusedContentColor = NamazTvTheme.colors.backgroundBottom,
+                        ),
+                        enabled = onScheduleLayoutModeChanged != null,
+                        scale = ButtonDefaults.scale(focusedScale = 1f),
+                        modifier = Modifier.weight(1f).height(38.dp)
+                            .testTag("settings-layout-${mode.id}")
+                            .semantics { selected = preferences.scheduleLayoutMode == mode }
+                            .focusProperties { down = entryRequester },
+                    ) {
+                        Text(
+                            appString(if (mode == ScheduleLayoutMode.STANDARD) {
+                                R.string.schedule_layout_standard
+                            } else R.string.schedule_layout_compact),
+                            fontSize = if (compact) 15.sp else 18.sp,
+                        )
+                    }
+                }
+            }
+            AppearanceBackgroundGallery(
+                selectedStyleId = preferences.backgroundStyleId,
+                onStyleSelected = onBackgroundStyleChanged,
+                entryRequester = entryRequester,
+                nextRequester = saveRequester,
+                customAssetVersion = customAssetVersion,
+                compact = compact,
+                modifier = Modifier.weight(1f),
+            )
+        }
         return
     }
     if (destination == SettingsDestination.DONATION) {
@@ -969,7 +1012,7 @@ private fun AppearanceBackgroundGallery(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(if (compact) 160.dp else 250.dp)
+                .height(if (compact) 114.dp else 204.dp)
                 .testTag(SETTINGS_BACKGROUND_SELECTED_PREVIEW_TAG),
             contentAlignment = Alignment.Center,
         ) {

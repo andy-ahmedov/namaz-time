@@ -246,4 +246,8 @@
     <string name="campaign_kind_contacts">CONTACTS</string>
     <string name="campaign_kind_website">WEBSITE</string>
     <string name="campaign_kind_information">INFORMATION</string>
+    <string name="show_iqamah_on_schedule">Show Iqamah times on schedule screen</string>
+    <string name="schedule_layout_standard">Standard</string>
+    <string name="schedule_layout_compact">Compact right side</string>
+    <string name="qr_insufficient_space">Link is too long for this QR size</string>
 </resources>

@@ -53,7 +53,7 @@ certificate, snapshot or trust assets differ. Debug uses the separate
 `ru.namaztime.tv.debug` application ID and debug key, so it cannot accidentally
 occupy the retained mosque application's identity.
 
-The current handover version is `0.5.2-pilot.1` with `versionCode=6`. Version
+The current handover version is `0.6.0-pilot.1` with `versionCode=7`. Version
 values come only from `apps/tv-android/version.properties`; do not hand-edit an
 APK filename or manifest to simulate another build.
 
@@ -112,3 +112,36 @@ Pairing, a public API/domain, remote schedule delivery, remote app updates,
 Google Play and production KMS custody are a different deployment mode. They
 are not prerequisites for this offline pilot. Revisit them only when remote
 operation or wider distribution is actually requested.
+
+## T045 physical-TV QR retest
+
+Status: `PHYSICAL_QR_RETEST_REQUIRED`. The owner reported a camera scan failure
+on a physical television before T045. Its cause is `UNKNOWN`; the central
+30-percent badge and nonuniform rescaling were code-level risks, not a proven
+physical root cause. T045 removes both, keeps at least four quiet-zone modules,
+and supplies a new code-7 APK without changing the signed schedule.
+
+1. Install the exact `0.6.0-pilot.1` handover APK in place. Verify Diagnostics
+   and the external manifest agree on commit, version/code and snapshot hash.
+2. Record TV/box model, OS, panel resolution/scaling/overscan, picture mode,
+   sharpness, brightness, camera/phone model and lighting. Keep the existing
+   operator's approved HTTPS destination; no external shortening service is used.
+3. Scan STANDARD, RIGHT_SIDE_COMPACT and Donation from near distance and from
+   representative hall seating. Test short, medium and long valid HTTPS test
+   payloads separately. Record decoded target, distance, time to acquire and
+   repeated success/failure count. Do not treat launching a payment as required.
+4. Confirm the whole square QR and four-module white border remain visible.
+   If scanning fails, record the exact scenario/payload length and a photo of
+   the TV for comparison; change one display/camera variable at a time.
+5. In Икамат, toggle the public-display switch OFF and ON; verify the summary
+   and values disappear/return and the saved local values survive app restart.
+   In Appearance switch both layouts; verify six rows, clock/date and Settings,
+   and that the compact left half remains background-only through retention shift.
+6. Record physical scan results as `CONFIRMED_RUNTIME` only after reproduction
+   on the named TV/camera. Emulator results do not close this retest.
+
+No Room migration is introduced. Layout and visibility are additive DataStore
+keys with STANDARD/true defaults. To undo the presentation change, choose
+Standard and turn Iqamah ON. A code rollback must be repackaged with a higher
+versionCode using the retained signing key; do not uninstall or erase data.
+The existing schedule/provenance/signature/approval flow is unchanged.

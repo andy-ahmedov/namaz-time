@@ -125,6 +125,7 @@ internal data class PrayerDisplayUiState(
     val nextEventTime: String,
     val countdown: String,
     val iqamahSummary: IqamahSummaryUiState?,
+    val showIqamahOnSchedule: Boolean = true,
     val sourceLabel: String,
     val sourceDescription: String,
     val sourceRequiresAttention: Boolean,
@@ -296,7 +297,7 @@ private fun DisplayHeader(
 }
 
 @Composable
-private fun SettingsButton(
+internal fun SettingsButton(
     metrics: MainDisplayMetrics,
     settingsFocusRequester: FocusRequester,
     requestInitialFocus: Boolean,
@@ -849,7 +850,7 @@ private fun LocalClockCard(
 }
 
 @Composable
-private fun PrayerListCard(
+internal fun PrayerListCard(
     state: PrayerDisplayUiState,
     metrics: MainDisplayMetrics,
     modifier: Modifier,
@@ -870,9 +871,10 @@ private fun PrayerListCard(
             PrayerGridHeader(
                 metrics,
                 Modifier.padding(horizontal = metrics.gridHorizontalPadding),
+                showIqamah = state.showIqamahOnSchedule,
             )
             state.rows.forEachIndexed { index, row ->
-                PrayerGridRow(row, metrics, Modifier.weight(1f))
+                PrayerGridRow(row, metrics, Modifier.weight(1f), showIqamah = state.showIqamahOnSchedule)
                 if (index < state.rows.lastIndex) {
                     TvFadingHairline(
                         modifier = Modifier
@@ -919,6 +921,7 @@ private fun PrayerGridRow(
     row: PrayerDisplayRow,
     metrics: MainDisplayMetrics,
     modifier: Modifier,
+    showIqamah: Boolean,
 ) {
     val colors = NamazTvTheme.colors
     val iqamahText = row.iqamah ?: "—"
@@ -933,7 +936,7 @@ private fun PrayerGridRow(
     } else {
         ""
     }
-    val rowDescription = appString(
+    val rowDescription = if (!showIqamah) "${row.label}, ${appString(R.string.adhan_column)} ${row.adhan}$accessibilitySuffix" else appString(
         R.string.prayer_row_accessibility,
         row.label,
         row.adhan,
@@ -983,6 +986,7 @@ private fun PrayerGridRow(
         PrayerGridColumns(
             row = row,
             iqamahText = iqamahText,
+            showIqamah = showIqamah,
             metrics = metrics,
             modifier = Modifier
                 .fillMaxSize()
@@ -995,6 +999,7 @@ private fun PrayerGridRow(
 private fun PrayerGridHeader(
     metrics: MainDisplayMetrics,
     modifier: Modifier = Modifier,
+    showIqamah: Boolean = true,
 ) {
     val colors = NamazTvTheme.colors
     Row(
@@ -1014,7 +1019,7 @@ private fun PrayerGridHeader(
                 header = true,
                 alignment = TextAlign.Center,
             )
-            GridText(
+            if (showIqamah) GridText(
                 appString(R.string.iqamah_column),
                 1f,
                 metrics,
@@ -1033,6 +1038,7 @@ private fun PrayerGridHeader(
 private fun PrayerGridColumns(
     row: PrayerDisplayRow,
     iqamahText: String,
+    showIqamah: Boolean,
     metrics: MainDisplayMetrics,
     modifier: Modifier = Modifier,
 ) {
@@ -1079,7 +1085,7 @@ private fun PrayerGridColumns(
                     emphasized = row.isNextEvent,
                     numeric = true,
                 )
-                GridText(
+                if (showIqamah) GridText(
                     iqamahText,
                     1f,
                     metrics,
@@ -1128,6 +1134,17 @@ private fun IqamahStatusStrip(
     metrics: MainDisplayMetrics,
     modifier: Modifier,
 ) {
+    if (!state.showIqamahOnSchedule) {
+        if (state.sourceRequiresAttention || state.supportCode != null) {
+            Text(
+                state.supportCode?.let { appString(R.string.support_code, it) } ?: state.sourceLabel,
+                color = NamazTvTheme.colors.warning,
+                fontSize = metrics.sourceDescriptionSize,
+                modifier = modifier,
+            )
+        }
+        return
+    }
     val colors = NamazTvTheme.colors
     TvGlassPanel(
         modifier = modifier.testTag(IQAMAH_STRIP_TAG),
@@ -1219,6 +1236,7 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
     resolution: PrayerTimeResolution.Available,
     strings: AppStrings,
     displayIdentity: MosqueDisplayIdentity = toMosqueDisplayIdentity(),
+    showIqamahOnSchedule: Boolean = true,
 ): PrayerDisplayUiState {
     val day = requireNotNull(days.firstOrNull { it.localDate == resolution.localDate.toString() }) {
         "resolved date is outside the local snapshot"
@@ -1269,7 +1287,8 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
         },
         nextEventTime = nextEvent?.localTime?.format(PRAYER_TIME_FORMAT) ?: "—:——",
         countdown = resolution.countdownSeconds?.let(::formatCountdown) ?: "—:——:——",
-        iqamahSummary = resolution.nextIqamahSummary(strings),
+        showIqamahOnSchedule = showIqamahOnSchedule,
+        iqamahSummary = if (showIqamahOnSchedule) resolution.nextIqamahSummary(strings) else null,
         sourceLabel = sourceLabel,
         sourceDescription = attribution ?: authorityName,
         sourceRequiresAttention = sourceRequiresAttention,
@@ -1280,7 +1299,9 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
                 text = "${session.label} ${session.salahTime.format(PRAYER_TIME_FORMAT)}",
             )
         },
-        rows = day.toDisplayRows(resolution, strings),
+        rows = day.toDisplayRows(resolution, strings).map { row ->
+            if (showIqamahOnSchedule) row else row.copy(iqamah = null)
+        },
     )
 }
 
@@ -1391,7 +1412,7 @@ private fun formatCountdown(seconds: Long): String {
 private val CLOCK_FORMAT = DateTimeFormatter.ofPattern("HH:mm:ss", Locale.ROOT)
 private val PRAYER_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm", Locale.ROOT)
 
-private data class MainDisplayMetrics(
+internal data class MainDisplayMetrics(
     val sectionGap: Dp,
     val bodyTopGap: Dp,
     val stripGap: Dp,

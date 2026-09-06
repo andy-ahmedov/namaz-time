@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: docs-check format format-check lint lint-go lint-android security-go secret-scan test test-go test-go-race test-contracts test-research test-android-unit test-android-build-identity test-android-all test-postgres test-postgres-restore build-android-pilot verify-android-pilot
+.PHONY: docs-check format format-check lint lint-go lint-android security-go secret-scan test test-go test-go-race test-contracts test-research test-android-unit test-android-build-identity test-android-all test-postgres test-postgres-restore test-android-t045-emulator build-android-pilot verify-android-pilot
 
 GO_FILES := $(shell find cmd internal -type f -name '*.go' 2>/dev/null)
 GRADLE_FLAGS ?= --no-daemon --no-build-cache
@@ -117,3 +117,10 @@ verify-android-pilot:
 	NAMAZTIME_EXPECTED_VERSION_NAME="$(ANDROID_PILOT_VERSION)" \
 	NAMAZTIME_EXPECTED_BUILD_COMMIT="$(NAMAZTIME_EXPECTED_BUILD_COMMIT)" \
 		bash ./scripts/android-pilot-artifact-check.sh "$(NAMAZTIME_PILOT_APK)"
+
+# Explicit, controlled-emulator evidence; never part of unattended repository tests.
+T045_EVIDENCE_PYTHON ?= python3
+T045_EVIDENCE_ARGS ?= --output artifacts/t045-emulator --profiles 720p 1080p
+
+test-android-t045-emulator:
+	$(T045_EVIDENCE_PYTHON) scripts/android-t045-evidence.py $(T045_EVIDENCE_ARGS)

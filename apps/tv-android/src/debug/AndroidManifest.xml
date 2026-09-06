@@ -3,6 +3,10 @@
 
     <application>
         <activity
+            android:name=".presentation.SchedulePresentationEvidenceActivity"
+            android:exported="true"
+            android:screenOrientation="landscape" />
+        <activity
             android:name=".presentation.DeviceSetupEvidenceActivity"
             android:exported="true"
             android:screenOrientation="landscape" />

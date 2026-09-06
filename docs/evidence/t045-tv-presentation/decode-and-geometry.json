@@ -1,0 +1,1288 @@
+[
+  {
+    "name": "720p-background",
+    "scenario": "background",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "3d413155c68c2a2d5dcc49c94c5f007c9c207577a72d5311c7b1f46bd5c6ac3d"
+  },
+  {
+    "name": "720p-standard-short",
+    "scenario": "standard",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "db5318e4443e4e396e10802ca2a1808e31820407a5f0f14cfb66d814cf81f75d",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "720p-compact-short",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "f3945f6ce015702e0686eea8618ec8e674911138c0a3ff6ce2787c235bc4cb96",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      645,
+      44,
+      1216,
+      686
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-donation-short",
+    "scenario": "donation",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "55d4180a6e3c6aeea2cd253291bb161c298ce7e5b740129d5df782019a68ab2f",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "720p-settings-qr-short",
+    "scenario": "settings-qr",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "67349befbb27c703556f0a14af005a1fdb9db1b550f36786318074cd79bea800",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "720p-standard-medium",
+    "scenario": "standard",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "9edb6cb98e4f943a4ab3db62e7262f5927550321f92dbca9576a10c2055d277a",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "720p-compact-medium",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "302284d82c801315103abea95af8276d8574d9bfb811a5964fbe6e481cf9441e",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      645,
+      44,
+      1216,
+      686
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-donation-medium",
+    "scenario": "donation",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "313165cd96078578b53166a556529e99336e908555be0403e2bc79bbee1bfe2a",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "720p-settings-qr-medium",
+    "scenario": "settings-qr",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "ac2d2d44873f376b113725e2f1df1360ebb9eea60566e61bccfd32f02c9a3a08",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "720p-standard-long",
+    "scenario": "standard",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "2695158812df649cd2eaa05d1fe0e594500df37a2778d68d0f8672d43b5db66e",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "720p-compact-long",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "a814b040ca7bb5867eff540b2ae854193344657adf8e550b8aad729f4ace2040",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      645,
+      44,
+      1216,
+      686
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-donation-long",
+    "scenario": "donation",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "56b2c9642bdd35ca4f301586a4213f297ca8bfe724577bedebbef1804a57554c",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "720p-settings-qr-long",
+    "scenario": "settings-qr",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "3ffdcb0b29a8749c0f3ba7e8ef9bea5d93b33c660d1a9b4d7aef0fa440a566bd",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "720p-compact-on-ru",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "0f3d12feb36e2689e776704ddeb10dd6141cdcb609c8d903b118899532b697f1",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      645,
+      44,
+      1216,
+      686
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-compact-noqr-ru",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "90a21e3c1881de4ca93557cccc86bb0f41462a093b07405d6d9a8ff1df889ec2",
+    "foreground_bbox": [
+      646,
+      44,
+      1216,
+      686
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-compact-on-en",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "en",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "a5f6ed96e82a3600c26b330be433c246a279e43da54f56e97b552ab684ee72b8",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      645,
+      44,
+      1216,
+      686
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-compact-noqr-en",
+    "scenario": "compact",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "en",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "17f8df1db8e188aa604cf1e0de13d3ac5a705044da0ed435e3a1b785ad02dc67",
+    "foreground_bbox": [
+      646,
+      44,
+      1216,
+      686
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "720p-standard-on",
+    "scenario": "standard",
+    "size": [
+      1280,
+      720
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "dc6ee89396fc38da78f07b0a805afdbe29df30d1af848e7cb238f3821b509c23",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-background",
+    "scenario": "background",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "404bad5d93d6039c551ab27ea1bb86247c91045c4aafeb7f636437e3a2833821"
+  },
+  {
+    "name": "1080p-standard-short",
+    "scenario": "standard",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "2e0a407ed70d541368cf71160801d96a20c5d69839ee3c861cabb09be249a9c6",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-compact-short",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "1e3988d4f93ab47dea4e346233c14db41e05bd9b24e321027f973e5f51c39dc8",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      971,
+      66,
+      1824,
+      1028
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-donation-short",
+    "scenario": "donation",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "983c52a795616cd04000430603f704cf816edc0b33c99af95099e711d258f665",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-settings-qr-short",
+    "scenario": "settings-qr",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "b2a7468eb1ea230039f8e9d074f6a67b6e609b60fdaa1f7763978e70c6f9d886",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-standard-medium",
+    "scenario": "standard",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "6bfbf6a683cd3acda74f5843ef690bdc7d141902107331934119218642bfb7ee",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-compact-medium",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "65d91893eb6f0ee95e183c249c6ccb5436a572a412c94361d490aa72ef3e8459",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      971,
+      66,
+      1824,
+      1028
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-donation-medium",
+    "scenario": "donation",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "51ae558220070700724fbdf9b33c125d14720c3e00abc600d998d750467a8ec4",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-settings-qr-medium",
+    "scenario": "settings-qr",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "351291d0fe3ed10112f089b0f4bfeb48b5c615d8b23ce6e530f4b6af0b48de78",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-standard-long",
+    "scenario": "standard",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "e49dd6e199971b1c5b767143895588e34708884b43e66bea1bf907f8f9afda06",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-compact-long",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "f949cf08ca74f9e5d93d220cb687aad43d9bf5284d790d688739653be0455a37",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      971,
+      66,
+      1824,
+      1028
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-donation-long",
+    "scenario": "donation",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "a79f7beb9b331edb0bc2f9f57c0daa8d72ae72fe64ef6d0a2d300d00915733c3",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-settings-qr-long",
+    "scenario": "settings-qr",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "f7aa897b8679f39633c3be8dc2e207f492bc2f9df6ee58f486e1e38f5a1bb997",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-compact-on-ru",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "dad7235fce20538ae1dc0eab97aa4ca35f25da36250720eced34a2cd60d36b56",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      971,
+      66,
+      1824,
+      1028
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-compact-noqr-ru",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "f41bfa06924e6f646398c987ada9c74628f6164bac69ae752f5c45dd74547f2e",
+    "foreground_bbox": [
+      972,
+      66,
+      1824,
+      1028
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-compact-on-en",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "en",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "a6201ef089e582143483d24d3ad2de57158cf420bca2e05baddd9205af435c3e",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      971,
+      66,
+      1824,
+      1028
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-compact-noqr-en",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "en",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "5317c8cd2fcd1f36bba544f2f80a9d185fd581f12645267185037c33e48bbea3",
+    "foreground_bbox": [
+      972,
+      66,
+      1824,
+      1028
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-standard-on",
+    "scenario": "standard",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "486369a4210c1682de884eb6d97dc5246aa451cfe28400a9115eb70a84196181",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "1080p-iqamah-settings",
+    "scenario": "settings-iqamah",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "6b398358e0adc7122d8a0f7af077062f463b3ecf3b6c000c0d170e02531c9b2e"
+  },
+  {
+    "name": "1080p-appearance-settings",
+    "scenario": "settings-appearance",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "ab5da19a136c4a359799861f680a171ccf0944860453851b519f6e4befe6d8c2"
+  },
+  {
+    "name": "1080p-compact-shift-1",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 1,
+    "sha256": "47324d98568702866352093f512b8aefe1e3b3cbad8bb6f66ff256bcf1c77165",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      963,
+      66,
+      1816,
+      1028
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-compact-shift-2",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 2,
+    "sha256": "b24238eb6083397bd8b4202121ea972e6afab3ee0b51ce7903943a73535fd4af",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      963,
+      58,
+      1816,
+      1020
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-compact-shift-3",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 3,
+    "sha256": "ea14a0810bac691a30d1ca83f95a9c44be60dd4aade27367333ac94a7b25208e",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      971,
+      58,
+      1824,
+      1020
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-compact-shift-4",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 4,
+    "sha256": "b088db7c5c21d761e0f6a0320d1260ff900eb8dfb7c2aa6acbe01a6ae9124993",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      967,
+      62,
+      1820,
+      1024
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "1080p-compact-shift-5",
+    "scenario": "compact",
+    "size": [
+      1920,
+      1080
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 5,
+    "sha256": "e16f08a000f0348b418e5e05567f13371726c9d6144183c4b1e6efe379ed3d03",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      971,
+      62,
+      1824,
+      1024
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-background",
+    "scenario": "background",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "fdd3e0571a2974cd1aabe177d92349eb884ad036f1978eff30297b2a24bb699d"
+  },
+  {
+    "name": "4k-standard-short",
+    "scenario": "standard",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "54e6d8b5773a7ed348811f1fc4dea556c5316ca8733b36ded995fd24dc878811",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "4k-compact-short",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "f6bcb5cecbe28a82ac152411c61ec7be7d69567fd493f3b875394136b31a8b86",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1936,
+      130,
+      3648,
+      2055
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-donation-short",
+    "scenario": "donation",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "e6761979b3642f461982cebfdc61becbe5dd00fd9061cee8156ab96c0648a1dd",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "4k-settings-qr-short",
+    "scenario": "settings-qr",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "4028c8e6a22b98a987eaf20719cbac3111c324127fa4a0c18e6ee623032fb608",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "4k-standard-medium",
+    "scenario": "standard",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "12e00d38dc8bc4abe7d43d31bdea74a9728c0328750e0ad503ea30b46a80e80d",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "4k-compact-medium",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "a34511ed57208a050941deb5232f2cad9bca7c4840312de9167195df29564418",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1936,
+      130,
+      3648,
+      2055
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-donation-medium",
+    "scenario": "donation",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "a722049250e2066314d7b5389e952383ba722b04a72ed4bdc2df5ed70e4dd53a",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "4k-settings-qr-medium",
+    "scenario": "settings-qr",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "medium",
+    "shift": 0,
+    "sha256": "f976d69b17ecfb2603c9ce6a0ea6ec93daac2d5fbcafdc5b3b3db1fa2a23fd43",
+    "decoded": [
+      "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "4k-standard-long",
+    "scenario": "standard",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "8b465330ea76dcbc67850322d6c611309efe4b11c13fd302c1204689a8ee8f35",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "4k-compact-long",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "a25ea77008f4d7b56c7fd871f74939db6b66d998376c0a4987a1ecc2ac029e3f",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1936,
+      130,
+      3648,
+      2055
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-donation-long",
+    "scenario": "donation",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "e5528f9e8afb8601831a849f7ce90b9a5289ca4555c3a14ae1488ee8a071f3ab",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "4k-settings-qr-long",
+    "scenario": "settings-qr",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": true,
+    "payload": "long",
+    "shift": 0,
+    "sha256": "9dc099142ed73875d4e2a47a7726a4c89ede3fbb5adc1c56d0a67c42d6473dd6",
+    "decoded": [
+      "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  },
+  {
+    "name": "4k-compact-on-ru",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "1c955be5f36c4d0b163339d75dfe71bbff34056be6c9d9b5e9252e5036182fb2",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1936,
+      130,
+      3648,
+      2055
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-compact-noqr-ru",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "d11dd4d2a1358f3e4305695add2e88b1c1c8c6b00e7b5a4af8667b5e9e2cde16",
+    "foreground_bbox": [
+      1938,
+      130,
+      3648,
+      2055
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-compact-on-en",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "en",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "01f8c591fbfd1284426212b90a6fdcfd57907e28ba35c69a842672581084bb14",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true,
+    "foreground_bbox": [
+      1936,
+      130,
+      3648,
+      2055
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-compact-noqr-en",
+    "scenario": "compact",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "en",
+    "iqamah": false,
+    "qr": false,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "f8bccafa798ddcd65ad541f139b6e52fc0a0514d8ee3db90dbcd308a93c2c6cb",
+    "foreground_bbox": [
+      1938,
+      130,
+      3648,
+      2055
+    ],
+    "left_half_unchanged": true
+  },
+  {
+    "name": "4k-standard-on",
+    "scenario": "standard",
+    "size": [
+      3840,
+      2160
+    ],
+    "language": "ru",
+    "iqamah": true,
+    "qr": true,
+    "payload": "short",
+    "shift": 0,
+    "sha256": "1f6374a261a2fb1ba1706753275bf5281eb473a64f4a3d0ac7d205387e7c283c",
+    "decoded": [
+      "https://example.org/sadaqah"
+    ],
+    "decode_pass": true,
+    "blur_055_pass": true
+  }
+]
