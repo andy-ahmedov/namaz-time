@@ -54,6 +54,7 @@ import ru.namaztime.tv.repository.EmptyPrayerScheduleRepository
 import ru.namaztime.tv.repository.LocalPrayerSchedule
 import ru.namaztime.tv.repository.OperatorPreferences
 import ru.namaztime.tv.repository.OperatorPreferencesRepository
+import ru.namaztime.tv.repository.OperatorMosquePresentationIdentity
 import ru.namaztime.tv.repository.AndroidOperatorImageAssetImporter
 import ru.namaztime.tv.repository.AndroidOperatorImageSelectionEnvironment
 import ru.namaztime.tv.repository.AndroidOperatorMediaImageCatalog
@@ -508,6 +509,19 @@ fun NamazTvApp(
                     if (deviceSetupController != null) {
                         composable<DeviceSetupRoute> {
                             val setupState by deviceSetupController.state.collectAsStateWithLifecycle()
+                            LaunchedEffect(setupState.activation) {
+                                if (setupState.activation is ScheduleActivationUiState.Activated) {
+                                    try {
+                                        operatorPreferencesRepository.setMosquePresentationIdentity(
+                                            OperatorMosquePresentationIdentity(),
+                                        )
+                                    } catch (_: IOException) {
+                                        // The newly selected schedule remains active and explicit.
+                                    }
+                                    deviceSetupController.resetAfterExit()
+                                    navController.popBackStack(DISPLAY_ROUTE, inclusive = false)
+                                }
+                            }
                             val backOrExit = {
                                 if (setupState.step == DeviceSetupStep.SEARCH) {
                                     deviceSetupController.resetAfterExit()
@@ -527,6 +541,7 @@ fun NamazTvApp(
                                 onRetryScheduleChoices = deviceSetupController::retryScheduleChoices,
                                 onScheduleChoiceSelected = deviceSetupController::selectScheduleChoice,
                                 onRetryScheduleChoiceRequest = deviceSetupController::retryScheduleChoiceRequest,
+                                onActivatePreview = deviceSetupController::activatePreview,
                             )
                         }
                     }

@@ -49,6 +49,20 @@ pointer, approval/publication evidence, signed snapshots or device assignments.
 The Android client does not write this pending state into the Room prayer
 snapshot tables. Last-known-good remains the only display input.
 
+### Debug-only local activation follow-up (2026-09-03)
+
+The ordinary debug variant may expose an explicit local activation action for
+its packaged synthetic `PROPOSAL` fixtures. This is not a production schedule
+activation and does not use the device API. It persists only the exact fixture
+city/choice identifiers, projects the packaged rows through a debug-only local
+repository and labels the public display as not approved. The signed Room
+last-known-good is not mutated or relabelled.
+
+Release and pilot variants do not compile that store, projection or activation
+flag. Direct activation there still requires a separately accepted contract
+that can assign and download an already approved, hashed and signed snapshot;
+an unsigned preview or TV-originated approval remains forbidden.
+
 ## Consequences
 
 - a stolen device credential remains limited to its own device and mosque;

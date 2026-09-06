@@ -61,6 +61,11 @@ SHA256SUMS.local.txt
 /namaztime-t025-qr-final.png
 /new_main_page_with_setting_icon.png
 /qr_page.png
+/android_tv_emulator_trouble.mp4
+/choose_image.png
+/ikamat.png
+/ikamat_referense.png
+/text_cropping.png
 
 # Python tooling caches
 __pycache__/

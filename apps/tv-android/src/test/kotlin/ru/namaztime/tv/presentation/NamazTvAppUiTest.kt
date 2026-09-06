@@ -62,9 +62,19 @@ import ru.namaztime.tv.domain.CampaignEngine
 import ru.namaztime.tv.domain.PrayerTimeEngine
 import ru.namaztime.tv.domain.PrayerTimeResolution
 import ru.namaztime.tv.domain.QrCodeGenerator
+import ru.namaztime.tv.sync.CanonicalCityCandidate
+import ru.namaztime.tv.sync.DeviceCityScheduleChoiceSet
+import ru.namaztime.tv.sync.DeviceScheduleAuthority
+import ru.namaztime.tv.sync.DeviceScheduleChoice
+import ru.namaztime.tv.sync.DeviceSchedulePreview
+import ru.namaztime.tv.sync.DeviceSchedulePreviewPrayer
+import ru.namaztime.tv.sync.DeviceSchedulePreviewRow
+import ru.namaztime.tv.sync.DeviceScheduleSource
 import java.io.IOException
 import java.time.Clock
 import java.time.Instant
+import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneOffset
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -534,6 +544,120 @@ class NamazTvAppUiTest {
         compose.onNodeWithTag(DEVICE_SETUP_SEARCH_FIELD_TAG).assertIsFocused()
         compose.onNodeWithText("Ульяновск").assertIsDisplayed()
         assertEquals(approved.snapshotId, schedule().snapshotId)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun successfulPreviewActivationReturnsToDisplayWithSelectedCity() {
+        val original = schedule().copy(
+            mosqueId = "second-cathedral-mosque-ulyanovsk",
+            locality = "Ульяновск",
+        )
+        val selectedSchedule = original.copy(
+            snapshotId = "synthetic-debug-active-omsk",
+            mosqueId = "synthetic-debug-mosque-omsk",
+            mosqueName = "Демо-организация Омск №1",
+            locality = "Омск",
+            timezoneId = "Asia/Omsk",
+            authorityName = "Демо-организация Омск №1",
+            diagnostics = original.diagnostics?.copy(
+                dataClassification = "synthetic",
+                approvalStatus = "proposal",
+            ),
+        )
+        val repository = FakePrayerScheduleRepository(original)
+        val city = setupOmskCity()
+        val choice = setupOmskChoice()
+        val setupState = MutableStateFlow(
+            DeviceSetupUiState(
+                query = "Омск",
+                step = DeviceSetupStep.PREVIEW,
+                search = CitySearchUiState.Results(listOf(city)),
+                selectedCity = city,
+                choices = ScheduleChoicesUiState.Available(
+                    DeviceCityScheduleChoiceSet(
+                        revisionId = "synthetic-debug-revision-v1",
+                        revisionState = "staged",
+                        status = "available",
+                        automaticResolutionStatus = "resolved",
+                        automaticResolutionReason = "resolved",
+                        selectionRequired = false,
+                        date = LocalDate.parse("2026-08-20"),
+                        city = city,
+                        choices = listOf(choice),
+                        requestAllowed = false,
+                    ),
+                ),
+                submission = ScheduleChoiceSubmissionUiState.Preview(
+                    choice = choice,
+                    schedule = requireNotNull(choice.localPreview),
+                ),
+            ),
+        )
+        val setupController = object : DeviceSetupController {
+            override val state = setupState
+            override fun onQueryChanged(query: String) = Unit
+            override fun retrySearch() = Unit
+            override fun selectCity(city: CanonicalCityCandidate) = Unit
+            override fun retryScheduleChoices() = Unit
+            override fun selectScheduleChoice(choice: DeviceScheduleChoice) = Unit
+            override fun retryScheduleChoiceRequest() = Unit
+            override fun activatePreview() {
+                repository.setSchedule(selectedSchedule)
+                setupState.value = setupState.value.copy(
+                    activation = ScheduleActivationUiState.Activated(choice),
+                )
+            }
+            override fun backToSearch() = Unit
+            override fun resetAfterExit() {
+                setupState.value = DeviceSetupUiState()
+            }
+        }
+        val preferences = FakeOperatorPreferencesRepository(
+            initialPreferences = OperatorPreferences(
+                mosquePresentationIdentity =
+                    ru.namaztime.tv.repository.OperatorMosquePresentationIdentity(
+                        displayName = "Старое имя",
+                        displayAddress = "Ульяновск",
+                    ),
+            ),
+        )
+        compose.setContent {
+            NamazTvApp(
+                operatorPreferencesRepository = preferences,
+                prayerScheduleRepository = repository,
+                bootstrapState = MutableStateFlow(SnapshotBootstrapState.Ready(original.snapshotId)),
+                deviceSetupController = setupController,
+                clock = fixedClock,
+                tickIntervalMillis = null,
+            )
+        }
+
+        openSettingsDestination(SettingsDestination.MOSQUE)
+        compose.onNodeWithTag(SettingsDestination.MOSQUE.navigationTestTag).performKeyInput {
+            pressKey(Key.DirectionRight)
+        }
+        compose.onNodeWithTag(SETTINGS_MOSQUE_NAME_FIELD_TAG).performKeyInput {
+            pressKey(Key.DirectionDown)
+        }
+        compose.onNodeWithTag(SETTINGS_MOSQUE_ADDRESS_FIELD_TAG).performKeyInput {
+            pressKey(Key.DirectionDown)
+        }
+        compose.onNodeWithTag(SETTINGS_MOSQUE_IDENTITY_SAVE_TAG).performKeyInput {
+            pressKey(Key.DirectionDown)
+        }
+        compose.onNodeWithTag(SETTINGS_DEVICE_SETUP_ACTION_TAG).performKeyInput {
+            pressKey(Key.Enter)
+        }
+        compose.onNodeWithTag(DEVICE_SETUP_ACTIVATE_PREVIEW_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        compose.waitForIdle()
+
+        compose.onNodeWithTag(MAIN_PRAYER_DISPLAY_TAG).assertIsDisplayed()
+        compose.onNodeWithText("Омск").assertIsDisplayed()
+        compose.onNodeWithText("Демо-организация Омск №1").assertIsDisplayed()
     }
 
     @Test
@@ -2160,6 +2284,81 @@ private class FakePrayerScheduleRepository(schedule: LocalPrayerSchedule?) : Pra
     private val state = MutableStateFlow(schedule)
 
     override fun observeActiveSchedule(): Flow<LocalPrayerSchedule?> = state
+
+    fun setSchedule(schedule: LocalPrayerSchedule?) {
+        state.value = schedule
+    }
+}
+
+private fun setupOmskCity() = CanonicalCityCandidate(
+    id = "synthetic-debug-omsk",
+    canonicalName = "Омск",
+    aliases = listOf("Omsk"),
+    federalSubjectCode = "RU-OMS",
+    federalSubjectName = "Демо-каталог · Омская область",
+    settlementType = "city",
+    timezone = "Asia/Omsk",
+    latitude = 0.0,
+    longitude = 0.0,
+    geographicSourceId = "synthetic-debug-only",
+    geographicRevision = "fixture-v1",
+    geographicLicense = "synthetic-test-only",
+)
+
+private fun setupOmskChoice(): DeviceScheduleChoice {
+    val preview = DeviceSchedulePreview(
+        date = LocalDate.parse("2026-08-20"),
+        timezone = "Asia/Omsk",
+        evidenceLabel = "PROPOSAL",
+        rows = DeviceSchedulePreviewPrayer.entries.mapIndexed { index, prayer ->
+            DeviceSchedulePreviewRow(
+                prayer = prayer,
+                adhan = LocalTime.of(4 + index * 2, 20),
+                iqamah = if (prayer == DeviceSchedulePreviewPrayer.SUNRISE) {
+                    null
+                } else {
+                    LocalTime.of(4 + index * 2, 35)
+                },
+            )
+        },
+    )
+    return DeviceScheduleChoice(
+        id = "schedule-choice-${"1".repeat(64)}",
+        displayLabel = "Омск — Демо-организация Омск №1",
+        authorityLabel = "Демо-организация Омск №1",
+        tier = "exact_city_timetable",
+        selectable = true,
+        executable = false,
+        requestable = false,
+        policyId = "synthetic-debug-policy-omsk",
+        policyKind = "timetable",
+        approvalId = "synthetic-debug-approval-1",
+        effectiveFrom = LocalDate.parse("2025-08-20"),
+        effectiveTo = LocalDate.parse("2027-08-20"),
+        scopeId = "synthetic-debug-scope-omsk",
+        scopeKind = "city",
+        scopeDescription = "Демонстрационные данные — не реальное расписание",
+        authorities = listOf(
+            DeviceScheduleAuthority(
+                id = "synthetic-debug-authority-omsk",
+                name = "Демо-организация Омск №1",
+                evidenceLabel = "PROPOSAL",
+            ),
+        ),
+        source = DeviceScheduleSource(
+            id = "synthetic-debug-source-omsk",
+            kind = "manual_import",
+            status = "synthetic_debug",
+            canonicalUrl = null,
+            freshThrough = null,
+        ),
+        scheduleId = "synthetic-debug-timetable-omsk",
+        scheduleKind = "timetable",
+        scheduleTimezone = "Asia/Omsk",
+        publishedSnapshotId = null,
+        localPreview = preview,
+        activationAllowed = true,
+    )
 }
 
 private object FakeOperatorImageSelectionEnvironment : OperatorImageSelectionEnvironment {

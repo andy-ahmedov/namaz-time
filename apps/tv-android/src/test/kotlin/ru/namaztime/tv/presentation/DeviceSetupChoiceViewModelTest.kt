@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import java.time.Clock
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneOffset
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -24,6 +25,9 @@ import ru.namaztime.tv.sync.CanonicalCityCandidate
 import ru.namaztime.tv.sync.DeviceCityScheduleChoiceSet
 import ru.namaztime.tv.sync.DeviceScheduleAuthority
 import ru.namaztime.tv.sync.DeviceScheduleChoice
+import ru.namaztime.tv.sync.DeviceSchedulePreview
+import ru.namaztime.tv.sync.DeviceSchedulePreviewPrayer
+import ru.namaztime.tv.sync.DeviceSchedulePreviewRow
 import ru.namaztime.tv.sync.DeviceScheduleSource
 import ru.namaztime.tv.sync.DeviceSetupGateway
 import ru.namaztime.tv.sync.DeviceSetupResult
@@ -96,6 +100,96 @@ class DeviceSetupChoiceViewModelTest {
         val pending = model.state.value.submission as ScheduleChoiceSubmissionUiState.Pending
         assertEquals(choices[1].id, pending.choice.id)
         assertEquals("pending_review", pending.request.status)
+    }
+
+    @Test
+    fun syntheticDebugChoiceNeverCreatesPendingReviewRequest() = runTest(dispatcher) {
+        val city = setupCity()
+        val gateway = ChoiceGateway(
+            city = city,
+            choiceCount = 1,
+            sourceStatus = "synthetic_debug",
+        )
+        val model = setupModel(gateway)
+        searchAndSelect(model, city)
+        runCurrent()
+        val selected = (model.state.value.choices as ScheduleChoicesUiState.Available)
+            .set.choices.single()
+
+        model.selectScheduleChoice(selected)
+        runCurrent()
+
+        assertTrue(gateway.requests.isEmpty())
+        assertFalse(model.state.value.submission is ScheduleChoiceSubmissionUiState.Pending)
+    }
+
+    @Test
+    fun explicitPreviewActivationUsesExactChoiceAndCompletes() = runTest(dispatcher) {
+        val city = setupCity()
+        val gateway = ChoiceGateway(
+            city = city,
+            choiceCount = 1,
+            sourceStatus = "synthetic_debug",
+            activationAllowed = true,
+        )
+        val model = setupModel(gateway)
+        searchAndSelect(model, city)
+        runCurrent()
+        val selected = (model.state.value.choices as ScheduleChoicesUiState.Available)
+            .set.choices.single()
+        model.selectScheduleChoice(selected)
+
+        model.activatePreview()
+        runCurrent()
+
+        assertEquals(listOf(selected.id), gateway.activations.map { it.choiceId })
+        assertTrue(model.state.value.activation is ScheduleActivationUiState.Activated)
+        assertTrue(gateway.requests.isEmpty())
+    }
+
+    @Test
+    fun failedPreviewActivationKeepsPreviewAndExposesRetryableError() = runTest(dispatcher) {
+        val city = setupCity()
+        val gateway = ChoiceGateway(
+            city = city,
+            choiceCount = 1,
+            sourceStatus = "synthetic_debug",
+            activationAllowed = true,
+        ).apply {
+            activationResults += DeviceSetupResult.Failure("setup_activation_io", retryable = true)
+        }
+        val model = setupModel(gateway)
+        searchAndSelect(model, city)
+        runCurrent()
+        val selected = (model.state.value.choices as ScheduleChoicesUiState.Available)
+            .set.choices.single()
+        model.selectScheduleChoice(selected)
+
+        model.activatePreview()
+        runCurrent()
+
+        assertEquals(DeviceSetupStep.PREVIEW, model.state.value.step)
+        val failure = model.state.value.activation as ScheduleActivationUiState.Error
+        assertEquals("setup_activation_io", failure.code)
+        assertTrue(failure.retryable)
+    }
+
+    @Test
+    fun backFromSelectionResultReturnsToAuthorityChoicesBeforeCitySearch() = runTest(dispatcher) {
+        val city = setupCity()
+        val gateway = ChoiceGateway(city, choiceCount = 1)
+        val model = setupModel(gateway)
+        searchAndSelect(model, city)
+        runCurrent()
+        val selected = (model.state.value.choices as ScheduleChoicesUiState.Available)
+            .set.choices.single()
+        model.selectScheduleChoice(selected)
+        runCurrent()
+
+        model.backToSearch()
+
+        assertEquals(DeviceSetupStep.CHOICES, model.state.value.step)
+        assertEquals(city.id, model.state.value.selectedCity?.id)
     }
 
     @Test
@@ -179,15 +273,25 @@ private data class RecordedChoiceRequest(
     val interactionId: String,
 )
 
+private data class RecordedChoiceActivation(
+    val cityId: String,
+    val choiceId: String,
+    val date: LocalDate,
+)
+
 private class ChoiceGateway(
     private val city: CanonicalCityCandidate,
     private val choiceCount: Int,
     private val duplicateLabels: Boolean = false,
     private val choiceDelayMillis: Long = 0,
+    private val sourceStatus: String = "approved",
+    private val activationAllowed: Boolean = false,
 ) : DeviceSetupGateway {
     val choiceLoads = mutableListOf<Pair<String, LocalDate>>()
     val requests = mutableListOf<RecordedChoiceRequest>()
+    val activations = mutableListOf<RecordedChoiceActivation>()
     val requestResults = ArrayDeque<DeviceSetupResult<PendingDeviceScheduleChoiceRequest>>()
+    val activationResults = ArrayDeque<DeviceSetupResult<Unit>>()
 
     override suspend fun searchCities(query: String) = DeviceSetupResult.Success(listOf(city))
 
@@ -197,7 +301,19 @@ private class ChoiceGateway(
     ): DeviceSetupResult<DeviceCityScheduleChoiceSet> {
         choiceLoads += cityId to date
         if (choiceDelayMillis > 0) delay(choiceDelayMillis)
-        val choices = (0 until choiceCount).map { choice(it, duplicateLabels) }
+        val choices = (0 until choiceCount).map { index ->
+            choice(index, duplicateLabels).let { item ->
+                item.copy(
+                    source = item.source.copy(status = sourceStatus),
+                    localPreview = if (sourceStatus == "synthetic_debug") {
+                        syntheticPreview()
+                    } else {
+                        null
+                    },
+                    activationAllowed = activationAllowed,
+                )
+            }
+        }
         return DeviceSetupResult.Success(
             DeviceCityScheduleChoiceSet(
                 revisionId = "synthetic-revision-0001",
@@ -232,7 +348,29 @@ private class ChoiceGateway(
         return requestResults.removeFirstOrNull()
             ?: DeviceSetupResult.Success(pendingRequest(city, choice(choiceId.takeLast(1).toInt())))
     }
+
+    override suspend fun activateScheduleChoice(
+        cityId: String,
+        choiceId: String,
+        date: LocalDate,
+    ): DeviceSetupResult<Unit> {
+        activations += RecordedChoiceActivation(cityId, choiceId, date)
+        return activationResults.removeFirstOrNull() ?: DeviceSetupResult.Success(Unit)
+    }
 }
+
+private fun syntheticPreview() = DeviceSchedulePreview(
+    date = LocalDate.parse("2026-08-30"),
+    timezone = "Europe/Ulyanovsk",
+    evidenceLabel = "PROPOSAL",
+    rows = listOf(
+        DeviceSchedulePreviewRow(
+            prayer = DeviceSchedulePreviewPrayer.FAJR,
+            adhan = LocalTime.parse("04:20"),
+            iqamah = LocalTime.parse("04:35"),
+        ),
+    ),
+)
 
 private fun setupCity(
     idSuffix: String = "1",

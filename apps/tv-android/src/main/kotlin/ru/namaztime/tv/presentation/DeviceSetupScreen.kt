@@ -50,6 +50,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -59,6 +60,8 @@ import androidx.tv.material3.Text
 import ru.namaztime.tv.R
 import ru.namaztime.tv.sync.CanonicalCityCandidate
 import ru.namaztime.tv.sync.DeviceScheduleChoice
+import ru.namaztime.tv.sync.DeviceSchedulePreviewPrayer
+import java.time.format.DateTimeFormatter
 
 const val DEVICE_SETUP_SCREEN_TAG = "device-setup-screen"
 const val DEVICE_SETUP_SEARCH_FIELD_TAG = "device-setup-search-field"
@@ -70,6 +73,9 @@ const val DEVICE_SETUP_CHOICE_TAG_PREFIX = "device-setup-choice-"
 const val DEVICE_SETUP_CHOICES_RETRY_TAG = "device-setup-choices-retry"
 const val DEVICE_SETUP_REQUEST_RETRY_TAG = "device-setup-request-retry"
 const val DEVICE_SETUP_PENDING_TAG = "device-setup-pending"
+const val DEVICE_SETUP_PREVIEW_TAG = "device-setup-preview"
+const val DEVICE_SETUP_PREVIEW_ROW_TAG_PREFIX = "device-setup-preview-row-"
+const val DEVICE_SETUP_ACTIVATE_PREVIEW_TAG = "device-setup-activate-preview"
 
 data class ActiveScheduleSummaryUi(
     val cityName: String,
@@ -91,6 +97,7 @@ fun DeviceScheduleSetupScreen(
     onRetryScheduleChoices: () -> Unit = {},
     onScheduleChoiceSelected: (DeviceScheduleChoice) -> Unit = {},
     onRetryScheduleChoiceRequest: () -> Unit = {},
+    onActivatePreview: () -> Unit = {},
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -112,6 +119,12 @@ fun DeviceScheduleSetupScreen(
         ) {
             BoxWithConstraints(Modifier.fillMaxSize()) {
                 val compact = maxHeight < 600.dp
+                val localPreviewFlow = state.step == DeviceSetupStep.PREVIEW ||
+                    (state.choices as? ScheduleChoicesUiState.Available)
+                        ?.set?.choices?.any { it.localPreview != null } == true
+                val previewActivationAllowed =
+                    (state.submission as? ScheduleChoiceSubmissionUiState.Preview)
+                        ?.choice?.activationAllowed == true
                 Row(
                     modifier = Modifier
                         .fillMaxSize()
@@ -120,6 +133,9 @@ fun DeviceScheduleSetupScreen(
                 ) {
                     SetupContextPanel(
                         activeSchedule = activeSchedule,
+                        previewVisible = localPreviewFlow,
+                        requestBackFocus = state.step == DeviceSetupStep.PREVIEW &&
+                            !previewActivationAllowed,
                         onBack = onBack,
                         compact = compact,
                         modifier = Modifier
@@ -147,6 +163,14 @@ fun DeviceScheduleSetupScreen(
                                 .weight(0.66f)
                                 .fillMaxHeight(),
                         )
+                        DeviceSetupStep.PREVIEW -> SchedulePreviewPanel(
+                            state = state,
+                            onActivatePreview = onActivatePreview,
+                            compact = compact,
+                            modifier = Modifier
+                                .weight(0.66f)
+                                .fillMaxHeight(),
+                        )
                         DeviceSetupStep.PENDING -> PendingChoicePanel(
                             state = state,
                             compact = compact,
@@ -164,10 +188,19 @@ fun DeviceScheduleSetupScreen(
 @Composable
 private fun SetupContextPanel(
     activeSchedule: ActiveScheduleSummaryUi?,
+    previewVisible: Boolean,
+    requestBackFocus: Boolean,
     onBack: () -> Unit,
     compact: Boolean,
     modifier: Modifier = Modifier,
 ) {
+    val backRequester = remember { FocusRequester() }
+    LaunchedEffect(requestBackFocus, backRequester) {
+        if (requestBackFocus) {
+            withFrameNanos { }
+            runCatching { backRequester.requestFocus() }
+        }
+    }
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(if (compact) 14.dp else 20.dp),
@@ -199,7 +232,13 @@ private fun SetupContextPanel(
             SummaryLine(activeSchedule.timezone, compact)
         }
         Text(
-            text = appString(R.string.device_setup_last_known_good_note),
+            text = appString(
+                if (previewVisible) {
+                    R.string.device_setup_preview_active_note
+                } else {
+                    R.string.device_setup_last_known_good_note
+                },
+            ),
             color = NamazTvTheme.colors.textSecondary,
             fontSize = if (compact) 14.sp else 17.sp,
             lineHeight = if (compact) 19.sp else 23.sp,
@@ -207,6 +246,7 @@ private fun SetupContextPanel(
         Spacer(Modifier.weight(1f))
         Button(
             onClick = onBack,
+            modifier = Modifier.focusRequester(backRequester),
             colors = setupButtonColors(),
         ) {
             Text(appString(R.string.device_setup_back))
@@ -628,6 +668,7 @@ private fun ScheduleChoicesPanel(
                         }
                     }
                     is ScheduleChoiceSubmissionUiState.Pending -> Unit
+                    is ScheduleChoiceSubmissionUiState.Preview -> Unit
                 }
             }
         }
@@ -648,7 +689,11 @@ private fun ScheduleChoiceButton(
         .joinToString(", ")
     Button(
         onClick = {
-            if (choice.requestable && !choice.executable && !submitting) onClick()
+            if ((choice.localPreview != null || choice.requestable && !choice.executable) &&
+                !submitting
+            ) {
+                onClick()
+            }
         },
         enabled = choice.selectable && !submitting,
         colors = setupButtonColors(),
@@ -741,6 +786,186 @@ private fun ScheduleChoiceButton(
 }
 
 @Composable
+private fun SchedulePreviewPanel(
+    state: DeviceSetupUiState,
+    onActivatePreview: () -> Unit,
+    compact: Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val preview = state.submission as? ScheduleChoiceSubmissionUiState.Preview
+    val city = state.selectedCity
+    val activateRequester = remember { FocusRequester() }
+    val activating = state.activation is ScheduleActivationUiState.Activating
+    LaunchedEffect(preview?.choice?.id, preview?.choice?.activationAllowed, activateRequester) {
+        if (preview?.choice?.activationAllowed == true) {
+            withFrameNanos { }
+            runCatching { activateRequester.requestFocus() }
+        }
+    }
+    Column(
+        modifier = modifier.testTag(DEVICE_SETUP_PREVIEW_TAG),
+        verticalArrangement = Arrangement.spacedBy(if (compact) 7.dp else 12.dp),
+    ) {
+        Text(
+            text = city?.canonicalName.orEmpty(),
+            modifier = Modifier.semantics { heading() },
+            color = NamazTvTheme.colors.textPrimary,
+            fontSize = if (compact) 27.sp else 36.sp,
+            fontWeight = FontWeight.Bold,
+        )
+        if (preview == null) {
+            SetupMessage(appString(R.string.device_setup_choice_request_error), compact, warning = true)
+            return@Column
+        }
+        Text(
+            text = preview.choice.authorityLabel,
+            color = NamazTvTheme.colors.textPrimary,
+            fontSize = if (compact) 17.sp else 22.sp,
+            fontWeight = FontWeight.SemiBold,
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = appString(R.string.device_setup_demo_result),
+                color = NamazTvTheme.colors.accent,
+                fontSize = if (compact) 17.sp else 22.sp,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                text = appString(
+                    R.string.device_setup_preview_context,
+                    preview.schedule.date.toString(),
+                    preview.schedule.timezone,
+                    preview.schedule.evidenceLabel,
+                ),
+                color = NamazTvTheme.colors.textSecondary,
+                fontSize = if (compact) 12.sp else 15.sp,
+            )
+        }
+        TvGlassPanel(
+            modifier = Modifier.fillMaxWidth().weight(1f),
+            radius = 18.dp,
+        ) {
+            Column(
+                modifier = Modifier.fillMaxSize().padding(
+                    horizontal = if (compact) 18.dp else 24.dp,
+                    vertical = if (compact) 8.dp else 14.dp,
+                ),
+            ) {
+                PreviewScheduleRow(
+                    prayer = appString(R.string.prayer_column),
+                    adhan = appString(R.string.adhan_column),
+                    iqamah = appString(R.string.iqamah_column),
+                    compact = compact,
+                    header = true,
+                )
+                preview.schedule.rows.forEach { row ->
+                    PreviewScheduleRow(
+                        prayer = previewPrayerLabel(row.prayer),
+                        adhan = previewTimeFormatter.format(row.adhan),
+                        iqamah = row.iqamah?.let(previewTimeFormatter::format) ?: "—",
+                        compact = compact,
+                        modifier = Modifier.testTag(
+                            "$DEVICE_SETUP_PREVIEW_ROW_TAG_PREFIX${row.prayer.name.lowercase()}",
+                        ),
+                    )
+                }
+            }
+        }
+        if (preview.choice.activationAllowed) {
+            Button(
+                onClick = onActivatePreview,
+                enabled = !activating,
+                colors = setupButtonColors(),
+                modifier = Modifier
+                    .testTag(DEVICE_SETUP_ACTIVATE_PREVIEW_TAG)
+                    .focusRequester(activateRequester),
+            ) {
+                Text(
+                    appString(
+                        if (activating) {
+                            R.string.device_setup_activating_preview
+                        } else {
+                            R.string.device_setup_activate_preview
+                        },
+                    ),
+                )
+            }
+        }
+        val activationError = state.activation as? ScheduleActivationUiState.Error
+        if (activationError != null) {
+            SetupMessage(
+                message = appString(R.string.device_setup_activation_error),
+                compact = compact,
+                warning = true,
+            )
+        }
+        Text(
+            text = appString(R.string.device_setup_demo_explanation),
+            color = NamazTvTheme.colors.textSecondary,
+            fontSize = if (compact) 12.sp else 15.sp,
+            lineHeight = if (compact) 15.sp else 19.sp,
+        )
+    }
+}
+
+@Composable
+private fun PreviewScheduleRow(
+    prayer: String,
+    adhan: String,
+    iqamah: String,
+    compact: Boolean,
+    modifier: Modifier = Modifier,
+    header: Boolean = false,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().height(if (compact) 32.dp else 42.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = prayer,
+            modifier = Modifier.weight(1.4f),
+            color = if (header) NamazTvTheme.colors.textSecondary else NamazTvTheme.colors.textPrimary,
+            fontSize = if (compact) 14.sp else 18.sp,
+            fontWeight = if (header) FontWeight.Medium else FontWeight.SemiBold,
+        )
+        Text(
+            text = adhan,
+            modifier = Modifier.weight(1f),
+            color = if (header) NamazTvTheme.colors.textSecondary else NamazTvTheme.colors.textPrimary,
+            fontSize = if (compact) 14.sp else 18.sp,
+            fontWeight = if (header) FontWeight.Medium else FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+        Text(
+            text = iqamah,
+            modifier = Modifier.weight(1f),
+            color = if (header) NamazTvTheme.colors.textSecondary else NamazTvTheme.colors.accent,
+            fontSize = if (compact) 14.sp else 18.sp,
+            fontWeight = if (header) FontWeight.Medium else FontWeight.Bold,
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
+private fun previewPrayerLabel(prayer: DeviceSchedulePreviewPrayer): String = appString(
+    when (prayer) {
+        DeviceSchedulePreviewPrayer.FAJR -> R.string.prayer_fajr
+        DeviceSchedulePreviewPrayer.SUNRISE -> R.string.prayer_sunrise
+        DeviceSchedulePreviewPrayer.DHUHR -> R.string.prayer_dhuhr
+        DeviceSchedulePreviewPrayer.ASR -> R.string.prayer_asr
+        DeviceSchedulePreviewPrayer.MAGHRIB -> R.string.prayer_maghrib
+        DeviceSchedulePreviewPrayer.ISHA -> R.string.prayer_isha
+    },
+)
+
+private val previewTimeFormatter: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+@Composable
 private fun PendingChoicePanel(
     state: DeviceSetupUiState,
     compact: Boolean,
@@ -777,7 +1002,10 @@ private fun PendingChoicePanel(
                 fontSize = if (compact) 22.sp else 30.sp,
                 fontWeight = FontWeight.Bold,
             )
-            SetupMessage(appString(R.string.device_setup_pending_explanation), compact)
+            SetupMessage(
+                appString(R.string.device_setup_pending_explanation),
+                compact,
+            )
         }
     }
 }

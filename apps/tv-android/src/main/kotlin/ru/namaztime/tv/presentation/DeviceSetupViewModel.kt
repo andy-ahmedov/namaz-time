@@ -17,6 +17,7 @@ import kotlinx.coroutines.launch
 import ru.namaztime.tv.sync.CanonicalCityCandidate
 import ru.namaztime.tv.sync.DeviceCityScheduleChoiceSet
 import ru.namaztime.tv.sync.DeviceScheduleChoice
+import ru.namaztime.tv.sync.DeviceSchedulePreview
 import ru.namaztime.tv.sync.DeviceSetupGateway
 import ru.namaztime.tv.sync.DeviceSetupResult
 import ru.namaztime.tv.sync.PendingDeviceScheduleChoiceRequest
@@ -24,6 +25,7 @@ import ru.namaztime.tv.sync.PendingDeviceScheduleChoiceRequest
 enum class DeviceSetupStep {
     SEARCH,
     CHOICES,
+    PREVIEW,
     PENDING,
 }
 
@@ -51,6 +53,10 @@ sealed interface ScheduleChoicesUiState {
 sealed interface ScheduleChoiceSubmissionUiState {
     data object Idle : ScheduleChoiceSubmissionUiState
     data class Submitting(val choice: DeviceScheduleChoice) : ScheduleChoiceSubmissionUiState
+    data class Preview(
+        val choice: DeviceScheduleChoice,
+        val schedule: DeviceSchedulePreview,
+    ) : ScheduleChoiceSubmissionUiState
     data class Pending(
         val request: PendingDeviceScheduleChoiceRequest,
         val choice: DeviceScheduleChoice,
@@ -63,6 +69,17 @@ sealed interface ScheduleChoiceSubmissionUiState {
     ) : ScheduleChoiceSubmissionUiState
 }
 
+sealed interface ScheduleActivationUiState {
+    data object Idle : ScheduleActivationUiState
+    data class Activating(val choice: DeviceScheduleChoice) : ScheduleActivationUiState
+    data class Activated(val choice: DeviceScheduleChoice) : ScheduleActivationUiState
+    data class Error(
+        val choice: DeviceScheduleChoice,
+        val code: String,
+        val retryable: Boolean,
+    ) : ScheduleActivationUiState
+}
+
 data class DeviceSetupUiState(
     val query: String = "",
     val step: DeviceSetupStep = DeviceSetupStep.SEARCH,
@@ -70,6 +87,7 @@ data class DeviceSetupUiState(
     val selectedCity: CanonicalCityCandidate? = null,
     val choices: ScheduleChoicesUiState = ScheduleChoicesUiState.Idle,
     val submission: ScheduleChoiceSubmissionUiState = ScheduleChoiceSubmissionUiState.Idle,
+    val activation: ScheduleActivationUiState = ScheduleActivationUiState.Idle,
 )
 
 interface DeviceSetupController {
@@ -79,6 +97,7 @@ interface DeviceSetupController {
     fun selectCity(city: CanonicalCityCandidate)
     fun retryScheduleChoices()
     fun selectScheduleChoice(choice: DeviceScheduleChoice)
+    fun activatePreview() = Unit
     fun retryScheduleChoiceRequest()
     fun backToSearch()
     fun resetAfterExit()
@@ -107,6 +126,7 @@ class DeviceSetupViewModel(
     private var searchJob: Job? = null
     private var choicesJob: Job? = null
     private var submissionJob: Job? = null
+    private var activationJob: Job? = null
 
     init {
         if (initialQuery.isNotBlank()) scheduleSearch(initialQuery.trim())
@@ -128,6 +148,7 @@ class DeviceSetupViewModel(
             selectedCity = null,
             choices = ScheduleChoicesUiState.Idle,
             submission = ScheduleChoiceSubmissionUiState.Idle,
+            activation = ScheduleActivationUiState.Idle,
         )
         scheduleSearch(normalized)
     }
@@ -145,6 +166,7 @@ class DeviceSetupViewModel(
             selectedCity = null,
             choices = ScheduleChoicesUiState.Idle,
             submission = ScheduleChoiceSubmissionUiState.Idle,
+            activation = ScheduleActivationUiState.Idle,
         )
         scheduleSearch(normalized)
     }
@@ -159,6 +181,7 @@ class DeviceSetupViewModel(
             selectedCity = exact,
             choices = ScheduleChoicesUiState.Loading,
             submission = ScheduleChoiceSubmissionUiState.Idle,
+            activation = ScheduleActivationUiState.Idle,
         )
         loadChoices(exact)
     }
@@ -167,10 +190,12 @@ class DeviceSetupViewModel(
         val city = mutableState.value.selectedCity ?: return
         choicesJob?.cancel()
         submissionJob?.cancel()
+        activationJob?.cancel()
         mutableState.value = mutableState.value.copy(
             step = DeviceSetupStep.CHOICES,
             choices = ScheduleChoicesUiState.Loading,
             submission = ScheduleChoiceSubmissionUiState.Idle,
+            activation = ScheduleActivationUiState.Idle,
         )
         loadChoices(city)
     }
@@ -179,7 +204,18 @@ class DeviceSetupViewModel(
         val current = mutableState.value
         val set = (current.choices as? ScheduleChoicesUiState.Available)?.set ?: return
         val exact = set.choices.singleOrNull { it.id == choice.id } ?: return
-        if (!exact.selectable || !exact.requestable || exact.executable || !set.requestAllowed) return
+        if (!exact.selectable) return
+        exact.localPreview?.let { preview ->
+            submissionJob?.cancel()
+            activationJob?.cancel()
+            mutableState.value = current.copy(
+                step = DeviceSetupStep.PREVIEW,
+                submission = ScheduleChoiceSubmissionUiState.Preview(exact, preview),
+                activation = ScheduleActivationUiState.Idle,
+            )
+            return
+        }
+        if (!exact.requestable || exact.executable || !set.requestAllowed) return
         submissionJob?.cancel()
         submitChoice(
             city = current.selectedCity ?: return,
@@ -187,6 +223,63 @@ class DeviceSetupViewModel(
             choice = exact,
             interactionId = interactionIdFactory(),
         )
+    }
+
+    override fun activatePreview() {
+        val current = mutableState.value
+        val preview = current.submission as? ScheduleChoiceSubmissionUiState.Preview ?: return
+        val city = current.selectedCity ?: return
+        if (!preview.choice.activationAllowed ||
+            current.activation is ScheduleActivationUiState.Activating ||
+            current.activation is ScheduleActivationUiState.Activated
+        ) {
+            return
+        }
+        activationJob?.cancel()
+        mutableState.value = current.copy(
+            activation = ScheduleActivationUiState.Activating(preview.choice),
+        )
+        activationJob = viewModelScope.launch {
+            val result = try {
+                setupGateway.activateScheduleChoice(
+                    cityId = city.id,
+                    choiceId = preview.choice.id,
+                    date = preview.schedule.date,
+                )
+            } catch (error: CancellationException) {
+                throw error
+            }
+            val latest = mutableState.value
+            val latestPreview = latest.submission as? ScheduleChoiceSubmissionUiState.Preview
+            if (latest.step != DeviceSetupStep.PREVIEW ||
+                latest.selectedCity?.id != city.id ||
+                latestPreview?.choice?.id != preview.choice.id
+            ) {
+                return@launch
+            }
+            mutableState.value = latest.copy(
+                activation = when (result) {
+                    is DeviceSetupResult.Success -> ScheduleActivationUiState.Activated(
+                        preview.choice,
+                    )
+                    DeviceSetupResult.NotProvisioned -> ScheduleActivationUiState.Error(
+                        preview.choice,
+                        "setup_not_provisioned",
+                        retryable = false,
+                    )
+                    DeviceSetupResult.Unauthorized -> ScheduleActivationUiState.Error(
+                        preview.choice,
+                        "setup_unauthorized",
+                        retryable = false,
+                    )
+                    is DeviceSetupResult.Failure -> ScheduleActivationUiState.Error(
+                        preview.choice,
+                        result.code,
+                        result.retryable,
+                    )
+                },
+            )
+        }
     }
 
     override fun retryScheduleChoiceRequest() {
@@ -202,11 +295,23 @@ class DeviceSetupViewModel(
     override fun backToSearch() {
         choicesJob?.cancel()
         submissionJob?.cancel()
+        activationJob?.cancel()
+        if (mutableState.value.step == DeviceSetupStep.PREVIEW ||
+            mutableState.value.step == DeviceSetupStep.PENDING
+        ) {
+            mutableState.value = mutableState.value.copy(
+                step = DeviceSetupStep.CHOICES,
+                submission = ScheduleChoiceSubmissionUiState.Idle,
+                activation = ScheduleActivationUiState.Idle,
+            )
+            return
+        }
         mutableState.value = mutableState.value.copy(
             step = DeviceSetupStep.SEARCH,
             selectedCity = null,
             choices = ScheduleChoicesUiState.Idle,
             submission = ScheduleChoiceSubmissionUiState.Idle,
+            activation = ScheduleActivationUiState.Idle,
         )
     }
 
@@ -217,6 +322,7 @@ class DeviceSetupViewModel(
             selectedCity = null,
             choices = ScheduleChoicesUiState.Idle,
             submission = ScheduleChoiceSubmissionUiState.Idle,
+            activation = ScheduleActivationUiState.Idle,
         )
     }
 
@@ -275,6 +381,7 @@ class DeviceSetupViewModel(
                     )
                 },
                 submission = ScheduleChoiceSubmissionUiState.Idle,
+                activation = ScheduleActivationUiState.Idle,
             )
         }
     }
@@ -335,6 +442,7 @@ class DeviceSetupViewModel(
         searchJob?.cancel()
         choicesJob?.cancel()
         submissionJob?.cancel()
+        activationJob?.cancel()
     }
 }
 

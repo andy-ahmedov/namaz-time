@@ -36,6 +36,7 @@
     <string name="device_setup_current_schedule">Текущее активное расписание</string>
     <string name="device_setup_no_active_schedule">Активное расписание отсутствует</string>
     <string name="device_setup_last_known_good_note">Текущее расписание продолжает работать до подтверждения нового выбора</string>
+    <string name="device_setup_preview_active_note">Просмотр не изменяет текущее активное расписание</string>
     <string name="device_setup_back">Назад</string>
     <string name="device_setup_search_title">Выберите населённый пункт</string>
     <string name="device_setup_search_label">Поиск по каталогу России</string>
@@ -57,7 +58,7 @@
     <string name="device_setup_selected_city_context">%1$s · %2$s</string>
     <string name="device_setup_choices_unavailable">Для этого города утверждённое расписание пока недоступно</string>
     <string name="device_setup_choices_error">Не удалось загрузить варианты расписания</string>
-    <string name="device_setup_choices_single">Доступен один утверждённый вариант. Проверьте источник и выберите его явно.</string>
+    <string name="device_setup_choices_single">Доступен один вариант расписания. Проверьте организацию и источник.</string>
     <string name="device_setup_choices_multiple">Выберите один из всех доступных вариантов. Порядок списка не означает приоритет.</string>
     <string name="device_setup_choice_source">%1$s · %2$s</string>
     <string name="device_setup_choice_provenance_fresh">Основание: %1$s · подтверждение %2$s · актуально до %3$s</string>
@@ -72,6 +73,12 @@
     <string name="device_setup_choice_selected">Выбрано расписание: %1$s</string>
     <string name="device_setup_pending_review">Ожидает подтверждения</string>
     <string name="device_setup_pending_explanation">Запрос передан оператору. До проверки, утверждения и публикации продолжает работать прежнее подписанное расписание.</string>
+    <string name="device_setup_demo_result">Демонстрационный режим</string>
+    <string name="device_setup_activate_preview">Использовать на этом телевизоре</string>
+    <string name="device_setup_activating_preview">Применяем расписание…</string>
+    <string name="device_setup_activation_error">Не удалось применить расписание. Предыдущее расписание продолжает работать.</string>
+    <string name="device_setup_demo_explanation">Показано локальное демонстрационное расписание. Это не реальные времена намаза. Запрос на сервер не отправлялся; активное подписанное расписание не изменено.</string>
+    <string name="device_setup_preview_context">%1$s · %2$s · %3$s</string>
     <string name="field_authority">Ответственный источник</string>
     <string name="field_source_type">Тип источника</string>
     <string name="field_approval">Одобрение</string>

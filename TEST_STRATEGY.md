@@ -624,6 +624,27 @@ and does not establish physical-TV behavior. Physical overscan, OEM IME and
 representative-distance readability remain `UNKNOWN` until the hardware
 matrix runs.
 
+The 2026-09-03 debug-runtime regression additionally proves that an ordinary
+unprovisioned debug build selects its source-set-only synthetic gateway without
+touching the HTTP transport, filters `моск` to multiple city candidates and
+shows both Moscow demo authority choices; `Омск` and `Omsk` resolve to one
+synthetic Omsk candidate with `Asia/Omsk`. Compose regressions require the
+synthetic selection to bypass `pending_review`, render six local rows with
+separate adhan/iqamah values, focus the explicit `Use on this TV` action and say
+that no server request was sent. ViewModel tests require activation of the exact
+previewed choice, truthful failure state and no pending request. Repository and
+Robolectric persistence tests require the chosen fixture to replace only the
+debug display projection, survive store recreation, cover today/tomorrow,
+remain visibly synthetic/unapproved and leave the base Room repository intact.
+The runtime recreation regression retains the original gateway, recreates the
+display repository, then requires a subsequent choice to reach that repository.
+An app-shell regression requires success to clear old city labels and return to
+the main display for the selected city. Back before activation still follows
+preview → authority choices → city search. Release/pilot compilation continues
+through the provisioned client factory and receives no synthetic preview rows
+or activation projection; this is not production-server evidence and no real
+Moscow or Omsk schedule is claimed.
+
 T042 adds a single validated Android version source plus unit tests for typed
 build identity and the Diagnostics projection. Repository shell tests exercise
 the APK identity checker with valid and mismatched code/variant cases. Strict

@@ -303,6 +303,26 @@ possibly corrupt old local copy. File-backed tests reopen after interruption
 inside import and after Room commit/before checkpoint finalization. WorkManager
 runs only for provisioned remote mode; 304 or failure never clears Room.
 
+The regular debug variant has a separate source-set-only synthetic
+`DevelopmentDeviceSetupGateway` for interactive emulator work. It never reads
+or writes Room, performs no network request and marks every organization as a
+demonstration `PROPOSAL`. Each debug choice carries six explicit synthetic
+adhan/iqamah preview rows in local memory. Selecting it enters a setup-only
+`PREVIEW` state without creating a `pending_review` request. An additional
+explicit debug-only activation stores only the selected fixture IDs in private
+local preferences. `DevelopmentPrayerScheduleRepository` then projects the
+packaged synthetic rows as an unapproved local display schedule ahead of the
+unchanged Room last-known-good; process recreation reconstructs the projection
+from those IDs. Runtime factories share one application-scoped selection store,
+so a retained setup ViewModel can update a recreated Activity's repository.
+The operation clears presentation labels tied to the previous
+city, and the normal source-attention UI identifies the result as not approved.
+Release and pilot variants compile a different runtime factory that constructs
+the provisioned HTTPS `DeviceSetupClient` and uses the Room repository directly;
+they receive no local preview rows, activation flag or synthetic projection.
+The debug fixture is not a fallback for failed production setup and does not
+supersede the signed production activation boundary in ADR 0016.
+
 Small operator UI preferences, including the last focused settings section,
 reduced-motion default, Russian-by-default whole-app language, bounded
 screen-retention shift toggle, one validated local sadaqah QR presentation and

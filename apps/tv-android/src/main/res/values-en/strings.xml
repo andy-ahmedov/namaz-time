@@ -36,6 +36,7 @@
     <string name="device_setup_current_schedule">Current active schedule</string>
     <string name="device_setup_no_active_schedule">No active schedule</string>
     <string name="device_setup_last_known_good_note">The current schedule remains active until the new choice is approved</string>
+    <string name="device_setup_preview_active_note">Previewing does not change the current active schedule</string>
     <string name="device_setup_back">Back</string>
     <string name="device_setup_search_title">Choose a settlement</string>
     <string name="device_setup_search_label">Search the Russia catalog</string>
@@ -57,7 +58,7 @@
     <string name="device_setup_selected_city_context">%1$s · %2$s</string>
     <string name="device_setup_choices_unavailable">No approved schedule is available for this city yet</string>
     <string name="device_setup_choices_error">Could not load schedule choices</string>
-    <string name="device_setup_choices_single">One approved choice is available. Review its source and select it explicitly.</string>
+    <string name="device_setup_choices_single">One schedule option is available. Review its organization and source.</string>
     <string name="device_setup_choices_multiple">Choose one of all available options. List order does not imply priority.</string>
     <string name="device_setup_choice_source">%1$s · %2$s</string>
     <string name="device_setup_choice_provenance_fresh">Evidence: %1$s · approval %2$s · fresh through %3$s</string>
@@ -72,6 +73,12 @@
     <string name="device_setup_choice_selected">Selected schedule: %1$s</string>
     <string name="device_setup_pending_review">Awaiting review</string>
     <string name="device_setup_pending_explanation">The request was sent to an operator. The previous signed schedule remains active until review, approval, and publication are complete.</string>
+    <string name="device_setup_demo_result">Demonstration mode</string>
+    <string name="device_setup_activate_preview">Use on this TV</string>
+    <string name="device_setup_activating_preview">Applying schedule…</string>
+    <string name="device_setup_activation_error">Could not apply the schedule. The previous schedule remains active.</string>
+    <string name="device_setup_demo_explanation">This is a local demonstration schedule, not real prayer times. No server request was sent, and the active signed schedule was not changed.</string>
+    <string name="device_setup_preview_context">%1$s · %2$s · %3$s</string>
     <string name="field_authority">Responsible source</string>
     <string name="field_source_type">Source type</string>
     <string name="field_approval">Approval</string>

@@ -26,9 +26,9 @@ import ru.namaztime.tv.presentation.NamazTvApp
 import ru.namaztime.tv.presentation.DeviceSetupViewModel
 import ru.namaztime.tv.repository.DataStoreOperatorPreferencesRepository
 import ru.namaztime.tv.repository.RoomPrayerScheduleRepository
-import ru.namaztime.tv.sync.DeviceSetupClient
 import ru.namaztime.tv.sync.EncryptedDeviceProvisioningStore
 import ru.namaztime.tv.sync.HttpUrlConnectionDeviceSyncTransport
+import ru.namaztime.tv.sync.createRuntimeDeviceSetup
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
@@ -43,17 +43,19 @@ class MainActivity : ComponentActivity() {
             operatorPreferencesDataStore,
         )
         val database = NamazDatabase.open(applicationContext)
-        val scheduleRepository = RoomPrayerScheduleRepository(database.snapshotDao())
-        val setupClient = DeviceSetupClient(
+        val baseScheduleRepository = RoomPrayerScheduleRepository(database.snapshotDao())
+        val setupRuntime = createRuntimeDeviceSetup(
+            context = applicationContext,
             transport = HttpUrlConnectionDeviceSyncTransport(),
             provisioningStore = EncryptedDeviceProvisioningStore(applicationContext),
+            baseScheduleRepository = baseScheduleRepository,
         )
         val setupViewModel = ViewModelProvider(
             this,
             viewModelFactory {
                 initializer {
                     DeviceSetupViewModel(
-                        setupGateway = setupClient,
+                        setupGateway = setupRuntime.gateway,
                         savedStateHandle = createSavedStateHandle(),
                     )
                 }
@@ -94,7 +96,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             NamazTvApp(
                 operatorPreferencesRepository = preferencesRepository,
-                prayerScheduleRepository = scheduleRepository,
+                prayerScheduleRepository = setupRuntime.scheduleRepository,
                 bootstrapState = bootstrapper.state,
                 deviceSetupController = setupViewModel,
             )

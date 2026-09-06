@@ -6,6 +6,7 @@ import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import java.time.ZoneId
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -51,6 +52,28 @@ data class DeviceScheduleSource(
     val freshThrough: LocalDate?,
 )
 
+enum class DeviceSchedulePreviewPrayer {
+    FAJR,
+    SUNRISE,
+    DHUHR,
+    ASR,
+    MAGHRIB,
+    ISHA,
+}
+
+data class DeviceSchedulePreviewRow(
+    val prayer: DeviceSchedulePreviewPrayer,
+    val adhan: LocalTime,
+    val iqamah: LocalTime?,
+)
+
+data class DeviceSchedulePreview(
+    val date: LocalDate,
+    val timezone: String,
+    val evidenceLabel: String,
+    val rows: List<DeviceSchedulePreviewRow>,
+)
+
 data class DeviceScheduleChoice(
     val id: String,
     val displayLabel: String,
@@ -73,6 +96,8 @@ data class DeviceScheduleChoice(
     val scheduleKind: String,
     val scheduleTimezone: String?,
     val publishedSnapshotId: String?,
+    val localPreview: DeviceSchedulePreview? = null,
+    val activationAllowed: Boolean = false,
 )
 
 data class DeviceCityScheduleChoiceSet(
@@ -121,6 +146,15 @@ interface DeviceSetupGateway : DeviceCitySearchGateway {
         date: LocalDate,
         interactionId: String,
     ): DeviceSetupResult<PendingDeviceScheduleChoiceRequest>
+
+    suspend fun activateScheduleChoice(
+        cityId: String,
+        choiceId: String,
+        date: LocalDate,
+    ): DeviceSetupResult<Unit> = DeviceSetupResult.Failure(
+        code = "setup_activation_unavailable",
+        retryable = false,
+    )
 }
 
 class DeviceSetupClient(

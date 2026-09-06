@@ -18,6 +18,7 @@ import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.pressKey
 import java.time.Instant
 import java.time.LocalDate
+import java.time.LocalTime
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Rule
@@ -29,6 +30,9 @@ import ru.namaztime.tv.sync.CanonicalCityCandidate
 import ru.namaztime.tv.sync.DeviceCityScheduleChoiceSet
 import ru.namaztime.tv.sync.DeviceScheduleAuthority
 import ru.namaztime.tv.sync.DeviceScheduleChoice
+import ru.namaztime.tv.sync.DeviceSchedulePreview
+import ru.namaztime.tv.sync.DeviceSchedulePreviewPrayer
+import ru.namaztime.tv.sync.DeviceSchedulePreviewRow
 import ru.namaztime.tv.sync.DeviceScheduleSource
 import ru.namaztime.tv.sync.PendingDeviceScheduleChoiceRequest
 
@@ -251,6 +255,12 @@ class DeviceSetupScreenUiTest {
         }
 
         compose.onNodeWithText(item.authorityLabel).assertIsDisplayed()
+        compose.onNodeWithText(
+            "Доступен один вариант расписания. Проверьте организацию и источник.",
+        ).assertIsDisplayed()
+        compose.onNodeWithText(
+            "Доступен один утверждённый вариант. Проверьте источник и выберите его явно.",
+        ).assertDoesNotExist()
         compose.onNodeWithText("Synthetic city scope 0").assertIsDisplayed()
         compose.onNodeWithText("official_file · synthetic-source-0").assertIsDisplayed()
         compose.onNodeWithText(
@@ -260,6 +270,39 @@ class DeviceSetupScreenUiTest {
 
         compose.onNodeWithTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${item.id}")
             .performKeyInput { pressKey(Key.Enter) }
+        assertEquals(item.id, selected?.id)
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    fun localPreviewChoiceIsSelectableWithoutBeingRequestable() {
+        val item = scheduleChoice(0).copy(
+            requestable = false,
+            source = scheduleChoice(0).source.copy(status = "synthetic_debug"),
+            localPreview = debugPreview(),
+        )
+        var selected: DeviceScheduleChoice? = null
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(listOf(item)),
+                    activeSchedule = activeScheduleSummary(),
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onScheduleChoiceSelected = { selected = it },
+                    onBack = {},
+                )
+            }
+        }
+
+        compose.onNodeWithTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${item.id}")
+            .assertIsFocused()
+        compose.onNodeWithText("Просмотр не изменяет текущее активное расписание")
+            .assertIsDisplayed()
+        compose.onNodeWithTag("$DEVICE_SETUP_CHOICE_TAG_PREFIX${item.id}")
+            .performKeyInput { pressKey(Key.Enter) }
+
         assertEquals(item.id, selected?.id)
     }
 
@@ -373,6 +416,52 @@ class DeviceSetupScreenUiTest {
     }
 
     @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun debugFixtureSelectionShowsPrayerTimesWithoutClaimingARequestReachedAnOperator() {
+        val item = scheduleChoice(0).let { choice ->
+            choice.copy(
+                source = choice.source.copy(status = "synthetic_debug"),
+                activationAllowed = true,
+            )
+        }
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(listOf(item)).copy(
+                        step = DeviceSetupStep.PREVIEW,
+                        submission = ScheduleChoiceSubmissionUiState.Preview(
+                            choice = item,
+                            schedule = debugPreview(),
+                        ),
+                    ),
+                    activeSchedule = activeScheduleSummary(),
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onBack = {},
+                )
+            }
+        }
+
+        compose.onNodeWithText("Демонстрационный режим").assertIsDisplayed()
+        compose.onNodeWithText("Фаджр").assertIsDisplayed()
+        compose.onNodeWithText("04:20").assertIsDisplayed()
+        compose.onNodeWithText("Восход").assertIsDisplayed()
+        compose.onNodeWithText("06:01").assertIsDisplayed()
+        compose.onNodeWithText("Иша").assertIsDisplayed()
+        compose.onNodeWithText("20:41").assertIsDisplayed()
+        compose.onNodeWithText(
+            "Показано локальное демонстрационное расписание. Это не реальные времена намаза. " +
+                "Запрос на сервер не отправлялся; активное подписанное расписание не изменено.",
+        ).assertIsDisplayed()
+        compose.onNodeWithText("Просмотр не изменяет текущее активное расписание")
+            .assertIsDisplayed()
+        compose.onNodeWithText("Использовать на этом телевизоре").assertIsDisplayed()
+        compose.onNodeWithText("Ожидает подтверждения").assertDoesNotExist()
+        compose.onNodeWithText("Использовать на этом телевизоре").assertIsFocused()
+    }
+
+    @Test
     @OptIn(ExperimentalTestApi::class)
     fun failedExplicitRequestFocusesRetryAndLeavesLastKnownGoodMessage() {
         val item = scheduleChoice(0)
@@ -432,6 +521,18 @@ class DeviceSetupScreenUiTest {
     @Test
     @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
     fun choiceListFits4kDensitySafeFrame() = assertChoiceSetupFitsSafeFrame()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun previewFits720pSafeFrame() = assertPreviewFitsSafeFrame()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun previewFits1080pDensitySafeFrame() = assertPreviewFitsSafeFrame()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun previewFits4kDensitySafeFrame() = assertPreviewFitsSafeFrame()
 
     private fun assertSetupFitsSafeFrame() {
         compose.setContent {
@@ -499,6 +600,41 @@ class DeviceSetupScreenUiTest {
         assert(root.right - screen.right >= rootWidth * 0.04f)
         assert(screen.top - root.top >= rootHeight * 0.04f)
         assert(root.bottom - screen.bottom >= rootHeight * 0.04f)
+    }
+
+    private fun assertPreviewFitsSafeFrame() {
+        val item = scheduleChoice(0).copy(
+            requestable = false,
+            source = scheduleChoice(0).source.copy(status = "synthetic_debug"),
+            localPreview = debugPreview(),
+            activationAllowed = true,
+        )
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(listOf(item)).copy(
+                        step = DeviceSetupStep.PREVIEW,
+                        submission = ScheduleChoiceSubmissionUiState.Preview(
+                            choice = item,
+                            schedule = item.localPreview!!,
+                        ),
+                    ),
+                    activeSchedule = activeScheduleSummary(),
+                    onQueryChanged = {},
+                    onRetrySearch = {},
+                    onCitySelected = {},
+                    onBack = {},
+                )
+            }
+        }
+
+        compose.onNodeWithTag(DEVICE_SETUP_PREVIEW_TAG).assertIsDisplayed()
+        DeviceSchedulePreviewPrayer.entries.forEach { prayer ->
+            compose.onNodeWithTag(
+                "$DEVICE_SETUP_PREVIEW_ROW_TAG_PREFIX${prayer.name.lowercase()}",
+            ).assertIsDisplayed()
+        }
+        compose.onNodeWithText("Использовать на этом телевизоре").assertIsFocused()
     }
 
     private fun city(
@@ -626,5 +762,43 @@ class DeviceSetupScreenUiTest {
         origin = "local_tv_operator",
         interactionId = "interaction-synthetic-0001",
         requestedAt = Instant.parse("2026-08-30T09:00:00Z"),
+    )
+
+    private fun debugPreview() = DeviceSchedulePreview(
+        date = LocalDate.parse("2026-09-03"),
+        timezone = "Europe/Moscow",
+        evidenceLabel = "PROPOSAL",
+        rows = listOf(
+            DeviceSchedulePreviewRow(
+                DeviceSchedulePreviewPrayer.FAJR,
+                LocalTime.parse("04:20"),
+                LocalTime.parse("04:35"),
+            ),
+            DeviceSchedulePreviewRow(
+                DeviceSchedulePreviewPrayer.SUNRISE,
+                LocalTime.parse("06:01"),
+                null,
+            ),
+            DeviceSchedulePreviewRow(
+                DeviceSchedulePreviewPrayer.DHUHR,
+                LocalTime.parse("12:28"),
+                LocalTime.parse("13:00"),
+            ),
+            DeviceSchedulePreviewRow(
+                DeviceSchedulePreviewPrayer.ASR,
+                LocalTime.parse("16:24"),
+                LocalTime.parse("16:40"),
+            ),
+            DeviceSchedulePreviewRow(
+                DeviceSchedulePreviewPrayer.MAGHRIB,
+                LocalTime.parse("19:03"),
+                LocalTime.parse("19:13"),
+            ),
+            DeviceSchedulePreviewRow(
+                DeviceSchedulePreviewPrayer.ISHA,
+                LocalTime.parse("20:41"),
+                LocalTime.parse("21:00"),
+            ),
+        ),
     )
 }

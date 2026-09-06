@@ -362,10 +362,29 @@ distinguishable. List order never implies religious priority.
 The current signed last-known-good schedule remains visible in the left
 context panel and stays active after a failed or pending request. A successful
 request names the chosen authority and says `Awaiting review`; it does not
-approve, publish, sign, assign or alter Room. `Back` from choices returns to the
+approve, publish, sign, assign or alter Room. `Back` from a pending result
+returns to that city's authority choices; `Back` from choices returns to the
 preserved city query. While the system IME is visible, the first `Back` closes
 only the keyboard and keeps meaningful focus on the search field; the next
 `Back` follows normal navigation.
+
+The ordinary debug/emulator build uses a debug-source-set-only synthetic
+gateway so this navigation can be exercised without production provisioning.
+Its city and organization names are visibly marked as demonstration data, use
+the `PROPOSAL` evidence label and never mutate the signed Room schedule. A
+synthetic selection first opens a setup-only preview with all six prayer rows
+and visibly separate adhan/iqamah columns. It says that the times are
+demonstration data, that no server request was sent and that preview alone has
+not changed the signed active schedule. `Use on this TV` is the initially
+focused primary action: it persists the exact debug city/organization choice,
+clears labels tied to the previous displayed city and returns to the public
+display, which then renders the selected local synthetic schedule with a
+not-approved warning. `Back` before activation returns to the same organization
+list; a second `Back` returns to the preserved city query. The underlying Room
+last-known-good remains untouched. Pilot and release builds contain neither
+the synthetic rows nor this local activation capability and continue to use
+the device-scoped `pending_review` handoff until an approved signed activation
+contract exists.
 
 ## First-run flows
 
