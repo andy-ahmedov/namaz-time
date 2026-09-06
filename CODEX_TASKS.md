@@ -1236,3 +1236,39 @@ checks and upgrades the emulator from code 6 in place; its retained QR decodes.
 See `docs/evidence/t045-tv-presentation/` for measurements, exact hashes and
 handover manifest. Physical scan remains `PHYSICAL_QR_RETEST_REQUIRED`.
 Local checkpoint commits only; no push or PR.
+
+## T046 — RIGHT_SIDE_COMPACT visual fidelity to owner reference
+
+Status: IN_PROGRESS.
+
+Owner authorizes layout comparison against root `new_compact.png`; root
+`qemu-system-x86_64_9ziWsns3jL.png` is supplied before evidence. Neither image
+is an application asset. Keep NamazTime branding, existing backgrounds,
+original ornaments, runtime identity/data and shared presentation state.
+
+- Center brand pill, larger mosque identity and ornamented locality; retain
+  independently placed, focusable Settings gear within safe bounds.
+- Main area: equal-width prayer schedule on the left, next-prayer/date-clock
+  stack on the right. Six icon/name/adhan rows, unchanged active semantics,
+  optional Iqamah, localized schedule heading and warm subdued highlight.
+- Large next-prayer/countdown hierarchy with the existing architectural
+  watermark; preserve tomorrow/Jumu'ah labels and mosque-local time source.
+- Configured campaign: full-width bottom card, large left QR, vertical divider,
+  localized kind, title and complete allowed subtitle on the right. No empty
+  panel without QR; use the released space in the main area.
+- Reference normalized guides: rail x≈484..928, header y≈15..102, main
+  y≈108..360, campaign y≈367..504; preserve existing safe insets and the full
+  ±2 dp retention budget, protecting at least half the full viewport.
+- Preserve T045 integer QR pixels, quiet zone and no badge/clipping; shared
+  engine/state/clock/campaign semantics; STANDARD pixels; signed snapshot,
+  Room/source/approval/registry/T038/debug-setup isolation.
+- Test RU/EN, QR on/off, Iqamah on/off, active/tomorrow/Jumu'ah, allowed long
+  copy, 720p/1080p/4K and every retention phase. At least two controlled API 36
+  1080p screenshot comparison iterations, plus fresh matrix and measured bounds.
+- ADR 0017 patch 0.6.1 / code 8 / pilot.1, same application/signing identity.
+- Run docs/test/lint/strict Android, Go race/security/secret and applicable
+  PostgreSQL completion gates. Preserve snapshot SHA-256
+  `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+- Record evidence, version, gates, STANDARD/QR regressions, geometry, commits
+  and remaining physical-device unknowns; update PLANS/UI spec. No new ADR,
+  downloaded assets, unrelated redesign, push or PR.

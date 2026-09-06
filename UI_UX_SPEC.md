@@ -448,9 +448,8 @@ six prayer rows, optional QR and source attention indicator, occupies the right
 rail. Its left edge is half the **full viewport** plus the 2 dp retention
 budget and 2 dp clearance. The right edge uses the existing overscan-safe inset
 plus shift budget. Every six-phase ±2 dp shift preserves the protected half.
-The background and its existing treatment cover the entire screen. With QR
-absent, the next/clock stack expands across the rail; no placeholder remains.
-The prayer table spans the rail in both visibility states.
+The background and its existing treatment cover the entire screen. T046
+supersedes the original compact arrangement as specified below.
 
 All QR screens use `ReferenceQrCode`. The native ZXing modules retain error
 correction H and at least four quiet-zone modules. Rasterization uses a whole
@@ -459,3 +458,53 @@ remaining white padding, disables filtering and preserves square boundaries.
 Branding/frame decoration is exclusively outside matrix and quiet zone.
 Local/emulator decode evidence cannot prove a physical camera/TV outcome:
 status remains `PHYSICAL_QR_RETEST_REQUIRED` until owner acceptance.
+
+
+## T046 — compact composition refinement
+
+The owner-provided `new_compact.png` is `CONFIRMED_PUBLIC` layout evidence and
+explicitly authorized as the T046 visual reference. The supplied
+`qemu-system-x86_64_9ziWsns3jL.png` documents the preceding compact screen.
+Only composition/proportions/hierarchy inform this refinement; NamazTime keeps
+its own branding, vectors, selected background, runtime identity and schedule.
+Neither reference is packaged in the app. No competitor logo is put into QR.
+
+At normalized 960×540, the unshifted safe rail is `(484,26)..(910,504)`.
+It preserves the existing 48 dp right overscan inset and full retention budget;
+reference's approximate x=928 right edge does not override the safe inset.
+The centered identity comprises a small NamazTime pill, prominent mosque name
+and locality with fading diamond lines. The existing focusable gear remains
+separate at the upper right.
+
+For ordinary configured campaign copy, the main area starts at y=108 and ends
+at y=359: prayer schedule `(484,108)..(693,359)`, next prayer
+`(701,108)..(910,246.5)`, date/clock `(701,252.5)..(910,359)`.
+The bottom campaign spans `(484,367)..(910,504)`. These are measured responsive
+anchors, not a second fixed-resolution rendering path. The shared ±2 dp shift
+is applied to the entire rail. Source-attention text occupies the remaining
+bottom safe space and stays inside the protected-right region.
+
+The left card has a localized schedule heading, divider, six existing prayer
+glyphs, names and stronger numeric adhan times (22 sp at 540 dp height with
+Iqamah OFF, increased from T045's 20 sp). Iqamah OFF has no empty
+column; ON retains separate headings, values and missing/not-applicable spoken
+semantics. The existing projected active row receives a subdued warm fill
+and champagne border. Jumu'ah sessions remain visible from shared state.
+The next card uses the original T044 architectural watermark, accent label,
+larger event name, diamond line and large countdown. The date card places the
+existing calendar vector beside date/weekday and gives the mosque-local clock
+a prominent lower position. Full countdown and clock strings retain seconds.
+
+The bottom campaign has a left QR, vertical fading diamond divider and right
+localized kind/title/subtitle, with an original subtle geometric ornament.
+Ordinary QR is 112 normalized dp. When necessary at 720p, its box grows to
+retain at least two physical pixels per module for dense payloads; the shared
+T045 generator/raster/quiet-zone behavior is unchanged. Actual text metrics
+allocate complete title/subtitle height, including allowed explicit newlines;
+long copy can grow the campaign and reduce the main area without ellipsis.
+Absent campaign removes the whole panel and expands both main columns.
+
+Both layouts still consume one `PrayerDisplayUiState` and existing clock,
+engine, Iqamah policy and campaign resolution. STANDARD/Donation geometry and
+QR primitive are unchanged. The application patch is 0.6.1 / code 8; no Room,
+snapshot, source, permission or preference migration is needed.

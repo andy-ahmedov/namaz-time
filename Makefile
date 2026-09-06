@@ -124,3 +124,10 @@ T045_EVIDENCE_ARGS ?= --output artifacts/t045-emulator --profiles 720p 1080p
 
 test-android-t045-emulator:
 	$(T045_EVIDENCE_PYTHON) scripts/android-t045-evidence.py $(T045_EVIDENCE_ARGS)
+
+# Explicit controlled-emulator acceptance; dependencies and real 4K display are operator-local.
+T046_EVIDENCE_PYTHON ?= python3
+T046_EVIDENCE_ARGS ?= --output artifacts/t046-emulator --profiles 720p 1080p
+.PHONY: test-android-t046-emulator
+test-android-t046-emulator:
+	$(T046_EVIDENCE_PYTHON) scripts/android-t046-evidence.py $(T046_EVIDENCE_ARGS)

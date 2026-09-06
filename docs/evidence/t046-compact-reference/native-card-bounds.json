@@ -1,0 +1,212 @@
+[
+  {
+    "profile": "1080p",
+    "tag": "compact-right-rail",
+    "bounds_px": [
+      968.0,
+      52.0,
+      1820.0,
+      1008.0
+    ]
+  },
+  {
+    "profile": "1080p",
+    "tag": "compact-header",
+    "bounds_px": [
+      968.0,
+      52.0,
+      1820.0,
+      200.0
+    ]
+  },
+  {
+    "profile": "1080p",
+    "tag": "prayer-list-card",
+    "bounds_px": [
+      968.0,
+      216.0,
+      1386.0,
+      718.0
+    ]
+  },
+  {
+    "profile": "1080p",
+    "tag": "next-event-card",
+    "bounds_px": [
+      1402.0,
+      216.0,
+      1820.0,
+      493.0
+    ]
+  },
+  {
+    "profile": "1080p",
+    "tag": "local-clock-card",
+    "bounds_px": [
+      1402.0,
+      505.0,
+      1820.0,
+      718.0
+    ]
+  },
+  {
+    "profile": "1080p",
+    "tag": "qr-campaign-panel",
+    "bounds_px": [
+      968.0,
+      734.0,
+      1820.0,
+      1008.0
+    ]
+  },
+  {
+    "profile": "1080p",
+    "tag": "qr-code-image",
+    "bounds_px": [
+      992.0,
+      759.0,
+      1216.0,
+      983.0
+    ]
+  },
+  {
+    "profile": "720p",
+    "tag": "compact-right-rail",
+    "bounds_px": [
+      644.0,
+      34.0,
+      1214.0,
+      672.0
+    ]
+  },
+  {
+    "profile": "720p",
+    "tag": "compact-header",
+    "bounds_px": [
+      644.0,
+      34.0,
+      1214.0,
+      133.0
+    ]
+  },
+  {
+    "profile": "720p",
+    "tag": "prayer-list-card",
+    "bounds_px": [
+      644.0,
+      144.0,
+      923.0,
+      478.0
+    ]
+  },
+  {
+    "profile": "720p",
+    "tag": "next-event-card",
+    "bounds_px": [
+      934.0,
+      144.0,
+      1214.0,
+      328.0
+    ]
+  },
+  {
+    "profile": "720p",
+    "tag": "local-clock-card",
+    "bounds_px": [
+      934.0,
+      336.0,
+      1214.0,
+      478.0
+    ]
+  },
+  {
+    "profile": "720p",
+    "tag": "qr-campaign-panel",
+    "bounds_px": [
+      644.0,
+      489.0,
+      1214.0,
+      672.0
+    ]
+  },
+  {
+    "profile": "720p",
+    "tag": "qr-code-image",
+    "bounds_px": [
+      661.0,
+      507.0,
+      810.0,
+      656.0
+    ]
+  },
+  {
+    "profile": "4k",
+    "tag": "compact-right-rail",
+    "bounds_px": [
+      1932.0,
+      102.0,
+      3642.0,
+      2016.0
+    ]
+  },
+  {
+    "profile": "4k",
+    "tag": "compact-header",
+    "bounds_px": [
+      1932.0,
+      102.0,
+      3642.0,
+      400.0
+    ]
+  },
+  {
+    "profile": "4k",
+    "tag": "prayer-list-card",
+    "bounds_px": [
+      1932.0,
+      432.0,
+      2771.0,
+      1436.0
+    ]
+  },
+  {
+    "profile": "4k",
+    "tag": "next-event-card",
+    "bounds_px": [
+      2803.0,
+      432.0,
+      3642.0,
+      986.0
+    ]
+  },
+  {
+    "profile": "4k",
+    "tag": "local-clock-card",
+    "bounds_px": [
+      2803.0,
+      1010.0,
+      3642.0,
+      1436.0
+    ]
+  },
+  {
+    "profile": "4k",
+    "tag": "qr-campaign-panel",
+    "bounds_px": [
+      1932.0,
+      1468.0,
+      3642.0,
+      2016.0
+    ]
+  },
+  {
+    "profile": "4k",
+    "tag": "qr-code-image",
+    "bounds_px": [
+      1980.0,
+      1518.0,
+      2428.0,
+      1966.0
+    ]
+  }
+]

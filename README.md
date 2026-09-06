@@ -73,7 +73,7 @@ NAMAZTIME_PILOT_SIGNING_PROPERTIES=/home/andy/.config/namaztime/pilot-signing.pr
 make build-android-pilot
 ```
 
-Текущая pilot-версия — `0.6.0-pilot.1` (`versionCode=7`). Команда допускает
+Текущая pilot-версия — `0.6.1-pilot.1` (`versionCode=8`). Команда допускает
 только чистый Git checkpoint, проверяет встроенные variant/commit/state,
 сертификат и signed snapshot и создаёт вне репозитория versioned handover
 bundle с APK, SHA-256 и JSON manifest. Версии задаются только в

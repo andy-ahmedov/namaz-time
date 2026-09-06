@@ -381,7 +381,7 @@ internal fun ResolvedCampaign.toQrCampaignUiState(
     preview = preview,
 )
 
-private fun campaignKindResource(kind: String): Int = when (kind) {
+internal fun campaignKindResource(kind: String): Int = when (kind) {
     "donation" -> R.string.campaign_kind_donation
     "telegram" -> R.string.campaign_kind_telegram
     "schedule" -> R.string.campaign_kind_schedule

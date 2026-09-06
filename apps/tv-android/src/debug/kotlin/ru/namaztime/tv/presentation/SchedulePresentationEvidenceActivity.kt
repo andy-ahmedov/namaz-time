@@ -35,19 +35,19 @@ class SchedulePresentationEvidenceActivity : ComponentActivity() {
         val payload = intent.getStringExtra("payload") ?: "https://example.org/sadaqah"
         val showIqamah = intent.getBooleanExtra("iqamah", true)
         val qr = intent.getBooleanExtra("qr", true)
-        val instant = Instant.parse("2026-08-19T11:23:00Z")
+        val instant = Instant.parse(intent.getStringExtra("instant") ?: "2026-08-19T11:23:00Z")
             .plusSeconds(intent.getIntExtra("shift", 0) * 600L)
         val english = language == "en"
         val campaign = QrCampaignUiState(
             "synthetic-t045", "donation", if (english) "Support the mosque" else "На развитие мечети",
-            null, QrCodeGenerator().generate(payload), false,
+            intent.getStringExtra("message"), QrCodeGenerator().generate(payload), false,
         )
         val preferences = OperatorPreferences(
             languageTag = language,
             showIqamahOnSchedule = showIqamah,
             scheduleLayoutMode = if (scenario == "standard") ScheduleLayoutMode.STANDARD else ScheduleLayoutMode.RIGHT_SIDE_COMPACT,
             iqamahConfiguration = OperatorIqamahConfiguration(5, 795, 5, 5, 5),
-            qrConfiguration = if (qr) OperatorQrConfiguration(payload, campaign.title, "") else OperatorQrConfiguration(),
+            qrConfiguration = if (qr) OperatorQrConfiguration(payload, campaign.title, campaign.subtitle.orEmpty()) else OperatorQrConfiguration(),
             displayMode = if (scenario == "donation") OperatorDisplayMode.DONATION else OperatorDisplayMode.SCHEDULE,
             donationConfiguration = OperatorDonationConfiguration(
                 httpsUrl = payload,

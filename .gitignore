@@ -70,3 +70,5 @@ SHA256SUMS.local.txt
 # Python tooling caches
 __pycache__/
 *.py[cod]
+/new_compact.png
+/qemu-system-x86_64_9ziWsns3jL.png

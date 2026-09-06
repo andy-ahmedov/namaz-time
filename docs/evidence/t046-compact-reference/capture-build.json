@@ -1,0 +1,9 @@
+{
+  "application_id": "ru.namaztime.tv.debug",
+  "version_name": "0.6.1-dev",
+  "version_code": 8,
+  "build_commit": "0bbe7d0be4c7d1b659f7fe6d6cfb9bd637a41fb6",
+  "build_state": "dirty",
+  "apk_sha256": "2dff4707e185105d0fb7240a492b72583416e5c363ab5fdb392daa8b89065255",
+  "purpose": "Installed debug APK used for final controlled screenshot matrix; signed pilot handover is separate."
+}

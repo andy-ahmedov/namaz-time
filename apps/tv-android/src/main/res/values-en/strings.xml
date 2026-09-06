@@ -250,4 +250,5 @@
     <string name="schedule_layout_standard">Standard</string>
     <string name="schedule_layout_compact">Compact right side</string>
     <string name="qr_insufficient_space">Link is too long for this QR size</string>
+    <string name="compact_prayer_schedule">Prayer schedule</string>
 </resources>

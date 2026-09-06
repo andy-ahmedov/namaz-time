@@ -1,0 +1,44 @@
+{
+  "android_tests": {
+    "tests": 499,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "environment": {
+    "GRADLE_USER_HOME": "/tmp/namaz-time-gradle",
+    "GOCACHE": "/tmp/namaz-time-go-cache"
+  },
+  "commands": [
+    {
+      "command": "make docs-check test lint test-android-all",
+      "result": "PASS",
+      "log_sha256": "de11697cc285c2be807ae2d4c3d01a75a52d86bd99f8a36d44d32af501aa8082"
+    },
+    {
+      "command": "make test-postgres security-go",
+      "result": "PASS",
+      "log_sha256": "1a6eac50440067463d0ec0f3a1931b916c6f88f9bdeac19a5ea167ecb15ffd3b"
+    },
+    {
+      "command": "go test -race ./...",
+      "result": "PASS",
+      "log_sha256": "8f7886c252b6d26da4dcda5bf54acc502f0087d1c4697182c83d3cc9b267da8e"
+    },
+    {
+      "command": "make secret-scan (112 baseline commits)",
+      "result": "PASS",
+      "log_sha256": "e64a9af7dbc7c03aa4a2edc7e393db77e8f4142e96762c04190d6743e788fd47"
+    }
+  ],
+  "release_excluded_debug_classes": [
+    "WatermarkEvidenceActivity",
+    "DeviceSetupEvidenceActivity",
+    "SchedulePresentationEvidenceActivity",
+    "DevelopmentScheduleSelection",
+    "InMemoryDevelopmentScheduleSelectionStore",
+    "DevelopmentDeviceSetupGateway",
+    "DevelopmentPrayerScheduleRepository",
+    "SharedPreferencesDevelopmentScheduleSelectionStore"
+  ]
+}

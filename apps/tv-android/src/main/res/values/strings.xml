@@ -250,4 +250,5 @@
     <string name="schedule_layout_standard">Обычный</string>
     <string name="schedule_layout_compact">Компактный справа</string>
     <string name="qr_insufficient_space">Ссылка слишком длинная для QR этого размера</string>
+    <string name="compact_prayer_schedule">Расписание намазов</string>
 </resources>

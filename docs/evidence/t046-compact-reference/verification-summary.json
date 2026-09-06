@@ -1,0 +1,16 @@
+{
+  "evidence": "CONFIRMED_RUNTIME",
+  "baseline_commit": "0bbe7d0be4c7d1b659f7fe6d6cfb9bd637a41fb6",
+  "api": 36,
+  "frames": 48,
+  "qr_decodes": 42,
+  "qr_checks": 42,
+  "bounded_blur_pass": 42,
+  "protected_left_comparisons": 42,
+  "protected_left_pass": 42,
+  "standard_diff_bbox": null,
+  "standard_changed_pixels": 0,
+  "minimum_foreground_left_fraction": 0.5015625,
+  "owner_reference_sha256": "020646bc06325a3d6a5047c73d9cc2d938fcceca697424feed205a52733811ca",
+  "owner_before_sha256": "39a552ea7136c717db013c36074956bba22c107d41413983788d4af7f027aa1d"
+}

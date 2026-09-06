@@ -690,3 +690,27 @@ presentation defaults and persistence without clearing the Iqamah configuration;
 D-pad tests reach the switch and both Appearance choices. Standard tests retain
 the existing geometry. Evidence and the final gate record live under
 `docs/evidence/t045-tv-presentation/`.
+
+
+## T046 compact reference verification
+
+T046 replaces only T045's compact block arrangement. Native Compose tests
+assert equal main columns, left schedule/right next-date stack, full-width
+bottom campaign, absent-panel expansion and localized heading. They retain
+RU/EN × QR × Iqamah × six retention phases at all three resolution/density
+profiles. Additional native tests cover actual text metrics and card
+containment for tomorrow/Jumu'ah, six explicit subtitle lines and a long
+accepted title, separate Iqamah values, ordered text blocks and no mosque-name
+collision with Settings. Shared whole-view QR raster/decode tests remain
+unchanged, including dense payloads at 720p.
+
+`make test-android-t046-emulator` is an explicit controlled-device gate with
+`T046_EVIDENCE_PYTHON` (Pillow + zxing-cpp) and `T046_EVIDENCE_ARGS` for output,
+profiles and optional real secondary display IDs. It captures original PNGs,
+asserts physical image dimensions, independently decodes QR, measures the
+foreground bounding box and compares every compact left-half pixel to an
+otherwise identical background frame. A bounded 0.55 px blur is recorded
+separately. A genuine 3840×2160 Presentation avoids the primary TV display's
+1920 px UI cap; upscaled/clamped images are rejected. Two API 36/1080p
+reference comparison passes and a fixed-clock STANDARD baseline pixel diff
+are separate visual gates. Physical camera/TV acceptance remains `UNKNOWN`.

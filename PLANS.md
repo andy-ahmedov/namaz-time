@@ -4,6 +4,15 @@ This is the living execution plan. Update statuses, evidence and decisions after
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
+## T046 — RIGHT_SIDE_COMPACT owner-reference fidelity
+
+| Step | Status | Evidence / exit condition |
+|---|---|---|
+| Baseline and reference | DONE | HEAD/origin `0bbe7d0`, CI 34034658957 success; only owner-supplied `new_compact.png` untracked; version 0.6.0/code 7 |
+| Composition and regression tests | DONE | red/green relational geometry, native text/card containment, 160-character title + six subtitle lines, larger OFF times, retained D-pad/shared state/QR; 499 Android tests pass |
+| Screenshot iterations | DONE | two API 36/1080p comparisons plus final review; 48 final frames, 42/42 QR/blur decodes, 42/42 protected-half comparisons; native 4K; zero STANDARD pixel differences; min free-left 50.15625% |
+| Gates and versioned handover | IN_PROGRESS | full docs/test/lint/strict Android, Go race/security, PostgreSQL restore and secret gates PASS; unchanged snapshot; 0.6.1/code 8; clean signed packaging follows checkpoint, no push/PR |
+
 ## T045 — physical-TV QR reliability and alternative schedule presentation
 
 | Step | Status | Evidence / exit condition |

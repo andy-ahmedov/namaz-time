@@ -404,7 +404,7 @@ private fun OrnamentDivider(
 }
 
 @Composable
-private fun CalendarGlyph(
+internal fun CalendarGlyph(
     modifier: Modifier = Modifier,
     tint: Color = NamazTvTheme.colors.accent,
 ) {
@@ -579,7 +579,7 @@ internal val NEXT_PRAYER_WATERMARK_GEOMETRY = NextPrayerWatermarkGeometry(
 )
 
 @Composable
-private fun NextPrayerWatermark(modifier: Modifier = Modifier) {
+internal fun NextPrayerWatermark(modifier: Modifier = Modifier) {
     val colors = NamazTvTheme.colors
     val tint = colors.accentOutline
     Canvas(modifier) {
