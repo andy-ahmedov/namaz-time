@@ -1,0 +1,28 @@
+{
+  "evidence": "CONFIRMED_RUNTIME",
+  "install_command": "adb install -r <verified handover APK>",
+  "result": "Success",
+  "before_version_code": 7,
+  "after_version_code": 8,
+  "version_name": "0.6.1-pilot.1",
+  "main_activity_resumed": true,
+  "android_runtime_errors_for_live_pid": false,
+  "qr_payload_unchanged": true,
+  "decoded_synthetic_target": "https://example.org/donate",
+  "retained_visual_preferences": [
+    "RIGHT_SIDE_COMPACT",
+    "Iqamah OFF",
+    "Golden Dusk background",
+    "mosque identity",
+    "QR title and full message"
+  ],
+  "retained_rows": [
+    "03:48",
+    "06:00",
+    "12:54",
+    "17:19",
+    "19:33",
+    "21:13"
+  ],
+  "uninstall_or_data_wipe": false
+}

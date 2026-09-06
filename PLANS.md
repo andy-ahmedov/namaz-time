@@ -11,7 +11,7 @@ Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 | Baseline and reference | DONE | HEAD/origin `0bbe7d0`, CI 34034658957 success; only owner-supplied `new_compact.png` untracked; version 0.6.0/code 7 |
 | Composition and regression tests | DONE | red/green relational geometry, native text/card containment, 160-character title + six subtitle lines, larger OFF times, retained D-pad/shared state/QR; 499 Android tests pass |
 | Screenshot iterations | DONE | two API 36/1080p comparisons plus final review; 48 final frames, 42/42 QR/blur decodes, 42/42 protected-half comparisons; native 4K; zero STANDARD pixel differences; min free-left 50.15625% |
-| Gates and versioned handover | IN_PROGRESS | full docs/test/lint/strict Android, Go race/security, PostgreSQL restore and secret gates PASS; unchanged snapshot; 0.6.1/code 8; clean signed packaging follows checkpoint, no push/PR |
+| Gates and versioned handover | DONE | checkpoint `c878d5e`; full docs/test/lint/strict Android (499 tests), Go race/security, PostgreSQL restore and secret gates PASS; clean signed 0.6.1-pilot.1/code 8 and in-place 7→8 upgrade verified, same certificate/settings/snapshot; T046 evidence manifest; no push/PR |
 
 ## T045 — physical-TV QR reliability and alternative schedule presentation
 

@@ -1239,7 +1239,12 @@ Local checkpoint commits only; no push or PR.
 
 ## T046 — RIGHT_SIDE_COMPACT visual fidelity to owner reference
 
-Status: IN_PROGRESS.
+Status: DONE (local). Checkpoint `c878d5e`; clean signed 0.6.1-pilot.1 / code 8
+upgrades code 7 in place. All gates, 499 Android tests, two comparison passes
+plus final review, 48 final matrix frames, 42 QR/blur decodes and protected-left
+checks pass. STANDARD has zero changed pixels; snapshot is unchanged. See
+`docs/evidence/t046-compact-reference/`. Physical-TV acceptance remains
+`UNKNOWN`; no push/PR.
 
 Owner authorizes layout comparison against root `new_compact.png`; root
 `qemu-system-x86_64_9ziWsns3jL.png` is supplied before evidence. Neither image

@@ -152,10 +152,36 @@ before each checkpoint in addition to the full-history scan. The actual eight
 debug-only classes are absent from release DEX. Logs remain in `/tmp/t046-*`;
 checksums are retained in the gate record.
 
-Clean signed artifact packaging follows the implementation checkpoint.
-The application patch is 0.6.1-pilot.1 / versionCode 8,
-retaining `ru.namaztime.tv` and the existing certificate. No push or PR is
-part of T046.
+Implementation checkpoint: `c878d5ec73eb8000c55221c19b482930aad5960d`.
+`NAMAZTIME_PILOT_SIGNING_PROPERTIES=/home/andy/.config/namaztime/pilot-signing.properties
+GRADLE_USER_HOME=/tmp/namaz-time-gradle make build-android-pilot` PASS from the
+clean checkpoint. Package/identity/signature/four authenticated asset checks
+and the external checksum PASS. The handover manifest is copied here as
+`handover-manifest.json`; APK and original manifest/checksum stay outside Git:
+
+```text
+../namaztime-artifacts/android/namaztime-0.6.1-pilot.1-code8-c878d5ec73eb/
+  namaztime-0.6.1-pilot.1-code8-c878d5ec73eb.apk
+```
+
+Version `0.6.1-pilot.1`, code `8`, application `ru.namaztime.tv`, clean pilot
+build at the exact checkpoint. APK SHA-256:
+`74041dbca49185827768aa3894ba80d5e9802c87a5ff76f1f7920e5b32eb0c89`.
+Retained certificate SHA-256:
+`da463b2e623024c49c833a1f23c289fd64753e83d3d1e5eea46e973838472be9`.
+
+`CONFIRMED_RUNTIME`: `adb install -r` upgrades the existing signed code 7 to
+code 8, without uninstall/wipe. MainActivity resumes; no AndroidRuntime errors
+appear for the live process. `14-signed-pilot-before-code7.png` and
+`15-signed-pilot-after-code8.png` show real approved Ulyanovsk data and retained
+RIGHT_SIDE_COMPACT, Iqamah OFF, background, identity and local campaign. All
+six displayed prayer times are identical. Independent decoding returns the
+same synthetic example.org QR destination before/after; the full previously
+stored message is now visible. `pilot-upgrade.json` records this check. The
+emulator remains on the upgraded signed pilot with original display settings.
+
+The later handover documentation checkpoint does not change the built APK's
+embedded commit or manifest. No push or PR was performed.
 
 The signed snapshot remains `ulyanovsk-second-cathedral-2026-pilot-local-v2`,
 SHA-256 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
