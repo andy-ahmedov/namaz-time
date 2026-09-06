@@ -1,0 +1,14 @@
+{
+  "apk_certificate_sha256": "da463b2e623024c49c833a1f23c289fd64753e83d3d1e5eea46e973838472be9",
+  "apk_file": "namaztime-0.6.0-pilot.1-code7-95bd8589b7bb.apk",
+  "apk_sha256": "39e30143778968ba1555221e3d6a596e7fbdd7264310e827bf0861852b40fce5",
+  "application_id": "ru.namaztime.tv",
+  "build_commit": "95bd8589b7bb32db8fee91d7ecbef907e7e46adf",
+  "build_state": "clean",
+  "build_variant": "pilot",
+  "schema_version": "namaztime-android-artifact/v1",
+  "snapshot_id": "ulyanovsk-second-cathedral-2026-pilot-local-v2",
+  "snapshot_sha256": "78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b",
+  "version_code": 7,
+  "version_name": "0.6.0-pilot.1"
+}

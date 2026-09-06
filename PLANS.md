@@ -12,7 +12,7 @@ Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 | Shared QR hardening | DONE | native final-view pixels decode and equal the integer-module raster on STANDARD/compact/Donation/constrained preview at all three densities; badge and clipping removed |
 | Persistent visibility and compact layout | DONE | DataStore close/reopen, retained overrides, existing engine countdown policy, native graphics/D-pad tests; six rows and protected half through all retention phases |
 | Emulator composition and decode evidence | DONE | 61 valid frames; 50/50 exact decodes and bounded blur; 26/26 left-half pixel comparisons; real 4K Presentation; STANDARD differs only within QR; `docs/evidence/t045-tv-presentation/` |
-| Gates and signed handover | IN_PROGRESS | all required repository gates PASS, 496 Android tests; snapshot hash unchanged; clean signed code-7 artifact remains to package |
+| Gates and signed handover | DONE | all required gates PASS, 496 Android tests; clean signed `0.6.0-pilot.1` code 7 from `95bd858`; certificate/snapshot/hash checks and in-place emulator upgrade/decode PASS; handover manifest in T045 evidence; `PHYSICAL_QR_RETEST_REQUIRED` |
 
 ## Phase 0 — research and repository foundation
 

@@ -1227,4 +1227,12 @@ Donation QR; repository docs/test/lint/Postgres/Android/race/security/secret gat
 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 Physical-camera outcome remains `PHYSICAL_QR_RETEST_REQUIRED` until owner retest.
 
-**Status:** IN_PROGRESS. Local checkpoint commits only; no push or PR.
+**Status:** DONE (local implementation and handover). Commit `95bd858` adds the
+shared integer-module QR, persistent visibility and right rail; all required
+gates pass with 496 Android tests. Sixty-one valid emulator frames include a
+true 4K Presentation, 50/50 QR decodes and 26/26 protected-left-half comparisons.
+The clean signed `0.6.0-pilot.1`/code-7 artifact passes identity/assets/certificate
+checks and upgrades the emulator from code 6 in place; its retained QR decodes.
+See `docs/evidence/t045-tv-presentation/` for measurements, exact hashes and
+handover manifest. Physical scan remains `PHYSICAL_QR_RETEST_REQUIRED`.
+Local checkpoint commits only; no push or PR.

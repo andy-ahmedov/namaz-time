@@ -1,7 +1,7 @@
 # T045 — QR and schedule presentation evidence
 
-Status: implementation and repository gates verified; clean signed handover
-packaging is the remaining local step. Physical scan status is
+Status: implementation, repository gates and clean signed handover are complete.
+Physical scan status is
 `PHYSICAL_QR_RETEST_REQUIRED`.
 
 ## Scope and baseline
@@ -129,7 +129,7 @@ adb shell settings delete global overlay_display_devices
 The script asserts real PNG dimensions, exact target decode and an unchanged
 left half. It records hashes, bounded-degradation results and measured bounds
 in `results.json`. The checked-in `decode-and-geometry.json` combines the 61
-valid frames; primary-display clamped attempts are excluded. Fourteen selected
+valid frames; primary-display clamped attempts are excluded. Fifteen selected
 original screenshots and `screenshots.sha256` are retained here. Full local
 captures are in `/tmp/t045-runtime` (720p/1080p) and `/tmp/t045-runtime-4k`.
 Screenshots 12/13 additionally record the final switch and selected layout style.
@@ -173,3 +173,34 @@ without uninstalling or wiping settings. No prayer reapproval or re-signing.
 [`PILOT_SIDELOAD_RUNBOOK.md`](../../../PILOT_SIDELOAD_RUNBOOK.md) with the new APK.
 `DEFERRED`: unrelated physical OEM/long-soak acceptance and existing key-backup
 obligations; no T038/source expansion, push, PR or public release in this task.
+
+## Signed handover checkpoint
+
+`CONFIRMED_RUNTIME`: `make build-android-pilot` passed from clean commit
+`95bd8589b7bb32db8fee91d7ecbef907e7e46adf`. Application ID `ru.namaztime.tv`,
+variant `pilot`, version `0.6.0-pilot.1`, code 7 and embedded clean state match
+`handover-manifest.json`. Certificate and all four authenticated assets passed.
+The external checksum file was verified with `sha256sum -c`.
+
+```text
+APK SHA-256: 39e30143778968ba1555221e3d6a596e7fbdd7264310e827bf0861852b40fce5
+Certificate: da463b2e623024c49c833a1f23c289fd64753e83d3d1e5eea46e973838472be9
+```
+
+Bundle directory outside Git:
+`/home/andy/github.com/andy-ahmedov/namaztime-artifacts/android/namaztime-0.6.0-pilot.1-code7-95bd8589b7bb/`.
+It contains the APK, canonical manifest and checksum. No APK or signing secret
+was committed. Gitleaks staged scan covered the new change before checkpoint
+and reported no leaks.
+
+`adb install -r` successfully upgraded the existing signed
+`0.5.2-pilot.1`/code 6 without uninstalling. Package metadata reports code 7;
+MainActivity resumed and rendered the retained Ulyanovsk schedule and local QR
+configuration, with no AndroidRuntime crash. The QR decoded from the fresh
+signed-pilot screenshot to its existing synthetic `example.org` target;
+`pilot-upgrade-decode.json` and screenshot 14 retain this additional evidence.
+This is emulator upgrade/scan evidence only. Physical status remains
+`PHYSICAL_QR_RETEST_REQUIRED`.
+
+The later documentation checkpoint records this artifact without rebuilding
+or changing its embedded source commit. No push or PR was made.

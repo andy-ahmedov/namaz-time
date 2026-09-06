@@ -1,0 +1,12 @@
+{
+  "apk_commit": "95bd8589b7bb32db8fee91d7ecbef907e7e46adf",
+  "apk_sha256": "39e30143778968ba1555221e3d6a596e7fbdd7264310e827bf0861852b40fce5",
+  "installed_version": "0.6.0-pilot.1",
+  "installed_code": 7,
+  "predecessor_version": "0.5.2-pilot.1",
+  "predecessor_code": 6,
+  "decoded_target": "https://example.org/donate",
+  "screenshot": "screenshots/14-signed-pilot-upgrade.png",
+  "evidence_label": "CONFIRMED_RUNTIME",
+  "environment": "Android TV emulator API 36; physical QR retest still required"
+}
