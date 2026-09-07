@@ -1,8 +1,7 @@
 ---
 name: compose-agent
-description: "Helps AI coding assistants write modern Jetpack Compose: correct state, side effects, performance-aware modifiers, Navigation 3, Paging 3 in Compose, coroutines on lifecycle, animations, UI tests, focus/keyboard navigation, Compose Multiplatform boundaries, idiomatic Kotlin, and well-shaped composable APIs. Targets the mistakes LLMs actually make in Compose code. Use when reading, writing, or reviewing Compose projects."
+description: "Write or review Compose state, effects, lifecycle, performance and component APIs; load only references relevant to the changed code."
 license: MIT
-allowed-tools: Read, Glob, Grep, Edit, Write, Bash
 metadata:
   author: Ivan Morgillo
   version: "4.4.0"
@@ -12,16 +11,13 @@ metadata:
 
 Review, write, or modify Jetpack Compose code for correctness, modern API usage, and adherence to the official AndroidX guidelines. Report only genuine problems — do not nitpick or invent issues.
 
-**Target track (unless the repo says otherwise):**
-
-- Kotlin `2.0.20+` with Compose Compiler `1.5.4+` (Strong Skipping Mode on by default).
-- Jetpack Compose BOM current, Material 3, `androidx.lifecycle` with `collectAsStateWithLifecycle()`.
-- Navigation 3 (`androidx.navigation3`) when the project can adopt it; otherwise Navigation 2.8+.
-- Coroutines + Flow as the async primitives. Do not reach for RxJava or blocking I/O.
-
-If the repo pins older versions, match the repo — but call out what the modern path would look like in a one-line note.
+Use the repository's pinned Kotlin/Compose versions and existing navigation.
+For NamazTime TV retain androidx.tv.material3 and the shared TV design system;
+do not migrate to mobile components, Navigation 3 or new dependencies by default.
 
 ## Review Process
+
+Choose relevant topics below; this is an index, not a mandatory full-project pass.
 
 1. Check for **deprecated or soft-deprecated API** using `references/api.md`.
 2. Validate **state and data flow** using `references/state.md`.
@@ -69,68 +65,6 @@ Organize findings by file. For each issue:
 
 Skip files with no issues. End with a prioritized summary — **three** items max, highest impact first.
 
-### Example Output
-
-#### `feature/profile/ProfileScreen.kt`
-
-**Line 34: Use `collectAsStateWithLifecycle()` — UI Flows must stop collecting when the screen is not STARTED.**
-
-```kotlin
-// Before
-val user by viewModel.user.collectAsState()
-
-// After
-val user by viewModel.user.collectAsStateWithLifecycle()
-```
-
-<https://developer.android.com/topic/architecture/ui-layer/state-production#continuous-vs-discrete>
-
-**Line 58: Pass `modifier` to the outermost layout, not to inner content.**
-
-```kotlin
-// Before
-@Composable
-fun UserCard(user: User, modifier: Modifier = Modifier) {
-    Column {
-        Text(user.name, modifier = modifier) // modifier swallowed here
-        Text(user.email)
-    }
-}
-
-// After
-@Composable
-fun UserCard(user: User, modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
-        Text(user.name)
-        Text(user.email)
-    }
-}
-```
-
-<https://developer.android.com/develop/ui/compose/api-guidelines#naming-modifiers>
-
-**Line 72: Defer the animated `offset` read to the layout phase using the lambda form.**
-
-```kotlin
-// Before
-val dx by animateDpAsState(targetValue = if (expanded) 0.dp else (-200).dp, label = "drawerOffset")
-Box(modifier = Modifier.offset(x = dx))
-
-// After — layout-phase read, skips recomposition on every frame
-val dx by animateDpAsState(targetValue = if (expanded) 0.dp else (-200).dp, label = "drawerOffset")
-Box(modifier = Modifier.offset { IntOffset(dx.roundToPx(), 0) })
-```
-
-<https://developer.android.com/develop/ui/compose/performance/bestpractices#defer-reads-as-long-as-possible>
-
-### Summary
-
-1. **Performance (high):** Non-deferred animated reads on `ProfileScreen.kt:72`, `HomeScreen.kt:110`, `DetailScreen.kt:88` recompose every frame. Switch to lambda-form modifiers.
-2. **Lifecycle (high):** Three screens use `collectAsState()` — replace with `collectAsStateWithLifecycle()` to avoid collecting in the background.
-3. **API shape (medium):** `UserCard` swallows its `modifier` parameter. Forward it to the outermost layout.
-
-End of example.
-
 ## Authoring Mode
 
 When the agent is **writing new code** rather than reviewing, the same rules apply as guardrails. Before generating a composable, silently check:
@@ -150,10 +84,9 @@ If any answer is no and there is no deliberate reason, fix it before returning t
 
 ## What This Skill Does Not Cover
 
-Out of scope in v1 — delegate elsewhere or scope down explicitly:
+Additional scope is not implied by an ordinary Compose change:
 
 - **Material 3 compliance, theming, and design tokens** — use the `material-3` skill.
-- **Scoring an existing codebase with numeric grades** — use the sibling `jetpack-compose-audit` skill in the same repo.
 - **Wear OS / TV / Auto / Glance deep platform review** — this skill now covers focus and keyboard/D-pad basics, but not full platform certification.
 - **Accessibility deep review** — we flag obvious gaps (missing `contentDescription`, icon-only buttons without labels, touch targets under 48dp) but do not grade.
 
@@ -179,7 +112,9 @@ If the user needs any of the above, narrow the scope and say so.
 
 ## Acceptance Evals
 
-`evals/evals.json` holds write-mode acceptance cases — prompts that ask this skill to *write* Compose, plus the expectations the produced code must satisfy. Cases 0–2 mirror the `jetpack-compose-audit` scoring rules 1:1 (cross-phase back-writes, Strong Skipping false leads, snapshot self-invalidation) — `bin/ci` keeps them in lockstep so the authoring path can't drift from the audit path; cases 3–4 add foundational phase-correct reads and lifecycle-aware Flow collection. Run a model with this skill loaded against each prompt and check every expectation.
+`evals/evals.json` holds write-mode prompts and expected outcomes for optional
+model-based evaluation. No local runner or sibling audit package is bundled;
+do not claim these evaluations ran from ordinary unit tests.
 
 ## Primary Sources
 

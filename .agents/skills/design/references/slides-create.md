@@ -1,4 +1,5 @@
-Invoke `slides` skill to create persuasive HTML slides using design tokens, Chart.js, and the slide knowledge database.
+# Presentation creation
 
-## Task
-<task>$ARGUMENTS</task>
+For an HTML deck use the sibling slides skill and its
+[creation workflow](../../slides/references/create.md). This reference is a
+one-way handoff, not a request to load all design workflows.

@@ -6,7 +6,8 @@ Paging 3 in Compose is not "a lazy list that loads more." It is a **windowed pag
 2. **Ignored `LoadState`** — blank screens, stuck spinners, silent errors
 3. **`refresh()` wired from composition** instead of user actions
 
-For a numeric audit of an existing codebase, use the sibling `jetpack-compose-audit` skill — paging smells score under Performance and State, not a separate category.
+For a paging review, report concrete performance/state findings with evidence;
+no separate scoring skill is bundled or required.
 
 ## Decision Table
 

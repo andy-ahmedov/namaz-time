@@ -425,6 +425,19 @@ The competitor runtime plan is separate and non-invasive: [BLACK_BOX_VALIDATION_
 
 ## CI gates
 
+Instruction/skill-only changes use `make docs-check` and `make test-skills`;
+application builds are required only when their inputs/behavior are affected.
+The docs gate checks literal bundled entrypoint resources and documented
+repository skill-script paths, including commands inside code fences.
+The skill gate also runs the local ui-ux-pro-max runtime/data tests. Two retained
+upstream maintenance modules explicitly skip when their non-bundled catalog
+refresh/evaluation tools are absent. Report these skips: they do not establish
+catalog-refresh correctness or a passed upstream relevance benchmark. No tools
+are downloaded and no production/provider requests are made by this gate.
+Frontmatter can additionally be checked with the environment's skill-creator
+validator; it is not a repository dependency. Metadata/link tests do not prove
+behavioral skill selection or improvement in agent latency/quality.
+
 Initial:
 
 ```text

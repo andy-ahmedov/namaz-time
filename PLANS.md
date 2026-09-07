@@ -1,8 +1,45 @@
 # PLANS.md
 
-This is the living execution plan. Update statuses, evidence and decisions after every completed task. Do not mark runtime behavior complete from static analysis.
+This is the living execution plan. Update statuses, evidence and decisions after substantive implementation or instruction changes; read-only answers and incidental typo fixes do not need entries. Do not mark runtime behavior complete from static analysis.
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
+
+## 2026-09-08 — repository instruction and skill cleanup
+
+Status: DONE. Follow-up to the owner-requested audit of AGENTS.md and
+all eleven repository skills. Scope: task-sensitive workflow, precise discovery,
+TV/reference compatibility, usable local routing/commands and package checks.
+Prayer data, signing, application behavior and global skills are unchanged.
+Behavioral speed/quality improvement remains `UNKNOWN` without comparative agent
+runs; this task verifies instruction consistency and local package integrity.
+
+- All eleven SKILL.md entrypoints reduced from 2,875 to 560 lines, with concise
+  descriptions, task/platform-specific routing and existing catalog/reference
+  resources retained. Authorized-reference use follows ADR 0014; TV keeps
+  androidx.tv.material3. Unconditional questionnaires, absent harness tools and
+  the slides self-routing loop are removed from the affected workflows.
+- AGENTS.md separates read-only, documentation/skill and implementation work;
+  PLANS.md follows the same boundary. Product/source/provenance/clean-room and
+  Go/TV invariant sections are byte-identical to the pre-change revision.
+- New `scripts/test_skill_package.py` reproduced 71 unresolved command paths
+  before the corrections. Its resource/command checks now pass and are wired
+  into `make docs-check`; `make test-skills` also runs local search/data tests
+  and is included in `make test`. Documentation describes the gate's limits.
+- Two orphaned upstream maintenance tests now report explicit capability skips
+  instead of StopIteration during discovery. No evaluator/refresh tools were
+  downloaded or fabricated: upstream refresh/benchmark behavior remains
+  unverified. Partial catalog-tool installations still fail rather than skip.
+- Verification: all 11 frontmatter checks PASS; `make docs-check test-skills`
+  PASS (2 package checks, 130 runtime/data cases pass, 2 upstream module skips);
+  `GRADLE_USER_HOME=/tmp/namaz-time-gradle make test lint` PASS, including 512
+  Android tests with zero failures/errors/skips, Go, research and build identity.
+  Local search/CLI help smoke checks run without provider requests or writes.
+  A focus-restoration catalog query returned no match; a narrower state query
+  returned relevant results. CLI success alone is not a relevance guarantee.
+- No application/schema/fixture changes, installation or signed artifact.
+  The owner subsequently requested a commit and push of this cleanup.
+  Rollback is a review/revert of these instruction/test-wiring changes;
+  no data migration or signing-key operation is required.
 
 ## T048 — final elegance and cinematic polish for RIGHT_SIDE_COMPACT
 
@@ -231,13 +268,13 @@ Later regional work still includes multilingual/portrait behavior, Ramadan and
 multiple Jumu'ah workflows, source-specific SLAs, support ownership, and
 physical-device acceptance. None is implied by T034.
 
-## Required update after each Codex task
+## Required update after substantive changes
 
 1. Record task result and commit in this file.
 2. Update affected requirements/ADR/API/schema docs.
-3. Add or update automated tests.
+3. Add or update automated tests for affected executable behavior.
 4. Record unresolved risk rather than hiding it.
-5. Run `make docs-check` and project test commands.
+5. Run `make docs-check` and task-appropriate checks from `AGENTS.md`.
 6. Keep `README.md` usage truthful.
 
 ## Current offline-pilot blockers

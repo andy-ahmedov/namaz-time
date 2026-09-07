@@ -80,17 +80,38 @@ The TV client must never scrape authority websites.
 
 Directory-specific `AGENTS.md` files may add constraints but cannot weaken this file.
 
-## Required workflow for every task
+## Workflow by task
 
-1. Read `START_HERE.md`, relevant specifications, current `PLANS.md` and applicable ADRs.
-2. Restate the exact scope and list correctness-sensitive unknowns.
-3. Inspect existing code before editing.
-4. Make the smallest coherent change.
-5. Add tests before claiming completion.
-6. Run narrow tests, then repository-wide checks.
-7. Update docs/contracts only when behavior or decisions changed.
-8. Update `PLANS.md` progress/status.
-9. Report commands executed, results, remaining risks and changed files.
+Read `START_HERE.md` for unfamiliar product/deployment context and the relevant
+`PLANS.md` entry when continuing tracked work. Read specification sections and
+ADRs that govern the requested change; do not load the whole document stack
+for an unrelated edit. Inspect affected code before changing it.
+
+- **Explain, audit, review or diagnose:** inspect and report evidence; do not
+  modify files, add tests, update plans or implement fixes unless requested.
+  Relevant read-only diagnostics are allowed.
+- **Documentation, skills or mechanical edits:** validate affected links,
+  commands and packaging with `make docs-check` and, for skills, `make test-skills`.
+  Add regression coverage for changed executable behavior. Application builds
+  are not required unless their inputs or behavior changed.
+- **Implementation:** identify acceptance criteria and correctness-sensitive
+  unknowns, make the smallest coherent change, and add/update affected tests.
+  Run narrow checks, fix regressions caused by the change and rerun them;
+  then run `make test` and `make lint`. Apply additional signing, database or
+  device gates from `TEST_STRATEGY.md` when those boundaries are touched.
+- Update affected docs/contracts when behavior or decisions change. Record
+  substantive implementation/instruction changes in `PLANS.md`; do not create
+  plan entries for read-only answers or incidental typo fixes.
+
+Continue safe, in-scope local implementation and verification through the
+acceptance criteria, not just the first draft. Ask only when a missing choice,
+authority or permission materially blocks progress. Audit authorization does
+not authorize fixes; implementation authorization does not authorize publication,
+pushes, deployment, real schedule approval, signing-key changes or data deletion.
+Check test targets before running commands that can access external systems or
+modify an existing device/database; do not assume every fixture is disposable.
+
+Report changed files, checks actually run, failures/skips and remaining risks.
 
 ## Stable commands
 
@@ -124,14 +145,14 @@ If a command does not exist yet, create it in the task that introduces the relev
 - Normal boot receiver behavior is best effort. Label managed kiosk/device-owner as a separate deployment mode.
 - Do not request contacts, advertising ID or precise location for local/manual setup.
 
-## Definition of done
+## Definition of done for changes
 
 A task is complete only when:
 
 - acceptance criteria pass;
-- tests and checks were run and recorded;
+- task-appropriate tests and checks were run and recorded;
 - no source/provenance invariant was weakened;
 - no competitor artifact or secret entered Git;
 - docs/contracts match behavior;
 - rollback or migration impact is addressed;
-- `PLANS.md` is updated.
+- `PLANS.md` is updated for substantive work as described above.

@@ -15,29 +15,29 @@ AI-powered logo design with 55+ styles, 30 color palettes, 25 industry guides. U
 ### Design Brief (Start Here)
 
 ```bash
-python3 ~/.claude/skills/design/scripts/logo/search.py "tech startup modern" --design-brief -p "BrandName"
+python3 .agents/skills/design/scripts/logo/search.py "tech startup modern" --design-brief -p "BrandName"
 ```
 
 ### Search Domains
 
 ```bash
 # Styles
-python3 ~/.claude/skills/design/scripts/logo/search.py "minimalist clean" --domain style
+python3 .agents/skills/design/scripts/logo/search.py "minimalist clean" --domain style
 
 # Color palettes
-python3 ~/.claude/skills/design/scripts/logo/search.py "tech professional" --domain color
+python3 .agents/skills/design/scripts/logo/search.py "tech professional" --domain color
 
 # Industry guidelines
-python3 ~/.claude/skills/design/scripts/logo/search.py "healthcare medical" --domain industry
+python3 .agents/skills/design/scripts/logo/search.py "healthcare medical" --domain industry
 ```
 
 ### Generate Logo
 
-**ALWAYS** use white background for output logos.
+Use the requested background/format; white is only an optional presentation background.
 
 ```bash
-python3 ~/.claude/skills/design/scripts/logo/generate.py --brand "TechFlow" --style minimalist --industry tech
-python3 ~/.claude/skills/design/scripts/logo/generate.py --prompt "coffee shop vintage badge" --style vintage
+python3 .agents/skills/design/scripts/logo/generate.py --brand "TechFlow" --style minimalist --industry tech
+python3 .agents/skills/design/scripts/logo/generate.py --prompt "coffee shop vintage badge" --style vintage
 ```
 
 Options: `--style`, `--industry`, `--prompt`
@@ -75,8 +75,8 @@ Options: `--style`, `--industry`, `--prompt`
 
 1. Generate design brief → `scripts/logo/search.py --design-brief`
 2. Generate logo variations → `scripts/logo/generate.py --brand --style --industry`
-3. Ask user about HTML preview → `AskUserQuestion` tool
-4. If yes, invoke `/ui-ux-pro-max` for HTML gallery
+3. Inspect the requested output and correct legibility/cropping issues.
+4. Create an HTML gallery only when requested or part of the agreed deliverable.
 
 ## Detailed References
 
@@ -84,7 +84,12 @@ Options: `--style`, `--industry`, `--prompt`
 - `references/logo-color-psychology.md` - Color meanings and combinations
 - `references/logo-prompt-engineering.md` - AI generation prompts
 
-## Setup
+## Optional provider setup
+
+These commands require a deliberately configured Gemini workflow; prefer the
+available image tool for raster generation. Do not install dependencies or expose
+keys automatically when this provider is unavailable.
+
 
 ```bash
 export GEMINI_API_KEY="your-key"

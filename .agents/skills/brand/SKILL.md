@@ -1,6 +1,6 @@
 ---
 name: brand
-description: Brand voice, visual identity, messaging frameworks, asset management, brand consistency. Activate for branded content, tone of voice, marketing assets, brand compliance, style guides.
+description: "Define or review brand voice, visual identity and asset guidelines; not routine component styling."
 metadata:
   author: claudekit
   version: "1.0.0"
@@ -8,89 +8,32 @@ metadata:
 
 # Brand
 
-Brand identity, voice, messaging, asset management, and consistency frameworks.
+Identify the project's actual brand source before changing it. For NamazTime TV,
+UI_UX_SPEC.md and TvDesignSystem.kt govern the existing visual system; do not
+create a parallel web token pipeline just because this skill includes one.
 
-## When to Use
+## Guidance by task
 
-- Brand voice definition and content tone guidance
-- Visual identity standards and style guide development
-- Messaging framework creation
-- Brand consistency review and audit
-- Asset organization, naming, and approval
-- Color palette management and typography specs
+- Voice: references/voice-framework.md; messaging: references/messaging-framework.md.
+- Identity: references/visual-identity.md; logo use: references/logo-usage-rules.md.
+- Audit: references/consistency-checklist.md and references/approval-checklist.md.
+- Assets: references/asset-organization.md.
+- Palette/type: references/color-palette-management.md and references/typography-specifications.md.
+- New guidelines: templates/brand-guidelines-starter.md.
+- Explicit brand update using the JSON/CSS pipeline: references/update.md.
 
-## Quick Start
+Ask only for brand decisions the brief and existing sources do not resolve.
+An audit reports discrepancies; it does not authorize a rebrand or token rewrite.
 
-**Inject brand context into prompts:**
-```bash
-node scripts/inject-brand-context.cjs
-node scripts/inject-brand-context.cjs --json
-```
+## Optional web helpers
 
-**Validate an asset:**
-```bash
-node scripts/validate-asset.cjs <asset-path>
-```
+Run from repository root with Node.js:
 
-**Extract/compare colors:**
-```bash
-node scripts/extract-colors.cjs --palette
-node scripts/extract-colors.cjs <image-path>
-```
+    node .agents/skills/brand/scripts/inject-brand-context.cjs --json
+    node .agents/skills/brand/scripts/validate-asset.cjs <asset-path>
 
-## Brand Sync Workflow
-
-```bash
-# 1. Edit docs/brand-guidelines.md (or use /brand update)
-# 2. Sync to design tokens
-node scripts/sync-brand-to-tokens.cjs
-# 3. Verify
-node scripts/inject-brand-context.cjs --json | head -20
-```
-
-**Files synced:**
-- `docs/brand-guidelines.md` → Source of truth
-- `assets/design-tokens.json` → Token definitions
-- `assets/design-tokens.css` → CSS variables
-
-## Subcommands
-
-| Subcommand | Description | Reference |
-|------------|-------------|-----------|
-| `update` | Update brand identity and sync to all design systems | `references/update.md` |
-
-## References
-
-| Topic | File |
-|-------|------|
-| Voice Framework | `references/voice-framework.md` |
-| Visual Identity | `references/visual-identity.md` |
-| Messaging | `references/messaging-framework.md` |
-| Consistency | `references/consistency-checklist.md` |
-| Guidelines Template | `references/brand-guideline-template.md` |
-| Asset Organization | `references/asset-organization.md` |
-| Color Management | `references/color-palette-management.md` |
-| Typography | `references/typography-specifications.md` |
-| Logo Usage | `references/logo-usage-rules.md` |
-| Approval Checklist | `references/approval-checklist.md` |
-
-## Scripts
-
-| Script | Purpose |
-|--------|---------|
-| `scripts/inject-brand-context.cjs` | Extract brand context for prompt injection |
-| `scripts/sync-brand-to-tokens.cjs` | Sync brand-guidelines.md → design-tokens.json/css |
-| `scripts/validate-asset.cjs` | Validate asset naming, size, format |
-| `scripts/extract-colors.cjs` | Extract and compare colors against palette |
-
-## Templates
-
-| Template | Purpose |
-|----------|---------|
-| `templates/brand-guidelines-starter.md` | Complete starter template for new brands |
-
-## Routing
-
-1. Parse subcommand from `$ARGUMENTS` (first word)
-2. Load corresponding `references/{subcommand}.md`
-3. Execute with remaining arguments
+The context helper defaults to docs/brand-guidelines.md. The sync helper uses
+assets/design-tokens.json and writes JSON/CSS. Check those inputs exist and belong
+to the requested workflow before running it. If absent, use existing project
+sources or propose setup; do not invent brand approval or overwrite a TV theme.
+Report changed artifacts, validation and any approval still needed.

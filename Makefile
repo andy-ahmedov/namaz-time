@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: docs-check format format-check lint lint-go lint-android security-go secret-scan test test-go test-go-race test-contracts test-research test-android-unit test-android-build-identity test-android-all test-postgres test-postgres-restore test-android-t045-emulator build-android-pilot verify-android-pilot
+.PHONY: docs-check format format-check lint lint-go lint-android security-go secret-scan test test-skills test-go test-go-race test-contracts test-research test-android-unit test-android-build-identity test-android-all test-postgres test-postgres-restore test-android-t045-emulator build-android-pilot verify-android-pilot
 
 GO_FILES := $(shell find cmd internal -type f -name '*.go' 2>/dev/null)
 GRADLE_FLAGS ?= --no-daemon --no-build-cache
@@ -18,6 +18,7 @@ ANDROID_PILOT_ARTIFACT_DIR ?= $(abspath ../namaztime-artifacts/android)
 
 docs-check:
 	bash ./scripts/docs-check.sh
+	python3 -B scripts/test_skill_package.py
 
 format:
 	gofmt -w $(GO_FILES)
@@ -40,7 +41,11 @@ secret-scan:
 lint-android:
 	./gradlew $(GRADLE_FLAGS) :apps:tv-android:lintDebug
 
-test: docs-check test-go test-research test-android-unit test-android-build-identity
+test: docs-check test-skills test-go test-research test-android-unit test-android-build-identity
+
+test-skills:
+	python3 -B scripts/test_skill_package.py
+	PYTHONDONTWRITEBYTECODE=1 python3 -B -m unittest discover -s .agents/skills/ui-ux-pro-max/scripts/tests
 
 test-go:
 	go test ./...

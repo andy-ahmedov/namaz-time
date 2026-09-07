@@ -1,33 +1,37 @@
 ---
 name: prayer-times-provider
-description: Implement or review NamazTime prayer-time source adapters with explicit authority, provenance, deterministic normalization, validation, and fail-closed publication boundaries.
+description: "Implement or review prayer-time source adapters, normalization and provenance; not display styling or device schedule selection."
 ---
 
-# Prayer-times provider skill
+# Prayer-time providers
 
-Use this skill when implementing or reviewing a source adapter.
+Follow the source and publication invariants in repository AGENTS.md.
 
-## Required reading
+## Context by concern
 
-- `AGENTS.md`
-- `PRAYER_TIMES_DATA.md`
-- `SOURCE_PARTNERSHIP_CHECKLIST.md`
-- `DATA_MODEL.md`
-- `TEST_STRATEGY.md`
+Read relevant sections of PRAYER_TIMES_DATA.md for source semantics, DATA_MODEL.md
+for records, SOURCE_PARTNERSHIP_CHECKLIST.md for authority/permission, and
+TEST_STRATEGY.md for provider/validation tests. Paths are repository-relative.
 
-## Workflow
+## Authority boundary
 
-1. Confirm source kind, authority, scope, permission and cadence. Stop if unknown.
-2. Add a source definition/decision record.
-3. Add sanitized raw fixture plus hash metadata; never use a live site in normal CI.
-4. Implement retrieval separately from parse.
-5. Pin parser version and fail closed on schema drift.
-6. Normalize into candidate rows only.
-7. Add missing/duplicate/gap/timezone/order/delta tests.
-8. Produce deterministic diff against approved fixture.
-9. Do not add approval bypass or direct publication.
-10. Update docs and `PLANS.md`; run repository gates.
+Establish source kind, authority, geographic/mosque scope, reuse permission and
+retrieval cadence. Unknown authority or permission blocks real-data ingestion/use
+where authorization is needed, and always blocks approval/publication.
+It does not prevent in-scope public research or parser work on synthetic fixtures.
+Record missing cadence as unknown; do not invent freshness or fallback policy.
 
-## Completion report
+## Adapter work
 
-State evidence label, source permission status, exact scope, fixtures, parser warnings, tests, remaining unknowns and why the provider is authoritative for the configured mosque.
+- Preserve raw artifact/hash metadata separately from normalized candidates.
+- Keep retrieval separate from deterministic parsing; normal CI uses local fixtures.
+- Pin parser version and fail closed on schema drift.
+- Validate missing/duplicate/gap/timezone/order/delta cases affected by the change.
+- Produce a reproducible diff; do not bypass approval or publish from the adapter.
+- Use only fixtures whose use/redistribution is authorized, or synthetic fixtures.
+
+For reviews, report findings only. For implementation, complete affected tests and
+repository gates, update changed contracts/decisions and tracked progress.
+Report permission and approval states, warnings and unresolved scope explicitly.
+For calculated/manual sources, do not claim religious authority merely because
+a provider exists; official status still requires stored evidence and approval.

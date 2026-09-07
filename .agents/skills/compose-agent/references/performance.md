@@ -2,7 +2,8 @@
 
 Compose performance is not "avoid recomposition" — some recomposition is expected. It is "keep recomposition cheap, skippable, and off the per-frame hot path". The rules below are what to enforce when writing or reviewing code.
 
-For a full numeric audit of an existing codebase, use the sibling `jetpack-compose-audit` skill. This file is the authoring guardrail.
+For a performance review, use this guidance with measurements and actual code
+evidence; no separate scoring skill is bundled or required.
 
 ## Strong Skipping Mode — The Baseline
 
@@ -19,7 +20,9 @@ What still defeats skipping under SSM:
 3. **Broken `equals()` on parameters.** If a data class overrides `equals()` incorrectly or is a plain class without `equals`, skipping fails for the wrong reason.
 4. **Explicit `@NonSkippableComposable` / `@DontMemoize`** on hot paths.
 
-If the repo has SSM **off** (older compiler or explicit opt-out), raw `List` / `Map` / `Set` parameters, missing `@Stable` on your types, and stateful shared collections all matter — follow the rules in the `jetpack-compose-audit` skill's `scoring.md`.
+If the repo has SSM **off** (older compiler or explicit opt-out), assess raw
+`List` / `Map` / `Set` parameters and shared mutable collections against compiler
+reports and measurements. Do not add `@Stable` without satisfying its contract.
 
 **To tell which mode applies,** check the Kotlin version and Compose Compiler version in the module's Gradle config. Strong Skipping can be toggled per module; assume on unless you see an explicit `freeCompilerArgs += listOf("-P", "plugin:androidx.compose.compiler.plugins.kotlin:strongSkipping=false")` or the legacy `enableStrongSkippingMode = false` flag.
 

@@ -1,39 +1,23 @@
 ---
 name: slides
-description: Create strategic HTML presentations with Chart.js, design tokens, responsive layouts, copywriting formulas, and contextual slide strategies.
+description: "Create or revise HTML presentation decks; choose narrative, charts and layout for the actual audience and purpose."
 metadata:
   author: claudekit
   version: "1.0.0"
 ---
 
-# Slides
+# HTML presentations
 
-Strategic HTML presentation design with data visualization.
+For a creation request, read references/create.md. Infer that route from ordinary
+language; no slash command or $ARGUMENTS variable is required.
 
-## When to Use
+Read other resources only for the concern in scope:
 
-- Marketing presentations and pitch decks
-- Data-driven slides with Chart.js
-- Strategic slide design with layout patterns
-- Copywriting-optimized presentation content
+- Layout: references/layout-patterns.md.
+- HTML starting point: references/html-template.md.
+- Narrative structures: references/slide-strategies.md.
+- Persuasive copy, only when appropriate: references/copywriting-formulas.md.
 
-## Subcommands
-
-| Subcommand | Description | Reference |
-|------------|-------------|-----------|
-| `create` | Create strategic presentation slides | `references/create.md` |
-
-## References (Knowledge Base)
-
-| Topic | File |
-|-------|------|
-| Layout Patterns | `references/layout-patterns.md` |
-| HTML Template | `references/html-template.md` |
-| Copywriting Formulas | `references/copywriting-formulas.md` |
-| Slide Strategies | `references/slide-strategies.md` |
-
-## Routing
-
-1. Parse subcommand from `$ARGUMENTS` (first word)
-2. Load corresponding `references/{subcommand}.md`
-3. Execute with remaining arguments
+Use existing brand/tokens when available. Informational and technical decks do
+not need conversion-oriented copy, charts or a sales structure. For revisions,
+preserve the supplied deck's architecture unless the task calls for a redesign.
