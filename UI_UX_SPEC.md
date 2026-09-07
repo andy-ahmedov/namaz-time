@@ -158,13 +158,13 @@ action to return to the prayer schedule. No payment flow is present.
 - avoid detailed imagery behind small text;
 - no video background in MVP.
 
-The Phase 4 built-in backgrounds are eight original/project-derived static
+The built-in backgrounds are nine original/project-derived static
 landscape WebP images. T033 replaces the old three-column gallery with the
 owner-authorized `design_item_in_the_menu.png` hierarchy: one large 16:9 preview
 of the selected background followed by one horizontally scrolling filmstrip of
-the eight built-in choices. Left/right moves thumbnail focus, the selected or
+the built-in choices. Left/right moves thumbnail focus, the selected or
 focused thumbnail has a restrained champagne outline, and focus-driven
-scrolling keeps all eight entries reachable. The custom image is not a ninth
+scrolling keeps every entry reachable. The custom image is not a built-in
 thumbnail. `Choose image from TV` is an explicit action below the filmstrip and
 uses the shared T043 capability-gated picker flow. Only allowlisted IDs are
 persisted. The picker imports bounded JPEG/PNG/WebP into a validated app-local
@@ -560,5 +560,61 @@ quiet zone and no-overlay/no-badge contract are unchanged.
 
 Evidence: [T047 visual review](docs/evidence/t047-compact-premium/README.md).
 Version 0.6.2/code 9; no preference, Room, schedule, source or permission migration.
+
+## T048 — final compact elegance and cinematic polish
+
+`PROPOSAL`: T048 keeps the T046 rail, card geometry, protected left half and
+retention movement, and refines only `RIGHT_SIDE_COMPACT` presentation. The
+owner-authorized `new_compact.png` remains `CONFIRMED_PUBLIC` art-direction
+evidence. It may inform hierarchy, luminosity and visual rhythm under the
+recorded owner permission; no reference pixel, logo, QR badge, wording or
+extracted asset is packaged.
+
+The visible clock is `HH:mm`. The visible countdown is also `HH:mm` and rounds
+positive remaining seconds upward to the next whole minute, so it cannot show
+`00:00` before the actual event. The immutable UI state and accessibility
+description retain the exact second-bearing values, and `PrayerTimeEngine`,
+timezone projection and event selection are unchanged.
+
+Mosque name, countdown and clock are hero values. Prayer times and the next
+prayer name remain strong; prayer names, campaign purpose, date, weekday,
+locality and support text use quieter normal/medium weights. A mosque name may
+occupy two deliberately balanced lines within the existing header, preserving
+separation from the NamazTime pill, locality ornaments and Settings target.
+
+The compact-only semantic accent is a warmer saturated amber. Ordinary glass
+uses a softer perimeter and stronger inset upper reflection; the next-event
+surface is one tonal step lighter and the campaign surface one step deeper.
+The active prayer row uses a left-to-clear warm gradient, luminous outline,
+leading marker and icon halo. These roles are defined in `CompactVisualStyle`;
+warnings continue to use a separate warning role and never masquerade as a
+gold approved state.
+
+Approved/healthy state renders no status decoration. Attention and support
+states render one bounded chip inside the header. Campaign copy uses measured
+height and can grow the bottom panel while reducing the upper row; accepted
+title/subtitle text is not ellipsized. Six explicit lines remain at least 12 sp
+at normalized 960×540. The deeper campaign panel retains the external QR
+frame, refined diamond divider and a larger low-intensity original geometric
+ornament. Shared QR generation, integer raster, quiet zone and no-overlay
+rules remain unchanged.
+
+`Luminous dusk` is a ninth selectable, non-default offline background. It is
+an original AI-generated project asset created without any reference image as
+model input, then deterministically compressed to WebP. Golden dusk remains
+the persisted/default fallback. Background choice still has no network path
+and cannot alter prayer provenance.
+
+`CONFIRMED_RUNTIME`: controlled API 36 evidence covers three deliberate visual
+reviews, Golden/Luminous/Blue backgrounds, approved and attention states,
+short and long identities, six-line/maximum campaign copy, 720p, 1080p and
+native 4K, every retention phase, protected-half equality and QR decode after
+0.55 px blur. The fixed-clock STANDARD frame is pixel-identical to T047.
+Physical-TV distance, OEM overscan and phone-camera acceptance remain
+`UNKNOWN` and require the planned device retest.
+
+Evidence: [T048 visual review](docs/evidence/t048-compact-polish/README.md).
+Version 0.6.3/code 10; no Room, snapshot, source, permission or preference
+migration is required.
 STANDARD is checked using identical fixed-clock data. Physical TV distance,
 phone-camera QR and OEM acceptance remain `UNKNOWN`.

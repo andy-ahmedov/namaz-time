@@ -1291,3 +1291,26 @@ TV typography, champagne icons/outlines and luminous active row. Preserve the
 composition, protected left half, shared QR/Iqamah semantics and all signed data.
 Three screenshot passes and three backgrounds, adaptive/QR/other-screen
 regressions and repository gates precede local versioned handover. No push/PR.
+
+## T048 — final elegance and cinematic polish for RIGHT_SIDE_COMPACT
+
+Status: IN PROGRESS. Baseline `aa23f52` is clean and matches `origin/main`;
+latest CI 34106800146 passed. Version baseline is 0.6.2/code 9.
+
+Scope: preserve T046 composition and T047 compact-only foundation while making
+RIGHT_SIDE_COMPACT calmer and more cinematic. Show minute-only clock/countdown
+without changing second-precise state or `PrayerTimeEngine`; strengthen regular
+versus hero typography, warm semantic accent, depth-led glass, active row,
+campaign hierarchy and bounded warning treatment. Preserve STANDARD, Donation,
+Settings, shared QR/Iqamah behavior, safe rail, retention shifts and signed data.
+
+The owner-authorized `new_compact.png` remains a `CONFIRMED_PUBLIC` art-direction
+target only. Review found none of the eight built-ins closes the luminous dusk
+gap. Add one original generated `Luminous Dusk` built-in as a selectable,
+non-default asset; record the prompt/provenance and never package the reference.
+Run three API 36/1080p passes plus Golden Dusk/Luminous Dusk/Blue Hour,
+approved/attention, short/long identity, long-copy, 720p/1080p/native-4K,
+retention, protected-half, QR/blur and pixel-identical STANDARD regressions.
+Advance to 0.6.3-pilot.1/code 10 under ADR 0017 and preserve snapshot SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+No new ADR, backend/schema/source change, push or PR.

@@ -60,6 +60,9 @@ continues to require its existing provenance, approval and publication flow.
   `0.5.1-pilot.1` (5) without changing its signed prayer snapshot;
 - the T044 next-prayer watermark runtime change advances the pilot artifact to
   `0.5.2-pilot.1` (6), still without rewriting its signed prayer snapshot;
+- the T045–T048 presentation-only sequence advances monotonically through
+  `0.6.0-pilot.1` (7), `0.6.1-pilot.1` (8), `0.6.2-pilot.1` (9) and
+  `0.6.3-pilot.1` (10), while retaining the same signed prayer snapshot;
 - dirty debug/release builds remain useful locally and identify themselves as
   dirty, but cannot become signed pilot handover bundles;
 - a documentation-only commit after an APK checkpoint does not change that

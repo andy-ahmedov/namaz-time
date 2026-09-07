@@ -4,6 +4,16 @@ This is the living execution plan. Update statuses, evidence and decisions after
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
+## T048 — final elegance and cinematic polish for RIGHT_SIDE_COMPACT
+
+| Step | Status | Evidence / exit condition |
+|---|---|---|
+| Baseline, reference and asset review | DONE | clean `main`/`origin/main` `aa23f52`, CI 34106800146 success, 0.6.2/code 9; owner-authorized `new_compact.png` reviewed against T047; all eight built-ins reviewed and none closes the luminous-background gap |
+| Compact presentation and visual-system tests | DONE | compact-only minute clock/countdown with ceiling semantics; calmer type hierarchy; two-line long identity; bounded warning; semantic warm accent/glass/active/campaign roles pass narrowly |
+| Original background and three visual passes | DONE | selectable non-default original `Luminous Dusk` packaged from a no-reference-input generated source; API 36 passes cover hierarchy, softer glass and final background/scale balance against T047 and the authorized target |
+| Adaptive and regression evidence | DONE | Golden/Luminous/Blue, approved/attention, RU/EN, Iqamah on/off, QR payloads/blur, long copy, 720p/1080p/native 4K and all retention phases pass; protected half unchanged; STANDARD diff is zero pixels |
+| Gates and versioned handover | IN_PROGRESS | 0.6.3-pilot.1/code 10; requested repository/Android/Go/security/secret gates; unchanged signed Ulyanovsk snapshot; evidence manifest; no push/PR |
+
 ## T047 — premium visual art direction for RIGHT_SIDE_COMPACT
 
 | Step | Status | Evidence / exit condition |

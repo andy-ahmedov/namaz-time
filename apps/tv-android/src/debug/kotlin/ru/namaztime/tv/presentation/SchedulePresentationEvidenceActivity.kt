@@ -14,6 +14,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.Modifier
 import ru.namaztime.tv.data.snapshot.SnapshotBootstrapState
 import ru.namaztime.tv.domain.CampaignEngine
+import ru.namaztime.tv.domain.CountdownPolicy
+import ru.namaztime.tv.domain.PrayerTimeEngine
+import ru.namaztime.tv.domain.PrayerTimeResolution
 import ru.namaztime.tv.domain.QrCodeGenerator
 import ru.namaztime.tv.repository.LocalPrayerDay
 import ru.namaztime.tv.repository.LocalPrayerSchedule
@@ -23,6 +26,7 @@ import ru.namaztime.tv.repository.OperatorIqamahConfiguration
 import ru.namaztime.tv.repository.OperatorPreferences
 import ru.namaztime.tv.repository.OperatorQrConfiguration
 import ru.namaztime.tv.repository.ScheduleLayoutMode
+import ru.namaztime.tv.repository.toTimeEngineInput
 import java.time.Instant
 
 /** Debug-only synthetic, fixed-clock evidence; never reads or changes device configuration. */
@@ -35,6 +39,7 @@ class SchedulePresentationEvidenceActivity : ComponentActivity() {
         val payload = intent.getStringExtra("payload") ?: "https://example.org/sadaqah"
         val showIqamah = intent.getBooleanExtra("iqamah", true)
         val qr = intent.getBooleanExtra("qr", true)
+        val sourceRequiresAttention = intent.getBooleanExtra("attention", false)
         val instant = Instant.parse(intent.getStringExtra("instant") ?: "2026-08-19T11:23:00Z")
             .plusSeconds(intent.getIntExtra("shift", 0) * 600L)
         val english = language == "en"
@@ -57,7 +62,8 @@ class SchedulePresentationEvidenceActivity : ComponentActivity() {
         )
         val schedule = LocalPrayerSchedule(
             snapshotId = "synthetic-t045", mosqueId = "synthetic-t045",
-            mosqueName = if (english) "Synthetic mosque" else "Синтетическая мечеть",
+            mosqueName = intent.getStringExtra("mosqueName")
+                ?: if (english) "Synthetic mosque" else "Синтетическая мечеть",
             locality = if (english) "Example city" else "Тестовый город",
             timezoneId = "Europe/Ulyanovsk", sourceKind = "manual_import",
             authorityName = "Synthetic evidence", coverageFrom = "2026-08-19", coverageTo = "2026-08-20",
@@ -66,6 +72,24 @@ class SchedulePresentationEvidenceActivity : ComponentActivity() {
                 LocalPrayerDay("2026-08-20", "04:33", "05:58", "12:25", "15:45", "18:52", "20:19"),
             ),
         )
+        val evidenceDisplayState = if (scenario == "compact") {
+            val engine = PrayerTimeEngine(CountdownPolicy(includeIqamah = showIqamah))
+            val resolution = engine.resolve(
+                schedule.toTimeEngineInput(preferences.iqamahConfiguration, instant),
+                instant,
+            ) as PrayerTimeResolution.Available
+            schedule.toPrayerDisplayUiState(
+                resolution = resolution,
+                strings = appStringsFor(this, AppLanguage.fromTag(language)),
+                showIqamahOnSchedule = showIqamah,
+            ).copy(
+                campaign = campaign.takeIf { qr },
+                sourceRequiresAttention = sourceRequiresAttention,
+                sourceLabel = if (english) "NOT APPROVED" else "НЕ ОДОБРЕНО",
+            )
+        } else {
+            null
+        }
         val content: @Composable () -> Unit = {
             AppLanguageProvider(language) {
                 NamazTvTheme {
@@ -87,6 +111,12 @@ class SchedulePresentationEvidenceActivity : ComponentActivity() {
                                 onIqamahConfigurationChanged = {}, onQrConfigurationChanged = {},
                                 onShowIqamahOnScheduleChanged = {}, onScheduleLayoutModeChanged = {},
                                 onBackgroundStyleChanged = {},
+                            )
+                            "compact" -> CompactPrayerDisplay(
+                                state = requireNotNull(evidenceDisplayState),
+                                retentionOffset = screenRetentionOffsetAt(instant),
+                                requestInitialFocus = false,
+                                onOpenSettings = {},
                             )
                             else -> ConnectedDisplayContent(
                                 schedule, instant, SnapshotBootstrapState.Ready(schedule.snapshotId),

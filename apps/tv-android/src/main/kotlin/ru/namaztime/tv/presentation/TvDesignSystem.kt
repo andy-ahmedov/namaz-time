@@ -57,6 +57,7 @@ import ru.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.DEFAULT_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.DESERT_DAWN_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.EMERALD_MOSQUE_BACKGROUND_STYLE_ID
+import ru.namaztime.tv.repository.LUMINOUS_DUSK_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.NIGHT_MINARET_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.OperatorImageAssetStore
 import ru.namaztime.tv.repository.OperatorImageSlot
@@ -120,6 +121,12 @@ internal enum class TvBackgroundStyle(
         R.drawable.tv_background_celestial_navy,
         R.string.value_background_celestial_navy,
         0.34f,
+    ),
+    LUMINOUS_DUSK(
+        LUMINOUS_DUSK_BACKGROUND_STYLE_ID,
+        R.drawable.tv_background_luminous_dusk,
+        R.string.value_background_luminous_dusk,
+        0.36f,
     ),
     ;
 

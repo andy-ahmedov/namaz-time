@@ -87,6 +87,7 @@
     <string name="field_theme">Тема</string>
     <string name="field_background">Фон</string>
     <string name="value_background_golden_dusk">Золотой закат</string>
+    <string name="value_background_luminous_dusk">Сияющие сумерки</string>
     <string name="value_background_blue_hour">Синий час</string>
     <string name="value_background_night_minaret">Ночной минарет</string>
     <string name="value_background_desert_dawn">Рассвет в пустыне</string>

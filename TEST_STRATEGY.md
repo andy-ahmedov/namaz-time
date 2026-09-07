@@ -736,3 +736,38 @@ half against each matching background. It also captures maximum campaign copy.
 Full/crop screenshots for three deliberate 1080p visual passes and identical
 STANDARD/Donation/Settings before-after comparisons are separate visual evidence.
 Physical-TV and camera-distance acceptance remain `UNKNOWN`.
+
+## T048 final compact polish verification
+
+T048 retains every T045–T047 functional, adaptive and QR regression. Pure
+tests additionally pin minute-only clock formatting and ceiling-rounded
+countdown formatting, including the final positive second and values longer
+than 24 hours. Compose semantics must preserve the exact second-bearing values.
+No engine, event-selection or timezone test expectation changes.
+
+Native Compose tests require the regular/medium/hero weight hierarchy, a
+readable two-line long mosque identity separated from the Settings target, no
+status chip for approved state, a bounded header chip for attention state and
+complete six-line campaign copy at >=12 normalized sp. Token tests require a
+warm saturated accent, softer perimeter than upper reflection, lighter hero
+surface, deeper campaign surface and a left-to-clear active gradient. The
+background allowlist/resource test contains nine built-ins and keeps Golden
+dusk as the default.
+
+`make test-android-t048-emulator` reuses the controlled fixed-clock runner with
+Luminous dusk and Blue hour in addition to Golden dusk. Set
+`T048_EVIDENCE_PYTHON` to an environment containing Pillow and zxing-cpp, and
+pass output/profiles/secondary-display IDs through `T048_EVIDENCE_ARGS`. Every
+captured QR must decode both directly and after 0.55 px Gaussian blur. The
+runner rejects wrong dimensions, foreground pixels in the protected left half
+or retention bounds outside the safe rail. It covers approved/attention,
+Iqamah on/off, no QR, RU/EN, tomorrow, long identity, six-line and maximum
+campaign copy, dense QR, every retention phase and all three backgrounds.
+
+`CONFIRMED_RUNTIME` evidence is recorded on the controlled API 36 TV emulator
+at 1280×720, 1920×1080 and a true 3840×2160 secondary Presentation at density
+480. A pixel diff compares the current fixed-clock STANDARD capture to T047 and
+must report zero changed pixels. Release isolation must still prove that the
+debug evidence activity is absent. Physical-TV readability, panel overscan and
+phone-camera QR remain `UNKNOWN`; PostgreSQL is not required because T048 does
+not change backend, schema, restore or publication behavior.

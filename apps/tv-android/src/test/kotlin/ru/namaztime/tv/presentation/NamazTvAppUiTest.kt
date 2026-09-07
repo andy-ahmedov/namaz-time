@@ -1075,9 +1075,15 @@ class NamazTvAppUiTest {
             "drawable",
             context.packageName,
         )
+        val luminousDusk = context.resources.getIdentifier(
+            "tv_background_luminous_dusk",
+            "drawable",
+            context.packageName,
+        )
 
         assertTrue("golden dusk image resource must be packaged", goldenDusk != 0)
         assertTrue("blue hour image resource must be packaged", blueHour != 0)
+        assertTrue("luminous dusk image resource must be packaged", luminousDusk != 0)
     }
 
     @Test
@@ -1112,7 +1118,7 @@ class NamazTvAppUiTest {
     @Test
     @OptIn(ExperimentalTestApi::class)
     @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
-    fun appearanceShowsEightBuiltInPreviewsAndCustomPicker() {
+    fun appearanceShowsNineBuiltInPreviewsAndCustomPicker() {
         compose.setContent { NamazTvApp(FakeOperatorPreferencesRepository()) }
 
         openSettingsDestination(SettingsDestination.APPEARANCE)

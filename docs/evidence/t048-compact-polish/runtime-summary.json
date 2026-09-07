@@ -1,0 +1,27 @@
+{
+  "evidence_label": "CONFIRMED_RUNTIME",
+  "device": "Android 16 / API 36 Google TV emulator",
+  "profiles": [
+    {"name": "720p", "width": 1280, "height": 720, "density": 160},
+    {"name": "1080p", "width": 1920, "height": 1080, "density": 320},
+    {"name": "native-4k-presentation", "width": 3840, "height": 2160, "density": 480}
+  ],
+  "final_matrix": {
+    "frames": 72,
+    "compact_cases": 60,
+    "qr_cases": 60,
+    "direct_decode_pass": 60,
+    "blur_0_55_decode_pass": 60,
+    "protected_left_half_pass": 60,
+    "minimum_foreground_left_percent": 50.15625
+  },
+  "standard_rgb_regression": {
+    "baseline": "../t047-compact-premium/regression-standard-after.png",
+    "candidate": "regression-standard-after.png",
+    "bbox": null,
+    "changed_pixels": 0,
+    "max_channel_delta": 0
+  },
+  "physical_tv": "UNKNOWN",
+  "phone_camera_qr": "UNKNOWN"
+}

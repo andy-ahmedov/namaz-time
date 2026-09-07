@@ -20,7 +20,7 @@ asset/publication policy that remains unresolved.
 
 ## Decision
 
-The Android TV app packages eight original/project-derived landscape WebP
+The Android TV app packages nine original/project-derived landscape WebP
 backgrounds in `drawable-nodpi`: Golden dusk is the safe default. Compose
 renders the selected asset full bleed with
 `ContentScale.Crop` and a bounded flat dark scrim; foreground glass panels and
@@ -28,8 +28,8 @@ all controls stay inside the existing overscan-safe frame.
 
 The selected background ID is a validated local operator preference. As amended
 by T033, Appearance shows one large selected preview and one horizontally
-scrolling D-pad filmstrip containing only the eight built-in assets. Custom is
-not a ninth carousel item; it is a separate explicit action below the filmstrip.
+scrolling D-pad filmstrip containing only the built-in assets. Custom is not a
+carousel item; it is a separate explicit action below the filmstrip.
 As amended by ADR 0018, custom import first uses a resolvable Android document
 picker, then the system Photo Picker, and only then an explicit permission-gated
 MediaStore fallback for TV images without either picker. System-picker paths
@@ -43,8 +43,11 @@ custom copy fail safely to Golden dusk. This setting does not alter, fetch or in
 data, and it does not create a network path from composables.
 
 The background images, prayer glyphs and NamazTime mark are original project
-assets/treatments. The product-owner reference and current-state screenshot are
-not application resources and are not committed by this task.
+assets/treatments. T048 adds Luminous dusk as a non-default original
+AI-generated background; no reference image was provided to the generation
+model, and prompt/source/output hashes are recorded in T048 evidence. The
+product-owner reference and current-state screenshot are not application
+resources.
 
 ## Consequences
 
@@ -52,7 +55,7 @@ Positive:
 
 - the display has a photographic mosque/landscape atmosphere while remaining
   deterministic and offline;
-- operators can change the app-wide background from an eight-item Appearance
+- operators can change the app-wide background from a nine-item Appearance
   filmstrip or import one device-local custom image through a separate action;
 - display, Settings and recovery surfaces retain one Material 3 token system;
 - invalid persisted style IDs have an explicit fallback and cannot select an
@@ -60,7 +63,7 @@ Positive:
 
 Costs and limits:
 
-- the APK grows by the eight compressed assets;
+- the APK includes nine compressed background assets;
 - crop and readability still need physical-TV/overscan acceptance;
 - remote/fleet-distributed backgrounds remain blocked on custody, approval,
   signing and delivery policy; the device-local picker does not bypass that path;

@@ -130,8 +130,10 @@ class CompactReferenceTest {
                     assertTrue("adhan leads prayer name", font("compact-adhan-fajr") > font("compact-prayer-name-fajr"))
                     assertTrue("campaign title readable at TV size", font(QR_CAMPAIGN_TITLE_TAG) >= 19 * scale)
                     assertTrue("ordinary campaign message readable at TV size", font(QR_CAMPAIGN_SUBTITLE_TAG) >= 15 * scale)
-                    compose.onNodeWithTag(COUNTDOWN_TEST_TAG).assertTextEquals(state.value.countdown)
-                    compose.onNodeWithTag(LOCAL_CLOCK_VALUE_TAG).assertTextEquals(state.value.mosqueLocalTime)
+                    compose.onNodeWithTag(COUNTDOWN_TEST_TAG)
+                        .assertTextEquals(compactCountdownPresentation(state.value.countdown))
+                    compose.onNodeWithTag(LOCAL_CLOCK_VALUE_TAG)
+                        .assertTextEquals(compactClockPresentation(state.value.mosqueLocalTime))
                     for (tag in listOf(COMPACT_RIGHT_RAIL_TAG, COMPACT_HEADER_TAG, PRAYER_LIST_CARD_TAG,
                         NEXT_EVENT_CARD_TAG, LOCAL_CLOCK_CARD_TAG, QR_CAMPAIGN_PANEL_TAG, QR_CODE_IMAGE_TAG)) {
                         println("T046 geometry $tag ${compose.onNodeWithTag(tag).fetchSemanticsNode().boundsInRoot}")

@@ -1,0 +1,27 @@
+{
+  "evidence_label": "CONFIRMED_RUNTIME",
+  "date": "2026-09-07",
+  "commands": {
+    "make docs-check": "PASS",
+    "make test": "PASS",
+    "make lint": "PASS",
+    "make test-android-all": "PASS",
+    "go test -race ./...": "PASS",
+    "make security-go": "PASS: No vulnerabilities found",
+    "make secret-scan": "PASS: 117 commits, no leaks found"
+  },
+  "android_tests": {
+    "tests": 512,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "release_build": {
+    "version_code": 10,
+    "version_name": "0.6.3-remote.1",
+    "debug_evidence_activity_absent": true,
+    "luminous_dusk_resource_present": true
+  },
+  "postgresql": "NOT_REQUIRED: no backend, schema, restore, provider or publication behavior changed",
+  "initial_gate_correction": "The first make test run caught stale code-9 identity assertions and a changed existing D-pad adjacency caused by inserting the new background. The new item was appended after all existing built-ins, the intended code-10 assertions were updated, targeted regressions passed, and the full command was rerun successfully."
+}

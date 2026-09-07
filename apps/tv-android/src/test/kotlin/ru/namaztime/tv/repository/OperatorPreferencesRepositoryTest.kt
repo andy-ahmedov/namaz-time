@@ -150,8 +150,9 @@ class OperatorPreferencesRepositoryTest {
     }
 
     @Test
-    fun appearanceAllowlistContainsEightBuiltInsAndOneCustomSlot() = runTest {
-        assertEquals(8, BUILT_IN_BACKGROUND_STYLE_IDS.size)
+    fun appearanceAllowlistContainsNineBuiltInsAndOneCustomSlot() = runTest {
+        assertEquals(9, BUILT_IN_BACKGROUND_STYLE_IDS.size)
+        assertTrue(LUMINOUS_DUSK_BACKGROUND_STYLE_ID in BUILT_IN_BACKGROUND_STYLE_IDS)
         assertTrue(CUSTOM_BACKGROUND_STYLE_ID in SELECTABLE_BACKGROUND_STYLE_IDS)
 
         val repository = repositoryFor(this)

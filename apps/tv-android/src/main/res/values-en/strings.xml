@@ -87,6 +87,7 @@
     <string name="field_theme">Theme</string>
     <string name="field_background">Background</string>
     <string name="value_background_golden_dusk">Golden dusk</string>
+    <string name="value_background_luminous_dusk">Luminous dusk</string>
     <string name="value_background_blue_hour">Blue hour</string>
     <string name="value_background_night_minaret">Night minaret</string>
     <string name="value_background_desert_dawn">Desert dawn</string>

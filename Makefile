@@ -137,3 +137,9 @@ T047_EVIDENCE_ARGS ?= --output /tmp/namaztime-t047-evidence
 .PHONY: test-android-t047-emulator
 test-android-t047-emulator:
 	$(T047_EVIDENCE_PYTHON) scripts/android-t046-evidence.py --extra-backgrounds blue_hour night_minaret $(T047_EVIDENCE_ARGS)
+
+T048_EVIDENCE_PYTHON ?= python3
+T048_EVIDENCE_ARGS ?= --output /tmp/namaztime-t048-evidence
+.PHONY: test-android-t048-emulator
+test-android-t048-emulator:
+	$(T048_EVIDENCE_PYTHON) scripts/android-t046-evidence.py --extra-backgrounds luminous_dusk blue_hour $(T048_EVIDENCE_ARGS)

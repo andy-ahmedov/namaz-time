@@ -30,7 +30,12 @@ def main():
     parser.add_argument("--profiles", nargs="+", choices=["720p", "1080p", "4k"], default=["720p", "1080p"])
     parser.add_argument("--presentation-display", type=int)
     parser.add_argument("--capture-display")
-    parser.add_argument("--extra-backgrounds", nargs="*", choices=["blue_hour", "night_minaret"], default=[])
+    parser.add_argument(
+        "--extra-backgrounds",
+        nargs="*",
+        choices=["blue_hour", "night_minaret", "luminous_dusk"],
+        default=[],
+    )
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=True)
     records = []
@@ -46,17 +51,33 @@ def main():
 
         background_style = "golden_dusk"
 
-        def capture(case, scenario="compact", language="ru", iqamah=False, qr=True, payload="short", shift=0, instant=None, message=MESSAGE, title=None):
+        def capture(
+            case,
+            scenario="compact",
+            language="ru",
+            iqamah=False,
+            qr=True,
+            payload="short",
+            shift=0,
+            instant=None,
+            message=MESSAGE,
+            title=None,
+            attention=False,
+            mosque_name=None,
+        ):
             adb("shell", "am", "force-stop", "ru.namaztime.tv.debug")
             command = ["am", "start", "-W", "-n", "ru.namaztime.tv.debug/ru.namaztime.tv.presentation.SchedulePresentationEvidenceActivity",
                        "--es", "scenario", scenario, "--es", "background", background_style, "--es", "language", language, "--ez", "iqamah", str(iqamah).lower(),
                        "--ez", "qr", str(qr).lower(), "--es", "payload", PAYLOADS[payload], "--ei", "shift", str(shift)]
+            command += ["--ez", "attention", str(attention).lower()]
             if message:
                 command += ["--es", "message", message]
             if title:
                 command += ["--es", "title", title]
             if instant:
                 command += ["--es", "instant", instant]
+            if mosque_name:
+                command += ["--es", "mosqueName", mosque_name]
             if profile == "4k":
                 command += ["--ei", "presentationDisplay", str(args.presentation_display)]
             adb("shell", shlex.join(command))
@@ -91,12 +112,18 @@ def main():
         capture("english", language="en", message="Your support helps maintain the mosque and serve the community.")
         capture("english-iqamah", language="en", iqamah=True)
         capture("tomorrow", instant="2026-08-19T19:00:00Z")
+        capture("warning", attention=True)
+        capture(
+            "long-mosque-name",
+            mosque_name="Синтетическая местная религиозная организация мусульман города Ульяновска",
+        )
         capture("six-line-message", message="Первая строка\nВторая строка\nТретья строка\nЧетвёртая строка\nПятая строка\nШестая строка")
         for payload in ["medium", "long"]:
             capture(f"qr-{payload}", payload=payload)
         for shift in range(1, 6):
             capture(f"shift-{shift}", shift=shift)
-        capture("standard", scenario="standard", message=None)
+        # Match the established T047 fixed-clock STANDARD regression fixture.
+        capture("standard", scenario="standard")
         if args.extra_backgrounds:
             capture("long-paragraph", message="Every sincere contribution supports the mosque, helps our community, welcomes every visitor, and becomes lasting good.")
             capture("maximum-copy", title=("Информация о работе и мероприятиях нашей общины. " * 4)[:160],
