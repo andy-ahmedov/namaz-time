@@ -4,6 +4,16 @@ Date: 2026-08-30
 
 Status: T040 choice discovery plus T039 control-plane review handoff implemented
 
+## T049 policy supersession (2026-09-08)
+
+[ADR 0019](docs/adr/0019-public-first-party-source-qualification.md) separates
+autonomous first-party qualification from optional external endorsement. An
+operator's explicit choice of a qualified, verified signed artifact need not
+wait for an external approver. All independent qualified authorities must be
+visible, even when their scope specificity differs. T049 evolves this boundary;
+the T039–T041 API and pending-review behavior below document the existing legacy
+contract until that implementation is verified, not a universal approval gate.
+
 ## Outcome
 
 `PROPOSAL`: a policy that cannot resolve automatically must remain visible and

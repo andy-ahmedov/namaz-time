@@ -3,6 +3,13 @@
 - Status: Accepted
 - Date: 2026-08-30
 
+[ADR 0019](0019-public-first-party-source-qualification.md) supersedes mandatory
+external approval/partnership and global-tier suppression of independent
+qualified authorities. The following T034–T040 decision/implementation history
+remains evidence of the legacy contract, not a gate on the new public-source
+path. Geography, exact provenance, explicit choice, signing and last-known-good
+boundaries remain in force.
+
 ## Context
 
 Russian prayer-time policy is not uniform. Some regional organizations publish republic-wide calculation policies, others publish city or district timetables, and several subjects have parallel administrations. A city coordinate can establish geography but cannot establish religious authority, source approval, or mosque acceptance.

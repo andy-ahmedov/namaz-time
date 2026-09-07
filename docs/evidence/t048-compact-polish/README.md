@@ -5,7 +5,8 @@ Date: 2026-09-07
 ## Scope and evidence boundary
 
 - `CONFIRMED_PUBLIC`: the product owner explicitly authorized
-  [`new_compact.png`](../../../new_compact.png) as a visual reference for layout,
+  `new_compact.png` (owner-supplied local reference, intentionally outside Git)
+  as a visual reference for layout,
   styling, ornament, wording and atmosphere. T048 uses it only as art direction.
 - `PROPOSAL`: NamazTime's minute-only presentation, compact semantic palette,
   glass depth, active-row treatment, bounded warning chip, adaptive campaign

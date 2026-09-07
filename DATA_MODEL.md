@@ -2,6 +2,13 @@
 
 ## Design principles
 
+Current public-source policy is [ADR 0019](docs/adr/0019-public-first-party-source-qualification.md).
+T049 adds a hash-bound source-qualification branch independent of optional
+external endorsement. The approval entities/fields below describe the existing
+manual/mosque contract, not a mandatory external human approval for public
+first-party onboarding. Preserve them for the signed Ulyanovsk pilot; evolve
+contracts explicitly without fake approvers or silent reinterpretation.
+
 - immutable source artifacts and published snapshots;
 - explicit mosque-local timezone;
 - adhan separate from iqamah;
@@ -493,7 +500,7 @@ without appending another event.
 ## Publication transaction
 
 1. lock the candidate/version;
-2. verify approval hashes;
+2. verify qualification hashes or the retained legacy approval hashes;
 3. build canonical payload deterministically;
 4. calculate payload hash;
 5. sign outside the database process or via protected signer;
@@ -527,7 +534,9 @@ All operator queries are scoped by mosque/organization membership. Add composite
 ## Retention
 
 - audit events: long-term according to policy;
-- raw artifacts: retain when permission allows, otherwise metadata + approved fixture;
+- raw artifacts: retain operational bytes only under applicable terms; keep
+  substantial raw artifacts outside Git unless redistribution rights are clear,
+  otherwise retain retrieval metadata/hash and sanitized/synthetic test fixtures;
 - candidate schedules: retain for traceability;
 - snapshots: active + previous indefinitely for pilot, then policy-driven;
 - heartbeat detail: latest-only per device; no raw history in T013;

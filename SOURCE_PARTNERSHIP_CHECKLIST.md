@@ -1,67 +1,63 @@
-# SOURCE_PARTNERSHIP_CHECKLIST.md
+# Public source qualification and optional partnership
 
-Use this before implementing a production adapter for a mosque, DUM or other authority.
+Policy: [ADR 0019](docs/adr/0019-public-first-party-source-qualification.md),
+accepted by the product owner for T049 on 2026-09-08. This supersedes the old
+mandatory-contact/written-permission/external-approver checklist. Public-source
+qualification can be performed autonomously; do not contact organizations or
+wait for their responses in T049.
 
-Pilot application: [Ulyanovsk 2026 onboarding checklist](fixtures/pilot/ulyanovsk-2026/partnership-checklist.md).
+## Required source qualification
 
-## Authority and scope
+- [ ] Record canonical organization name and first-party evidence of publisher
+  ownership/affiliation; a Muslim-themed website or aggregator is insufficient.
+- [ ] Record exact locality/district/subject applicability from source evidence;
+  a capital-city table is not a subject-wide table. Bind canonical catalog IDs.
+- [ ] Identify exact timetable versus official calculation policy. For policy,
+  require sufficient published parameters, rounding/seasonal/high-latitude rules
+  and reproducible comparisons to first-party prayer values across seasons.
+- [ ] Record canonical source URL, source type, retrieval time/status/content
+  type, raw/content SHA-256 and parser/normalizer version. Keep operational raw
+  bytes outside Git when redistribution rights are unclear.
+- [ ] Review publicly stated restrictive terms and transport/access limits.
+  Absence of separate written permission does not fail this check. Explicit
+  restrictions or technical blocks must be respected; use another legitimate
+  first-party transport/policy or mark unavailable. Do not bypass controls.
+- [ ] Record effective range, IANA timezone and exact covered localities. Never
+  turn daily, monthly or Ramadan-only coverage into an annual schedule.
+- [ ] Identify onset versus recommended performance/iqamah/Jumu'ah fields.
+  Unpublished Asr/madhhab or Fajr/Isha methodology may remain UNKNOWN for an
+  exact table; it cannot be guessed to create a calculation policy.
+- [ ] Validate actual dates, missing/duplicate/gap/order/timezone conditions,
+  relevant seasonal transitions, deterministic normalization and schema drift.
+  Store a reproducible diff and resolve validation failures before qualification.
+- [ ] Record cadence/version if discoverable, evidence date, currentness checks
+  and a bounded coverage/freshness policy. Do not invent an organization SLA.
+- [ ] Bind the qualification decision to exact evidence, source/scope, raw and
+  normalized hashes, parser and validation. An enum or URL alone is not proof.
+- [ ] Independently qualify each parallel authority. Do not truncate choices,
+  infer religious precedence, average rows or silently select another source.
 
-- [ ] Legal/organizational name recorded.
-- [ ] Named contact and role recorded.
-- [ ] Exact covered territory/localities recorded.
-- [ ] Whether schedule is adhan only or includes mosque performance/iqamah clarified.
-- [ ] Madhab and special regional rules clarified.
-- [ ] Ramadan, high-latitude and exceptional-day policy documented.
-- [ ] Who has final correction authority named.
+## Activation and recovery
 
-## Data access
+- [ ] Verify the qualification record and exact materialized artifact binding
+  before publication. Preserve versioned, immutable, hashed, signed snapshots.
+- [ ] Record the NamazTime qualification identity honestly; never put an invented
+  person or organization into `approved_by`. Signing attests NamazTime artifact
+  integrity, not endorsement of NamazTime by the source organization.
+- [ ] Show source authority, type, exact scope, range and provenance summary.
+  Missing qualified coverage is unavailable, not a demo or generic replacement.
+- [ ] Test stale/unavailable behavior, failed-sync last-known-good, signature/hash
+  rejection and rollback. Keep iqamah device/mosque-local unless independently
+  evidenced; no regional onset-to-iqamah inference.
 
-- [ ] Preferred machine-readable format requested: JSON/CSV/XLSX/API.
-- [ ] If only PDF/HTML exists, source acknowledges intended automated use.
-- [ ] Stable canonical URL or delivery channel recorded.
-- [ ] Update cadence and publication deadline recorded.
-- [ ] Historical/next-year availability recorded.
-- [ ] Timezone and date format confirmed.
-- [ ] Example full year obtained.
-- [ ] Correction/emergency channel defined.
+## Optional external endorsement / partnership
 
-## Permission and attribution
+Record only when actually supplied: contact/role, written license or permission,
+required attribution, mosque preference, correction channel, partnership dates
+and scope. These facts supplement qualification; their absence neither disproves
+source authority nor blocks ordinary public first-party operational use.
+Do not represent source availability as a partnership or a mosque preference.
 
-- [ ] Written permission/license to ingest, cache and redistribute to mosque TVs.
-- [ ] Required attribution wording/logo constraints recorded.
-- [ ] Whether raw files may be retained recorded.
-- [ ] Whether derived normalized data may be published recorded.
-- [ ] Rate limits/terms/robots policy reviewed.
-- [ ] Contact procedure for source changes or revocation recorded.
-
-## Technical validation
-
-- [ ] Raw fixture hashed and stored according to permission.
-- [ ] Parser contract documented.
-- [ ] Full-year coverage validated, including leap year.
-- [ ] At least 30 representative days manually compared.
-- [ ] Seasonal transitions and Ramadan reviewed.
-- [ ] Differences against previous/alternate source explained.
-- [ ] Parser schema-drift alert tested.
-- [ ] Stale threshold agreed.
-
-## Approval and publication
-
-- [ ] Mosque/authority approver account created.
-- [ ] First candidate diff reviewed.
-- [ ] Approval binds to raw hash/parser version.
-- [ ] Source label shown to operator approved.
-- [ ] Fallback policy explicitly approved or set to none.
-- [ ] Rollback contact and procedure tested.
-- [ ] Renewal/review date scheduled.
-
-## Questions to send in the first contact
-
-1. Do you maintain an official annual/monthly timetable for this locality?
-2. Is there a JSON/CSV/XLSX/API feed, even if it is not public?
-3. May we cache and show it in an Android TV application used by mosques?
-4. What attribution is required?
-5. How and how often are corrections published?
-6. Which exact localities and coordinates does the schedule cover?
-7. Which values are adhan start times, and which are congregation/iqamah times?
-8. Who can formally approve the integration and future changes?
+Legacy pilot example: [Ulyanovsk 2026 checklist](fixtures/pilot/ulyanovsk-2026/partnership-checklist.md).
+Its actual named approval, authorized retained artifacts and mosque-local rules
+remain valid evidence for that pilot, not prerequisites for unrelated sources.

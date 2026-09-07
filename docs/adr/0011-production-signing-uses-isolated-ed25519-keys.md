@@ -4,6 +4,13 @@
 - Date: 2026-08-20
 - Decision: D-013
 
+[ADR 0019](0019-public-first-party-source-qualification.md) supersedes the
+universal external-human-approval/two-person requirement for qualified public
+first-party sources. Their admission must bind verified qualification evidence,
+not a fictitious approval receipt. The existing pilot's real receipt path and
+all key custody, signature, trust lifecycle and audit requirements below remain.
+A NamazTime signature is artifact authenticity, not external DUM endorsement.
+
 ## Context
 
 The snapshot signature is the final authority boundary between an approved

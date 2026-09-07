@@ -12,6 +12,32 @@
 
 Tests are allocated in that order.
 
+## T049 qualification and real setup acceptance
+
+ADR 0019 changes public-source admission, not provenance/signing guarantees.
+Test the qualification branch without any human approval or endorsement, reject
+missing first-party ownership/scope/validation and raw/parser/hash drift, and
+keep the legacy signed Ulyanovsk snapshot byte-identical. Qualifying a public
+source must not create an external approver. Independent real authorities at
+different specificity tiers must all remain available for explicit selection.
+
+Prove real-source sample comparisons, seasonal/date/timezone behavior, partial
+coverage, stale/unavailable and schema-drift fail-close for implemented adapters.
+Calculation policies need multi-season first-party published-value comparisons.
+Normal Android setup must not show synthetic organizations/rows; explicit test
+scenarios retain deterministic coverage. Preview and activation must use the
+same provenance model; activation verifies signed immutable artifacts into
+local persistence and preserves last-known-good on every failure.
+
+Representative real E2E requirements: republic-wide official policy, multiple
+authorities, city/district selector, city-specific table, annual/monthly table
+and existing Ulyanovsk. Research-only evidence does not establish these gates.
+Required final commands: `make docs-check`, `make test-skills`, `make test`,
+`make lint`, `make test-postgres`, `go test -race ./...`,
+`make test-android-all`, `make security-go`, `make secret-scan`. Schema changes
+also require up/down, rollback/reapply and backup/restore. Record actual results
+and skips; do not repeat unchanged successful broad gates without a reason.
+
 ## Domain unit tests
 
 ### Time and next-event

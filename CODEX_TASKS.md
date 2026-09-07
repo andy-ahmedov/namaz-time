@@ -847,13 +847,14 @@ schedule row, signature, TV UI/Room path or nationwide source coverage changed.
 **Goal:** prove the architecture on one non-Ulyanovsk locality using a directly
 onboarded first-party authority source.
 
-**In scope:** first obtain written geographic scope, source transport/reuse
-terms and approval owner; then implement one allowed provider kind with raw
+**In scope (superseded by T049 / ADR 0019):** qualify first-party organization,
+exact geographic scope and legitimate public transport from evidence, without
+external written approval; implement one allowed provider kind with raw
 capture/metadata, deterministic normalization, fail-closed schema drift,
-validation/diff, reproducible official or synthetic fixtures, approval,
+validation/diff, reproducible sanitized or synthetic fixtures, qualification,
 signing and last-known-good behavior. Татарстан calculation policy and one
-Dagestan locality timetable are candidates only after their missing contracts
-are resolved.
+Dagestan locality timetable remain candidates until actual source/policy
+evidence and deterministic validation are complete, not until a contact replies.
 
 **Non-goals:** choosing the easiest scraped page, inferring undocumented
 angles, subject-wide promotion from a city widget, or silent alternate source.
@@ -1342,3 +1343,26 @@ The signed compact frame retains the real Ulyanovsk identity, Golden Dusk,
 Iqamah rows, campaign and decodable QR. Physical-TV viewing distance,
 overscan/power behavior and real-phone scanning remain `UNKNOWN`/deferred.
 See `docs/evidence/t048-compact-polish/README.md`.
+
+## T049 — nationwide verified first-party prayer-source onboarding
+
+Status: IN_PROGRESS (2026-09-08). Baseline: `325a343` on clean `main`, actual
+origin/main confirmed; prior CI failure on a local-only reference link reproduced.
+
+The [full owner assignment](docs/tasks/T049-nationwide-first-party-onboarding.md)
+governs scope and all acceptance criteria. [ADR 0019](docs/adr/0019-public-first-party-source-qualification.md)
+supersedes mandatory external written approval for public first-party sources,
+global-tier suppression of independent authorities and ordinary synthetic setup.
+
+Deliver: re-audit prior research; research every canonical-catalog subject;
+superseding machine-readable evidence registry; deterministic qualified real
+providers/policies; honest qualification/endorsement separation; verified signed
+local materialization and normal real city/authority selection; unavailable for
+unsupported cities. Preserve all independent choices and the existing Ulyanovsk
+pilot. Close T038 after a verified second regional adapter, not after research.
+
+Validation includes real representative source-pattern E2E, drift/stale/scope
+and signing/last-known-good regressions, docs/skills, full Go/race/security,
+PostgreSQL/restore and strict Android gates. Record progress in PLANS.md.
+Local checkpoint commits are allowed; push/PR, deployment, key changes,
+organization contact and production-data deletion are not authorized.

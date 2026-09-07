@@ -3,6 +3,16 @@
 Date: 2026-08-30
 Status: T040 multi-authority choice projection implemented; no nationwide prayer-source rollout
 
+## T049 policy supersession (2026-09-08)
+
+[ADR 0019](docs/adr/0019-public-first-party-source-qualification.md) is the current
+onboarding policy: public first-party qualification may authorize local
+materialization/activation without external human approval or partnership.
+Legacy approval verifiers remain for the existing pilot. T049 must add actual
+qualification verification, independent authority choices and signed activation;
+the v6–v8 behavior documented below is the inspected baseline, not a requirement
+to manufacture a mosque approval or reject all multi-authority revisions.
+
 ## Outcome
 
 `PROPOSAL`: PostgreSQL migration v6 persists immutable, versioned city/source

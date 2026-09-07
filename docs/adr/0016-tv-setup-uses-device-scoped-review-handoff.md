@@ -3,6 +3,13 @@
 - Status: Accepted
 - Date: 2026-08-30
 
+[ADR 0019](0019-public-first-party-source-qualification.md) supersedes mandatory
+human-review handoff for already-qualified public first-party artifacts and
+synthetic activation in ordinary debug setup. T049 must implement and verify
+explicit selection of qualified signed artifacts. The historical T041/debug
+contract below remains a compatibility record; unsigned activation, embedded
+admin credentials and weakened local persistence are still forbidden.
+
 ## Context
 
 The Android TV setup flow must search canonical cities, discover all eligible

@@ -3,6 +3,17 @@
 Date: 2026-08-30  
 Status: T040 multi-authority setup projection implemented; executable prayer coverage remains the Ulyanovsk pilot only
 
+## T049 policy supersession (2026-09-08)
+
+Current onboarding follows [ADR 0019](docs/adr/0019-public-first-party-source-qualification.md).
+Public first-party sources can be qualified autonomously; external human approval
+and partnership are optional. Specificity applies within an evidenced authority
+chain, never to suppress another independent qualified authority. No qualified
+current exact timetable or sufficient verified official calculation policy means
+unavailable. The T034–T041 implementation described below is the historical
+baseline to evolve; its mandatory approval/global-tier filtering is not the new
+product policy. The old research draft must be reverified, not imported as proof.
+
 ## Outcome
 
 `PROPOSAL`: NamazTime resolves a searched city to an approved prayer policy in the control plane, not on the TV display path:

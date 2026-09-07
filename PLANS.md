@@ -4,6 +4,32 @@ This is the living execution plan. Update statuses, evidence and decisions after
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
+## T049 — nationwide verified first-party prayer-source onboarding
+
+Status: IN_PROGRESS. Full owner requirements are preserved in
+[the assignment](docs/tasks/T049-nationwide-first-party-onboarding.md).
+Baseline verified 2026-09-08: clean main and actual origin/main both
+`325a343f3fabec337e56df0abcd93c2812be2c67`. GitHub CI run 34162587927 failed
+in docs-check on the ignored local `new_compact.png` link; failure reproduced
+from a clean `git archive`. The reference is now plain text with its outside-Git
+boundary, not a broken repository link. Remote CI is not rerun or claimed green.
+
+| Phase | Status | Required evidence / remaining work |
+|---|---|---|
+| 0: persistent policy reconciliation | DONE | ADR 0019, AGENTS, streamlined provider skill, source checklist and governing docs separate qualification from optional endorsement. `make docs-check test-skills` PASS: 2 package checks, 130 runtime/data cases, 2 explicit non-bundled upstream module skips. Provider frontmatter validation and `git diff --check` PASS. No application/schema/signing changes in this checkpoint. |
+| 1: previous research/demo audit | IN_PROGRESS | Reverify T034–T041 conclusions, catalog scope, actual PostgreSQL/pilot and debug synthetic paths; report historical versus current evidence |
+| 2–3: nationwide research and scope resolution | TODO | Derive every subject from actual catalog mapping; retained per-subject search trail, independent authorities, exact scope/currentness and unavailable reasons |
+| 4/6: qualified providers and verified activation | TODO | Hash-bound machine-verifiable qualification without fake approval; deterministic real adapters/policies, publication/signing, migrations/contracts and local materialization |
+| 5: normal setup/runtime | TODO | Canonical search, all independent real choices/previews, signed local activation, explicit synthetic test-only path, no generic fallback |
+| Evidence and repository gates | TODO | Representative real patterns, pilot byte regression, parser drift/stale tests, PostgreSQL up/down/reapply/restore if changed, Android emulator + full requested gates |
+
+Scope includes coherent local checkpoint commits, not push/PR/deployment,
+signing-key changes, organization contact or production-data deletion. Unknown
+source evidence makes that source/city unavailable, not the whole task blocked.
+T038's written-confirmation blocker is superseded; close T038 only after a real
+second non-Ulyanovsk adapter is implemented and validated. No new source has yet
+been qualified, materialized or activated by T049.
+
 ## 2026-09-08 — repository instruction and skill cleanup
 
 Status: DONE. Follow-up to the owner-requested audit of AGENTS.md and
@@ -242,7 +268,7 @@ unchanged.
 | T035 licensed canonical Russia city catalog and search | DONE | GeoNames RU selected under CC BY 4.0 after OSM/ODbL comparison; exact 2026-08-29 inputs are size/SHA-pinned and bulk outputs stay outside Git. Deterministic importer/search/diff yields 166,557 Russian-named cities across 83 mapped subjects, explicit exclusions, stable IDs, IANA timezone/provenance and nine non-auto-selected `Киров` results. Two full imports are byte-identical; docs/narrow/lint gates pass. |
 | T036 persisted policy registry with verified reference adapters | DONE | PostgreSQL v6 persists immutable schema-v1 geography/source/policy/payload/override revisions, canonical hashes, active pointer and append-only activation evidence. Service activation verifies exact approval/signed-snapshot references, source freshness and same-tier uniqueness; duplicate city search never auto-selects. Real PostgreSQL, migration rollback/reapply and least-privilege restore gates pass. |
 | T037 Ulyanovsk persisted end-to-end migration | DONE | Hard-coded executable seed removed. Reviewed bindings compose the pinned 166,557-city GeoNames catalog with real approval/publication evidence; immutable PostgreSQL activation plus authenticated setup search resolves canonical Ulyanovsk → RU-ULY → explicit dual-evidence source/policy/timetable → Second Cathedral Mosque → unchanged signed snapshot. Real rollback, duplicate/unknown non-selection, API least privilege, full Go/PostgreSQL/Android/docs gates and raw snapshot SHA-256 `78233e7b…50b` pass. |
-| T038 second official regional source adapter | DEFERRED | explicitly skipped after T034 because written geographic scope/reuse/transport confirmation is still external; no candidate is activated or inferred |
+| T038 second official regional source adapter | IN_PROGRESS | T049 / ADR 0019 supersedes the old written-confirmation blocker. Completion requires a second implemented and verified non-Ulyanovsk first-party adapter with exact scope; research alone does not satisfy it. |
 | T039 ambiguity, unavailability and staleness operator workflow | DONE | versioned admin assessment explains deterministic tier, authority/source evidence, freshness/range and stable blocked reasons; an authenticated mosque operator can append only a selectable staged choice as `pending_review`. PostgreSQL v7 makes requests idempotent/append-only and serializes against activation. Ambiguous/stale/unavailable never publish or select a neighboring/nationwide method; active revision, assignments, signed Ulyanovsk bytes and TV last-known-good remain unchanged. |
 | T040 multi-authority city schedule choices | DONE | Checkpoints `4f0c9dd`, `3e41749`, `b7f8e76` add a non-persisted `CityScheduleChoiceSet` and authenticated `/setup/schedule-choices` v1 projection. It returns every highest-tier eligible authority choice with stable identity/provenance, neutral order and no top-N; multiplicity requires explicit selection while resolver ambiguity and T039 `pending_review` remain fail closed. 0/1/2/3/5/8 synthetic, PostgreSQL active/staged/stale, full/race/lint/docs/security and unchanged Ulyanovsk SHA-256 gates pass; no migration or new real source was added. |
 | T041 Android TV city and schedule setup flow | DONE | Checkpoints `6375915`, `a5456ec`, `64ed91d`, `08500e5`, `cc02d51`, `824f279`, `ea37c5e`, `5bab92f`, `8840ffa` provide a provisioned-device-only API boundary, append-only schema-v8 `pending_review` handoff, canonical Cyrillic/alias city search, duplicate-city disambiguation, complete 0..N authority choices with visible evidence/approval/freshness, explicit proposal/pending UI and last-known-good preservation. Android 16 TV-emulator evidence covers system IME, D-pad scrolling, one/many/unavailable/pending states and Back/focus recovery; physical TV remains unclaimed. Clean dependency-home strict verification, full docs/Go/PostgreSQL/restore/Android debug+release/lint/race/vulnerability/secret gates pass, release excludes the debug evidence renderer, Room schema is unchanged and Ulyanovsk retains raw SHA-256 `78233e7b…50b`. |

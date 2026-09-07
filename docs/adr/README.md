@@ -20,3 +20,4 @@ Create an ADR for durable decisions affecting correctness, source authority, sec
 - [0016 — TV setup uses a device-scoped review handoff](0016-tv-setup-uses-device-scoped-review-handoff.md)
 - [0017 — Android artifacts have a traceable build identity](0017-android-artifacts-have-traceable-build-identity.md)
 - [0018 — TV image selection is capability-gated](0018-tv-image-selection-is-capability-gated.md)
+- [0019 — Public first-party qualification is distinct from endorsement](0019-public-first-party-source-qualification.md)

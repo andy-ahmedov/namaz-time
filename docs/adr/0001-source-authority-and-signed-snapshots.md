@@ -3,6 +3,11 @@
 - Status: Proposed
 - Date: 2026-08-19
 
+Public-source human-approval and partnership requirements are superseded by
+[ADR 0019](0019-public-first-party-source-qualification.md). The legacy approval
+path below remains for actual manual/mosque approvals; source qualification is
+a separate public first-party path. Signing and last-known-good are unchanged.
+
 ## Context
 
 Russian prayer schedules vary by locality, authority, seasonal methodology and mosque practice. A generic calculation method or web page cannot safely be treated as universally official. TVs also need to keep working without network and must reject tampered/broken updates.
