@@ -12,7 +12,7 @@ Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 | Compact presentation and visual-system tests | DONE | compact-only minute clock/countdown with ceiling semantics; calmer type hierarchy; two-line long identity; bounded warning; semantic warm accent/glass/active/campaign roles pass narrowly |
 | Original background and three visual passes | DONE | selectable non-default original `Luminous Dusk` packaged from a no-reference-input generated source; API 36 passes cover hierarchy, softer glass and final background/scale balance against T047 and the authorized target |
 | Adaptive and regression evidence | DONE | Golden/Luminous/Blue, approved/attention, RU/EN, Iqamah on/off, QR payloads/blur, long copy, 720p/1080p/native 4K and all retention phases pass; protected half unchanged; STANDARD diff is zero pixels |
-| Gates and versioned handover | IN_PROGRESS | 0.6.3-pilot.1/code 10; requested repository/Android/Go/security/secret gates; unchanged signed Ulyanovsk snapshot; evidence manifest; no push/PR |
+| Gates and versioned handover | DONE | implementation checkpoint `4f5b158`; docs/test/lint/strict Android (512 tests), Go race/security and secret gates PASS; clean signed 0.6.3-pilot.1/code 10 built and verified, then installed in place over code 9 without changing the first-install timestamp; certificate, QR/configuration and signed Ulyanovsk snapshot retained; T048 handover manifest; no push/PR |
 
 ## T047 — premium visual art direction for RIGHT_SIDE_COMPACT
 

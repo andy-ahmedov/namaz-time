@@ -22,6 +22,17 @@
     "debug_evidence_activity_absent": true,
     "luminous_dusk_resource_present": true
   },
+  "signed_handover": {
+    "make build-android-pilot": "PASS",
+    "make verify-android-pilot": "PASS",
+    "application_id": "ru.namaztime.tv",
+    "version_code": 10,
+    "version_name": "0.6.3-pilot.1",
+    "build_commit": "4f5b158df8e56c1beb75c505309190d35ecf99af",
+    "build_state": "clean",
+    "apk_sha256": "f5f6f14c194c63d89a74acf53204cbcb166eabeb8d79ce5a83c9c55fa26e2db5",
+    "certificate_sha256": "da463b2e623024c49c833a1f23c289fd64753e83d3d1e5eea46e973838472be9"
+  },
   "postgresql": "NOT_REQUIRED: no backend, schema, restore, provider or publication behavior changed",
   "initial_gate_correction": "The first make test run caught stale code-9 identity assertions and a changed existing D-pad adjacency caused by inserting the new background. The new item was appended after all existing built-ins, the intended code-10 assertions were updated, targeted regressions passed, and the full command was rerun successfully."
 }

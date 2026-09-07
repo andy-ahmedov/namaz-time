@@ -82,6 +82,33 @@ Only the WebP is committed.
 - The signed Ulyanovsk snapshot remains byte-identical at SHA-256
   `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 
+## Signed pilot and in-place upgrade
+
+- `CONFIRMED_RUNTIME`: `adb install -r` upgraded the existing
+  `ru.namaztime.tv` package from `0.6.2-pilot.1`/code 9 to
+  `0.6.3-pilot.1`/code 10 without uninstall or data clearing. The package
+  first-install timestamp remained `2026-08-29 10:32:25`.
+- [The first post-upgrade frame](13-signed-pilot-post-upgrade-retained-standard.png)
+  retained the installed package's STANDARD mode, Golden Dusk, Iqamah rows,
+  Ulyanovsk identity, long English campaign and QR payload. This is retention
+  evidence, not a claim that STANDARD was redesigned.
+- The operator then selected RIGHT_SIDE_COMPACT with the D-pad and restored
+  Golden Dusk after deliberately exercising Blue Hour. The
+  [signed compact acceptance frame](14-signed-pilot-after-code10.png) shows
+  minute-only `15:28` and ceiling-rounded `01:49`; a later accessibility dump
+  paired visible `01:46` with exact `01:45:42`, and visible `15:31` with exact
+  `15:31:18`.
+- The signed-frame QR decoded as `https://example.org/donate` both directly and
+  after 0.55 px Gaussian blur. The main activity was resumed and the live log
+  contained no `FATAL EXCEPTION`.
+- The clean artifact is bound to implementation commit `4f5b158`, version 10,
+  the pinned certificate and the unchanged signed snapshot. Debug-only evidence
+  and development repository types are absent; the Luminous Dusk resource is
+  present. See the machine-readable upgrade, isolation and handover records.
+
+Handover directory (outside Git):
+`/home/andy/github.com/andy-ahmedov/namaztime-artifacts/android/namaztime-0.6.3-pilot.1-code10-4f5b158df8e5/`.
+
 Machine-readable capture and final gate summaries accompany this README.
 
 The first full `make test` run correctly failed three assertions: the explicit

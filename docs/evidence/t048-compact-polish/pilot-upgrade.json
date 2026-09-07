@@ -1,0 +1,43 @@
+{
+  "evidence_label": "CONFIRMED_RUNTIME",
+  "application_id": "ru.namaztime.tv",
+  "baseline_version": "0.6.2-pilot.1",
+  "baseline_code": 9,
+  "final_version": "0.6.3-pilot.1",
+  "final_code": 10,
+  "install": "adb install -r; no uninstall or data clearing",
+  "final_installed_apk_sha256": "f5f6f14c194c63d89a74acf53204cbcb166eabeb8d79ce5a83c9c55fa26e2db5",
+  "final_build_commit": "4f5b158df8e56c1beb75c505309190d35ecf99af",
+  "first_install_time_before": "2026-08-29 10:32:25",
+  "first_install_time_after": "2026-08-29 10:32:25",
+  "post_upgrade_retained_state": [
+    "STANDARD",
+    "Iqamah ON",
+    "Golden Dusk",
+    "Вторая Соборная Мечеть / Ульяновск",
+    "https://example.org/donate",
+    "Support the mosque",
+    "same complete long English paragraph"
+  ],
+  "post_upgrade_six_adhan_values": [
+    "03:51",
+    "06:02",
+    "12:54",
+    "17:17",
+    "19:31",
+    "21:10"
+  ],
+  "operator_acceptance_adjustment": "After retention capture, RIGHT_SIDE_COMPACT was selected by D-pad; Blue Hour was deliberately exercised and Golden Dusk restored.",
+  "signed_compact_qr_payload": "https://example.org/donate",
+  "signed_compact_qr_direct_decode": true,
+  "signed_compact_qr_blur_0_55_decode": true,
+  "exact_seconds_accessibility_examples": {
+    "visible_countdown": "01:46",
+    "accessible_countdown": "01:45:42",
+    "visible_clock": "15:31",
+    "accessible_clock": "15:31:18"
+  },
+  "main_activity_resumed": true,
+  "no_live_process_fatal_exception": true,
+  "snapshot_sha256": "78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b"
+}

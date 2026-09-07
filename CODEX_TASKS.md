@@ -1294,8 +1294,9 @@ regressions and repository gates precede local versioned handover. No push/PR.
 
 ## T048 — final elegance and cinematic polish for RIGHT_SIDE_COMPACT
 
-Status: IN PROGRESS. Baseline `aa23f52` is clean and matches `origin/main`;
-latest CI 34106800146 passed. Version baseline is 0.6.2/code 9.
+Status: DONE (local). Baseline `aa23f52` was clean and matched `origin/main`;
+latest baseline CI 34106800146 passed. Implementation checkpoint `4f5b158`
+contains the complete compact-only change and the clean signed pilot source.
 
 Scope: preserve T046 composition and T047 compact-only foundation while making
 RIGHT_SIDE_COMPACT calmer and more cinematic. Show minute-only clock/countdown
@@ -1314,3 +1315,30 @@ retention, protected-half, QR/blur and pixel-identical STANDARD regressions.
 Advance to 0.6.3-pilot.1/code 10 under ADR 0017 and preserve snapshot SHA-256
 `78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
 No new ADR, backend/schema/source change, push or PR.
+
+Result: the compact display now presents minute-only clock/countdown values,
+with the countdown ceiling-rounded so it cannot announce the next whole minute
+too early; exact seconds remain in semantics and engine state. Typography,
+two-line identity, semantic warm-gold/glass roles, the active row, bounded
+attention chip and adaptive campaign hierarchy were refined without editing the
+STANDARD renderer. The original selectable Luminous Dusk asset was generated
+without the owner reference and appended after the eight existing backgrounds,
+preserving their D-pad adjacency and default.
+
+Three deliberate API 36/1080p reviews and the final 72-frame
+720p/1080p/native-4K matrix passed: 60/60 direct QR decodes, 60/60 blurred QR
+decodes, 60/60 protected-left-half comparisons, and a minimum foreground left
+edge of 50.15625%. The T047 versus T048 fixed-clock STANDARD comparison is
+pixel-identical. Full docs/test/lint/strict-Android, Go race/vulnerability and
+secret gates pass with 512 Android tests. PostgreSQL was not required because
+no backend/schema/provider/publication path changed.
+
+The clean `0.6.3-pilot.1` / code-10 artifact is bound to `4f5b158`, the pinned
+certificate and unchanged snapshot SHA-256
+`78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b`.
+It verified independently and installed with `adb install -r` over code 9 while
+preserving the 2026-08-29 first-install timestamp and persisted pilot content.
+The signed compact frame retains the real Ulyanovsk identity, Golden Dusk,
+Iqamah rows, campaign and decodable QR. Physical-TV viewing distance,
+overscan/power behavior and real-phone scanning remain `UNKNOWN`/deferred.
+See `docs/evidence/t048-compact-polish/README.md`.

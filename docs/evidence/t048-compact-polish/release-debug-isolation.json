@@ -1,0 +1,16 @@
+{
+  "evidence_label": "CONFIRMED_STATIC",
+  "apk_sha256": "f5f6f14c194c63d89a74acf53204cbcb166eabeb8d79ce5a83c9c55fa26e2db5",
+  "debug_only_types_absent": {
+    "WatermarkEvidenceActivity": true,
+    "DeviceSetupEvidenceActivity": true,
+    "SchedulePresentationEvidenceActivity": true,
+    "DevelopmentScheduleSelection": true,
+    "DevelopmentScheduleSelectionStore": true,
+    "InMemoryDevelopmentScheduleSelectionStore": true,
+    "DevelopmentDeviceSetupGateway": true,
+    "DevelopmentPrayerScheduleRepository": true,
+    "SharedPreferencesDevelopmentScheduleSelectionStore": true
+  },
+  "luminous_dusk_resource_present": true
+}
