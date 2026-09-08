@@ -1,0 +1,2310 @@
+{
+  "schema_version": "t049-research-lane/v1",
+  "researched_at": "2026-09-08",
+  "subjects": [
+    {
+      "code": "RU-BEL",
+      "name": "Белгородская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "belgorod-mir-sozidanie",
+          "name": "МРОМ «Мир и Созидание» города Белгорода",
+          "website": "http://www.umma-belgorod.ru",
+          "ownership_evidence": [
+            {
+              "url": "https://new.dumrf.ru/articles/org/mrom-belgoroda-mir-i-sozidanie",
+              "claim": "DUM RF organization profile identifies the Belgorod community and its official umma-belgorod.ru site; body is historical, not proof of a current timetable.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumrf.ru/allnews/45",
+              "claim": "DUM RF May 2025 regional report identifies continuing Belgorod Muslim organizational activity; no prayer timetable is supplied.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "First-party organization-directory discovery and Belgorod profile follow-up",
+          "urls_checked": [
+            "https://new.dumrf.ru/articles/org/mrom-belgoroda-mir-i-sozidanie",
+            "https://dumrf.ru/allnews/45"
+          ],
+          "result": "Identified a real city community, not evidence of oblast-wide timetable coverage."
+        },
+        {
+          "query": "GET http://www.umma-belgorod.ru",
+          "urls_checked": [
+            "http://www.umma-belgorod.ru"
+          ],
+          "result": "Ordinary public curl request returned HTTP 502 on the research date; no usable calendar or policy recovered."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "The old official-site ownership reference needs current confirmation if the domain resumes service.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-BRY",
+      "name": "Брянская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "bryansk-mrom",
+          "name": "МРОМ Брянской области",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/1243",
+              "claim": "Official DUM RF directory describes the registered Bryansk Muslim organization and regular prayer activity. The historical profile does not publish prayer times.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "GET DUM RF organization directory; follow Брянская область",
+          "urls_checked": [
+            "https://dumrf.ru/common/",
+            "https://dumrf.ru/common/org/1243"
+          ],
+          "result": "Confirmed organization identity; no authoritative calendar download, date selector or first-party timetable domain was supplied."
+        },
+        {
+          "query": "Regional prayer-calendar discovery followed by checking original organizational profile",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/1243"
+          ],
+          "result": "Generic calculator results were not adopted; original profile supplies no current onset schedule."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Current canonical local publishing channel and exact city/mosque scope remain UNKNOWN.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-IVA",
+      "name": "Ивановская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "ivanovo-mukhtasibat",
+          "name": "ЦРО ДУМ Ивановской области «Ивановский мухтасибат»",
+          "website": "https://dum-ivanovo.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/7251",
+              "claim": "DUM RF profile identifies the Ivanovo mukhtasibat and links dum-ivanovo.ru.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dum-ivanovo.ru/",
+              "claim": "Current public site identifies the authority and has 2026 news through August; ordinary HTTPS GET returned 200.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "ivanovo-mrom-historical",
+          "name": "Местная религиозная организация мусульман Ивановской области",
+          "website": "http://ivtat.ru",
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/1157",
+              "claim": "Historical DUM RF local-organization profile identifies ivtat.ru; relationship to the later centralized mukhtasibat requires exact-chain binding.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow both original Ivanovo profiles",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/7251",
+            "https://dumrf.ru/common/org/1157"
+          ],
+          "result": "Kept the historical local organization and centralized mukhtasibat records distinct; neither directory article is a timetable."
+        },
+        {
+          "query": "GET official current homepage and public WordPress searches",
+          "urls_checked": [
+            "https://dum-ivanovo.ru/",
+            "https://dum-ivanovo.ru/?s=расписание",
+            "https://dum-ivanovo.ru/?s=Рамадан+2026"
+          ],
+          "result": "Non-www HTTPS homepage works; earlier www redirect timed out. Search results included older education-class schedules but no current complete prayer timetable."
+        },
+        {
+          "query": "GET legacy linked domain",
+          "urls_checked": [
+            "http://ivtat.ru"
+          ],
+          "result": "HTTP 502; no timetable recovered."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Иваново, Тейково and Кинешма organizational presence does not establish schedule coverage for those cities or the subject.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-KLU",
+      "name": "Калужская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "kaluga-sunna",
+          "name": "МРО «Сунна» города Калуги",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://new.dumrf.ru/articles/org/musulmanskaia-obshhina-kaluzskoi-oblasti",
+              "claim": "Historical first-party account describes the Kaluga Sunna organization and Muslim communities in Kaluga, Maloyaroslavets and Obninsk; no timetable is attached.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "maloyaroslavets-mrom",
+          "name": "МРОМ города Малоярославца Калужской области",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/3720",
+              "claim": "DUM RF profile records the local organization, its 2010 registration and locality-specific congregation; no current schedule.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Kaluga Muslim community discovery; inspect original authority account",
+          "urls_checked": [
+            "https://new.dumrf.ru/articles/org/musulmanskaia-obshhina-kaluzskoi-oblasti"
+          ],
+          "result": "No downloadable/current timetable or sufficient calculation policy in the original profile."
+        },
+        {
+          "query": "GET DUM RF directory and independently follow Maloyaroslavets",
+          "urls_checked": [
+            "https://dumrf.ru/common/",
+            "https://dumrf.ru/common/org/3720"
+          ],
+          "result": "Confirmed a separate local organization rather than assigning all Kaluga-oblast localities one capital schedule."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Current first-party channels for Kaluga, Maloyaroslavets and Obninsk were not verified.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-KOS",
+      "name": "Костромская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "kostroma-muslim-union",
+          "name": "Мусульманское религиозное объединение города Костромы",
+          "website": "http://islam44.com",
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/1524",
+              "claim": "DUM RF directory identifies the Kostroma religious union and official islam44.com site; its organizational activity includes Nerekhta and Galich, not demonstrated timetable coverage.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow original Kostroma authority profile",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/1524"
+          ],
+          "result": "Historical identity and official domain confirmed; no current timetable attachment."
+        },
+        {
+          "query": "GET historically linked official site; investigate alternate discovery domain",
+          "urls_checked": [
+            "http://islam44.com",
+            "https://islamkostroma.ru/"
+          ],
+          "result": "islam44.com returned HTTP 502 by ordinary curl. Browser could not retrieve the alternate domain, whose present first-party ownership was not verified."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Do not fabricate a centralized oblast muftiyat from the city-union name.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-KRS",
+      "name": "Курская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "kursk-tim-svet",
+          "name": "МРОМ «Свет» Тимского района Курской области",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/regnews/26632",
+              "claim": "DUM RF report dated 6 August 2026 identifies the Tim district Svet organization and current communal activity within DUM RF.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow current first-party report about Muslim organizations in Kursk oblast",
+          "urls_checked": [
+            "https://dumrf.ru/common/regnews/26632"
+          ],
+          "result": "Current district organization is real; the report provides no daily prayer timetable, file or API."
+        },
+        {
+          "query": "Check original organizational evidence instead of generic Kursk calculators",
+          "urls_checked": [
+            "https://dumrf.ru/allnews/45",
+            "https://dumrf.ru/common/regnews/26632"
+          ],
+          "result": "Public regional activity evidence does not establish a timetable for Kursk city or the entire oblast."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Other Kursk district communities require independent identity/channel research; no unified official regional timetable was established.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-LIP",
+      "name": "Липецкая область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "lipetsk-mrom",
+          "name": "МРОМ Липецкой области",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/1444",
+              "claim": "Official organization directory identifies the Lipetsk Muslim community.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumrf.ru/common/regnews/26209",
+              "claim": "First-party report of 8 April 2026 confirms ongoing local religious activity and the imam-mukhtasib; no timetable.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow DUM RF Lipetsk directory profile",
+          "urls_checked": [
+            "https://dumrf.ru/common/",
+            "https://dumrf.ru/common/org/1444"
+          ],
+          "result": "No exact timetable transport or policy attached."
+        },
+        {
+          "query": "Inspect current first-party regional news and earlier authority profile",
+          "urls_checked": [
+            "https://dumrf.ru/common/regnews/26209",
+            "https://muslim.ru/articles/759/34171/"
+          ],
+          "result": "Organizational currentness was distinguished from current prayer-data availability."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-MOS",
+      "name": "Московская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "dummo",
+          "name": "ЦРО Духовное управление мусульман Московской области",
+          "website": "https://www.dummo.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://www.dummo.ru/",
+              "claim": "Official DUM Moscow oblast site identifies the authority and carries current September 2026 news.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.dummo.ru/home/news/5535-zaklyuchenie-soveta-ulemov-dum-rf-ramadan-2026",
+              "claim": "The oblast publisher carries the DUM RF Ramadan 2026 conclusion; dates alone are not a daily timetable.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "dummo-calendar-2025",
+              "type": "official_file",
+              "canonical_url": "https://www.dummo.ru/files/praytime2025.pdf",
+              "scope": "Source heading says Московский регион; exact administrative/locality scope is unresolved. Not evidence of every RU-MOS locality.",
+              "localities": [],
+              "effective_range": {
+                "from": "2025-01-01",
+                "to": "2025-12-31",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "note": "Expired; 2025 is explicit in the source title."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "note": "Geographic timezone binding; no source IANA declaration was found. Validate against canonical locality catalog before qualification."
+              },
+              "transport": {
+                "format": "PDF",
+                "cadence": "Annual file discovered for 2025; 2026 equivalent was not recovered.",
+                "retrieval": "Search-indexed first-party PDF. The guessed 2026 sibling returned HTTP 404; a guessed path is not a discovered source."
+              },
+              "policy": {
+                "evidence_label": "UNKNOWN",
+                "asr": "Unknown; do not infer from an aggregator's named method.",
+                "fajr": "Unknown.",
+                "isha": "Unknown.",
+                "seasonal": "Unknown.",
+                "iqamah": "No regional iqamah inferred.",
+                "jumuah": "Requires separate mosque-local evidence."
+              },
+              "comparison_evidence": [],
+              "terms_notes": "Public source research does not require a separate partnership or external approver. No bulk source artifact retained in Git. Explicit restrictions, if discovered, must be respected.",
+              "qualification_gaps": [
+                "Expired 2025 artifact; cannot publish as 2026.",
+                "Exact locality and authority-chain binding, timezone and validation remain unresolved."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "moscow-oblast-dsmr",
+          "name": "Мухтасибатское собрание мусульман Московской области",
+          "website": "https://dsmr.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dsmr.ru/dukhovnoe-sobranie/struktura-dsmr.html",
+              "claim": "DSMR's own structure names the Moscow-oblast mukhtasibat assembly independently of DUMMO; current legal naming/leadership should not be inferred from older news.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "site:dummo.ru \"2026\" \"расписание\"",
+          "urls_checked": [
+            "https://www.dummo.ru/",
+            "https://www.dummo.ru/home/news/5535-zaklyuchenie-soveta-ulemov-dum-rf-ramadan-2026"
+          ],
+          "result": "Found Ramadan date policy, not a reproducible oblast-locality onset calendar."
+        },
+        {
+          "query": "site:dummo.ru/files \"2026\" молитв",
+          "urls_checked": [
+            "https://www.dummo.ru/files/praytime2025.pdf",
+            "https://www.dummo.ru/files/praytime2026.pdf"
+          ],
+          "result": "2025 calendar is expired; ordinary GET of the guessed 2026 URL returned HTTP 404."
+        },
+        {
+          "query": "Inspect live homepage and historical apparatus page widget",
+          "urls_checked": [
+            "https://www.dummo.ru/",
+            "https://www.dummo.ru/90-dum-mo/apparat"
+          ],
+          "result": "Current redesigned homepage has an empty Время section. Older/cached widgets do not establish current exact-locality coverage."
+        },
+        {
+          "query": "Independently inspect DSMR Moscow-oblast chain and current holiday venue notice",
+          "urls_checked": [
+            "https://dsmr.ru/dukhovnoe-sobranie/struktura-dsmr.html",
+            "https://www.dummo.ru/home/news/5594-adresa-ploshchadok-dlya-prazdnichnykh-molitv-kurban-bajram-2026"
+          ],
+          "result": "Kept independent organizations separate. 27 May 2026 Eid venues/times do not supply year-round daily onsets."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "The independent assembly's canonical current publishing channel and current name remain unresolved.",
+        "The reported Ramadan range (fasts 19 February–19 March 2026) does not define Fajr/Isha or seasonal calculations.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current exact-locality RU-MOS timetable was qualified. A Moscow-city table and the expired broadly titled 2025 PDF cannot supply every oblast locality."
+    },
+    {
+      "code": "RU-MOW",
+      "name": "Москва",
+      "research_status": "researched_current_candidates",
+      "authorities": [
+        {
+          "id": "dumrf-moscow",
+          "name": "ЦРО Духовное управление мусульман Российской Федерации",
+          "website": "https://www.muslim.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://www.mihrab.ru/",
+              "claim": "Cathedral homepage explicitly identifies DUM RF and calls itself the official Moscow cathedral mosque site.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.muslim.ru/",
+              "claim": "DUM RF / Council of Muftis public site carries the matching dated Moscow daily display.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "dumrf-moscow-cathedral-daily",
+              "type": "official_html",
+              "canonical_url": "https://www.mihrab.ru/",
+              "scope": "Moscow cathedral mosque / Moscow city only; not Moscow oblast.",
+              "localities": [
+                "Москва"
+              ],
+              "effective_range": {
+                "from": "2026-09-08",
+                "to": "2026-09-08",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "note": "Live daily display; cached 5 and 7 September also inspected."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "note": "Geographic timezone binding; no source IANA declaration was found. Validate against canonical locality catalog before qualification."
+              },
+              "transport": {
+                "format": "Server-rendered daily HTML labels for six events",
+                "method": "GET",
+                "cadence": "Daily display observed on dated pages; no public annual API discovered.",
+                "retrieval": "Browser retrieved dated September 8 page; a separate ordinary curl attempt encountered a reset, so transport should be retried without bypass."
+              },
+              "policy": {
+                "evidence_label": "UNKNOWN",
+                "asr": "Unknown; do not infer from an aggregator's named method.",
+                "fajr": "Unknown.",
+                "isha": "Unknown.",
+                "seasonal": "Unknown.",
+                "iqamah": "No regional iqamah inferred.",
+                "jumuah": "Requires separate mosque-local evidence."
+              },
+              "comparison_evidence": [
+                {
+                  "url": "https://www.muslim.ru/",
+                  "claim": "Same-chain September 8 daily values match the cathedral site and Historical mosque's September image.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "url": "https://mosmechet.ru/",
+                  "claim": "Sanitized September 8 comparison: Fajr03:31, sunrise05:43, Dhuhr12:32, Asr16:01, Maghrib19:10, Isha20:55. September 5 and 7 also agree.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public source research does not require a separate partnership or external approver. No bulk source artifact retained in Git. Explicit restrictions, if discovered, must be respected.",
+              "qualification_gaps": [
+                "Daily horizon only; do not fabricate future dates.",
+                "Reproducible backend capture, provenance hashes and parser validation are not yet implemented.",
+                "Unknown astronomical parameters do not by themselves invalidate an exact official timetable; they do prevent inventing a calculation_profile."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "moscow-historical-mosque",
+          "name": "МРОМ «Историческая мечеть» города Москвы",
+          "website": "https://mosmechet.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://mosmechet.ru/",
+              "claim": "Footer identifies the exact Moscow local religious organization and explicitly states its legal/canonical DUM RF leadership; old manar.ru links this as its new official site.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "moscow-historical-september-2026",
+              "type": "mosque_calendar",
+              "canonical_url": "https://mosmechet.ru/",
+              "scope": "Current calendar published by МРОМ Историческая мечеть города Москвы within the DUM RF chain. Moscow city; mosque-local congregation note stays local.",
+              "localities": [
+                "Москва"
+              ],
+              "effective_range": {
+                "from": "2026-09-01",
+                "to": "2026-09-30",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "note": "September 2026 heading and 30 date/weekday rows visually inspected."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "note": "Geographic timezone binding; no source IANA declaration was found. Validate against canonical locality catalog before qualification."
+              },
+              "transport": {
+                "format": "JPEG linked by canonical first-party homepage",
+                "method": "GET",
+                "artifact_url": "https://static.tildacdn.com/tild3662-6331-4932-b666-316133393637/2492703e-4d80-40c0-b.jpeg",
+                "sha256": "b539fca30c7714210a07d14cb46ba7df898e18db910f1f8b6deb1fe4d211d5cf",
+                "cadence": "Monthly current image observed; future replacement cadence not contractually specified.",
+                "retrieval": "HTTPS homepage and linked CDN download both succeeded; original manar.ru explicitly redirects visitors to the new official site. Raw JPEG retained temporarily outside Git for inspection."
+              },
+              "policy": {
+                "evidence_label": "UNKNOWN",
+                "asr": "Unknown; do not infer from an aggregator's named method.",
+                "fajr": "Unknown.",
+                "isha": "Unknown.",
+                "seasonal": "Unknown.",
+                "iqamah": "CONFIRMED_PUBLIC: image footnote says the mosque reads Dhuhr at12:45, distinct from the varying Dhuhr onset column. Applies to this mosque only.",
+                "jumuah": "CONFIRMED_PUBLIC: new homepage says Friday12:30–13:30; old manar.ru says12:45–13:30. Exact session/onset interpretation remains UNKNOWN; do not infer a regional Jumuah."
+              },
+              "comparison_evidence": [
+                {
+                  "url": "https://www.mihrab.ru/",
+                  "claim": "September 5, 7 and 8 image rows match same-chain cathedral daily displays; September 8 matches 03:31/05:43/12:32/16:01/19:10/20:55.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "url": "http://manar.ru/",
+                  "claim": "Old first-party homepage labels the image Расписание намазов г.Москва and publishes sentyabr_26.jpg; explicitly links mosmechet.ru as its updated site.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public download expressly offered. Linked /dogovor is a personal-data processing agreement, not a timetable reuse restriction. No form submitted; bulk JPEG is outside Git.",
+              "qualification_gaps": [
+                "Image transcription/OCR must be deterministic and independently validated before publication.",
+                "Bind exact mosque/city and September-only horizon; do not promote Dhuhr12:45 to regional onset.",
+                "Resolve Friday-time discrepancy only if implementing mosque-local Jumuah."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cdum-russia-moscow",
+          "name": "Центральное духовное управление мусульман России",
+          "website": "https://cdum.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://cdum.ru/time-namaz/Moskva/index.php",
+              "claim": "Official CDUM site owns the visible Moscow2026 calendar.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.cdum.ru/rdum/",
+              "claim": "CDUM's own directory includes a Moscow representative; a separate publisher from DUM RF.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "cdum-moscow-2026",
+              "type": "official_html",
+              "canonical_url": "https://cdum.ru/time-namaz/Moskva/index.php",
+              "scope": "Explicit Moscow city calendar, separate CDUM authority. No oblast-wide applicability.",
+              "localities": [
+                "Москва"
+              ],
+              "effective_range": {
+                "from": "2026-01-01",
+                "to": "2026-12-31",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "note": "Navigation explicitly labels 2026; 365 visible rows have weekdays matching 2026."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "note": "Geographic timezone binding; no source IANA declaration was found. Validate against canonical locality catalog before qualification."
+              },
+              "transport": {
+                "format": "Visible 12 monthly HTML tables, date plus six events",
+                "method": "GET",
+                "cadence": "Annual2026 navigation; refresh cadence beyond the annual artifact is UNKNOWN.",
+                "retrieval": "Ordinary curl200. Parsed h1 pagetitle section before text_block, removed comments; month counts31/28/31/30/31/30/31/31/30/31/30/31; no weekday mismatch.",
+                "content_section_sha256": "69bc21c0aec93cbd700398dd244a24ccf078c3b9945d5a7a0fb9bf629ebeb59c",
+                "parser_version": "cdum-city-html/v1",
+                "retained_raw_sha256": "a33d327af16c8242d4d285cdd85c3eaa9055809998f6e6d7f8cd47d057c3864f",
+                "retained_raw_bytes": 1079042
+              },
+              "policy": {
+                "evidence_label": "UNKNOWN",
+                "asr": "Unknown; do not infer from an aggregator's named method.",
+                "fajr": "Unknown.",
+                "isha": "Unknown.",
+                "seasonal": "Unknown.",
+                "iqamah": "No regional iqamah inferred.",
+                "jumuah": "Requires separate mosque-local evidence."
+              },
+              "comparison_evidence": [
+                {
+                  "url": "https://cdum.ru/time-namaz/Moskva/index.php",
+                  "claim": "Sanitized multi-season rows inspected: Jan1 Fajr06:37/Isha18:22; Jun21 Fajr01:44/Isha23:07; Sep8 03:28/05:46/12:29/16:58/19:08/21:16; Dec31 Fajr06:37/Isha18:21.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "url": "https://www.mihrab.ru/",
+                  "claim": "September8 differs from DUM RF's independent published choice; do not normalize one authority into another.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "url": "https://cdum.ru/time-namaz/Moskva/index.php",
+                  "claim": "Complete order audit finds unsupported same-row next-day Isha on2026-05-08(00:17),08-04(00:17),08-05(00:01). Retained-artifact parser check accepts explicitly requested September30days and Q4 92days; annual request fails without partial output.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public source research does not require a separate partnership or external approver. No bulk source artifact retained in Git. Explicit restrictions, if discovered, must be respected.",
+              "qualification_gaps": [
+                "Full2026 coverage is rejected while same-row next-day Isha semantics are unsupported; no guessed offsets or silently omitted dates.",
+                "Only explicitly requested, fully validated complete-month coverage may proceed to separate machine qualification; September andQ4 were checked against retained raw bytes.",
+                "Source/authority/canonical locality/IANA and hash-bound qualification remain outside the pure parser."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "moscow-muftiyat-dsmr",
+          "name": "ЦРО ДУМ города Москвы и Центрального региона «Московский Муфтият»",
+          "website": "https://77islam.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://77islam.ru/",
+              "claim": "Current official Moscow Muftiyat site identifies its organization and DSMR leadership.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dsmr.ru/dukhovnoe-sobranie/struktura-dsmr.html",
+              "claim": "DSMR structure independently lists the Moscow Muftiyat.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "moscow-yardyam",
+          "name": "Московская мечеть «Ярдям»",
+          "website": "https://maginur.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://maginur.ru/about/",
+              "claim": "Own site identifies the Moscow Yardyam mosque at Хачатуряна8.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://maginur.ru/",
+              "claim": "Footer calls this the official Yardyam site and links its own Telegram channel; general Sunni/Hanafi identity is explicit.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "yardyam-live-html-currentness-conflict",
+              "type": "official_html",
+              "canonical_url": "https://maginur.ru/namaz-time/",
+              "scope": "Yardyam mosque, Хачатуряна8, Moscow. Current-looking date label is not sufficient proof of current source rows.",
+              "localities": [
+                "Москва"
+              ],
+              "effective_range": {
+                "from": null,
+                "to": null,
+                "evidence_label": "UNKNOWN",
+                "note": "HTML claims September2026, but all30 displayed time rows match its explicitly2019 PDF; currentness is unresolved."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "note": "Geographic timezone binding; no source IANA declaration was found. Validate against canonical locality catalog before qualification."
+              },
+              "transport": {
+                "format": "Server-rendered monthly HTML table tbl_month_namaz",
+                "method": "GET",
+                "cadence": "Dynamic current-month/year header; actual row refresh cadence UNKNOWN.",
+                "retrieval": "HTTPS200, no external prayer-widget request found in inspected HTML. Same page links a2019 annualPDF."
+              },
+              "policy": {
+                "evidence_label": "UNKNOWN",
+                "asr": "Unknown; do not infer from an aggregator's named method.",
+                "fajr": "Unknown.",
+                "isha": "Unknown.",
+                "seasonal": "Unknown.",
+                "iqamah": "No regional iqamah inferred.",
+                "jumuah": "Requires separate mosque-local evidence."
+              },
+              "comparison_evidence": [
+                {
+                  "url": "https://maginur.ru/wp-content/uploads/2019/04/namaz_2019.pdf",
+                  "claim": "September2019 page9 has identical thirty daily six-event values to September2026 HTML; only weekdays differ.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "url": "https://maginur.ru/",
+                  "claim": "Ordinary September8 homepage GET showed September7 values while monthly September8 row was different; stale/daily-index ambiguity prevents qualification.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public source research does not require a separate partnership or external approver. No bulk source artifact retained in Git. Explicit restrictions, if discovered, must be respected.",
+              "qualification_gaps": [
+                "Currentness conflict: identical2019 rows under a2026 header cannot be promoted to official current data without resolving reuse.",
+                "Homepage/date-index disagreement; do not use the daily widget as independent validation.",
+                "Asr parameters remain unknown despite general Hanafi identity; full local policy not inferred."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Moscow current official prayer-display discovery",
+          "urls_checked": [
+            "https://www.mihrab.ru/",
+            "https://www.muslim.ru/"
+          ],
+          "result": "Compared dated public September5/7/8 displays; same DUM RF chain, not independent authorities."
+        },
+        {
+          "query": "GET CDUM Moscow original calendar; validate visible table dates, not URL names",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/Moskva/index.php",
+            "https://www.cdum.ru/rdum/"
+          ],
+          "result": "365 rows across12 visible months and all weekday labels2026; source strategy differs from DUM RF."
+        },
+        {
+          "query": "Independently inspect DSMR and Moscow Muftiyat",
+          "urls_checked": [
+            "https://dsmr.ru/dukhovnoe-sobranie.html",
+            "https://dsmr.ru/dukhovnoe-sobranie/struktura-dsmr.html",
+            "https://77islam.ru/"
+          ],
+          "result": "Observed prayer iframe hosted by voshod-solnca.ru/widget_namaz.php (city14960,method11); excluded third-party generic calculation, not a qualified authority-authored timetable."
+        },
+        {
+          "query": "Историческая мечеть Москвы официальный сайт расписание",
+          "urls_checked": [
+            "http://manar.ru/",
+            "https://manar.ru/",
+            "https://en.manar.ru/",
+            "https://mosmechet.ru/"
+          ],
+          "result": "Old HTTPS certificate is self-signed; original HTTP site works and links valid-TLS new site. Followed actual September image download and inspected all dates/footnote."
+        },
+        {
+          "query": "Мечеть Ярдям Инам Москва официальный сайт расписание",
+          "urls_checked": [
+            "https://maginur.ru/about/",
+            "https://maginur.ru/namaz-time/",
+            "https://maginur.ru/wp-content/uploads/2019/04/namaz_2019.pdf"
+          ],
+          "result": "Independent mosque transport found, but2019-vs2026 identical-row comparison reveals unresolved currentness; not qualified."
+        },
+        {
+          "query": "\"мечеть Инам\" \"официальный\"; \"мечеть Инам\" \"расписание\"",
+          "urls_checked": [
+            "https://e-mss.ru/index/religioznye_organizacii_g_moskvy/0-45",
+            "https://musulmanam.ru/mecheti-moskvy/"
+          ],
+          "result": "Discovery identifies Inam as a separate community; no independently verified first-party publishing channel or timetable recovered. These directories are not used for source qualification."
+        },
+        {
+          "query": "\"мечеть\" \"Поклонной\" \"время намаза\" официальный",
+          "urls_checked": [
+            "https://www.muslim.ru/"
+          ],
+          "result": "Memorial-mosque/other city prayer-place discovery did not establish an additional independently published current timetable; no city or authority coverage was inferred."
+        }
+      ],
+      "unresolved": [
+        "Historical mosque is a more specific source within a confirmed DUM RF chain; retain provenance rather than counting it as an unrelated muftiyat.",
+        "Inam and other independently publishing local communities remain a discovery gap; this list is not asserted exhaustive.",
+        "DSMR external generic widget is not eligible first-party prayer data.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "Current first-party candidates exist; this research ledger does not publish or machine-qualify them. CDUM and DUM RF choices remain independent. Yardyam is held unavailable on currentness evidence."
+    },
+    {
+      "code": "RU-ORL",
+      "name": "Орловская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "oryol-mukhtasibat",
+          "name": "ЦРО ДУМ Орловской области (Орловский мухтасибат)",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/regions/57/interview/22711",
+              "claim": "First-party interview identifies the centralized Oryol organization and its2021 formation from six local communities.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow original Oryol organizational interview",
+          "urls_checked": [
+            "https://dumrf.ru/regions/57/interview/22711"
+          ],
+          "result": "Identified local communities in Oryol, Novosil and several districts; organization membership is not prayer timetable scope."
+        },
+        {
+          "query": "Inspect 2026 organizational-activity discovery",
+          "urls_checked": [
+            "https://oreluniver.ru/media/news/show/1/28753"
+          ],
+          "result": "University original report supports current activity but is not a Muslim authority's timetable publication."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "No canonical first-party timetable channel verified for Oryol, Novosil, Mtsensk, Bolkhov or other districts.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-RYA",
+      "name": "Рязанская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "ryazan-mukhtasibat",
+          "name": "Мухтасибат Рязанской области",
+          "website": "http://www.muslimkas.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/2334",
+              "claim": "Official DUM RF profile identifies the Ryazan mukhtasibat and links muslimkas.ru, with communities in Ryazan, Kasimov and other named settlements.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow first-party Ryazan mukhtasibat profile",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/2334"
+          ],
+          "result": "No exact-current locality timetable attached."
+        },
+        {
+          "query": "GET linked Muslimkas domain",
+          "urls_checked": [
+            "http://www.muslimkas.ru/"
+          ],
+          "result": "HTTP200 is domain parking (SNPARKING metadata), not a working prayer-time authority site."
+        },
+        {
+          "query": "Check separate local-community discovery",
+          "urls_checked": [
+            "https://oprzn.ru/o-palate/sostav/"
+          ],
+          "result": "The public chamber names a Ryazan Nur community. Relationship to Svet/mukhtasibat and ownership of any prayer channel remain unknown; not collapsed into one source."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "A parked historical official domain is not a transport success for prayer data.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-SMO",
+      "name": "Смоленская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "smolensk-mrom",
+          "name": "МРОМ Смоленска и Смоленской области",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/2331",
+              "claim": "Historical DUM RF profile identifies the community, religious groups in Yartsevo/Safonovo and its DUMER affiliation.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "smolensk-dsmr",
+          "name": "Духовное собрание мусульман России — Смоленское представительство",
+          "website": "https://dsmr.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dsmr.ru/?start=250",
+              "claim": "DSMR's own news index announces a plenipotentiary representative in Smolensk oblast; a distinct organizational branch, not a local timetable.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow original Smolensk community profile",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/2331"
+          ],
+          "result": "No current timetable, exact-city calendar endpoint or sufficient policy."
+        },
+        {
+          "query": "Independently inspect DSMR Smolensk representation discovery",
+          "urls_checked": [
+            "https://dsmr.ru/?start=250",
+            "https://dsmr.ru/?start=260"
+          ],
+          "result": "Kept representation separate. The site's Moscow generic widget cannot become Smolensk prayer data."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Current representative's exact local organization and canonical regional channel need verification.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-TAM",
+      "name": "Тамбовская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "tambov-mrom",
+          "name": "МРОМ Тамбова",
+          "website": "https://islamtambov.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/1195",
+              "claim": "Historical DUM RF profile identifies the Tambov community and official islamtambov.ru domain.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow original Tambov organization profile",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/1195"
+          ],
+          "result": "Identity evidence exists; no dated timetable in profile."
+        },
+        {
+          "query": "GET linked official site",
+          "urls_checked": [
+            "https://islamtambov.ru/"
+          ],
+          "result": "Ordinary HTTPS request failed with connection reset; no file/HTML/API or deterministic policy recovered."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Current domain ownership and source availability should be rechecked when transport is healthy.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-TVE",
+      "name": "Тверская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "tver-muslim-society",
+          "name": "МРОМ «Мусульманское религиозное общество г. Твери»",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/3774",
+              "claim": "DUM RF profile identifies the actual Tver religious society and daily/Friday worship at the historical mosque; no current schedule.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Тверской области\" \"мусульман\" \"расписание\"",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/3774"
+          ],
+          "result": "Generic timetable search results were not adopted; original society profile contains no data transport."
+        },
+        {
+          "query": "\"Тверь\" \"духовное управление\" \"сайт\"; follow first-party directory",
+          "urls_checked": [
+            "https://dumrf.ru/common/",
+            "https://dumrf.ru/common/org/3774"
+          ],
+          "result": "Commercial registry discovery alone was insufficient to establish a current centralized publisher or timetable."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Current relationship between local society and a claimed Tver mukhtasibat remains unresolved; no legal body was invented.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-TUL",
+      "name": "Тульская область",
+      "research_status": "researched_expired_calendar",
+      "authorities": [
+        {
+          "id": "tula-nur",
+          "name": "МРОМ «Нур» / Духовно-культурный центр города Тулы «НУР»",
+          "website": "https://islamtula.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://islamtula.ru/",
+              "claim": "Own site identifies the Tula Nur centre, local congregation and Марата71 address; public2026 Ramadan announcement links its image calendar.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "tula-nur-ramadan-2026",
+              "type": "mosque_calendar",
+              "canonical_url": "https://islamtula.ru/",
+              "scope": "Nur spiritual-cultural centre / local Muslim organization at Марата71, Tula. No verified oblast-wide onset applicability.",
+              "localities": [
+                "Тула"
+              ],
+              "effective_range": {
+                "from": "2026-02-19",
+                "to": "2026-03-19",
+                "evidence_label": "INFERENCE",
+                "note": "Post describes Ramadan2026; image exact daily bounds were not visually validated. In any event the seasonal artifact is expired on the research date."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "note": "Geographic timezone binding; no source IANA declaration was found. Validate against canonical locality catalog before qualification."
+              },
+              "transport": {
+                "format": "First-party-hosted JPEG calendar",
+                "artifact_url": "https://islamtula.ru/wp-content/uploads/2026/03/Расписание-на-Рамадан-2026.jpg",
+                "method": "GET landing page; followed actual image URL in HTML",
+                "cadence": "Ramadan-only publication found; annual/monthly current cadence UNKNOWN.",
+                "retrieval": "Official homepage ordinary HTTPS200; no bulk image retained in Git."
+              },
+              "policy": {
+                "evidence_label": "UNKNOWN",
+                "asr": "Unknown; do not infer from an aggregator's named method.",
+                "fajr": "Unknown.",
+                "isha": "Unknown.",
+                "seasonal": "Unknown.",
+                "iqamah": "No regional iqamah inferred.",
+                "jumuah": "Requires separate mosque-local evidence."
+              },
+              "comparison_evidence": [],
+              "terms_notes": "Public source research does not require a separate partnership or external approver. No bulk source artifact retained in Git. Explicit restrictions, if discovered, must be respected.",
+              "qualification_gaps": [
+                "Expired seasonal artifact; exact image scope/rows and month boundaries were not fully validated.",
+                "The separate live widget calls time-namaz.ru/js/widget_v2.js (Namaz.init52,1) and is excluded as generic third-party data.",
+                "No current September/year-round authority-authored table recovered."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Inspect original Tula authority homepage, prayer widget and Ramadan download",
+          "urls_checked": [
+            "https://islamtula.ru/",
+            "https://islamtula.ru/wp-content/uploads/2026/03/Расписание-на-Рамадан-2026.jpg"
+          ],
+          "result": "First-party Ramadan image found, but expired; live prayer widget is externally produced."
+        },
+        {
+          "query": "Inspect Friday-service and Ramadan2026 public text",
+          "urls_checked": [
+            "https://islamtula.ru/"
+          ],
+          "result": "Local service text and Eid/Tarawih announcements do not define a current oblast-wide five-prayer schedule."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "No current Tula-oblast locality calendar or deterministic official calculation profile was established.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "Only an expired Ramadan2026 authority calendar was recovered; the live widget is third-party generic data and is excluded."
+    },
+    {
+      "code": "RU-VLA",
+      "name": "Владимирская область",
+      "research_status": "researched_current_candidate_scope_limited",
+      "authorities": [
+        {
+          "id": "vladimir-mukhtasibat",
+          "name": "ЦРО ДУМ Владимирской области (Владимирский мухтасибат)",
+          "website": "https://xn--33-6kcu2afbj6atb3i.xn--p1ai/",
+          "ownership_evidence": [
+            {
+              "url": "https://xn--33-6kcu2afbj6atb3i.xn--p1ai/мухтасибат/контакты",
+              "claim": "Authority's own contact page identifies the Vladimir mukhtasibat in the DUM RF chain.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.vladmuslim.ru/расписание-намазов",
+              "claim": "Public timetable page and working same-content Cyrillic-domain alias identify the authority's prayer-time service.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "vladimir-mukhtasibat-monthly",
+              "type": "official_html",
+              "canonical_url": "https://xn--33-6kcu2afbj6atb3i.xn--p1ai/расписание-намазов",
+              "scope": "Page advertises24 named Vladimir-oblast locations, but only default Владимир (coordinates of the cathedral mosque) was reproducibly returned. Other choices are not eligible coverage.",
+              "localities": [
+                "Владимир"
+              ],
+              "effective_range": {
+                "from": "2026-01-01",
+                "to": "2027-12-31",
+                "evidence_label": "UNKNOWN",
+                "note": "Selector offers years2026/2027. Actual complete months inspected: June2026, September2026 and January2027. Do not assert every remaining month validated."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "note": "Geographic timezone binding; no source IANA declaration was found. Validate against canonical locality catalog before qualification."
+              },
+              "transport": {
+                "format": "Server-rendered monthly namaztable HTML",
+                "method": "POST application/x-www-form-urlencoded to same page; default GET is current month",
+                "parameters": {
+                  "coord": "2 is Владимир (мечеть); other documented values were ignored by live server",
+                  "month": "1..12",
+                  "year": "2026 or2027"
+                },
+                "cadence": "Current month default with month/year selector; publication/recalculation implementation unknown.",
+                "retrieval": "Valid-TLS Cyrillic alias ordinary200. vladmuslim.ru and www variant certificate hostname checks failed; not bypassed.",
+                "observed_sha256": {
+                  "september2026_table": "6360e533ae29dac45f07a14611f297812d50ae78b108e425e2f430c844498ece",
+                  "june2026_table": "4807953ec112dbf8a4402dfa44a17972b411f613afbbf9fad0b7c7049b5a3185",
+                  "january2027_table": "e7f976cfe913b7b53e0291d40e7aa0724ef0e4f0adcd6ec022fa923b5cdafdfa"
+                }
+              },
+              "policy": {
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "asr": "Standard shadow factor1 plus noon shadow.",
+                "fajr": "Sun16 degrees below horizon.",
+                "isha": "Sun15 degrees below horizon.",
+                "seasonal": "UNKNOWN: no deterministic high-latitude fallback, transition dates, rounding, coordinates or offset specification sufficient for a calculation_profile.",
+                "iqamah": "UNKNOWN; no regional congregation times inferred.",
+                "jumuah": "UNKNOWN; no regional sessions inferred."
+              },
+              "comparison_evidence": [
+                {
+                  "url": "https://xn--33-6kcu2afbj6atb3i.xn--p1ai/расписание-намазов",
+                  "claim": "POST coord2/month9/year2026 returns30September rows; September8 03:35/05:36/12:16/15:50/18:55/20:47. June2026 returns30 rows; January2027 returns31 with appropriate weekdays.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "url": "https://xn--33-6kcu2afbj6atb3i.xn--p1ai/расписание-намазов",
+                  "claim": "POST coord16 (Murom), coord1 (Alexandrov), coord24 (Yuryev-Polsky), and GET coord16 all still select Vladimir. September coord16 table hash equals coord2 exactly; reject mismatched requested locality.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public source research does not require a separate partnership or external approver. No bulk source artifact retained in Git. Explicit restrictions, if discovered, must be respected.",
+              "qualification_gaps": [
+                "Bind only reproducibly returned Владимир; all23 other selector options require functioning selection and validation.",
+                "Qualify only actually captured/validated effective months, not the advertised full year range.",
+                "Implement fail-closed selected-city/month/year checks; the hidden print title omits month/year, so use visible selected values and row dates.",
+                "Explicit angles alone do not authorize a calculation_profile; seasonal/rounding/coordinate details and reproduction remain unknown."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cdum-vladimir-representation",
+          "name": "ЦДУМ России — представительство во Владимирской области",
+          "website": "https://www.cdum.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://www.cdum.ru/rdum/",
+              "claim": "CDUM's own directory separately lists a Vladimir-oblast representative in Murom; no current local timetable link.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "dsmr-vladimir-representation",
+          "name": "Духовное собрание мусульман России — Владимирское направление",
+          "website": "https://dsmr.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dsmr.ru/dukhovnoe-sobranie/struktura-dsmr.html",
+              "claim": "DSMR's own structure lists Вафа Яруллин as Vladimir-oblast mufti; exact separate regional legal organization/publisher remains unresolved.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow Vladimir official timetable and2026 Ramadan linkage",
+          "urls_checked": [
+            "https://www.vladmuslim.ru/расписание-намазов",
+            "https://vladmuslim.ru/ислам/статьи/39-ислам/инфо/936-рамадан-2026-1447",
+            "https://xn--33-6kcu2afbj6atb3i.xn--p1ai/расписание-намазов"
+          ],
+          "result": "First-party source explicitly states Asr1/Fajr16°/Isha15°,24 listed localities and month/year form."
+        },
+        {
+          "query": "GET official valid-TLS alias; POST documented selector fields",
+          "urls_checked": [
+            "https://xn--33-6kcu2afbj6atb3i.xn--p1ai/расписание-намазов"
+          ],
+          "result": "Month/year changes work forJune2026,September2026,January2027; locality POST/GET choices1,16,24 are ignored and returnVladimir. No TLS bypass used."
+        },
+        {
+          "query": "Independently inspect other Muslim authority chains",
+          "urls_checked": [
+            "https://www.cdum.ru/rdum/",
+            "https://dsmr.ru/dukhovnoe-sobranie/struktura-dsmr.html"
+          ],
+          "result": "CDUM Murom representation and DSMR Vladimir leader recorded separately; their organizational geography does not inherit the mukhtasibat timetable."
+        }
+      ],
+      "unresolved": [
+        "Advertised options, not qualified localities: Александров; Владимир (мечеть); Вязники; Гороховец; Гусь-Хрустальный; Камешково; Карабаново; Киржач; Ковров; Кольчугино; Костерево; Красная Горбатка; Курлово; Лакинск; Меленки; Муром; Петушки; Покров; Радужный; Собинка; Струнино; Судогда; Суздаль; Юрьев-Польский.",
+        "Other chains' current timetable/policy channels remain UNKNOWN.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "A current reproducible Владимир-city monthly HTML candidate exists. Twenty-three other listed options are not coverage because live responses ignore the selected locality."
+    },
+    {
+      "code": "RU-VOR",
+      "name": "Воронежская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "voronezh-mukhtasibat",
+          "name": "ДУМ Воронежской области (Воронежский мухтасибат)",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/18375",
+              "claim": "DUM RF2021 profile identifies the Voronezh mukhtasibat, address and constituent MРОМ Свет registered2019; no timetable or first-party local website.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow official Voronezh organization-directory entry",
+          "urls_checked": [
+            "https://dumrf.ru/common/",
+            "https://dumrf.ru/common/org/18375"
+          ],
+          "result": "Confirmed Muslim authority identity; original page is organizational prose, not a prayer calendar."
+        },
+        {
+          "query": "Current prayer-calendar discovery followed to original regional authority profile",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/18375"
+          ],
+          "result": "No first-party daily data, download, selector or deterministic policy recovered."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-YAR",
+      "name": "Ярославская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "yaroslavl-mukhtasibat",
+          "name": "ЦРО ДУМ Ярославской области (Ярославский мухтасибат)",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/8148",
+              "claim": "Official DUM RF profile describes the centralized organization registered2017 and constituent local communities; HTTP200 confirmed despite browser retrieval errors.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Ярославская\" \"мухтасибат\" \"расписание\"",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/8148"
+          ],
+          "result": "Search did not identify a current first-party timetable; commercial directory entries were discovery only."
+        },
+        {
+          "query": "GET original DUM RF profile with ordinary curl after browser error",
+          "urls_checked": [
+            "https://dumrf.ru/common/",
+            "https://dumrf.ru/common/org/8148"
+          ],
+          "result": "Confirmed current accessibility, five named organizations and no linked prayer calendar. Profile date/body history is not current schedule evidence."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Ярославль, Ростов, Переславль-Залесский, Тутаев and Большое Село are organizational localities, not established timetable coverage.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-ARK",
+      "name": "Архангельская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "arkhangelsk-mrom",
+          "name": "МРОМ города Архангельска",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/3766",
+              "claim": "Official DUM RF historical profile identifies the Arkhangelsk Muslim organization.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "arkhangelsk-nur-islam",
+          "name": "МРОМ «Нур Ислам» города Архангельска",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/regions/29/regnews/25484",
+              "claim": "First-party report describes the cathedral's transfer to Nur Islam; exact legal relationship to older Arkhangelsk entries should not be silently collapsed.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumrf.ru/regions/29/regnews/26648",
+              "claim": "13August2026 first-party cathedral Quran-school report demonstrates current community activity, not a current timetable.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow Arkhangelsk official organization profile and cathedral reports",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/3766",
+            "https://dumrf.ru/regions/29/regnews/25484",
+            "https://dumrf.ru/regions/29/regnews/26648"
+          ],
+          "result": "Separate historic organizations/chain changes from current prayer-data proof."
+        },
+        {
+          "query": "Inspect original mosque-restoration context",
+          "urls_checked": [
+            "https://muslim.ru/articles/287/19993/"
+          ],
+          "result": "Historical mosque news provides no current exact prayer calendar; no polar fallback inferred."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "High-latitude seasonal/after-midnight policy is particularly unresolved.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-KGD",
+      "name": "Калининградская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "kaliningrad-muslim-organization",
+          "name": "Религиозная организация мусульман Калининграда",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/1170",
+              "claim": "DUM RF directory describes the Kaliningrad organization and historicalCDUM association.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.cdum.ru/rdum/",
+              "claim": "CDUM's own directory lists its Kaliningrad representative; historical naming/leadership overlap needs exact-chain reconciliation.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "guryevsk-ihsan",
+          "name": "МРОМ Гурьевского района «Ихсан»",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/3765",
+              "claim": "Official profile identifies Ihsan and its prayer house in Большое Исаково, a separate exact locality from Kaliningrad.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumrf.ru/common/regnews/26731",
+              "claim": "First-party4September2026 report confirms current Ihsan activity.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow both Kaliningrad and Guryevsk primary organizational profiles",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/1170",
+            "https://dumrf.ru/common/org/3765",
+            "https://dumrf.ru/common/"
+          ],
+          "result": "Two organizations/localities kept separate; neither profile publishes current times."
+        },
+        {
+          "query": "Check CDUM regional directory and current Ihsan report",
+          "urls_checked": [
+            "https://www.cdum.ru/rdum/",
+            "https://dumrf.ru/common/regnews/26731"
+          ],
+          "result": "No currently reproducible timetable or exact official calculation profile; Moscow timezone/clock is not reused."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Required geographic timezone is Europe/Kaliningrad; verify exact source/locality binding, not Europe/Moscow.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-KR",
+      "name": "Республика Карелия",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "karelian-muftiyat",
+          "name": "ДУМ Республики Карелия (Карельский муфтият)",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/1218",
+              "claim": "First-party directory identifies the Karelian muftiyat and local communities; organizational coverage is not timetable coverage.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumrf.ru/regions/10",
+              "claim": "First-party regional feed contains continuing community activity but no applicable timetable was recovered.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow Karelian authority profile and regional news feed",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/1218",
+            "https://dumrf.ru/regions/10"
+          ],
+          "result": "Identified real authority, no current downloadable prayer data."
+        },
+        {
+          "query": "Мусульмане Карелии расписание Петрозаводск2026 мечеть; Карельский муфтият сайт",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/1218",
+            "https://dumrf.ru/regions/10"
+          ],
+          "result": "Generic calculators, including ones claiming DUM methods, were excluded; no first-party current timetable found."
+        },
+        {
+          "query": "site:dumrf.ru \"Карелия\" \"сайт\" \"намаз\"",
+          "urls_checked": [
+            "https://www.dumrf.ru/common/announcement/17705"
+          ],
+          "result": "Organizational references do not supply deterministic high-latitude policy."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Петрозаводск, Кондопога, Олонец, Костомукша and Сортавала are organization-presence leads only.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-KO",
+      "name": "Республика Коми",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "komi-dum",
+          "name": "Духовное управление мусульман Республики Коми",
+          "website": "http://islam.usinsk.info/",
+          "ownership_evidence": [
+            {
+              "url": "https://www.dumrf.ru/common/announcement/17705",
+              "claim": "DUM RF's own2020 institutional report explicitly names DUM Republic of Komi as an organization in its relationship structure; not current prayer-data proof.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://tourism.rkomi.ru/travel-guide/mechet-v-g-usinsk",
+              "claim": "Official regional tourism page identifies the Usinsk mosque with DUM Republic of Komi; it does not establish current ownership of a prayer-time website.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "cdum-komi-representation",
+          "name": "ЦДУМ России — представительство в Республике Коми",
+          "website": "https://www.cdum.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://www.cdum.ru/rdum/",
+              "claim": "CDUM's own directory lists a Komi representative independently; no current timetable or local domain attached.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Духовное управление мусульман Коми расписание намаза2026 сайт",
+          "urls_checked": [
+            "https://komi.aif.ru/society/ramadan-v-marte-2026-goda-konec-posta-raspisanie-namazov",
+            "https://komi.aif.ru/society/ramadan-v-2026-godu-nachalo-i-konec-raspisanie-vremya-namaza"
+          ],
+          "result": "Media says the mufti supplied Ramadan2026 calendars; these are discovery only, expired and not current first-party delivery. No commercial/media row import."
+        },
+        {
+          "query": "\"Духовное управление мусульман Республики Коми\" сайт islam",
+          "urls_checked": [
+            "https://new.dumrf.ru/articles/org/duxovnoe-upravlenie-musulman-respubliki-komi",
+            "http://islam.usinsk.info/",
+            "https://islam.usinsk.info/"
+          ],
+          "result": "Historical domain discovered; original current new.dumrf mirror was not retrievable. HTTPS domain fails TLS; HTTP200 only redirects in script to/lander, not a mosque schedule."
+        },
+        {
+          "query": "Independently inspect original DUM RF and CDUM organizational evidence",
+          "urls_checked": [
+            "https://www.dumrf.ru/common/announcement/17705",
+            "https://www.cdum.ru/rdum/",
+            "https://tourism.rkomi.ru/travel-guide/mechet-v-g-usinsk"
+          ],
+          "result": "Real organizations recorded separately; no exact-current timetable for Syktyvkar, Usinsk, Vorkuta or another Komi locality."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Current first-party ownership of islam.usinsk.info is UNKNOWN; parked/lander content cannot prove a functioning publisher.",
+        "High-latitude data for one Komi city would not establish applicability to every city.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-LEN",
+      "name": "Ленинградская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "dumrf-spb-leningrad",
+          "name": "ЦРО ДУМ Санкт-Петербурга и Ленинградской области (Санкт-Петербургский мухтасибат)",
+          "website": "https://islamdumspb.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://www.dumrf.ru/common/org/11550",
+              "claim": "DUM RF profile identifies the2016 centralized organization, constituent local communities and DUM RF chain. It is distinct from cathedral dum-spb.ru.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "dum-spb-cathedral",
+          "name": "ДУМ Санкт-Петербурга и Северо-Западного региона России",
+          "website": "https://dum-spb.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dum-spb.ru/",
+              "claim": "Current official cathedral muftiyat homepage identifies the organization, Kronverksky7 address and leadership.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dsmr.ru/dukhovnoe-sobranie/struktura-dsmr.html",
+              "claim": "DSMR current structure identifies this cathedral muftiyat separately from the DUM RF Petersburg mukhtasibat.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.cdum.ru/rdum/",
+              "claim": "CDUM directory also retains an older same-address affiliation/leadership entry; its currency/chain must not be silently assumed.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow DUM RF Petersburg-and-Leningrad profile and linked community site",
+          "urls_checked": [
+            "https://www.dumrf.ru/common/org/11550",
+            "https://islamdumspb.ru/"
+          ],
+          "result": "Profile includes Азан in Сосново and city communities. Linked site ordinary HTTPS returns404; no current applicable oblast timetable."
+        },
+        {
+          "query": "Independently inspect cathedral timetable and CDUM Petersburg calendar",
+          "urls_checked": [
+            "https://dum-spb.ru/services/prayertime",
+            "https://cdum.ru/time-namaz/Spb.php"
+          ],
+          "result": "Both timetable headings are explicitly Saint Petersburg city, not evidence of Leningrad-oblast scope."
+        },
+        {
+          "query": "Check independent authority chains",
+          "urls_checked": [
+            "https://dsmr.ru/dukhovnoe-sobranie/struktura-dsmr.html",
+            "https://www.cdum.ru/rdum/"
+          ],
+          "result": "Broad North-West organizational jurisdiction does not extend a city calendar to an oblast."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Sosnovo and other oblast community channels remain unverified; never inherit city times merely from shared authority.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current exact-locality RU-LEN timetable was recovered. Petersburg-city sources are explicitly rejected as automatic Leningrad-oblast coverage."
+    },
+    {
+      "code": "RU-MUR",
+      "name": "Мурманская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "murmansk-muslim-community",
+          "name": "ЦРО «Община мусульман Мурманска и Мурманской области»",
+          "website": "https://murm.nordumma.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://www.dumrf.ru/common/announcement/17705",
+              "claim": "First-party DUM RF institutional report names the centralized Murmansk community. Present ownership of the separately discovered nordumma domain remains UNKNOWN.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "murmansk-islamic-centre-dsmr",
+          "name": "Духовное собрание мусульман России — Исламский центр в Мурманской области",
+          "website": "https://dsmr.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://77islam.ru/",
+              "claim": "Current Moscow Muftiyat homepage includes24July2026 report on Muslim organizational cooperation with Murmansk oblast; exact separate legal body and publishing channel remain unresolved.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dsmr.ru/?start=2340",
+              "claim": "DSMR's own earlier report describes Murmansk Islamic-centre activity; not a timetable.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"murm.nordumma.ru\"",
+          "urls_checked": [
+            "https://murm.nordumma.ru/"
+          ],
+          "result": "Domain discovered via a mosque directory, then ordinary HTTPS GET failed with connection reset. Discovery alone does not prove current first-party ownership."
+        },
+        {
+          "query": "Follow primary organizational reports rather than directory prayer estimates",
+          "urls_checked": [
+            "https://www.dumrf.ru/common/announcement/17705",
+            "https://77islam.ru/",
+            "https://dsmr.ru/?start=2340"
+          ],
+          "result": "Independent organizational presence recorded; no current polar-day/night timetable, season rule or downloadable calendar."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Current publisher identity/chain for the Murmansk Islamic centre and nordumma domain is unresolved.",
+        "No generic polar-day or neighboring-latitude fallback allowed.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-NEN",
+      "name": "Ненецкий автономный округ",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "nenets-mrom",
+          "name": "Местная религиозная организация мусульман Ненецкого автономного округа",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://www.dumrf.ru/regions/83/regnews/21744",
+              "claim": "DUM RF's first-party interview identifies the local Nenets organization and Naryan-Mar/Iskateley community history; private WhatsApp origins are not a public timetable channel.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.dumrf.ru/regions/83/regnews",
+              "claim": "Official regional feed contains continuing2026 activity; no current calendar found.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow Nenets official community interview and2026 feed",
+          "urls_checked": [
+            "https://www.dumrf.ru/regions/83/regnews/21744",
+            "https://www.dumrf.ru/regions/83/regnews"
+          ],
+          "result": "Confirmed real community identity; no public first-party prayer-data transport."
+        },
+        {
+          "query": "\"Нарьян-Мар\" \"намаз\" \"мечеть\"",
+          "urls_checked": [
+            "https://www.dumrf.ru/regions/83/regnews/21744"
+          ],
+          "result": "Original interview supplies community history, not a reproducible current schedule or high-latitude calculation policy."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Нарьян-Мар and Искателей exact coverage remains UNKNOWN; no private group was accessed or contacted.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    },
+    {
+      "code": "RU-NGR",
+      "name": "Новгородская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "novgorod-assalam-candidate",
+          "name": "МРО «Мусульманская община г. Великого Новгорода и Новгородской области „Ас-Салам“»",
+          "website": null,
+          "ownership_evidence": [
+            {
+              "url": "https://samara.mgpu.ru/files/library_elektron/history_zr/guseva_un_atlas_islamskoe_soobsch.pdf",
+              "claim": "University-hosted historical research identifies the2012 organization and historicalDSMR association. This is only an identity/discovery lead, not first-party Muslim ownership or current schedule proof.",
+              "evidence_label": "INFERENCE",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Мусульмане Великого Новгорода\" \"Ас-Салам\"",
+          "urls_checked": [
+            "https://assalam53.orgs.biz/",
+            "https://samara.mgpu.ru/files/library_elektron/history_zr/guseva_un_atlas_islamskoe_soobsch.pdf"
+          ],
+          "result": "A mirrored social-feed directory and historical organizational reference were found; neither proves a current first-party timetable channel."
+        },
+        {
+          "query": "site:dsmr.ru \"Ас-Салам\" \"Новгород\"; site:dsmr.ru \"Ашурлаев\"; site:velikij-novgorod.ru \"Ас-Салам\"",
+          "urls_checked": [
+            "https://dsmr.ru/dukhovnoe-sobranie/struktura-dsmr.html"
+          ],
+          "result": "No retrievable current first-party source ownership/timetable was established from these checks; no mirrored calendar rows imported."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "The community name/registration is a historical discovery lead; current legal identity and authority chain require primary verification.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "Current first-party publisher/channel ownership and an applicable timetable both remain unverified. A social-feed mirror cannot qualify the candidate."
+    },
+    {
+      "code": "RU-PSK",
+      "name": "Псковская область",
+      "research_status": "researched_unavailable",
+      "authorities": [],
+      "search_trail": [
+        {
+          "query": "\"Мусульмане Пскова\" мечеть сайт",
+          "urls_checked": [
+            "https://gtrkpskov.ru/news-feed/vesti-pskov/28299-musulmane-pskova-otmetili-prazdnik-uraza-bajram.html"
+          ],
+          "result": "Original local reporting names an imam, but no exact currently publishing Muslim legal organization or first-party timetable channel was verified."
+        },
+        {
+          "query": "site:dum-spb.ru \"Псков\"; site:pskov.ru \"мусульман\" \"организац\"",
+          "urls_checked": [
+            "https://dum-spb.ru/",
+            "https://pskov.ru/vlast/ispolnitelnaya/administratsiya/apparat/vnutrpol/orgs/print"
+          ],
+          "result": "No current Pskov-specific timetable recovered; broad North-West muftiyat scope is not Pskov prayer-time applicability."
+        },
+        {
+          "query": "Check DSMR's older original North-West organizational reports",
+          "urls_checked": [
+            "https://dsmr.ru/images/gazeti/mahalle_64.pdf"
+          ],
+          "result": "Historical regional cooperation reference only. No mosque/legal authority invented from an imam's title; no Petersburg calendar substituted."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "Local community's exact current legal identity, canonical public channel and high-latitude policy remain UNKNOWN.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No currently verified first-party Pskov publishing authority and applicable timetable/policy was established in this lane."
+    },
+    {
+      "code": "RU-SPE",
+      "name": "Санкт-Петербург",
+      "research_status": "researched_current_candidate_validation_gaps",
+      "authorities": [
+        {
+          "id": "dum-spb-cathedral",
+          "name": "ДУМ Санкт-Петербурга и Северо-Западного региона России",
+          "website": "https://dum-spb.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dum-spb.ru/",
+              "claim": "Current official cathedral muftiyat homepage identifies the organization, Kronverksky7 address and leadership.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dsmr.ru/dukhovnoe-sobranie/struktura-dsmr.html",
+              "claim": "DSMR current structure identifies this cathedral muftiyat separately from the DUM RF Petersburg mukhtasibat.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.cdum.ru/rdum/",
+              "claim": "CDUM directory also retains an older same-address affiliation/leadership entry; its currency/chain must not be silently assumed.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "dum-spb-calendar2026-social",
+              "type": "mosque_calendar",
+              "canonical_url": "https://dum-spb.ru/services/prayertime",
+              "scope": "Heading explicitly says Время молитв в Санкт-Петербурге. City only; no Leningrad or entire North-West extension.",
+              "localities": [
+                "Санкт-Петербург"
+              ],
+              "effective_range": {
+                "from": "2026-01-01",
+                "to": "2026-12-31",
+                "evidence_label": "UNKNOWN",
+                "note": "Landing page explicitly advertises2026 schedule; actual social calendar bytes/complete dates were not retrieved."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "note": "Geographic timezone binding; no source IANA declaration was found. Validate against canonical locality catalog before qualification."
+              },
+              "transport": {
+                "format": "Official landing page links authority-owned VK calendar/photo",
+                "method": "GET",
+                "linked_account": "https://vk.com/dumspb",
+                "linked_photo": "https://vk.com/dumspb?z=photo-112402059_457245135%2F7a3026c769c1f92876",
+                "cadence": "Annual2026 announcement; actual monthly/image cadence not recovered.",
+                "retrieval": "Website works. Ordinary VK request redirects to m.vk.com/dumspb and returns200 unsupported-browser page, not calendar. Browser tool photo retrieval failed. No login, UA spoofing or bypass attempted."
+              },
+              "policy": {
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "asr": "Own general /vremya-namazov page describes shadow factor1 plus noon shadow.",
+                "fajr": "General dawn definition only; numeric angle UNKNOWN.",
+                "isha": "General disappearance of red twilight/night definition; numeric angle and high-latitude substitute UNKNOWN.",
+                "seasonal": "No sufficient deterministic white-night/polar policy recovered.",
+                "iqamah": "UNKNOWN; not inferred.",
+                "jumuah": "UNKNOWN; not inferred."
+              },
+              "comparison_evidence": [
+                {
+                  "url": "https://dum-spb.ru/vremya-namazov",
+                  "claim": "General prayer descriptions are not a sufficient calculation_profile; do not adopt third-party claims of Hanafi timing as source policy.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public source research does not require a separate partnership or external approver. No bulk source artifact retained in Git. Explicit restrictions, if discovered, must be respected.",
+              "qualification_gaps": [
+                "Actual current timetable artifact, date range and rows remain unverified despite clear official account linkage.",
+                "Public VK transport returned a non-calendar browser-support page; operational ingestion not demonstrated.",
+                "A general prayer-definition page cannot generate high-latitude schedules."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dumrf-spb-leningrad",
+          "name": "ЦРО ДУМ Санкт-Петербурга и Ленинградской области (Санкт-Петербургский мухтасибат)",
+          "website": "https://islamdumspb.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://www.dumrf.ru/common/org/11550",
+              "claim": "DUM RF profile identifies the2016 centralized organization, constituent local communities and DUM RF chain. It is distinct from cathedral dum-spb.ru.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "cdum-russia-saint-petersburg",
+          "name": "Центральное духовное управление мусульман России",
+          "website": "https://cdum.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://cdum.ru/time-namaz/Spb.php",
+              "claim": "Official CDUM site publishes its explicit2026 city timetable.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "cdum-saint-petersburg2026",
+              "type": "official_html",
+              "canonical_url": "https://cdum.ru/time-namaz/Spb.php",
+              "scope": "Explicit Санкт-Петербург city annual calendar; not Leningrad oblast.",
+              "localities": [
+                "Санкт-Петербург"
+              ],
+              "effective_range": {
+                "from": "2026-01-01",
+                "to": "2026-12-31",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "note": "Current2026 navigation;365 visible date rows all have weekdays matching2026."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "note": "Geographic timezone binding; no source IANA declaration was found. Validate against canonical locality catalog before qualification."
+              },
+              "transport": {
+                "format": "Twelve visible monthly HTML tables; date+six event cells",
+                "method": "GET",
+                "cadence": "Annual2026 artifact advertised; replacement schedule UNKNOWN.",
+                "retrieval": "Ordinary HTTPS200. Inspected h1 pagetitle→text_block, stripped comments; calendar itself is not commented-out legacy markup. Counts31/28/31/30/31/30/31/31/30/31/30/31.",
+                "raw_page_sha256": "60479a7e8cf4ce5e0381abeb52fb1a4f493a3a6e2ae310661a60830bac50b30f",
+                "content_section_sha256": "8786eddc243c870286e99c2216e9c9e295eff4f36ac49601dcb4d86455af57fd",
+                "parser_version": "cdum-city-html/v1",
+                "retained_raw_sha256": "3369513ad18e035e8be2c0690778a79536de6aa9d7e7cdb1585fd86eda993c8d",
+                "retained_raw_bytes": 1096694
+              },
+              "policy": {
+                "evidence_label": "UNKNOWN",
+                "asr": "Unknown; do not infer from an aggregator's named method.",
+                "fajr": "Unknown.",
+                "isha": "Unknown.",
+                "seasonal": "Unknown.",
+                "iqamah": "No regional iqamah inferred.",
+                "jumuah": "Requires separate mosque-local evidence."
+              },
+              "comparison_evidence": [
+                {
+                  "url": "https://cdum.ru/time-namaz/Spb.php",
+                  "claim": "Sanitized multi-season inspection: Jan1 Fajr07:15/Isha18:42; Jun21 Fajr01:59/Isha23:53; Sep8 03:25/06:08/12:58/17:25/19:44/22:14; Dec31 Fajr07:15/Isha18:41.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "url": "https://cdum.ru/time-namaz/Spb.php",
+                  "claim": "Seasonal edge: Fajr Apr21 01:24→Apr22 03:43. Isha Apr21 23:58, Apr22 00:09, Apr23 00:22, Apr24 00:46, Apr25 22:13. No explicit midnight-day or transition policy found.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "url": "https://cdum.ru/time-namaz/Spb.php",
+                  "claim": "Complete annual order audit additionally finds Isha after-midnight on2026-08-18..21 (00:44/00:24/00:11/00:01). Pure parser accepts explicitly requested September30days and Q4 92days, but annual request rejects April22 without partial data.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public source research does not require a separate partnership or external approver. No bulk source artifact retained in Git. Explicit restrictions, if discovered, must be respected.",
+              "qualification_gaps": [
+                "Full-year requests explicitly reject unsupported same-row next-day Isha; do not guess offsets or publish an annual record with missing dates.",
+                "Pure parser tests and retained September/Q4 checks pass; source/authority/canonical locality/IANA and hash-bound qualification remain separate.",
+                "Exact table may retain unknown astronomy parameters; they do not authorize inventing a calculation_profile or implicit seasonal rule."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow official cathedral prayer links and general policy pages",
+          "urls_checked": [
+            "https://dum-spb.ru/",
+            "https://dum-spb.ru/services/prayertime",
+            "https://dum-spb.ru/vremya-namaza",
+            "https://dum-spb.ru/vremya-namazov"
+          ],
+          "result": "2026 calendar is now linked to officialVK; alternate Время-намаза page is loading-only; general policy is not sufficient deterministic calculation."
+        },
+        {
+          "query": "GET actually linked official account/photo without bypass",
+          "urls_checked": [
+            "https://vk.com/dumspb",
+            "https://vk.com/dumspb?z=photo-112402059_457245135%2F7a3026c769c1f92876"
+          ],
+          "result": "Web retrieval unsuccessful; ordinary curl reaches mobile200 unsupported-browser page, not calendar rows."
+        },
+        {
+          "query": "Independently follow DUM RF Petersburg/Leningrad organization and linked site",
+          "urls_checked": [
+            "https://www.dumrf.ru/common/org/11550",
+            "https://islamdumspb.ru/"
+          ],
+          "result": "Distinct2016 mukhtasibat; linked site returns404. No cathedral timetable was assigned to it."
+        },
+        {
+          "query": "GET CDUM actual Spb.php calendar; inspect visible/commented sections and validate2026 weekdays",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/Spb.php",
+            "https://www.cdum.ru/rdum/"
+          ],
+          "result": "365 visible rows confirmed, with April midnight/seasonal anomalies retained for fail-closed validation. Annual title not inferred from legacy URL."
+        }
+      ],
+      "unresolved": [
+        "CDUM/dum-spb historical chain overlap requires reconciliation from current evidence; do not merge or suppress independent choices arbitrarily.",
+        "City scope does not mean nearby oblast, even when the authority's name includes North-West Russia.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "CDUM current annual HTML is an implementation candidate with explicit seasonal/midnight validation gaps. Cathedral2026 social-calendar bytes and the independent DUM RF mukhtasibat transport remain unavailable."
+    },
+    {
+      "code": "RU-VLG",
+      "name": "Вологодская область",
+      "research_status": "researched_unavailable",
+      "authorities": [
+        {
+          "id": "vologda-muslim-society",
+          "name": "МРО «Общество мусульман г. Вологды» / соборная мечеть «Аль-Джума»",
+          "website": "https://muslims35.narod.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dumrf.ru/common/org/2368",
+              "claim": "Official DUM RF profile links the Vologda mosque's narod.ru site.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://muslims35.narod.ru/",
+              "claim": "Working no-www HTTPS site identifies itself as the Vologda cathedral Al-Juma mosque; visible content is historical.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Follow original Vologda authority profile and public site",
+          "urls_checked": [
+            "https://dumrf.ru/common/org/2368",
+            "https://www.muslims35.narod.ru/",
+            "https://muslims35.narod.ru/"
+          ],
+          "result": "www alias certificate mismatch; valid no-www hostname succeeds200. Homepage historical2013 activity, no current prayer timetable."
+        },
+        {
+          "query": "Follow source site's actual fatwa link",
+          "urls_checked": [
+            "https://muslims35.narod.ru/index/0-10"
+          ],
+          "result": "Fatwa is2004zakāt guidance, not Fajr/Isha/Asr calculation policy. No calendar transport discovered."
+        }
+      ],
+      "unresolved": [
+        "Timetable geographic extent, effective range, Asr/Fajr/Isha/high-latitude policy and publication cadence are UNKNOWN because no applicable timetable was recovered.",
+        "A working historical mosque site is not a current timetable source.",
+        "No neighboring-city, capital-city, generic calculation or organizational-jurisdiction fallback is authorized.",
+        "Absence of external human approval or a partnership is not a qualification blocker."
+      ],
+      "unavailable_reason": "No current, reproducible, exact-locality first-party timetable or sufficient deterministic official calculation policy was found in the documented checks. This is a research outcome, not proof that no such source exists."
+    }
+  ]
+}

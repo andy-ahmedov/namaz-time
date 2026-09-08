@@ -63,6 +63,8 @@ import ru.namaztime.tv.domain.PrayerEventKind
 import ru.namaztime.tv.domain.PrayerTimeResolution
 import ru.namaztime.tv.repository.LocalPrayerDay
 import ru.namaztime.tv.repository.LocalPrayerSchedule
+import ru.namaztime.tv.repository.hasPublicSourceQualification
+import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -1247,16 +1249,24 @@ internal fun LocalPrayerSchedule.toPrayerDisplayUiState(
     val weekdayLabel = resolution.localDate
         .format(DateTimeFormatter.ofPattern("EEEE", strings.locale))
         .replaceFirstChar { character -> character.titlecase(strings.locale) }
+    val qualifiedFreshThrough = diagnostics?.qualification?.freshThrough?.let { value ->
+        runCatching { LocalDate.parse(value) }.getOrNull()
+    }
+    val qualificationNeedsRefresh = hasPublicSourceQualification &&
+        (qualifiedFreshThrough == null || resolution.localDate.isAfter(qualifiedFreshThrough))
     val sourceLabel = when {
         diagnostics == null -> strings.get(R.string.source_unverified)
-        diagnostics.approvalStatus != "approved" -> strings.get(R.string.source_not_approved)
+        !hasPublicSourceQualification && diagnostics.approvalStatus != "approved" -> strings.get(R.string.source_not_approved)
         diagnostics.dataClassification == "synthetic" -> strings.get(R.string.source_test_data)
         sourceKind == "calculation_profile" -> strings.get(R.string.source_calculated_unofficial)
+        qualificationNeedsRefresh -> strings.get(R.string.source_qualification_stale)
+        hasPublicSourceQualification && diagnostics.dataClassification == "production" -> strings.get(R.string.source_qualified)
         diagnostics.dataClassification == "production" -> strings.get(R.string.source_approved)
         else -> strings.get(R.string.source_unverified)
     }
     val sourceRequiresAttention = diagnostics == null ||
-        diagnostics.approvalStatus != "approved" ||
+        (!hasPublicSourceQualification && diagnostics.approvalStatus != "approved") ||
+        qualificationNeedsRefresh ||
         diagnostics.dataClassification != "production" ||
         sourceKind == "calculation_profile"
     val nextEvent = resolution.nextEvent

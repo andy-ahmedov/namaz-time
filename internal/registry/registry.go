@@ -12,6 +12,7 @@ import (
 )
 
 type Registry struct {
+	qualifications      []domain.SourceQualification
 	cities              []domain.City
 	regions             []domain.Region
 	scopes              []domain.GeographicScope
@@ -24,15 +25,16 @@ type Registry struct {
 }
 
 type Dataset struct {
-	Cities              []domain.City               `json:"cities"`
-	Regions             []domain.Region             `json:"regions"`
-	Scopes              []domain.GeographicScope    `json:"scopes"`
-	Authorities         []domain.PrayerAuthority    `json:"authorities"`
-	Sources             []domain.PrayerSource       `json:"sources"`
-	Policies            []domain.PrayerPolicy       `json:"policies"`
-	CalculationProfiles []domain.CalculationProfile `json:"calculation_profiles"`
-	TimeTables          []domain.TimeTable          `json:"timetables"`
-	SourceOverrides     []domain.SourceOverride     `json:"source_overrides"`
+	Qualifications      []domain.SourceQualification `json:"qualifications,omitempty"`
+	Cities              []domain.City                `json:"cities"`
+	Regions             []domain.Region              `json:"regions"`
+	Scopes              []domain.GeographicScope     `json:"scopes"`
+	Authorities         []domain.PrayerAuthority     `json:"authorities"`
+	Sources             []domain.PrayerSource        `json:"sources"`
+	Policies            []domain.PrayerPolicy        `json:"policies"`
+	CalculationProfiles []domain.CalculationProfile  `json:"calculation_profiles"`
+	TimeTables          []domain.TimeTable           `json:"timetables"`
+	SourceOverrides     []domain.SourceOverride      `json:"source_overrides"`
 }
 
 type ResolveRequest struct {
@@ -76,6 +78,7 @@ func New(dataset Dataset) (Registry, error) {
 		return Registry{}, fmt.Errorf("%w: %v", ErrInvalidRegistry, err)
 	}
 	return Registry{
+		qualifications:      dataset.Qualifications,
 		cities:              dataset.Cities,
 		regions:             dataset.Regions,
 		scopes:              dataset.Scopes,
@@ -90,6 +93,7 @@ func New(dataset Dataset) (Registry, error) {
 
 func cloneDataset(dataset Dataset) Dataset {
 	cloned := Dataset{
+		Qualifications:      append([]domain.SourceQualification(nil), dataset.Qualifications...),
 		Cities:              append([]domain.City(nil), dataset.Cities...),
 		Regions:             append([]domain.Region(nil), dataset.Regions...),
 		Scopes:              append([]domain.GeographicScope(nil), dataset.Scopes...),
@@ -99,6 +103,9 @@ func cloneDataset(dataset Dataset) Dataset {
 		CalculationProfiles: append([]domain.CalculationProfile(nil), dataset.CalculationProfiles...),
 		TimeTables:          append([]domain.TimeTable(nil), dataset.TimeTables...),
 		SourceOverrides:     append([]domain.SourceOverride(nil), dataset.SourceOverrides...),
+	}
+	for index := range cloned.Qualifications {
+		cloned.Qualifications[index] = cloneQualification(cloned.Qualifications[index])
 	}
 	for index := range cloned.Cities {
 		cloned.Cities[index].Aliases = append([]string(nil), cloned.Cities[index].Aliases...)
@@ -154,6 +161,9 @@ func validateDataset(dataset Dataset) error {
 	}
 	overrides, err := uniqueIndex("source override", dataset.SourceOverrides, func(item domain.SourceOverride) string { return item.ID })
 	if err != nil {
+		return err
+	}
+	if err := validateQualifiedDataset(dataset, sources, scopes, authorities, timetables); err != nil {
 		return err
 	}
 
@@ -214,7 +224,7 @@ func validateDataset(dataset Dataset) error {
 		}
 	}
 	for _, policy := range dataset.Policies {
-		if policy.ApprovalID == "" || len(policy.MosqueIDs) == 0 || !validDateRange(policy.Effective) {
+		if (policy.QualificationID == "" && (policy.ApprovalID == "" || len(policy.MosqueIDs) == 0)) || !validDateRange(policy.Effective) {
 			return fmt.Errorf("policy %q lacks approval, mosque binding, or valid effective range", policy.ID)
 		}
 		if err := validateAuthorityReferences("policy "+policy.ID, policy.AuthorityIDs, authorities); err != nil {
@@ -228,7 +238,7 @@ func validateDataset(dataset Dataset) error {
 		switch policy.Kind {
 		case domain.PrayerPolicyTimeTable:
 			timetable, ok := timetables[policy.TimeTableID]
-			if !ok || policy.CalculationProfileID != "" || timetable.SourceID != policy.SourceID || timetable.GeographicScopeID != policy.GeographicScopeID || (timetable.MosqueID != "" && !contains(policy.MosqueIDs, timetable.MosqueID)) {
+			if !ok || policy.CalculationProfileID != "" || timetable.SourceID != policy.SourceID || timetable.GeographicScopeID != policy.GeographicScopeID || (policy.QualificationID == "" && timetable.MosqueID != "" && !contains(policy.MosqueIDs, timetable.MosqueID)) {
 				return fmt.Errorf("timetable policy %q has inconsistent timetable", policy.ID)
 			}
 		case domain.PrayerPolicyCalculationProfile:
@@ -330,97 +340,34 @@ func (r Registry) SearchCities(query string) []domain.City {
 }
 
 func (r Registry) Resolve(request ResolveRequest) (Resolution, error) {
-	if request.CityID == "" || request.MosqueID == "" {
-		return Resolution{}, ErrInvalidResolveRequest
+	assessment, err := r.Assess(request)
+	if err != nil {
+		return Resolution{}, err
 	}
-	if _, err := time.Parse("2006-01-02", request.Date); err != nil {
-		return Resolution{}, ErrInvalidResolveRequest
+	if assessment.Status == AssessmentAmbiguous {
+		return Resolution{}, ErrPolicyAmbiguous
 	}
-	city, ok := findByID(r.cities, request.CityID, func(item domain.City) string { return item.ID })
-	if !ok {
+	if assessment.Status != AssessmentResolved {
 		return Resolution{}, ErrPolicyUnavailable
 	}
-	region, ok := findByID(r.regions, city.RegionID, func(item domain.Region) string { return item.ID })
-	if !ok {
-		return Resolution{}, ErrPolicyUnavailable
-	}
-	for _, tier := range []ResolutionTier{
-		ResolutionExactCityTimetable,
-		ResolutionRegionalTimetable,
-		ResolutionRegionalCalculation,
-	} {
-		var eligible []Resolution
-		for _, policy := range r.policies {
-			if resolution, ok := r.resolvePolicy(policy, tier, request, city, region); ok {
-				eligible = append(eligible, resolution)
-			}
+	for _, option := range assessment.Options {
+		if !option.Selectable {
+			continue
 		}
-		if len(eligible) > 1 {
-			return Resolution{}, ErrPolicyAmbiguous
+		resolution := Resolution{
+			Tier: option.Tier, City: assessment.City, Region: assessment.Region, Scope: option.Scope,
+			Authorities: option.Authorities, Source: option.Source, Policy: option.Policy,
+			SourceOverrides: option.SourceOverrides,
 		}
-		if len(eligible) == 1 {
-			return eligible[0], nil
+		if option.TimeTable != nil {
+			resolution.TimeTable = *option.TimeTable
 		}
-	}
-	if city.FallbackPolicyID != "" {
-		if policy, exists := findByID(r.policies, city.FallbackPolicyID, func(item domain.PrayerPolicy) string { return item.ID }); exists {
-			if resolution, eligible := r.resolvePolicy(policy, ResolutionExplicitFallback, request, city, region); eligible {
-				return resolution, nil
-			}
+		if option.CalculationProfile != nil {
+			resolution.CalculationProfile = *option.CalculationProfile
 		}
+		return resolution, nil
 	}
 	return Resolution{}, ErrPolicyUnavailable
-}
-
-func (r Registry) resolvePolicy(policy domain.PrayerPolicy, tier ResolutionTier, request ResolveRequest, city domain.City, region domain.Region) (Resolution, bool) {
-	if policy.ApprovalID == "" || !contains(policy.MosqueIDs, request.MosqueID) || !dateInRange(request.Date, policy.Effective) {
-		return Resolution{}, false
-	}
-	scope, exists := findByID(r.scopes, policy.GeographicScopeID, func(item domain.GeographicScope) string { return item.ID })
-	if !exists || !scopeMatchesTier(scope, policy.Kind, tier, city, region) {
-		return Resolution{}, false
-	}
-	source, sourceOK := findByID(r.sources, policy.SourceID, func(item domain.PrayerSource) string { return item.ID })
-	if !sourceOK || !sameStrings(source.AuthorityIDs, policy.AuthorityIDs) || source.GeographicScopeID != scope.ID ||
-		(source.Status != "" && source.Status != domain.PrayerSourceApproved) || (source.FreshThrough != "" && request.Date > source.FreshThrough) {
-		return Resolution{}, false
-	}
-	authorities := make([]domain.PrayerAuthority, 0, len(policy.AuthorityIDs))
-	for _, authorityID := range policy.AuthorityIDs {
-		authority, found := findByID(r.authorities, authorityID, func(item domain.PrayerAuthority) string { return item.ID })
-		if !found {
-			return Resolution{}, false
-		}
-		authorities = append(authorities, authority)
-	}
-	resolution := Resolution{
-		Tier: tier, City: cloneCity(city), Region: region, Scope: scope,
-		Authorities: authorities, Source: cloneSource(source), Policy: clonePolicy(policy),
-	}
-	switch policy.Kind {
-	case domain.PrayerPolicyTimeTable:
-		timetable, found := findByID(r.timeTables, policy.TimeTableID, func(item domain.TimeTable) string { return item.ID })
-		if !found || (timetable.MosqueID != "" && timetable.MosqueID != request.MosqueID) || timetable.SourceID != policy.SourceID || timetable.GeographicScopeID != scope.ID || timetable.Timezone != city.Timezone || !dateInRange(request.Date, timetable.Effective) || timetable.PublishedSnapshotID == "" {
-			return Resolution{}, false
-		}
-		resolution.TimeTable = cloneTimeTable(timetable)
-		for _, overrideID := range timetable.SourceOverrideIDs {
-			override, found := findByID(r.sourceOverrides, overrideID, func(item domain.SourceOverride) string { return item.ID })
-			if !found {
-				return Resolution{}, false
-			}
-			resolution.SourceOverrides = append(resolution.SourceOverrides, cloneSourceOverride(override))
-		}
-	case domain.PrayerPolicyCalculationProfile:
-		profile, found := findByID(r.calculationProfiles, policy.CalculationProfileID, func(item domain.CalculationProfile) string { return item.ID })
-		if !found || profile.SourceID != policy.SourceID || profile.GeographicScopeID != scope.ID || profile.ApprovalID == "" || !dateInRange(request.Date, profile.Effective) {
-			return Resolution{}, false
-		}
-		resolution.CalculationProfile = profile
-	default:
-		return Resolution{}, false
-	}
-	return resolution, true
 }
 
 func cloneCity(city domain.City) domain.City {

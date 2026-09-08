@@ -1,0 +1,172 @@
+{
+  "schema_version": "2.0",
+  "snapshot_id": "qualified-synthetic-test-v1",
+  "data_classification": "production",
+  "generated_at": "2025-01-01T00:02:00Z",
+  "mosque": {
+    "id": "public-scope-3c0fb2b8015f43804b889d08992a60e9",
+    "name": "Synthetic city",
+    "country_code": "RU",
+    "region": "Synthetic region",
+    "locality": "Synthetic city",
+    "timezone": "Europe/Ulyanovsk"
+  },
+  "source": {
+    "source_id": "synthetic-annual",
+    "kind": "official_file",
+    "authority_name": "Synthetic test fixture — not an authority",
+    "geographic_scope": "Synthetic tests only",
+    "canonical_url": "https://authority.example/calendar",
+    "retrieved_at": "2025-01-01T00:00:00Z",
+    "effective_from": "2025-01-01",
+    "effective_to": "2025-01-01",
+    "raw_sha256": "e3abb285d2e75af8136fd01dd1bb48daacda5e351ae8c9251e382668ee0f5719",
+    "parser_version": "manual-csv/v1",
+    "license_reference": "Synthetic fixture",
+    "qualification": {
+      "schema_version": "namaztime-source-qualification/v1",
+      "qualification_id": "qualification-f4d52e1e0a7292355caa53f8574acd9c",
+      "state": "qualified",
+      "decision_system": "namaztime:source-qualification/v1",
+      "qualified_at": "2025-01-01T00:01:00Z",
+      "authority": {
+        "id": "authority-test",
+        "name": "Synthetic test fixture — not an authority",
+        "website": "https://authority.example",
+        "evidence_label": "CONFIRMED_PUBLIC"
+      },
+      "source_id": "synthetic-annual",
+      "source_kind": "official_file",
+      "canonical_url": "https://authority.example/calendar",
+      "scope": {
+        "id": "scope-test",
+        "kind": "city",
+        "city_id": "city-test",
+        "region_id": "region-test",
+        "description": "Synthetic tests only"
+      },
+      "catalog_revision": "catalog-test-v1",
+      "timezone": "Europe/Ulyanovsk",
+      "coverage": {
+        "from": "2025-01-01",
+        "to": "2025-01-01"
+      },
+      "fresh_through": "2025-01-01",
+      "artifact": {
+        "filename": "https://authority.example/calendar",
+        "content_type": "text/csv",
+        "captured_at": "2025-01-01T00:00:00Z",
+        "byte_length": 40,
+        "sha256": "e3abb285d2e75af8136fd01dd1bb48daacda5e351ae8c9251e382668ee0f5719"
+      },
+      "retrieval": {
+        "url": "https://authority.example/calendar",
+        "http_status": 200,
+        "content_type": "text/csv"
+      },
+      "parser_version": "manual-csv/v1",
+      "candidate_id": "candidate-2bfd70b58f32e51c9b88be1425436961",
+      "normalized_sha256": "2bfd70b58f32e51c9b88be142543696159e749f127e95fba794bb994af76b59c",
+      "onset_sha256": "640f2bc2d82a3bd1dbabb35676afc07943b3c119ca26f4bff09729efdf02d9f0",
+      "transcription_sha256": "e3abb285d2e75af8136fd01dd1bb48daacda5e351ae8c9251e382668ee0f5719",
+      "diff_sha256": "b3abd692745e3d3ea2ae9117f392d8bf311ffefd1eb715423fc295b958cca3d7",
+      "validation_sha256": "91418bd12b867dcea045f42c64c9b0964085ecb89a922845c1ebb6c9e55a910b",
+      "validated_days": 1,
+      "terms_assessment": "public_transport_no_restriction_observed",
+      "evidence": [
+        {
+          "id": "evidence-ownership",
+          "purpose": "ownership",
+          "label": "CONFIRMED_PUBLIC",
+          "url": "https://authority.example/ownership",
+          "retrieved_at": "2025-01-01T00:00:00Z",
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "claim": "Synthetic evidence for ownership"
+        },
+        {
+          "id": "evidence-scope",
+          "purpose": "scope",
+          "label": "CONFIRMED_PUBLIC",
+          "url": "https://authority.example/scope",
+          "retrieved_at": "2025-01-01T00:00:00Z",
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "claim": "Synthetic evidence for scope"
+        },
+        {
+          "id": "evidence-currentness",
+          "purpose": "currentness",
+          "label": "CONFIRMED_PUBLIC",
+          "url": "https://authority.example/currentness",
+          "retrieved_at": "2025-01-01T00:00:00Z",
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "claim": "Synthetic evidence for currentness"
+        },
+        {
+          "id": "evidence-terms",
+          "purpose": "terms",
+          "label": "CONFIRMED_PUBLIC",
+          "url": "https://authority.example/terms",
+          "retrieved_at": "2025-01-01T00:00:00Z",
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "claim": "Synthetic evidence for terms"
+        },
+        {
+          "id": "evidence-time_semantics",
+          "purpose": "time_semantics",
+          "label": "CONFIRMED_PUBLIC",
+          "url": "https://authority.example/time_semantics",
+          "retrieved_at": "2025-01-01T00:00:00Z",
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "claim": "Synthetic evidence for time_semantics"
+        },
+        {
+          "id": "evidence-value_comparison",
+          "purpose": "value_comparison",
+          "label": "CONFIRMED_PUBLIC",
+          "url": "https://authority.example/value_comparison",
+          "retrieved_at": "2025-01-01T00:00:00Z",
+          "sha256": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+          "claim": "Synthetic evidence for value_comparison"
+        }
+      ],
+      "comparisons": [
+        {
+          "evidence_id": "evidence-value_comparison",
+          "day": {
+            "date": "2025-01-01",
+            "fajr": "03:00",
+            "sunrise": "05:00",
+            "dhuhr": "12:10",
+            "asr": "16:00",
+            "maghrib": "19:00",
+            "isha": "21:00"
+          }
+        }
+      ],
+      "sha256": "f4d52e1e0a7292355caa53f8574acd9c639bf0cf280d1143650caa83075f8f61"
+    }
+  },
+  "coverage": {
+    "from": "2025-01-01",
+    "to": "2025-01-01"
+  },
+  "prayer_days": [
+    {
+      "date": "2025-01-01",
+      "fajr": "03:00",
+      "sunrise": "05:00",
+      "dhuhr": "12:10",
+      "asr": "16:00",
+      "maghrib": "19:00",
+      "isha": "21:00",
+      "flags": [
+        "synthetic"
+      ]
+    }
+  ],
+  "integrity": {
+    "canonical_sha256": "df0d72793b831d134a3a22e82b4f530dac151d154fb57c489712c4cec6f8a87d",
+    "signing_key_id": "synthetic-public-production-test-key",
+    "signature_ed25519_base64": "T9J8is6UA9sxAmxfCzcqB2wZh75V/m9R3BkjgsLk92t4peqxaXCfDzPD6UNjH2/yDyWcNnzoCyV8mw42gBgkBA=="
+  }
+}

@@ -212,10 +212,10 @@ func resolutionDataset() registry.Dataset {
 		},
 		Authorities: []domain.PrayerAuthority{{ID: "authority-1", Name: "Authority", EvidenceLabel: "CONFIRMED_PUBLIC"}},
 		Sources: []domain.PrayerSource{
-			{ID: "city-source", Kind: domain.ProviderKindOfficialFile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "city-scope"},
-			{ID: "region-table-source", Kind: domain.ProviderKindOfficialFile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "region-scope"},
-			{ID: "region-calculation-source", Kind: domain.ProviderKindCalculationProfile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "region-scope"},
-			{ID: "fallback-source", Kind: domain.ProviderKindCalculationProfile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "city-scope"},
+			{ID: "city-source", Kind: domain.ProviderKindOfficialFile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "city-scope", Status: domain.PrayerSourceApproved, FreshThrough: effective.To},
+			{ID: "region-table-source", Kind: domain.ProviderKindOfficialFile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "region-scope", Status: domain.PrayerSourceApproved, FreshThrough: effective.To},
+			{ID: "region-calculation-source", Kind: domain.ProviderKindCalculationProfile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "region-scope", Status: domain.PrayerSourceApproved, FreshThrough: effective.To},
+			{ID: "fallback-source", Kind: domain.ProviderKindCalculationProfile, AuthorityIDs: []string{"authority-1"}, GeographicScopeID: "city-scope", Status: domain.PrayerSourceApproved, FreshThrough: effective.To},
 		},
 		Policies: []domain.PrayerPolicy{
 			{ID: "city-table-policy", Kind: domain.PrayerPolicyTimeTable, GeographicScopeID: "city-scope", AuthorityIDs: []string{"authority-1"}, SourceID: "city-source", TimeTableID: "city-table", MosqueIDs: []string{"mosque-1"}, Effective: effective, ApprovalID: "approval-1"},

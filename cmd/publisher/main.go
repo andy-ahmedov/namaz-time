@@ -18,6 +18,7 @@ import (
 	"github.com/andy-ahmedov/namaz-time/internal/approval"
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
+	"github.com/andy-ahmedov/namaz-time/internal/qualification"
 	"github.com/andy-ahmedov/namaz-time/internal/strictjson"
 	"github.com/andy-ahmedov/namaz-time/internal/trust"
 )
@@ -112,9 +113,10 @@ func runVerifyTrust(args []string, stderr io.Writer) error {
 }
 
 type inspectionInput struct {
-	Previous  *domain.CandidateSchedule `json:"previous_candidate,omitempty"`
-	Candidate domain.CandidateSchedule  `json:"candidate"`
-	Diff      publication.DiffReport    `json:"diff"`
+	Qualification *domain.SourceQualification `json:"qualification,omitempty"`
+	Previous      *domain.CandidateSchedule   `json:"previous_candidate,omitempty"`
+	Candidate     domain.CandidateSchedule    `json:"candidate"`
+	Diff          publication.DiffReport      `json:"diff"`
 }
 
 type publicationLedgerHead struct {
@@ -154,7 +156,23 @@ func runAssemble(args []string, stderr io.Writer) error {
 	var evidence *publication.ApprovalEvidence
 	var prayerPolicy *publication.MosquePrayerPolicy
 	var approvalReceiptBase64, approvalTrustBundleBase64, previousApprovalTrustBundleBase64 string
-	if inspection.Candidate.DataClassification == domain.DataClassificationProduction {
+	if inspection.Qualification != nil {
+		if *approvalPath != "" || *approvalReceiptPath != "" || *approvalTrustPath != "" || *previousApprovalTrustPath != "" || *prayerPolicyPath != "" {
+			return errors.New("public qualification conflicts with legacy human approval or mosque prayer-policy inputs")
+		}
+		if err := qualification.VerifyCandidate(*inspection.Qualification, inspection.Candidate, inspection.Diff.SHA256, generatedAt); err != nil {
+			return fmt.Errorf("verify inspection qualification: %w", err)
+		}
+		recomputed, err := publication.Diff(inspection.Previous, inspection.Candidate)
+		if err != nil {
+			return err
+		}
+		computedJSON, _ := json.Marshal(recomputed)
+		suppliedJSON, _ := json.Marshal(inspection.Diff)
+		if !bytes.Equal(computedJSON, suppliedJSON) {
+			return errors.New("qualified inspection diff is not reproducible")
+		}
+	} else if inspection.Candidate.DataClassification == domain.DataClassificationProduction {
 		if *approvalPath != "" || *approvalReceiptPath == "" || *approvalTrustPath == "" || *prayerPolicyPath == "" {
 			return errors.New("production assemble requires signed approval-receipt, approval-trust-bundle and prayer-policy; unsigned -approval is forbidden")
 		}
@@ -215,7 +233,8 @@ func runAssemble(args []string, stderr io.Writer) error {
 		}
 	}
 	request := publication.PublishRequest{
-		Previous: inspection.Previous, Candidate: inspection.Candidate, Diff: inspection.Diff, Approval: decision,
+		Qualification: inspection.Qualification,
+		Previous:      inspection.Previous, Candidate: inspection.Candidate, Diff: inspection.Diff, Approval: decision,
 		ApprovalEvidence: evidence, MosquePrayerPolicy: prayerPolicy,
 		ApprovalReceiptBase64: approvalReceiptBase64, ApprovalTrustBundleBase64: approvalTrustBundleBase64,
 		PreviousApprovalTrustBundleBase64: previousApprovalTrustBundleBase64,

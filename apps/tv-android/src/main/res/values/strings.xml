@@ -235,6 +235,12 @@
     <string name="source_test_data">ТЕСТОВЫЕ ДАННЫЕ</string>
     <string name="source_calculated_unofficial">РАСЧЁТНОЕ — НЕ ОФИЦИАЛЬНО</string>
     <string name="source_approved">УТВЕРЖДЁННЫЕ ДАННЫЕ</string>
+    <string name="source_qualified">ИСТОЧНИК ПРОВЕРЕН NAMAZTIME</string>
+    <string name="source_qualification_stale">ИСТОЧНИК ТРЕБУЕТ ОБНОВЛЕНИЯ</string>
+    <string name="field_source_qualification">Квалификация источника</string>
+    <string name="field_qualification_id">ID квалификации</string>
+    <string name="value_qualified">Проверен NamazTime</string>
+    <string name="data_state_qualified_public">Публичный источник проверен NamazTime</string>
     <string name="support_code">Код поддержки: %1$s</string>
     <string name="schedule_unavailable">Расписание недоступно</string>
     <string name="schedule_loading">Загрузка локального расписания</string>

@@ -14,7 +14,7 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
-private const val MAX_SIGNED_SNAPSHOT_BYTES = 5 * 1024 * 1024
+internal const val MAX_SNAPSHOT_BYTES = 5 * 1024 * 1024
 
 class SnapshotAuthenticityException(val code: String) : IllegalArgumentException(code)
 
@@ -294,7 +294,7 @@ class SnapshotAuthenticityVerifier private constructor(
     )
 
     fun verifyAndDecode(bytes: ByteArray): VerifiedSnapshot {
-        if (bytes.size > MAX_SIGNED_SNAPSHOT_BYTES) {
+        if (bytes.size > MAX_SNAPSHOT_BYTES) {
             throw SnapshotAuthenticityException("snapshot_too_large")
         }
 		val text = try { bytes.decodeToString(throwOnInvalidSequence = true) } catch (_: Exception) {
@@ -406,11 +406,12 @@ private fun canonicalTrustInstant(value: String, code: String): Instant {
 private val TRUST_KEY_ID = Regex("^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$")
 private val CANONICAL_TRUST_TIMESTAMP = Regex("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$")
 
-private class StrictJsonObjectKeyScanner(
+internal class StrictJsonObjectKeyScanner(
     private val input: String,
     private val errorCode: String,
 ) {
     private var index = 0
+    private var depth = 0
 
     fun scan() {
         try {
@@ -426,6 +427,7 @@ private class StrictJsonObjectKeyScanner(
     }
 
     private fun value() {
+        if (++depth > 64) fail()
         whitespace()
         when (peek()) {
             '{' -> objectValue()
@@ -437,6 +439,7 @@ private class StrictJsonObjectKeyScanner(
             '-', in '0'..'9' -> numberValue()
             else -> fail()
         }
+        depth--
     }
 
     private fun objectValue() {
@@ -537,6 +540,10 @@ private fun canonicalPayload(root: JsonObject): ByteArray {
     appendCanonical(JsonObject(root.filterKeys { it != "integrity" }), output)
     return output.toString().encodeToByteArray()
 }
+
+internal fun canonicalJson(element: JsonElement): ByteArray = StringBuilder().also {
+    appendCanonical(element, it)
+}.toString().encodeToByteArray()
 
 private fun appendCanonical(element: JsonElement, output: StringBuilder) {
     when (element) {

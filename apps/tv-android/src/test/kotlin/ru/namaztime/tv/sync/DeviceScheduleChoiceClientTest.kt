@@ -12,6 +12,26 @@ import org.junit.Test
 
 class DeviceScheduleChoiceClientTest {
     @Test
+    fun keepsIndependentRegionalChoiceAlongsideAnotherCityAuthority() = runTest {
+        val original = choiceDocument(1, duplicateLabels = false)
+        val regional = original
+            .replace("\"tier\":\"exact_city_timetable\"", "\"tier\":\"regional_official_timetable\"")
+            .replace("\"kind\":\"city\",\"city_id\":\"$CITY_ID\"", "\"kind\":\"region\"")
+        val response = choiceSetResponse(2)
+            .replace(original, regional)
+            .replace("same_tier_ambiguous", "multiple_authorities")
+        val result = client(
+            ChoiceRecordingTransport(SyncHttpResponse(200, emptyMap(), response.encodeToByteArray())),
+        ).loadScheduleChoices(CITY_ID, SETUP_DATE)
+
+        assertTrue("independent mixed-scope choices rejected: $result", result is DeviceSetupResult.Success<*>)
+        val choices = (result as DeviceSetupResult.Success).value
+        assertEquals(listOf("exact_city_timetable", "regional_official_timetable"), choices.choices.map { it.tier })
+        assertTrue(choices.selectionRequired)
+        assertTrue(choices.choices.none { it.executable })
+    }
+
+    @Test
     fun exposesCompleteZeroOneTwoFiveAndEightChoiceSetsWithoutImplicitSelection() = runTest {
         listOf(0, 1, 2, 5, 8).forEach { count ->
             val transport = ChoiceRecordingTransport(

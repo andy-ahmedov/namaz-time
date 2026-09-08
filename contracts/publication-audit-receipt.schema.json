@@ -4,60 +4,310 @@
   "title": "Snapshot publication audit receipt",
   "type": "object",
   "additionalProperties": false,
-  "required": ["schema_version", "environment", "event", "request_id", "snapshot_id", "snapshot_generated_at", "snapshot_sha256", "canonical_sha256", "signing_key_id", "candidate_id", "raw_sha256", "transcription_sha256", "normalized_sha256", "diff_sha256", "parser_version", "approval_id", "approver_identity", "approved_at", "approval_scope", "signer_identity", "signed_at", "published_at", "trust_bundle_revision", "trust_bundle_sha256", "signing_request_sha256", "signing_request_id", "attestation_ed25519_base64", "receipt_sha256"],
+  "required": [
+    "schema_version",
+    "environment",
+    "event",
+    "request_id",
+    "snapshot_id",
+    "snapshot_generated_at",
+    "snapshot_sha256",
+    "canonical_sha256",
+    "signing_key_id",
+    "candidate_id",
+    "raw_sha256",
+    "transcription_sha256",
+    "normalized_sha256",
+    "diff_sha256",
+    "parser_version",
+    "signer_identity",
+    "signed_at",
+    "published_at",
+    "trust_bundle_revision",
+    "trust_bundle_sha256",
+    "signing_request_sha256",
+    "signing_request_id",
+    "attestation_ed25519_base64",
+    "receipt_sha256"
+  ],
   "properties": {
-    "schema_version": { "const": "1.0" },
-    "environment": { "enum": ["test", "staging", "production"] },
-    "event": { "const": "snapshot.published" },
-    "request_id": { "type": "string", "pattern": "^publication-[0-9a-f]{32}$" },
-    "snapshot_id": { "type": "string", "minLength": 1, "maxLength": 128 },
-    "snapshot_generated_at": { "$ref": "#/$defs/canonicalTimestamp" },
-    "snapshot_sha256": { "$ref": "#/$defs/sha256" },
-    "canonical_sha256": { "$ref": "#/$defs/sha256" },
-    "signing_key_id": { "type": "string", "minLength": 1, "maxLength": 128 },
-    "candidate_id": { "type": "string", "minLength": 1, "maxLength": 128 },
-    "raw_sha256": { "$ref": "#/$defs/sha256" },
-    "transcription_sha256": { "$ref": "#/$defs/sha256" },
-    "normalized_sha256": { "$ref": "#/$defs/sha256" },
-    "diff_sha256": { "$ref": "#/$defs/sha256" },
-    "parser_version": { "type": "string", "minLength": 1, "maxLength": 128 },
-    "approval_id": { "type": "string", "minLength": 1, "maxLength": 128 },
-    "approver_identity": { "type": "string", "minLength": 1, "maxLength": 240 },
-    "approved_at": { "$ref": "#/$defs/canonicalTimestamp" },
-    "approval_scope": { "type": "string", "minLength": 1, "maxLength": 500 },
-    "prayer_policy_sha256": { "$ref": "#/$defs/sha256" },
-    "approval_receipt_sha256": { "$ref": "#/$defs/sha256" },
-    "approval_trust_revision": { "type": "integer", "minimum": 1, "maximum": 9223372036854775807 },
-    "approval_trust_sha256": { "$ref": "#/$defs/sha256" },
-    "approval_key_id": { "type": "string", "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$" },
-    "signer_identity": { "type": "string", "minLength": 1, "maxLength": 240 },
-    "signed_at": { "$ref": "#/$defs/canonicalTimestamp" },
-    "published_at": { "$ref": "#/$defs/canonicalTimestamp" },
-    "trust_bundle_revision": { "type": "integer", "minimum": 1, "maximum": 9223372036854775807 },
-    "trust_bundle_sha256": { "$ref": "#/$defs/sha256" },
-    "signing_request_sha256": { "$ref": "#/$defs/sha256" },
-    "signing_request_id": { "type": "string", "pattern": "^signing-[0-9a-f]{32}$" },
-    "attestation_ed25519_base64": { "type": "string", "pattern": "^[A-Za-z0-9+/]{86}==$" },
-    "previous_receipt_sha256": { "$ref": "#/$defs/sha256" },
-    "chain_genesis_reason": { "type": "string", "minLength": 1, "maxLength": 240 },
-    "receipt_sha256": { "$ref": "#/$defs/sha256" }
+    "schema_version": {
+      "enum": [
+        "1.0",
+        "2.0"
+      ]
+    },
+    "environment": {
+      "enum": [
+        "test",
+        "staging",
+        "production"
+      ]
+    },
+    "event": {
+      "const": "snapshot.published"
+    },
+    "request_id": {
+      "type": "string",
+      "pattern": "^publication-[0-9a-f]{32}$"
+    },
+    "snapshot_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "snapshot_generated_at": {
+      "$ref": "#/$defs/canonicalTimestamp"
+    },
+    "snapshot_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "canonical_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "signing_key_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "candidate_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "raw_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "transcription_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "normalized_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "diff_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "parser_version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "approval_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128
+    },
+    "approver_identity": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    },
+    "approved_at": {
+      "$ref": "#/$defs/canonicalTimestamp"
+    },
+    "approval_scope": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "prayer_policy_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "approval_receipt_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "approval_trust_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9223372036854775807
+    },
+    "approval_trust_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "approval_key_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "signer_identity": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    },
+    "signed_at": {
+      "$ref": "#/$defs/canonicalTimestamp"
+    },
+    "published_at": {
+      "$ref": "#/$defs/canonicalTimestamp"
+    },
+    "trust_bundle_revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9223372036854775807
+    },
+    "trust_bundle_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "signing_request_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "signing_request_id": {
+      "type": "string",
+      "pattern": "^signing-[0-9a-f]{32}$"
+    },
+    "attestation_ed25519_base64": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9+/]{86}==$"
+    },
+    "previous_receipt_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "chain_genesis_reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 240
+    },
+    "receipt_sha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "qualification": {
+      "$ref": "#/$defs/qualificationReference"
+    }
   },
   "oneOf": [
-    { "required": ["previous_receipt_sha256"], "not": { "required": ["chain_genesis_reason"] } },
-    { "required": ["chain_genesis_reason"], "not": { "required": ["previous_receipt_sha256"] } }
+    {
+      "required": [
+        "previous_receipt_sha256"
+      ],
+      "not": {
+        "required": [
+          "chain_genesis_reason"
+        ]
+      }
+    },
+    {
+      "required": [
+        "chain_genesis_reason"
+      ],
+      "not": {
+        "required": [
+          "previous_receipt_sha256"
+        ]
+      }
+    }
   ],
   "allOf": [
     {
-      "if": { "properties": { "environment": { "const": "production" } }, "required": ["environment"] },
-      "then": { "required": ["prayer_policy_sha256", "approval_receipt_sha256", "approval_trust_revision", "approval_trust_sha256", "approval_key_id"] }
+      "if": {
+        "properties": {
+          "environment": {
+            "const": "production"
+          },
+          "schema_version": {
+            "const": "1.0"
+          }
+        },
+        "required": [
+          "environment",
+          "schema_version"
+        ]
+      },
+      "then": {
+        "required": [
+          "prayer_policy_sha256",
+          "approval_receipt_sha256",
+          "approval_trust_revision",
+          "approval_trust_sha256",
+          "approval_key_id"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "const": "1.0"
+          }
+        },
+        "required": [
+          "schema_version"
+        ]
+      },
+      "then": {
+        "required": [
+          "approval_id",
+          "approver_identity",
+          "approved_at",
+          "approval_scope"
+        ],
+        "not": {
+          "required": [
+            "qualification"
+          ]
+        }
+      },
+      "else": {
+        "required": [
+          "qualification"
+        ],
+        "properties": {
+          "approval_id": false,
+          "approver_identity": false,
+          "approved_at": false,
+          "approval_scope": false,
+          "prayer_policy_sha256": false,
+          "approval_receipt_sha256": false,
+          "approval_trust_revision": false,
+          "approval_trust_sha256": false,
+          "approval_key_id": false
+        }
+      }
     }
   ],
   "$defs": {
-    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
     "canonicalTimestamp": {
       "type": "string",
       "format": "date-time",
       "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}Z$"
+    },
+    "qualificationReference": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "NamazTime source qualification, not a human approval. The snapshot contains the full hash-bound evidence.",
+      "required": [
+        "qualification_id",
+        "sha256",
+        "decision_system",
+        "qualified_at",
+        "scope_id",
+        "onset_sha256"
+      ],
+      "properties": {
+        "qualification_id": {
+          "type": "string",
+          "pattern": "^qualification-[0-9a-f]{32}$"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "decision_system": {
+          "const": "namaztime:source-qualification/v1"
+        },
+        "qualified_at": {
+          "$ref": "#/$defs/canonicalTimestamp"
+        },
+        "scope_id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "onset_sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      }
     }
   }
 }

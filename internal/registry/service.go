@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
+	"github.com/andy-ahmedov/namaz-time/internal/qualification"
 )
 
 var (
@@ -44,13 +45,18 @@ type VerifiedApproval struct {
 }
 
 type VerifiedSnapshot struct {
-	ID            string
-	MosqueID      string
-	Timezone      string
-	Effective     domain.DateRange
-	PayloadSHA256 string
-	SigningKeyID  string
-	VerifiedAt    time.Time
+	ID                  string
+	MosqueID            string
+	Timezone            string
+	Effective           domain.DateRange
+	PayloadSHA256       string
+	SigningKeyID        string
+	VerifiedAt          time.Time
+	QualificationID     string
+	QualificationSHA256 string
+	// PublicContext is checked against the actual catalog before activation.
+	// The audit retains its signed payload hash rather than duplicating labels.
+	PublicContext *domain.Mosque
 }
 
 type ActivationRecord struct {
@@ -94,8 +100,8 @@ type PersistentService struct {
 }
 
 func NewPersistentService(config PersistentServiceConfig) (*PersistentService, error) {
-	if config.Store == nil || config.ApprovalVerifier == nil || config.SnapshotVerifier == nil || config.Now == nil {
-		return nil, errors.New("create persistent registry service: store, verifiers and clock are required")
+	if config.Store == nil || config.SnapshotVerifier == nil || config.Now == nil {
+		return nil, errors.New("create persistent registry service: store, snapshot verifier and clock are required; legacy sources additionally require an approval verifier")
 	}
 	return &PersistentService{
 		store: config.Store, approvalVerifier: config.ApprovalVerifier,
@@ -108,9 +114,12 @@ func (service *PersistentService) Stage(ctx context.Context, record RevisionReco
 		return ErrRevisionInvalid
 	}
 	now := service.now().UTC()
-	if !validAuditText(record.ID, 160) || record.SchemaVersion != RegistrySchemaVersion || !validAuditText(record.CatalogRevisionID, 200) || !validAuditText(record.CreatedBy, 160) || !validAuditText(record.Reason, 1000) ||
+	if !validAuditText(record.ID, 160) || !validAuditText(record.CatalogRevisionID, 200) || !validAuditText(record.CreatedBy, 160) || !validAuditText(record.Reason, 1000) ||
 		(record.ParentRevisionID != "" && !validAuditText(record.ParentRevisionID, 160)) || now.IsZero() {
 		return ErrRevisionInvalid
+	}
+	if err := validateRevisionQualification(record, dataset); err != nil {
+		return err
 	}
 	if _, err := New(dataset); err != nil {
 		return fmt.Errorf("%w: %v", ErrRevisionInvalid, err)
@@ -153,6 +162,12 @@ func (service *PersistentService) activate(ctx context.Context, revisionID, acto
 	if record.ID != revisionID {
 		return ErrRevisionInvalid
 	}
+	if err := validateRevisionQualification(record, dataset); err != nil {
+		return err
+	}
+	if fingerprint, err := DatasetSHA256(dataset); err != nil || fingerprint != record.ContentSHA256 {
+		return fmt.Errorf("%w: stored revision fingerprint differs", ErrRevisionInvalid)
+	}
 	approvals, snapshots, err := service.verifyExecutable(ctx, dataset)
 	if err != nil {
 		return err
@@ -185,8 +200,15 @@ func (service *PersistentService) verifyExecutable(ctx context.Context, dataset 
 	for _, source := range dataset.Sources {
 		sources[source.ID] = source
 	}
+	proofs := make(map[string]domain.SourceQualification, len(dataset.Qualifications))
+	for _, q := range dataset.Qualifications {
+		proofs[q.ID] = q
+	}
 	approvalByID := make(map[string]VerifiedApproval)
 	verifyApproval := func(approvalID, mosqueID string) error {
+		if service.approvalVerifier == nil {
+			return fmt.Errorf("%w: legacy approval verifier is required", ErrVerifiedReferenceMissing)
+		}
 		if existing, exists := approvalByID[approvalID]; exists {
 			if existing.MosqueID != mosqueID {
 				return fmt.Errorf("%w: approval %q mosque scope", ErrVerifiedReferenceMismatch, approvalID)
@@ -206,6 +228,16 @@ func (service *PersistentService) verifyExecutable(ctx context.Context, dataset 
 	}
 	for _, policy := range dataset.Policies {
 		source, ok := sources[policy.SourceID]
+		if policy.QualificationID != "" {
+			q := proofs[policy.QualificationID]
+			qualifiedAt, _ := time.Parse(time.RFC3339, q.QualifiedAt)
+			zone, _ := time.LoadLocation(q.Timezone) // New(dataset) verified the complete proof and catalog.
+			if !ok || source.Status != domain.PrayerSourceQualified || source.FreshThrough < policy.Effective.To ||
+				service.now().Before(qualifiedAt) || service.now().In(zone).Format(time.DateOnly) > q.FreshThrough {
+				return nil, nil, fmt.Errorf("%w: policy %q qualification is not current and fresh for its range", ErrRevisionNotExecutable, policy.ID)
+			}
+			continue
+		}
 		if !ok || source.Status != domain.PrayerSourceApproved || !validDate(source.FreshThrough) || source.FreshThrough < policy.Effective.To {
 			return nil, nil, fmt.Errorf("%w: policy %q source is not approved/fresh for its range", ErrRevisionNotExecutable, policy.ID)
 		}
@@ -262,14 +294,29 @@ func (service *PersistentService) verifyExecutable(ctx context.Context, dataset 
 				return nil, nil, err
 			}
 		}
-		if _, exists := snapshotByID[timetable.PublishedSnapshotID]; exists {
-			continue
+		evidence, exists := snapshotByID[timetable.PublishedSnapshotID]
+		if !exists {
+			var err error
+			evidence, err = service.snapshotVerifier.VerifySnapshot(ctx, timetable.PublishedSnapshotID)
+			if err != nil {
+				return nil, nil, fmt.Errorf("verify snapshot %q: %w", timetable.PublishedSnapshotID, err)
+			}
 		}
-		evidence, err := service.snapshotVerifier.VerifySnapshot(ctx, timetable.PublishedSnapshotID)
-		if err != nil {
-			return nil, nil, fmt.Errorf("verify snapshot %q: %w", timetable.PublishedSnapshotID, err)
+		// Recheck every timetable even when a snapshot was already authenticated;
+		// caching authentication must not let a second binding borrow its scope.
+		if policy.QualificationID != "" {
+			q := proofs[policy.QualificationID]
+			if evidence.QualificationID != q.ID || evidence.QualificationSHA256 != q.SHA256 {
+				return nil, nil, fmt.Errorf("%w: snapshot %q qualification differs", ErrVerifiedReferenceMismatch, timetable.PublishedSnapshotID)
+			}
+			context, err := qualification.PublicDisplayContext(q.Scope, deriveQualificationCatalog(dataset, q), q.Timezone)
+			if err != nil || evidence.PublicContext == nil || *evidence.PublicContext != context {
+				return nil, nil, fmt.Errorf("%w: snapshot %q public display identity differs from canonical catalog", ErrVerifiedReferenceMismatch, timetable.PublishedSnapshotID)
+			}
+		} else if evidence.QualificationID != "" || evidence.QualificationSHA256 != "" || evidence.PublicContext != nil || evidence.MosqueID != policy.MosqueIDs[0] {
+			return nil, nil, fmt.Errorf("%w: snapshot %q legacy admission differs", ErrVerifiedReferenceMismatch, timetable.PublishedSnapshotID)
 		}
-		if evidence.ID != timetable.PublishedSnapshotID || evidence.MosqueID != timetable.MosqueID || evidence.MosqueID != policy.MosqueIDs[0] ||
+		if evidence.ID != timetable.PublishedSnapshotID || evidence.MosqueID != timetable.MosqueID ||
 			evidence.Timezone != timetable.Timezone || evidence.Effective.From > timetable.Effective.From || evidence.Effective.To < timetable.Effective.To ||
 			!validDateRange(evidence.Effective) || !validSHA256(evidence.PayloadSHA256) || evidence.SigningKeyID == "" || evidence.VerifiedAt.IsZero() ||
 			!isCanonicalUTC(evidence.VerifiedAt) || evidence.VerifiedAt.After(service.now()) {
@@ -370,6 +417,7 @@ func DatasetSHA256(dataset Dataset) (string, error) {
 }
 
 func sortDataset(dataset *Dataset) {
+	sort.Slice(dataset.Qualifications, func(i, j int) bool { return dataset.Qualifications[i].ID < dataset.Qualifications[j].ID })
 	sort.Slice(dataset.Cities, func(i, j int) bool { return dataset.Cities[i].ID < dataset.Cities[j].ID })
 	sort.Slice(dataset.Regions, func(i, j int) bool { return dataset.Regions[i].ID < dataset.Regions[j].ID })
 	sort.Slice(dataset.Scopes, func(i, j int) bool { return dataset.Scopes[i].ID < dataset.Scopes[j].ID })
@@ -407,7 +455,11 @@ func rejectSameTierAmbiguity(dataset Dataset) error {
 		for rightIndex := leftIndex + 1; rightIndex < len(dataset.Policies); rightIndex++ {
 			right := dataset.Policies[rightIndex]
 			rightScope := scopeByID[right.GeographicScopeID]
-			if policyTierKey(left, leftScope) != policyTierKey(right, rightScope) || !sameGeography(leftScope, rightScope) || !rangesOverlap(left.Effective, right.Effective) || !stringsOverlap(left.MosqueIDs, right.MosqueIDs) {
+			// Independent authorities are explicit choices, never a registry-wide
+			// activation error. Conflicting equal-specificity tables within the
+			// same evidenced chain still fail closed.
+			if !sameStrings(left.AuthorityIDs, right.AuthorityIDs) || policyTierKey(left, leftScope) != policyTierKey(right, rightScope) || !sameGeography(leftScope, rightScope) || !rangesOverlap(left.Effective, right.Effective) ||
+				(left.QualificationID == "" && right.QualificationID == "" && !stringsOverlap(left.MosqueIDs, right.MosqueIDs)) {
 				continue
 			}
 			return fmt.Errorf("%w: policies %q and %q overlap at one tier", ErrPolicyAmbiguous, left.ID, right.ID)

@@ -28,8 +28,27 @@ type ValidationConfig struct {
 	SourceStatus      string
 }
 
+// ValidatePublicCandidateData validates data only; it does not establish source
+// ownership, scope, qualification or permission to publish. Public first-party
+// admission has a separate hash-bound qualification contract.
+func ValidatePublicCandidateData(config ValidationConfig, candidate domain.CandidateSchedule) domain.CandidateValidationReport {
+	report := validateCandidate(config, candidate, true)
+	if candidate.Source.MinimumCoverageDays < 1 || candidate.Source.MinimumCoverageDays > 400 || len(candidate.Days) > 400 {
+		report.Errors = append(report.Errors, domain.CandidateDiagnostic{Path: "source.minimum_coverage_days", Code: "invalid_coverage_policy", Message: "public materialization requires 1 through 400 days"})
+	}
+	if candidate.Source.MaxDeltaMinutes < 1 || candidate.Source.MaxDeltaMinutes > 180 {
+		report.Errors = append(report.Errors, domain.CandidateDiagnostic{Path: "source.max_delta_minutes", Code: "invalid_delta_policy", Message: "public data delta threshold must be 1 through 180 minutes"})
+	}
+	validatePublicLocalTimes(&report, candidate)
+	return report
+}
+
 // ValidateCandidate applies source-independent candidate checks.
 func ValidateCandidate(config ValidationConfig, candidate domain.CandidateSchedule) domain.CandidateValidationReport {
+	return validateCandidate(config, candidate, false)
+}
+
+func validateCandidate(config ValidationConfig, candidate domain.CandidateSchedule, publicData bool) domain.CandidateValidationReport {
 	var report domain.CandidateValidationReport
 	errorAt := func(path, code, message string) {
 		report.Errors = append(report.Errors, domain.CandidateDiagnostic{Path: path, Code: code, Message: message})
@@ -55,10 +74,10 @@ func ValidateCandidate(config ValidationConfig, candidate domain.CandidateSchedu
 	} else if _, err := time.LoadLocation(candidate.Mosque.Timezone); err != nil {
 		errorAt("mosque.timezone", "invalid_timezone", "must be a loadable IANA timezone")
 	}
-	if candidate.Source.PermissionStatus != "granted" {
+	if !publicData && candidate.Source.PermissionStatus != "granted" {
 		errorAt("source.permission_status", "permission_not_granted", "controlled import requires granted usage permission")
 	}
-	if config.SourceStatus != "testing" && config.SourceStatus != "active" {
+	if !publicData && config.SourceStatus != "testing" && config.SourceStatus != "active" {
 		errorAt("source.status", "source_not_enabled", "source must be testing or active")
 	}
 	if !sha256Pattern.MatchString(candidate.Artifact.SHA256) || !sha256Pattern.MatchString(candidate.TranscriptionSHA256) {
@@ -92,7 +111,7 @@ func ValidateCandidate(config ValidationConfig, candidate domain.CandidateSchedu
 			}
 			previousDate = date
 		}
-		validateDay(&report, index, day)
+		validateDay(&report, index, day, !publicData)
 		for _, flag := range day.Flags {
 			if strings.HasPrefix(flag, "source_") || strings.HasPrefix(flag, "requires_review_") {
 				warnAt(path+".flags", "source_marker_preserved", flag)
@@ -119,7 +138,7 @@ func ValidateCandidate(config ValidationConfig, candidate domain.CandidateSchedu
 	return report
 }
 
-func validateDay(report *domain.CandidateValidationReport, index int, day domain.CandidatePrayerDay) {
+func validateDay(report *domain.CandidateValidationReport, index int, day domain.CandidatePrayerDay, requireZenith bool) {
 	values := []struct{ name, value string }{
 		{"fajr", day.Fajr}, {"sunrise", day.Sunrise}, {"zenith", day.Zenith},
 		{"dhuhr", day.Dhuhr}, {"asr", day.Asr}, {"maghrib", day.Maghrib}, {"isha", day.Isha},
@@ -127,6 +146,9 @@ func validateDay(report *domain.CandidateValidationReport, index int, day domain
 	minutes := make([]int, len(values))
 	valid := true
 	for valueIndex, value := range values {
+		if value.name == "zenith" && value.value == "" && !requireZenith {
+			continue
+		}
 		path := fmt.Sprintf("days[%d].%s", index, value.name)
 		parsed, ok := parseMinutes(value.value)
 		if !ok {
@@ -165,6 +187,51 @@ func validateDay(report *domain.CandidateValidationReport, index int, day domain
 			report.Errors = append(report.Errors, domain.CandidateDiagnostic{Path: fmt.Sprintf("days[%d].flags", index), Code: "duplicate_flag", Message: "flags must be unique"})
 		}
 		seenFlags[flag] = struct{}{}
+	}
+}
+
+func validatePublicLocalTimes(report *domain.CandidateValidationReport, candidate domain.CandidateSchedule) {
+	location, err := time.LoadLocation(candidate.Mosque.Timezone)
+	if err != nil || candidate.Mosque.Timezone == "Local" {
+		return // The shared scope/timezone checks already report this failure.
+	}
+	for index, day := range candidate.Days {
+		date, err := time.Parse(time.DateOnly, day.Date)
+		if err != nil || !datePattern.MatchString(day.Date) {
+			continue
+		}
+		offsets := make(map[int]struct{})
+		for hours := -48; hours <= 48; hours += 6 {
+			_, offset := date.Add(time.Duration(hours) * time.Hour).In(location).Zone()
+			offsets[offset] = struct{}{}
+		}
+		for _, field := range []struct{ name, value string }{
+			{"fajr", day.Fajr}, {"sunrise", day.Sunrise}, {"dhuhr", day.Dhuhr}, {"asr", day.Asr}, {"maghrib", day.Maghrib}, {"isha", day.Isha},
+			{"zenith", day.Zenith}, {"recommended_fajr", day.RecommendedFajr}, {"dhuhr_congregation", day.DhuhrCongregation},
+			{"duha", day.Duha}, {"middle_of_night", day.MiddleOfNight}, {"last_third_of_night", day.LastThirdOfNight},
+		} {
+			if field.value == "" {
+				continue
+			}
+			minutes, valid := parseMinutes(field.value)
+			path := fmt.Sprintf("days[%d].%s", index, field.name)
+			if !valid {
+				if field.name == "duha" || field.name == "middle_of_night" || field.name == "last_third_of_night" {
+					report.Errors = append(report.Errors, domain.CandidateDiagnostic{Path: path, Code: "invalid_time", Message: "must be HH:MM"})
+				}
+				continue
+			}
+			matches := 0
+			wall := date.Add(time.Duration(minutes) * time.Minute)
+			for offset := range offsets {
+				if wall.Add(-time.Duration(offset)*time.Second).In(location).Format("2006-01-02 15:04") == day.Date+" "+field.value {
+					matches++
+				}
+			}
+			if matches != 1 {
+				report.Errors = append(report.Errors, domain.CandidateDiagnostic{Path: path, Code: "ambiguous_or_nonexistent_local_time", Message: "local time must identify exactly one instant in the source IANA timezone"})
+			}
+		}
 	}
 }
 

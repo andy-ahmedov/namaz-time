@@ -1,10 +1,65 @@
 package registry
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 )
+
+func TestIndependentRegionalAuthorityIsNotHiddenByAnotherCityAuthority(t *testing.T) {
+	dataset := executableDataset()
+	other := domain.PrayerAuthority{ID: "authority-independent", Name: "Independent synthetic authority", EvidenceLabel: "CONFIRMED_PUBLIC"}
+	dataset.Authorities = append(dataset.Authorities, other)
+	scope := domain.GeographicScope{ID: "scope-independent-region", Kind: domain.GeographicScopeRegion, RegionID: testRegionID}
+	dataset.Scopes = append(dataset.Scopes, scope)
+	source := dataset.Sources[0]
+	source.ID, source.GeographicScopeID, source.AuthorityIDs = "source-independent", scope.ID, []string{other.ID}
+	dataset.Sources = append(dataset.Sources, source)
+	table := dataset.TimeTables[0]
+	table.ID, table.SourceID, table.GeographicScopeID = "table-independent", source.ID, scope.ID
+	dataset.TimeTables = append(dataset.TimeTables, table)
+	policy := dataset.Policies[0]
+	policy.ID, policy.SourceID, policy.GeographicScopeID = "policy-independent", source.ID, scope.ID
+	policy.TimeTableID, policy.AuthorityIDs = table.ID, []string{other.ID}
+	dataset.Policies = append(dataset.Policies, policy)
+	request := ResolveRequest{CityID: testCityID, MosqueID: testMosqueID, Date: "2026-08-30"}
+	active, err := New(dataset)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assessment, err := active.Assess(request)
+	if err != nil || assessment.Status != AssessmentAmbiguous || assessment.Reason != "multiple_authorities" {
+		t.Fatalf("independent authorities must require selection: status=%s reason=%s error=%v", assessment.Status, assessment.Reason, err)
+	}
+	for _, option := range assessment.Options {
+		if !option.Selectable || option.BlockedReason != OptionEligible {
+			t.Fatalf("independent authority was suppressed: %#v", option)
+		}
+	}
+	if _, err := active.Resolve(request); !errors.Is(err, ErrPolicyAmbiguous) {
+		t.Fatalf("automatic resolver chose a religious authority: %v", err)
+	}
+	choices, err := ProjectCityScheduleChoices(RevisionPolicyAssessment{
+		Revision: RevisionRecord{ID: "revision-independent-synthetic"}, State: RevisionStateStaged, Result: assessment,
+	})
+	if err != nil || len(choices.Choices) != 2 || !choices.SelectionRequired {
+		t.Fatalf("independent choice projection: %#v, %v", choices, err)
+	}
+}
+
+func TestResolveDoesNotTreatAbsentSourceStatusAsApproval(t *testing.T) {
+	dataset := executableDataset()
+	dataset.Sources[0].Status = ""
+	dataset.Sources[0].FreshThrough = ""
+	active, err := New(dataset)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := active.Resolve(ResolveRequest{CityID: testCityID, MosqueID: testMosqueID, Date: "2026-08-30"}); !errors.Is(err, ErrPolicyUnavailable) {
+		t.Fatalf("unknown source implicitly became approved: %v", err)
+	}
+}
 
 func TestAssessDatasetExplainsAmbiguousSelectablePolicies(t *testing.T) {
 	dataset := executableDataset()

@@ -48,7 +48,8 @@ data class SnapshotSource(
     @SerialName("calculation_profile") val calculationProfile: String? = null,
     @SerialName("license_reference") val licenseReference: String? = null,
     val attribution: String? = null,
-    val approval: SnapshotApproval,
+    val approval: SnapshotApproval? = null,
+    val qualification: SnapshotSourceQualification? = null,
 )
 
 @Serializable

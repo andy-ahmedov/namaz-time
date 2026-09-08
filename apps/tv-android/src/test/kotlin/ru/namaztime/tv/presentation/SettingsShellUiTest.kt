@@ -17,6 +17,7 @@ import ru.namaztime.tv.repository.LocalJumuahSession
 import ru.namaztime.tv.repository.LocalPrayerDay
 import ru.namaztime.tv.repository.LocalPrayerSchedule
 import ru.namaztime.tv.repository.LocalSnapshotDiagnostics
+import ru.namaztime.tv.repository.LocalQualificationDiagnostics
 import ru.namaztime.tv.AppBuildIdentity
 import ru.namaztime.tv.repository.OperatorPreferences
 import ru.namaztime.tv.repository.OPERATOR_IQAMAH_PRAYER_IDS
@@ -33,6 +34,41 @@ import org.robolectric.annotation.Config
 class SettingsShellUiTest {
     @get:Rule
     val compose = createComposeRule()
+
+    @Test
+    @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun publicSourceSettingsShowQualificationInsteadOfExternalApproval() {
+        compose.setContent {
+            SettingsShell(initialDestination = SettingsDestination.SOURCE, onDestinationChanged = {},
+                onExit = {}, schedule = qualifiedSchedule())
+        }
+        compose.onNodeWithText("Квалификация источника").assertIsDisplayed()
+        compose.onNodeWithText("Проверен NamazTime").assertIsDisplayed()
+        compose.onNodeWithText("Одобрено").assertDoesNotExist()
+        compose.onNodeWithText("Не одобрено").assertDoesNotExist()
+    }
+
+    @Test
+    @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun publicSourceDiagnosticsKeepQualificationIdentitySeparate() {
+        compose.setContent {
+            SettingsShell(initialDestination = SettingsDestination.DIAGNOSTICS, onDestinationChanged = {},
+                onExit = {}, schedule = qualifiedSchedule())
+        }
+        compose.onNodeWithText("ID квалификации").assertIsDisplayed()
+        compose.onNodeWithText("qualification-synthetic-ui").assertIsDisplayed()
+        compose.onNodeWithText("Публичный источник проверен NamazTime").assertIsDisplayed()
+        compose.onNodeWithText("Синтетические данные").assertDoesNotExist()
+    }
+
+    private fun qualifiedSchedule(): LocalPrayerSchedule {
+        val base = pilotSchedule()
+        return base.copy(sourceKind = "official_html", iqamahRules = emptyList(), jumuahSessions = emptyList(),
+            diagnostics = requireNotNull(base.diagnostics).copy(approvalId = null, approvalStatus = null,
+                approvedBy = null, approvedAt = null, approvalScope = null,
+                qualification = LocalQualificationDiagnostics("qualification-synthetic-ui", "a".repeat(64), "qualified",
+                    "namaztime:source-qualification/v1", "2026-08-20T14:00:00Z", "2026-12-31", "scope-ui", "catalog-ui")))
+    }
 
     @Test
     @OptIn(ExperimentalTestApi::class)

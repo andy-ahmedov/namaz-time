@@ -22,29 +22,30 @@ const (
 // policy option. It is not a policy, source, approval, publication, or active
 // mosque binding of its own.
 type CityScheduleChoice struct {
-	ID                   string                     `json:"choice_id"`
-	DisplayLabel         string                     `json:"display_label"`
-	AuthorityLabel       string                     `json:"authority_label"`
-	Tier                 ResolutionTier             `json:"tier"`
-	Selectable           bool                       `json:"selectable"`
-	Executable           bool                       `json:"executable"`
-	BlockedReason        OptionBlockedReason        `json:"blocked_reason"`
-	PolicyID             string                     `json:"policy_id"`
-	PolicyKind           domain.PrayerPolicyKind    `json:"policy_kind"`
-	ApprovalID           string                     `json:"approval_id"`
-	Effective            domain.DateRange           `json:"effective"`
-	Scope                domain.GeographicScope     `json:"scope"`
-	Authorities          []domain.PrayerAuthority   `json:"authorities"`
-	Source               domain.PrayerSource        `json:"source"`
-	TimeTableID          string                     `json:"timetable_id,omitempty"`
-	CalculationProfileID string                     `json:"calculation_profile_id,omitempty"`
-	TimeTable            *domain.TimeTable          `json:"timetable,omitempty"`
-	CalculationProfile   *domain.CalculationProfile `json:"calculation_profile,omitempty"`
-	SourceOverrides      []domain.SourceOverride    `json:"source_overrides"`
+	ID                   string                      `json:"choice_id"`
+	DisplayLabel         string                      `json:"display_label"`
+	AuthorityLabel       string                      `json:"authority_label"`
+	Tier                 ResolutionTier              `json:"tier"`
+	Selectable           bool                        `json:"selectable"`
+	Executable           bool                        `json:"executable"`
+	BlockedReason        OptionBlockedReason         `json:"blocked_reason"`
+	PolicyID             string                      `json:"policy_id"`
+	PolicyKind           domain.PrayerPolicyKind     `json:"policy_kind"`
+	ApprovalID           string                      `json:"approval_id,omitempty"`
+	Qualification        *domain.SourceQualification `json:"qualification,omitempty"`
+	Effective            domain.DateRange            `json:"effective"`
+	Scope                domain.GeographicScope      `json:"scope"`
+	Authorities          []domain.PrayerAuthority    `json:"authorities"`
+	Source               domain.PrayerSource         `json:"source"`
+	TimeTableID          string                      `json:"timetable_id,omitempty"`
+	CalculationProfileID string                      `json:"calculation_profile_id,omitempty"`
+	TimeTable            *domain.TimeTable           `json:"timetable,omitempty"`
+	CalculationProfile   *domain.CalculationProfile  `json:"calculation_profile,omitempty"`
+	SourceOverrides      []domain.SourceOverride     `json:"source_overrides"`
 }
 
-// CityScheduleChoiceSet separates discovery of all eligible highest-tier
-// choices from automatic policy resolution. SelectionRequired never permits
+// CityScheduleChoiceSet separates discovery of each independent authority's
+// eligible most-specific choices from automatic resolution. SelectionRequired never permits
 // insertion or display order to choose an authority.
 type CityScheduleChoiceSet struct {
 	Revision                  RevisionRecord           `json:"revision"`
@@ -61,8 +62,9 @@ type CityScheduleChoiceSet struct {
 
 // ProjectCityScheduleChoices derives a lossless choice-discovery view from
 // PolicyAssessment, the same truth used by the fail-closed resolver and T039.
-// It intentionally omits blocked and lower-precedence options; those remain in
-// the underlying assessment for operator explainability.
+// It omits blocked options and less-specific options of the same authority;
+// independent publishers remain selectable regardless of their relative tiers.
+// Omitted options remain in the assessment for operator explainability.
 func ProjectCityScheduleChoices(assessment RevisionPolicyAssessment) (CityScheduleChoiceSet, error) {
 	if assessment.Revision.ID == "" ||
 		(assessment.State != RevisionStateStaged && assessment.State != RevisionStateActive) ||
@@ -108,6 +110,7 @@ func ProjectCityScheduleChoices(assessment RevisionPolicyAssessment) (CitySchedu
 		if err != nil {
 			return CityScheduleChoiceSet{}, err
 		}
+		choice.Executable = assessment.State == RevisionStateActive && choice.Qualification != nil
 		projected.Choices = append(projected.Choices, choice)
 	}
 
@@ -152,6 +155,16 @@ func projectCityScheduleChoice(city domain.City, option PolicyOption) (CitySched
 		Source: cloneSource(option.Source), TimeTableID: option.Policy.TimeTableID,
 		CalculationProfileID: option.Policy.CalculationProfileID,
 		SourceOverrides:      make([]domain.SourceOverride, 0, len(option.SourceOverrides)),
+	}
+	if option.Policy.QualificationID != "" {
+		q := option.Qualification
+		if q == nil || q.ID != option.Policy.QualificationID || q.ID != option.Source.QualificationID || q.Validate() != nil || option.Policy.ApprovalID != "" {
+			return CityScheduleChoice{}, fmt.Errorf("%w: qualified choice lacks exact proof", ErrRevisionInvalid)
+		}
+		cloned := cloneQualification(*q)
+		choice.Qualification = &cloned
+	} else if option.Qualification != nil {
+		return CityScheduleChoice{}, fmt.Errorf("%w: legacy choice contains a public qualification", ErrRevisionInvalid)
 	}
 	if option.TimeTable != nil {
 		cloned := cloneTimeTable(*option.TimeTable)

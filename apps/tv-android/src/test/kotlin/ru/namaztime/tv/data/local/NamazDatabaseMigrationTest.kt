@@ -46,7 +46,7 @@ class NamazDatabaseMigrationTest {
         }
 
         val migrated = Room.databaseBuilder(context, NamazDatabase::class.java, DATABASE_NAME)
-            .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
             .allowMainThreadQueries()
             .build()
 
@@ -96,7 +96,7 @@ class NamazDatabaseMigrationTest {
         }
 
         val migrated = Room.databaseBuilder(context, NamazDatabase::class.java, DATABASE_NAME)
-            .addMigrations(MIGRATION_2_3)
+            .addMigrations(MIGRATION_2_3, MIGRATION_3_4)
             .allowMainThreadQueries()
             .build()
 
@@ -114,6 +114,50 @@ class NamazDatabaseMigrationTest {
             SnapshotSelectionResolution.Active("migration-active"),
             SnapshotSelectionGuard(migrated).resolve(),
         )
+        migrated.close()
+    }
+
+    @Test
+    fun migrationThreeToFourPreservesAllLegacyChildrenApprovalAndForeignKeys() = runTest {
+        createVersionDatabase(3).use { helper ->
+            helper.writableDatabase.apply {
+                execSQL(snapshotInsertSql("migration-previous"))
+                execSQL(snapshotInsertSql("migration-active"))
+                execSQL("UPDATE snapshots SET authorityBranch='Legacy branch', canonicalUrl='https://authority.example/calendar', approvalNote='Retained note', attribution='Retained attribution'")
+                insertPrayerDays(this, "migration-previous", includeFlags = true)
+                insertPrayerDays(this, "migration-active", includeFlags = true)
+                execSQL("INSERT INTO iqamah_rules VALUES ('migration-active', 'rule-fajr', 'fajr', '2026-08-19', '2026-08-21', 127, 10, 'fixed_time', '04:00', NULL, 'migration')")
+                execSQL("INSERT INTO iqamah_date_overrides VALUES ('migration-active', '2026-08-20', 'asr', 'fixed_time', '17:00', NULL, 'migration override')")
+                execSQL("INSERT INTO jumuah_sessions VALUES ('migration-active', 'friday', 'Friday session', '12:00', '12:30', '2026-08-19', '2026-08-21')")
+                execSQL("INSERT INTO campaigns VALUES ('migration-active', 'campaign', 'donation', 'https://authority.example/give', 'Retained title', 'Retained subtitle', NULL, NULL, 'main')")
+                execSQL("INSERT INTO themes VALUES ('migration-active', 'builtin-default', 0.5, '{\"retained\":true}', NULL)")
+                execSQL("INSERT INTO snapshot_selection VALUES ('display', 'migration-active', 'migration-previous')")
+            }
+        }
+        val migrated = Room.databaseBuilder(context, NamazDatabase::class.java, DATABASE_NAME)
+            .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+            .allowMainThreadQueries().build()
+        assertEquals(4, migrated.openHelper.writableDatabase.version)
+        val dao = migrated.snapshotDao()
+        val active = dao.getSnapshot("migration-active")!!
+        assertEquals("approval-test", active.approvalId)
+        assertEquals("approved", active.approvalStatus)
+        assertEquals("test-suite", active.approvedBy)
+        assertEquals("Retained note", active.approvalNote)
+        assertEquals("Legacy branch", active.authorityBranch)
+        assertEquals("Retained attribution", active.attribution)
+        assertEquals("migration-active", dao.getSelection()?.activeSnapshotId)
+        assertEquals("migration-previous", dao.getSelection()?.previousSnapshotId)
+        assertEquals(3, dao.countPrayerDays("migration-active"))
+        assertEquals(3, dao.countPrayerDays("migration-previous"))
+        assertEquals("[\"migrated\"]", dao.getPrayerDayFlags("migration-active", "2026-08-19"))
+        assertEquals(1, dao.countIqamahRules("migration-active"))
+        assertEquals(1, dao.countIqamahOverrides("migration-active"))
+        assertEquals(1, dao.countJumuahSessions("migration-active"))
+        assertEquals(1, dao.countCampaigns("migration-active"))
+        assertEquals("{\"retained\":true}", dao.getTheme("migration-active")?.landscapeAssetJson)
+        migrated.openHelper.writableDatabase.query("PRAGMA foreign_key_check").use { assertEquals(0, it.count) }
+        assertEquals(SnapshotSelectionResolution.Active("migration-active"), SnapshotSelectionGuard(migrated).resolve())
         migrated.close()
     }
 

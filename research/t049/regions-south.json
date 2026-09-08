@@ -1,0 +1,2477 @@
+{
+  "schema_version": "t049-research-lane/v1",
+  "researched_at": "2026-09-08",
+  "subjects": [
+    {
+      "code": "RU-AD",
+      "name": "Республика Адыгея",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-ad-kda-dumraikk",
+          "name": "Централизованная религиозная организация Духовное управление мусульман Республики Адыгея и Краснодарского края",
+          "website": "https://dumraikk.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dumraikk.ru/dumraikk/",
+              "claim": "Own organizational page identifies the centralized organization and jurisdiction in both Adygea and Krasnodar Krai.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumraikk.ru/",
+              "claim": "Own home page remains active with 2026 publications.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-ad-kda-dumraikk-ramadan-2026",
+              "type": "official_file",
+              "canonical_url": "https://dumraikk.ru/wp-content/uploads/2026/02/ramadan-2026_18feb.pdf",
+              "scope": {
+                "kind": "UNKNOWN",
+                "label": "Authority-branded Ramadan calendar; no exact locality or republic/krai applicability printed."
+              },
+              "localities": [],
+              "effective_range": {
+                "start": "2026-02-18",
+                "end": "2026-03-19",
+                "evidence_label": "CONFIRMED_PUBLIC"
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "GET 200; one-page PDF inspected as text.",
+                "cadence": "Ramadan edition; expired by research date.",
+                "parser": "Date/weekday followed by six prayer columns. Do not infer geographic scope from publisher jurisdiction."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "Calendar recommends performing the morning prayer 15 minutes after adhan; this is not a demonstrated mosque iqamah schedule.",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-02-18",
+                  "times": [
+                    "05:47",
+                    "07:16",
+                    "12:51",
+                    "15:27",
+                    "17:55",
+                    "19:22"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-03-19",
+                  "times": [
+                    "04:57",
+                    "06:25",
+                    "12:48",
+                    "15:49",
+                    "18:36",
+                    "20:01"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Site requires an active hyperlink for reuse of materials and displays copyright. Summary only retained; raw PDF outside Git.",
+              "qualification_gaps": [
+                "Expired Ramadan-only effective range; no September rows.",
+                "Exact geographic applicability UNKNOWN.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            },
+            {
+              "id": "ru-ad-kda-dumraikk-book-2014",
+              "type": "official_file",
+              "canonical_url": "https://dumraikk.ru/books/prayer_times_new.pdf",
+              "scope": {
+                "kind": "locality",
+                "label": "Base table explicitly Maykop; other-locality adjustments are approximate intervals, not a deterministic qualified profile."
+              },
+              "localities": [
+                {
+                  "name": "Майкоп"
+                }
+              ],
+              "effective_range": {
+                "start": "UNKNOWN",
+                "end": "UNKNOWN",
+                "publication_year": 2014,
+                "evidence_label": "CONFIRMED_PUBLIC"
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "GET 200; 32-page PDF currently linked by /zagruzki/.",
+                "cadence": "2014 book still linked; current 2026 applicability not stated.",
+                "parser": "Yearless month/day tables; text has CP1251/Latin1 mojibake. Base scope Maykop. Do not generate exact rows from approximate correction ranges."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "Book metadata describes 2014 winter-time edition; contemporary timezone/revision applicability UNKNOWN.",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [],
+              "terms_notes": "Official download page links the book. Site requires an active hyperlink for reused materials; no licence to redistribute the full PDF established.",
+              "qualification_gaps": [
+                "No verified effective 2026 validity.",
+                "Approximate 25–30 km/minute corrections and ranged offsets cannot be promoted to exact city times or sufficient official calculation policy.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "site:dumraikk.ru расписание намазов 2026",
+          "urls_checked": [
+            "https://dumraikk.ru/",
+            "https://dumraikk.ru/dumraikk/",
+            "https://dumraikk.ru/wp-content/uploads/2026/02/ramadan-2026_18feb.pdf"
+          ],
+          "result": "Current authority and expired Ramadan PDF verified; no exact scope printed in that PDF."
+        },
+        {
+          "query": "\"Республики Адыгея\" \"мухтасибат\"; official download follow-up",
+          "urls_checked": [
+            "https://dumraikk.ru/zagruzki/",
+            "https://dumraikk.ru/books/prayer_times_new.pdf"
+          ],
+          "result": "Recovered Maykop-based 2014 annual book, not a current 2026 schedule. No additional current independent first-party timetable verified."
+        },
+        {
+          "query": "Official Telegram latest feed and exact расписание/график searches",
+          "urls_checked": [
+            "https://t.me/s/dumraikk",
+            "https://t.me/dumraikk/2807",
+            "https://t.me/dumraikk/2833"
+          ],
+          "result": "Current official channel inspected. Schedule search recovered only Ramadan2025 and updated Ramadan2026 posts; no September or full2026 source."
+        }
+      ],
+      "unresolved": [
+        "No verified current applicable timetable or sufficient calculation profile. No transfer of Maykop times to the whole republic."
+      ],
+      "unavailable_reason": "Current publication is expired and scope-ambiguous; older Maykop book has no verified 2026 validity."
+    },
+    {
+      "code": "RU-AST",
+      "name": "Астраханская область",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-ast-rdum-cdum",
+          "name": "Региональное духовное управление мусульман Астраханской области в составе Центрального духовного управления мусульман России",
+          "website": "https://islam-astrakhan.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://islam-astrakhan.ru/rdum-oa",
+              "claim": "Own organizational page names RDUM AO within CDUM Russia.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://islam-astrakhan.ru/rdum-oa/istoriya",
+              "claim": "Own history explains prior ARDUM name; naming variants are not independent authorities.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-ast-rdum-home-daily",
+              "type": "official_html",
+              "canonical_url": "https://islam-astrakhan.ru/",
+              "scope": {
+                "kind": "locality",
+                "label": "Header explicitly says timetable for Astrakhan."
+              },
+              "localities": [
+                {
+                  "name": "Астрахань"
+                }
+              ],
+              "effective_range": {
+                "start": "2026-09-07",
+                "end": "2026-09-07",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "basis": "Date displayed by the retrieved homepage, not inferred from research date."
+              },
+              "timezone": {
+                "iana": "Europe/Astrakhan",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "Public HTML current-day display.",
+                "cadence": "Daily UI; retrieved display remained September 7 when checked September 8."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-09-07",
+                  "times": [
+                    "04:38",
+                    "06:08",
+                    "13:05",
+                    "17:57",
+                    "19:27",
+                    "20:57"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public unauthenticated retrieval only. No separate permission requirement inferred. No substantial raw source artifact retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "Displayed date was yesterday; no current September 8 artifact from this widget.",
+                "Distinct values from the national CDUM city table require source/version handling, never averaging.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            },
+            {
+              "id": "ru-ast-rdum-february-image",
+              "type": "official_file",
+              "canonical_url": "https://islam-astrakhan.ru/images/2021/04/09/screenshot_7.jpg",
+              "scope": {
+                "kind": "locality",
+                "label": "Linked by page explicitly named for Astrakhan."
+              },
+              "localities": [
+                {
+                  "name": "Астрахань"
+                }
+              ],
+              "effective_range": {
+                "start": "UNKNOWN",
+                "end": "UNKNOWN",
+                "month": 2,
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "basis": "Image says February, contains 28 days, no year."
+              },
+              "timezone": {
+                "iana": "Europe/Astrakhan",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "Public JPG linked from /raspisanie-vremeni-namazov-dlya-g-astrakhani; downloaded and visually inspected.",
+                "cadence": "UNKNOWN; old path and yearless February content.",
+                "parser": "Raster calendar, not an annual table."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "UNKNOWN-02-01",
+                  "times": [
+                    "06:42",
+                    "08:12",
+                    "13:05",
+                    "16:22",
+                    "17:52",
+                    "19:22"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public unauthenticated retrieval only. No separate permission requirement inferred. No substantial raw source artifact retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "February-only, yearless, not current September.",
+                "Possible internal Asr inconsistency (February 9 16:24) must not be silently corrected.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ru-ast-narimanov-muhtasibat",
+          "name": "Наримановский мухтасибат Астраханской области",
+          "website": "https://nur-iman.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://nur-iman.ru/muhtasibat/about-us",
+              "claim": "Own page explicitly places this muhtasibat within RDUM AO and CDUM Russia; not a DUM RF branch and not an independent competing authority.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-ast-narimanov-recurring",
+              "type": "mosque_calendar",
+              "canonical_url": "https://nur-iman.ru/images/namaztimes/namaz.pdf",
+              "scope": {
+                "kind": "explicit_locality_group",
+                "label": "Right-bank Astrakhan, Narimanov and nearby settlements within 10–15 km as stated on publisher's schedule page; no whole-oblast scope."
+              },
+              "localities": [
+                {
+                  "name": "Нариманов"
+                },
+                {
+                  "name": "Астрахань",
+                  "restriction": "Правобережная часть; not whole city"
+                }
+              ],
+              "effective_range": {
+                "start": "UNKNOWN",
+                "end": "UNKNOWN",
+                "evidence_label": "UNKNOWN",
+                "basis": "Yearless annual PDF linked by a live page; current page date alone does not establish effective validity."
+              },
+              "timezone": {
+                "iana": "Europe/Astrakhan",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "Public PDF, 12 pages; monthly JPEG equivalents linked by https://nur-iman.ru/namaz/schedule.",
+                "cadence": "Annual recurring layout; dated revision/publication cadence UNKNOWN.",
+                "bytes": 220416,
+                "parser": "Twelve text pages with named month and repeated explicit right-bank/Narimanov 10–15km scope; day plus six H-mm fields. Yearless, includes February29. Text extraction has date-label artifacts such as February '251' and March '114'; fail closed pending visual validation."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "UNKNOWN-01-01",
+                  "times": [
+                    "07:01",
+                    "08:31",
+                    "13:05",
+                    "15:26",
+                    "17:12",
+                    "18:42"
+                  ],
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08",
+                  "note": "Literal yearless January table; no2026effective assertion."
+                }
+              ],
+              "terms_notes": "Public unauthenticated retrieval only. No separate permission requirement inferred. No substantial raw source artifact retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "Exact effective year/date validity is not established.",
+                "Nearby-settlement 10–15 km wording is insufficient to fabricate unnamed catalogue coverage.",
+                "Same confirmed CDUM chain as RDUM AO, not a separate independent source choice by mistaken affiliation.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval.",
+                "February29 exists and some extracted date labels are anomalous; not a directly reusable 365-day2026 file."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ru-ast-muhtasibat-dumrf",
+          "name": "Духовное управление мусульман Астраханской области (Астраханский мухтасибат)",
+          "website": "https://islamdumao30.wixsite.com/website",
+          "ownership_evidence": [
+            {
+              "url": "https://islamdumao30.wixsite.com/website",
+              "claim": "Own site identifies Astrakhan DUM/muhtasibat and publishes material signed by imam-muhtasib Мухаммад Кадеев; observed posts chiefly 2021.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumrf.ru/common/interview/18425",
+              "claim": "DUM RF first-party interview identifies its Astrakhan muhtasibat and Kadeev appointment; this is a separate authority chain from CDUM.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumrf.ru/regions/30",
+              "claim": "DUM RF regional section corroborates its Astrakhan organizational presence.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "ru-cdum",
+          "name": "Центральное духовное управление мусульман России",
+          "website": "https://cdum.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://cdum.ru/time-namaz/",
+              "claim": "National authority's own prayer-time navigation links the named city timetable for 2026.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://cdum.ru/time-namaz/astrakhan/Astrakhan.php",
+              "claim": "Visible city heading and month tables establish this exact city source; a regional authority name does not expand its scope.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-cdum-astrakhan-2026",
+              "type": "official_html",
+              "canonical_url": "https://cdum.ru/time-namaz/astrakhan/Astrakhan.php",
+              "scope": {
+                "kind": "locality",
+                "label": "Астрахань"
+              },
+              "localities": [
+                {
+                  "name": "Астрахань"
+                }
+              ],
+              "effective_range": {
+                "start": "2026-01-01",
+                "end": "2026-12-31",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "basis": "2026 navigation/title plus all observed Russian weekdays checked against the 2026 calendar."
+              },
+              "timezone": {
+                "iana": "Europe/Astrakhan",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "GET 200; HTML, no credentials.",
+                "cadence": "Annual 2026 tables observed; refresh SLA UNKNOWN.",
+                "parser": "Remove HTML comments before selection. Each active row has seven cells: day + Russian weekday, then six times. Preserve semantic markers and fail closed; months must be anchored by named month headers.",
+                "observed_raw_sha256": "da53032065aed1d4ef3d3ac7731e35280677d49d6631c3fe4802bf1b8077517e",
+                "raw_hash_note": "Full HTML includes dynamic content; repeated raw hashes may differ. Bind actual retrieval and deterministic normalized table hash.",
+                "validation": "365 dated rows/12 month tables checked where stated; all plain-time row weekdays match 2026."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-01-01",
+                  "times": [
+                    "06:40",
+                    "08:29",
+                    "12:53",
+                    "15:30",
+                    "17:14",
+                    "18:57"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-06-21",
+                  "times": [
+                    "02:06",
+                    "04:54",
+                    "12:52",
+                    "18:18",
+                    "20:46",
+                    "23:17"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-09-08",
+                  "times": [
+                    "04:29",
+                    "06:15",
+                    "12:48",
+                    "17:19",
+                    "19:16",
+                    "20:55"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-12-31",
+                  "times": [
+                    "06:40",
+                    "08:29",
+                    "12:53",
+                    "15:29",
+                    "17:13",
+                    "18:56"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public unauthenticated retrieval only. No separate permission requirement inferred. No substantial raw source artifact retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Астраханской области\" \"духовное управление мусульман\" официальный сайт",
+          "urls_checked": [
+            "https://islam-astrakhan.ru/rdum-oa",
+            "https://islam-astrakhan.ru/rdum-oa/istoriya"
+          ],
+          "result": "Verified CDUM branch identity and historic aliases."
+        },
+        {
+          "query": "\"Астраханский мухтасибат\" \"Кадеев\" сайт; site:dumrf.ru \"Астраханской области\"",
+          "urls_checked": [
+            "https://dumrf.ru/common/interview/18425",
+            "https://islamdumao30.wixsite.com/website"
+          ],
+          "result": "Identified genuinely separate DUM RF muhtasibat; no current prayer table/policy found on its own site."
+        },
+        {
+          "query": "Astrakhan and Narimanov actual calendar transport follow-up",
+          "urls_checked": [
+            "https://islam-astrakhan.ru/raspisanie-vremeni-namazov-dlya-g-astrakhani",
+            "https://islam-astrakhan.ru/images/2021/04/09/screenshot_7.jpg",
+            "https://nur-iman.ru/muhtasibat/about-us",
+            "https://nur-iman.ru/namaz/schedule",
+            "https://nur-iman.ru/images/namaztimes/namaz.pdf",
+            "https://cdum.ru/time-namaz/astrakhan/Astrakhan.php"
+          ],
+          "result": "CDUM annual HTML has 365 valid 2026 weekdays. Regional page links only yearless February image; Narimanov PDF needs effective-validity proof."
+        }
+      ],
+      "unresolved": [
+        "DUM RF site's 2026 operational status and current timetable remain UNKNOWN; retain the authority independently.",
+        "CDUM national and regional schedules differ; do not merge or infer precedence beyond a proven chain and source revision.",
+        "No current source verified for every oblast locality."
+      ],
+      "unavailable_reason": "Astrakhan CDUM annual source is implementation-ready pending qualification; other localities and independently researched authorities lack a qualified current applicable source."
+    },
+    {
+      "code": "RU-VGG",
+      "name": "Волгоградская область",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-vgg-central-dum-dsmr",
+          "name": "Центральное духовное управление мусульман Волгоградской области",
+          "website": "https://dumvlg.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dumvlg.ru/",
+              "claim": "Own header identifies Central DUM of Volgograd Oblast and mufti Кифах Бата Абдулла-хаджи, address Ангарская, 122.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.34islam.ru/",
+              "claim": "Same canonical organization and address, explicitly associated with Духовное собрание мусульман России; not a separate authority from dumvlg.ru.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "ru-vgg-rdum-cdum",
+          "name": "Региональное духовное управление мусульман Волгоградской области",
+          "website": "https://www.cdum.ru/rdum/history/d/3765/",
+          "ownership_evidence": [
+            {
+              "url": "https://www.cdum.ru/rdum/history/d/3765/",
+              "claim": "CDUM's own regional history identifies its distinct RDUM formed in 1995; must not be merged with Central DUM/DSMR merely because both are in Volgograd.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "ru-cdum",
+          "name": "Центральное духовное управление мусульман России",
+          "website": "https://cdum.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://cdum.ru/time-namaz/",
+              "claim": "National authority's own prayer-time navigation links the named city timetable for 2026.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://cdum.ru/time-namaz/%D0%92%D0%BE%D0%BB%D0%B3%D0%BE%D0%B3%D1%80%D0%B0%D0%B4/Volgograd.php",
+              "claim": "Visible city heading and month tables establish this exact city source; a regional authority name does not expand its scope.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-cdum-volgograd-2026",
+              "type": "official_html",
+              "canonical_url": "https://cdum.ru/time-namaz/%D0%92%D0%BE%D0%BB%D0%B3%D0%BE%D0%B3%D1%80%D0%B0%D0%B4/Volgograd.php",
+              "scope": {
+                "kind": "locality",
+                "label": "Волгоград"
+              },
+              "localities": [
+                {
+                  "name": "Волгоград"
+                }
+              ],
+              "effective_range": {
+                "start": "2026-01-01",
+                "end": "2026-12-31",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "basis": "2026 navigation/title plus all observed Russian weekdays checked against the 2026 calendar."
+              },
+              "timezone": {
+                "iana": "Europe/Volgograd",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "GET 200; HTML, no credentials.",
+                "cadence": "Annual 2026 tables observed; refresh SLA UNKNOWN.",
+                "parser": "Remove HTML comments before selection. Each active row has seven cells: day + Russian weekday, then six times. Preserve semantic markers and fail closed; months must be anchored by named month headers.",
+                "observed_raw_sha256": "b62f3a774917a12b18bbc6585f828dd5b90db99ad25e9d8035f6ca3e01837361",
+                "raw_hash_note": "Full HTML includes dynamic content; repeated raw hashes may differ. Bind actual retrieval and deterministic normalized table hash.",
+                "validation": "365 dated rows/12 month tables checked where stated; all plain-time row weekdays match 2026."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-01-01",
+                  "times": [
+                    "05:58",
+                    "07:53",
+                    "12:07",
+                    "14:33",
+                    "16:18",
+                    "18:07"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-06-21",
+                  "times": [
+                    "01:33*",
+                    "03:57",
+                    "12:06",
+                    "17:37",
+                    "20:10",
+                    "23:16"
+                  ],
+                  "note": "Literal source Fajr marker preserved; meaning UNKNOWN.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-09-08",
+                  "times": [
+                    "03:35",
+                    "05:26",
+                    "12:02",
+                    "16:33",
+                    "18:32",
+                    "20:16"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-12-31",
+                  "times": [
+                    "05:57",
+                    "07:53",
+                    "12:07",
+                    "14:32",
+                    "16:17",
+                    "18:06"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public unauthenticated retrieval only. No separate permission requirement inferred. No substantial raw source artifact retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "13 Fajr cells June 15–27 have literal '*'; explanatory footnote not found in visible HTML. Do not silently strip it.",
+                "Large seasonal transition: June 14 Fajr 00:11, June 15 01:33*, June 27 01:36*, June 28 00:09. Full-year validation unresolved; any bounded period requires an explicit independently validated qualification.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Волгоградской области\" РДУМ официальный сайт",
+          "urls_checked": [
+            "https://dumvlg.ru/",
+            "https://www.34islam.ru/",
+            "https://www.cdum.ru/rdum/history/d/3765/"
+          ],
+          "result": "Resolved two real authority chains, and two websites of the same Central DUM."
+        },
+        {
+          "query": "Follow actual prayer widget on authority-linked regional portal",
+          "urls_checked": [
+            "https://www.islamvolga.ru/"
+          ],
+          "result": "Portal embeds third-party voshod-solnca.ru/widget_namaz.php with method=3/timezone=3; generic calculator and unexplained parameters excluded, not adopted as official policy."
+        },
+        {
+          "query": "CDUM 2026 city table full row/weekday/marker audit",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/%D0%92%D0%BE%D0%BB%D0%B3%D0%BE%D0%B3%D1%80%D0%B0%D0%B4/Volgograd.php"
+          ],
+          "result": "365 rows: 352 plain-time rows plus 13 marked Fajr rows. Visible source contains no explanatory asterisk footnote."
+        }
+      ],
+      "unresolved": [
+        "Current first-party Central DUM/DSMR timetable or deterministic policy not recovered.",
+        "Full-year CDUM seasonal Fajr marker is unresolved; only exact validated bounded dates may be considered by root.",
+        "No oblast-wide city extrapolation."
+      ],
+      "unavailable_reason": "Current city table exists, but full-year semantic validation has an unresolved June Fajr marker. Other authority and locality choices lack verified current first-party data."
+    },
+    {
+      "code": "RU-KL",
+      "name": "Республика Калмыкия",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-kl-dum",
+          "name": "Централизованная религиозная организация Духовное управление мусульман Республики Калмыкия",
+          "website": "UNKNOWN",
+          "ownership_evidence": [
+            {
+              "url": "https://kalmgu.ru/news/v-kalmgu-sostoyalsya-kruglyy-stol-mezhnatsionalnyy-i-mezhkonfessionalnyy-dialog/",
+              "claim": "First-party event host's March 26, 2026 report names the DUM and chairman-mufti Солтанахмед Гаджиевич Каралаев; organizational evidence only, not publisher-owned prayer data.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://minjust.gov.ru/ru/events/50846/",
+              "claim": "Justice Ministry's own 2025 agreement report identifies the named regional Muslim organization/leader.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://interreligious.ru/news/news-religious-communities/news-religious-communities_891.html",
+              "claim": "Interreligious council's February 15, 2026 meeting report corroborates the regional mufti.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Калмыкии\" \"духовное управление мусульман\"; \"Калмыкии\" \"Каралаев\" муфтий 2026",
+          "urls_checked": [
+            "https://kalmgu.ru/news/v-kalmgu-sostoyalsya-kruglyy-stol-mezhnatsionalnyy-i-mezhkonfessionalnyy-dialog/",
+            "https://minjust.gov.ru/ru/events/50846/",
+            "https://interreligious.ru/news/news-religious-communities/news-religious-communities_891.html"
+          ],
+          "result": "Verified a real current organization through primary institutional publications; own current web/channel transport was not established."
+        },
+        {
+          "query": "\"Калмыкии\" \"расписание намазов\" \"муфтий\"",
+          "urls_checked": [],
+          "result": "No current public first-party timetable or complete official calculation policy discovered; generic calculators excluded."
+        }
+      ],
+      "unresolved": [
+        "Own current authority website/channel, exact source scope, effective dates, timezone declaration, methods, seasonal rules and cadence UNKNOWN.",
+        "Geographic IANA candidate Europe/Moscow is not a verified source policy."
+      ],
+      "unavailable_reason": "Real authority confirmed, but no reproducible current first-party prayer source or sufficient official calculation policy was found."
+    },
+    {
+      "code": "RU-KDA",
+      "name": "Краснодарский край",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-ad-kda-dumraikk",
+          "name": "Централизованная религиозная организация Духовное управление мусульман Республики Адыгея и Краснодарского края",
+          "website": "https://dumraikk.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://dumraikk.ru/dumraikk/",
+              "claim": "Own organizational page identifies the centralized organization and jurisdiction in both Adygea and Krasnodar Krai.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumraikk.ru/",
+              "claim": "Own home page remains active with 2026 publications.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-ad-kda-dumraikk-ramadan-2026",
+              "type": "official_file",
+              "canonical_url": "https://dumraikk.ru/wp-content/uploads/2026/02/ramadan-2026_18feb.pdf",
+              "scope": {
+                "kind": "UNKNOWN",
+                "label": "Authority-branded Ramadan calendar; no exact locality or republic/krai applicability printed."
+              },
+              "localities": [],
+              "effective_range": {
+                "start": "2026-02-18",
+                "end": "2026-03-19",
+                "evidence_label": "CONFIRMED_PUBLIC"
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "GET 200; one-page PDF inspected as text.",
+                "cadence": "Ramadan edition; expired by research date.",
+                "parser": "Date/weekday followed by six prayer columns. Do not infer geographic scope from publisher jurisdiction."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "Calendar recommends performing the morning prayer 15 minutes after adhan; this is not a demonstrated mosque iqamah schedule.",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-02-18",
+                  "times": [
+                    "05:47",
+                    "07:16",
+                    "12:51",
+                    "15:27",
+                    "17:55",
+                    "19:22"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-03-19",
+                  "times": [
+                    "04:57",
+                    "06:25",
+                    "12:48",
+                    "15:49",
+                    "18:36",
+                    "20:01"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Site requires an active hyperlink for reuse of materials and displays copyright. Summary only retained; raw PDF outside Git.",
+              "qualification_gaps": [
+                "Expired Ramadan-only effective range; no September rows.",
+                "Exact geographic applicability UNKNOWN.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            },
+            {
+              "id": "ru-ad-kda-dumraikk-book-2014",
+              "type": "official_file",
+              "canonical_url": "https://dumraikk.ru/books/prayer_times_new.pdf",
+              "scope": {
+                "kind": "locality",
+                "label": "Base table explicitly Maykop; other-locality adjustments are approximate intervals, not a deterministic qualified profile."
+              },
+              "localities": [
+                {
+                  "name": "Майкоп"
+                }
+              ],
+              "effective_range": {
+                "start": "UNKNOWN",
+                "end": "UNKNOWN",
+                "publication_year": 2014,
+                "evidence_label": "CONFIRMED_PUBLIC"
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "GET 200; 32-page PDF currently linked by /zagruzki/.",
+                "cadence": "2014 book still linked; current 2026 applicability not stated.",
+                "parser": "Yearless month/day tables; text has CP1251/Latin1 mojibake. Base scope Maykop. Do not generate exact rows from approximate correction ranges."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "Book metadata describes 2014 winter-time edition; contemporary timezone/revision applicability UNKNOWN.",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [],
+              "terms_notes": "Official download page links the book. Site requires an active hyperlink for reused materials; no licence to redistribute the full PDF established.",
+              "qualification_gaps": [
+                "No verified effective 2026 validity.",
+                "Approximate 25–30 km/minute corrections and ranged offsets cannot be promoted to exact city times or sufficient official calculation policy.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ru-kda-sochi-mrom-dumrf",
+          "name": "Местная религиозная организация мусульман города Сочи Краснодарского края",
+          "website": "https://www.xn--h1aaoemc7b6c.xn--p1ai/index.html",
+          "ownership_evidence": [
+            {
+              "url": "https://www.xn--h1aaoemc7b6c.xn--p1ai/index.html",
+              "claim": "Own page gives canonical registered name, former «Ясин» name, organization identifiers and explicit canonical subordination to DUM RF; states current schedule is prepared by DUM RF specialists for the city.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumrf.ru/common/regnews/22042",
+              "claim": "DUM RF's own2023 event report identifies the Sochi Muslim local organization, independently corroborating its organization/authority chain.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.dumrf.ru/photos/files/files/Berdiev.PDF",
+              "claim": "DUM RF's September23,2021 signed public statement lists its Sochi, Anapa-district and Krasnodar communities. Three-page raster PDF visually inspected; establishes distinct chain, not current prayer data.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-kda-sochi-mrom-2026",
+              "type": "official_file",
+              "canonical_url": "https://www.xn--h1aaoemc7b6c.xn--p1ai/namaz/sochi2026.xlsx",
+              "scope": {
+                "kind": "locality",
+                "label": "Workbook explicitly г.Сочи, Краснодарский край; own page says Большой Сочи. Keep city mapping conservative; do not extend to the whole krai."
+              },
+              "localities": [
+                {
+                  "name": "Сочи"
+                }
+              ],
+              "effective_range": {
+                "start": "2026-01-01",
+                "end": "2026-12-31",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "basis": "All365 actual Excel serial dates decode exactly to calendar2026."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Geographic IANA mapping; workbook does not print an IANA timezone."
+              },
+              "transport": {
+                "access": "Public GET200, no credentials; same-site JS explicitly fetches namaz/sochi2026.xlsx.",
+                "bytes": 37018,
+                "raw_sha256": "91f57f3a1658788481b64a9f219602d04f6f8b4b0dfa86557daa546706d573ee",
+                "last_modified": "2026-06-21T18:26:09Z",
+                "cadence": "Annual2026 workbook; no refresh SLA.",
+                "parser": "OOXML ZIP xl/worksheets/sheet1.xml plus xl/sharedStrings.xml. Row1 scope; A2:G2 date and six canonical headers. Rows3..367: A numeric Excel1900 serial date, B:G shared-string HH:mm. I-column contains policy notes, not prayer rows.",
+                "validation": {
+                  "rows": 365,
+                  "unique_dates": 365,
+                  "gaps": 0,
+                  "format_errors": 0,
+                  "within_day_order_errors": 0,
+                  "normalized_json_sha256": "3d2de35b5a629d0c8a4ea54cbe8c1ee94e2a0ea1df62c5406635ded8194ebfd4",
+                  "serialization": "UTF-8 compact JSON [[ISO-date,[six HH:mm strings]],...] in calendar order."
+                },
+                "observed_site_bug": "Static apology says unavailable; download button uses incorrect /sochi2026.xlsx (404). Actual JS /namaz/sochi2026.xlsx succeeds; do not misclassify from static text or use hardcoded JS fallback rows."
+              },
+              "policy": {
+                "method": "Exact current timetable plus published local parameters; do not substitute a calculation without separate complete policy verification.",
+                "asr": "Standard, as printed in I8; no additional inferred school label.",
+                "fajr": "18 degrees (I9).",
+                "isha": "17 degrees (I10).",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "coordinates": {
+                  "latitude": 43.587,
+                  "longitude": 39.72,
+                  "elevation_m": 0
+                },
+                "published_adjustments_minutes": {
+                  "sunrise": -5,
+                  "dhuhr": 5,
+                  "maghrib": 5
+                },
+                "iqamah": "Not supplied.",
+                "jumuah": "Own page names collective Friday prayer at Учительская30, but supplies no timed Jumuah session."
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-01-01",
+                  "times": [
+                    "06:11",
+                    "07:49",
+                    "12:30",
+                    "14:37",
+                    "17:00",
+                    "18:33"
+                  ],
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-06-21",
+                  "times": [
+                    "02:17",
+                    "04:35",
+                    "12:28",
+                    "16:29",
+                    "20:11",
+                    "22:17"
+                  ],
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-09-08",
+                  "times": [
+                    "04:13",
+                    "05:48",
+                    "12:24",
+                    "15:55",
+                    "18:49",
+                    "20:18"
+                  ],
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-12-31",
+                  "times": [
+                    "06:11",
+                    "07:49",
+                    "12:29",
+                    "14:36",
+                    "16:59",
+                    "18:32"
+                  ],
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public ordinary download; no additional permission gate inferred. Raw workbook not retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "Source-specific deterministic adapter, independent full normalization check, raw/hash-bound machine qualification and activation still required.",
+                "Workbook city's exact catalogue mapping and timezone binding must be explicit; no extrapolated krai coverage."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ru-kda-anapa-district-mrom-dumrf",
+          "name": "Местная религиозная организация мусульман Анапского района Краснодарского края",
+          "website": "UNKNOWN",
+          "ownership_evidence": [
+            {
+              "url": "https://www.dumrf.ru/photos/files/files/Berdiev.PDF",
+              "claim": "DUM RF's September23,2021 signed own statement explicitly lists this local organization within its authority chain. Current own publisher domain and timetable not established.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "ru-kda-krasnodar-city-mrom-dumrf",
+          "name": "Местная религиозная организация мусульман города Краснодара Краснодарского края",
+          "website": "UNKNOWN",
+          "ownership_evidence": [
+            {
+              "url": "https://www.dumrf.ru/photos/files/files/Berdiev.PDF",
+              "claim": "DUM RF's September23,2021 signed own statement explicitly lists this local organization within its authority chain. Current own publisher domain and timetable not established.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Краснодарского края\" \"духовное управление мусульман\" официальный сайт",
+          "urls_checked": [
+            "https://dumraikk.ru/dumraikk/",
+            "https://dumraikk.ru/zagruzki/"
+          ],
+          "result": "Verified joint Adygea/Krasnodar authority, not statewide timetable applicability."
+        },
+        {
+          "query": "Actual Ramadan and annual book inspection",
+          "urls_checked": [
+            "https://dumraikk.ru/wp-content/uploads/2026/02/ramadan-2026_18feb.pdf",
+            "https://dumraikk.ru/books/prayer_times_new.pdf"
+          ],
+          "result": "Current-year Ramadan calendar expired; old Maykop-base book offers approximate Krasnodar and other town offsets, not sufficient exact coverage."
+        },
+        {
+          "query": "Independent community follow-up: \"Краснодарского края\" site:dumrf.ru",
+          "urls_checked": [
+            "https://www.dumrf.ru/photos/files/files/Berdiev.PDF"
+          ],
+          "result": "National authority historical document found concerning local communities; not proof that one regional chain exhausts all communities, and not a current prayer source."
+        },
+        {
+          "query": "Official Telegram latest feed and exact расписание/график searches",
+          "urls_checked": [
+            "https://t.me/s/dumraikk",
+            "https://t.me/dumraikk/2807",
+            "https://t.me/dumraikk/2833"
+          ],
+          "result": "Current official channel inspected. Schedule search recovered only Ramadan2025 and updated Ramadan2026 posts; no September or full2026 source."
+        },
+        {
+          "query": "\"Местная религиозная организация мусульман\" \"Сочи\"/\"Анапского\"/\"Краснодара\" сайт",
+          "urls_checked": [
+            "https://www.xn--h1aaoemc7b6c.xn--p1ai/index.html",
+            "https://www.xn--h1aaoemc7b6c.xn--p1ai/news.html",
+            "https://dumrf.ru/common/regnews/22042",
+            "https://www.dumrf.ru/photos/files/files/Berdiev.PDF"
+          ],
+          "result": "Recovered own Sochi community site and distinct DUM RF local-organization chain. Anapa/Krasnodar current own timetable transports not found."
+        },
+        {
+          "query": "Inspect actual Sochi JavaScript fetch, workbook date range, policy cells and all365 prayer rows",
+          "urls_checked": [
+            "https://www.xn--h1aaoemc7b6c.xn--p1ai/index.html",
+            "https://www.xn--h1aaoemc7b6c.xn--p1ai/namaz/sochi2026.xlsx",
+            "https://www.xn--h1aaoemc7b6c.xn--p1ai/sochi2026.xlsx"
+          ],
+          "result": "Actual namaz/ path200; root-path download404. Actual file gives current full2026 city times with365 contiguous dates and six ordered fields."
+        }
+      ],
+      "unresolved": [
+        "Sochi exact2026 workbook is an independent DUM RF source candidate; do not merge it with DUM RAiKK's separate chain.",
+        "No verified current exact schedule for Krasnodar, Anapa, Armavir, Novorossiysk or other krai localities.",
+        "Anapa-district and Krasnodar-city DUM RF local organizations have historical primary identity evidence, but own current domains/timetables remain UNKNOWN."
+      ],
+      "unavailable_reason": "Sochi2026 workbook is implementation-ready pending qualification; other krai localities lack verified current exact applicable sources."
+    },
+    {
+      "code": "RU-ROS",
+      "name": "Ростовская область",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-ros-central-dum-cdum",
+          "name": "Централизованная религиозная организация Центральное Духовное Управление мусульман Ростовской области",
+          "website": "https://islam-rostov.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://islam-rostov.ru/",
+              "claim": "Own site names Central DUM of Rostov Oblast and CDUM affiliation.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-ros-regional-recurring",
+              "type": "official_html",
+              "canonical_url": "https://islam-rostov.ru/raspisanie/raspisanie-molitv",
+              "scope": {
+                "kind": "UNKNOWN",
+                "label": "Regional publisher page contains month/day tables; exact geographic applicability is not established from its generic title alone."
+              },
+              "localities": [],
+              "effective_range": {
+                "start": "UNKNOWN",
+                "end": "UNKNOWN",
+                "evidence_label": "UNKNOWN",
+                "basis": "Twelve named months but no explicit current effective year."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "Public HTML, twelve named month/day tables.",
+                "cadence": "Recurring daily UI; no dated revision/SLA.",
+                "parser": "Separate each named month and day. Do not infer year from today's UI or general page date."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-09-07",
+                  "times": [
+                    "04:07",
+                    "05:47",
+                    "12:23",
+                    "16:12",
+                    "18:51",
+                    "20:31"
+                  ],
+                  "note": "Homepage explicitly displayed September 7; annual table effective year still UNKNOWN.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Publisher requires a hyperlink to www.islam-rostov.ru when using materials. Summary only retained.",
+              "qualification_gaps": [
+                "Exact geographic scope and effective-year assertion missing.",
+                "Values differ from national CDUM city schedule, notably Asr; never merge or average.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "ru-ros-dum-dumrf",
+          "name": "Централизованная религиозная организация Духовное управление мусульман Ростовской области (Донской мухтасибат)",
+          "website": "https://dumro.org/",
+          "ownership_evidence": [
+            {
+              "url": "https://dumro.org/dumro/",
+              "claim": "Own about page identifies the organization, DUM RF affiliation and chairman Наиль Кулахметов; separate chain from Central DUM/CDUM.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumro.org/",
+              "claim": "Own site carries current 2026 activity publications; no prayer timetable found in inspected navigation/search.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        },
+        {
+          "id": "ru-cdum",
+          "name": "Центральное духовное управление мусульман России",
+          "website": "https://cdum.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://cdum.ru/time-namaz/",
+              "claim": "National authority's own prayer-time navigation links the named city timetable for 2026.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://cdum.ru/time-namaz/Rostov-na-Dony/Rostov.php",
+              "claim": "Visible city heading and month tables establish this exact city source; a regional authority name does not expand its scope.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-cdum-rostov-on-don-2026",
+              "type": "official_html",
+              "canonical_url": "https://cdum.ru/time-namaz/Rostov-na-Dony/Rostov.php",
+              "scope": {
+                "kind": "locality",
+                "label": "Ростов-на-Дону"
+              },
+              "localities": [
+                {
+                  "name": "Ростов-на-Дону"
+                }
+              ],
+              "effective_range": {
+                "start": "2026-01-01",
+                "end": "2026-12-31",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "basis": "2026 navigation/title plus all observed Russian weekdays checked against the 2026 calendar."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "GET 200; HTML, no credentials.",
+                "cadence": "Annual 2026 tables observed; refresh SLA UNKNOWN.",
+                "parser": "Remove HTML comments before selection. Each active row has seven cells: day + Russian weekday, then six times. Preserve semantic markers and fail closed; months must be anchored by named month headers.",
+                "observed_raw_sha256": "3bce23d89557c049461bf619264af815f1c76dadd65dec3bb99daaee45dc45e9",
+                "raw_hash_note": "Full HTML includes dynamic content; repeated raw hashes may differ. Bind actual retrieval and deterministic normalized table hash.",
+                "validation": "365 dated rows/12 month tables checked where stated; all plain-time row weekdays match 2026."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-01-01",
+                  "times": [
+                    "06:14",
+                    "08:06",
+                    "12:27",
+                    "14:59",
+                    "16:44",
+                    "18:29"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-06-21",
+                  "times": [
+                    "01:22",
+                    "04:23",
+                    "12:25",
+                    "17:53",
+                    "20:23",
+                    "23:04"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-09-08",
+                  "times": [
+                    "03:59",
+                    "05:47",
+                    "12:21",
+                    "16:52",
+                    "18:50",
+                    "20:31"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-12-31",
+                  "times": [
+                    "06:14",
+                    "08:06",
+                    "12:26",
+                    "14:58",
+                    "16:43",
+                    "18:28"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public unauthenticated retrieval only. No separate permission requirement inferred. No substantial raw source artifact retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Ростовской области\" \"духовное управление мусульман\" официальный сайт",
+          "urls_checked": [
+            "https://islam-rostov.ru/",
+            "https://dumro.org/dumro/"
+          ],
+          "result": "Verified two separate canonical organizations/authority chains."
+        },
+        {
+          "query": "site:dumro.org расписание намаза; actual regional and CDUM tables",
+          "urls_checked": [
+            "https://dumro.org/",
+            "https://islam-rostov.ru/raspisanie/raspisanie-molitv",
+            "https://cdum.ru/time-namaz/Rostov-na-Dony/Rostov.php"
+          ],
+          "result": "No DUM RF current table discovered. CDUM national city page validates 365 rows and 2026 weekdays; regional recurring table has unresolved scope/year."
+        }
+      ],
+      "unresolved": [
+        "No source transfer from Rostov-on-Don to other cities.",
+        "Independent Don muhtasibat's current timetable/policy remains UNKNOWN."
+      ],
+      "unavailable_reason": "CDUM Rostov-on-Don annual source is implementation-ready pending qualification; other cities/authority choices remain unavailable without applicable proof."
+    },
+    {
+      "code": "RU-CE",
+      "name": "Чеченская Республика",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-ce-dumchr",
+          "name": "Духовное управление мусульман Чеченской Республики",
+          "website": "https://dumchr.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://t.me/s/dumchr",
+              "claim": "Channel bio identifies the official DUM CHR channel and links www.dumchr.ru and matching social handles.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://t.me/s/RKadyrov_95?before=3761",
+              "claim": "Official head-of-republic channel references DUM CHR with @dumchr, corroborating channel ownership.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumchr.ru/",
+              "claim": "Normal HTTPS retrieval fails certificate verification (expired certificate); no TLS verification bypass attempted.",
+              "evidence_label": "UNKNOWN",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-ce-dumchr-september-channel",
+              "type": "official_file",
+              "canonical_url": "https://t.me/dumchr/7679",
+              "scope": {
+                "kind": "UNKNOWN",
+                "label": "Current September prayer image has no city/republic applicability label; must not assume Grozny or whole Chechnya."
+              },
+              "localities": [],
+              "effective_range": {
+                "start": "2026-09-01",
+                "end": "2026-09-30",
+                "evidence_label": "INFERENCE",
+                "basis": "Image says September and was publicly posted September 2, 2026; image itself has no year."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "Public Telegram HTML /s/dumchr and post ?embed=1 expose photo; image downloaded and visually inspected.",
+                "published_at": "2026-09-02T06:57:43+00:00",
+                "cadence": "Monthly images observed; preceding August post /dumchr/7609.",
+                "parser": "Raster, 30 day rows and six labeled prayer columns. Do not guess absent locality/year. Ephemeral CDN image URL is transport only; canonical source is the public post."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-09-08",
+                  "times": [
+                    "04:12",
+                    "05:24",
+                    "12:30",
+                    "15:40",
+                    "18:25",
+                    "19:53"
+                  ],
+                  "note": "Visual transcription of day 8; year inferred from posting date, exact locality UNKNOWN.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public unauthenticated retrieval only. No separate permission requirement inferred. No substantial raw source artifact retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "Exact locality/scope not stated by the image or recovered caption.",
+                "Year is contextual rather than printed in image; bind original post timestamp explicitly.",
+                "Primary website unavailable due expired TLS certificate; no current Grozny HTML table reproduced.",
+                "Deterministic OCR/parser and independent full-image transcription/validation remain absent.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "Муфтият Чеченской Республики официальный расписание намазов 2026",
+          "urls_checked": [
+            "https://dumchr.ru/",
+            "https://www.dumchr.ru/",
+            "https://t.me/s/dumchr"
+          ],
+          "result": "Main website unavailable with expired certificate. Public linked-name Telegram channel provides current monthly artifact."
+        },
+        {
+          "query": "Public channel current pinned photo and schedule search",
+          "urls_checked": [
+            "https://t.me/dumchr/7679",
+            "https://t.me/dumchr/7609",
+            "https://t.me/s/dumchr?q=%D0%A0%D0%B0%D1%81%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5",
+            "https://t.me/s/RKadyrov_95?before=3761"
+          ],
+          "result": "September image visually inspected; lacks locality. Older posts do not justify assigning Grozny or republic scope."
+        }
+      ],
+      "unresolved": [
+        "Old research's current Grozny-table claim is not reproducible through the broken website now.",
+        "No mosque iqamah or Jumuah inferred from constant 12:30 Dhuhr."
+      ],
+      "unavailable_reason": "Current first-party channel image exists, but exact geographic scope and deterministic validated transport are not established."
+    },
+    {
+      "code": "RU-DA",
+      "name": "Республика Дагестан",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-da-muftiyat",
+          "name": "Муфтият Республики Дагестан",
+          "website": "https://muftiyatrd.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://muftiyatrd.ru/content/muftiyat",
+              "claim": "Own organizational page identifies the centralized Islamic religious organization Муфтият Республики Дагестан.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://muftiyatrd.ru/vremya-namaza",
+              "claim": "Own prayer-time page names a city/district selector and renders the linked JSON transport.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-da-muftiyat-selector-json",
+              "type": "official_api",
+              "canonical_url": "https://muftiyatrd.ru/vremya-namaza",
+              "scope": {
+                "kind": "explicit_selector_group",
+                "label": "27 named city/district selector values only; not every Dagestan locality or whole district by inference."
+              },
+              "localities": [
+                {
+                  "selector": "mahashkala",
+                  "label": "Махачкала",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/mahashkala.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "agul",
+                  "label": "Агул",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/agul.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "ahti",
+                  "label": "Ахты",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/ahti.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "ahvah",
+                  "label": "Ахвах",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/ahvah.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "babayurt",
+                  "label": "Бабаюрт",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/babayurt.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "botlih",
+                  "label": "Ботлих",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/botlih.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "buynaksk",
+                  "label": "Буйнакск",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/buynaksk.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "cumada",
+                  "label": "Цумада",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/cumada.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "dagogni",
+                  "label": "Даг-Огни",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/dagogni.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "derbent",
+                  "label": "Дербент",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/derbent.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "gergebil",
+                  "label": "Гергебиль",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/gergebil.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "gumbet",
+                  "label": "Гумбет",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/gumbet.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "hasavyurt",
+                  "label": "Хасавюрт",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/hasavyurt.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "hunzah",
+                  "label": "Хунзах",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/hunzah.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "izberbash",
+                  "label": "Избербаш",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/izberbash.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "kaspiysk",
+                  "label": "Каспийск",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/kaspiysk.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "kazbek",
+                  "label": "Дылым",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/kazbek.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "kizilurt",
+                  "label": "Кизилюрт",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/kizilurt.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "kizlyar",
+                  "label": "Кизляр",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/kizlyar.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "kurah",
+                  "label": "Курах",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/kurah.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "levashi",
+                  "label": "Леваши",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/levashi.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "rutul",
+                  "label": "Рутул",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/rutul.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "shamilkala",
+                  "label": "Шамилькала",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/shamilkala.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "sharoda",
+                  "label": "Чарода",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/sharoda.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "suhokumsk",
+                  "label": "Южно-Сухокумск",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/suhokumsk.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "tlarata",
+                  "label": "Тлярата",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/tlarata.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                },
+                {
+                  "selector": "unsukul",
+                  "label": "Унцукуль",
+                  "canonical_url": "https://muftiyatrd.ru/json/namaz/unsukul.json",
+                  "scope_note": "Literal publisher selector label; resolve city/district ambiguity before catalogue mapping."
+                }
+              ],
+              "effective_range": {
+                "start": "UNKNOWN",
+                "end": "UNKNOWN",
+                "evidence_label": "UNKNOWN",
+                "basis": "365 records without dates/year; current JavaScript supplies the current year but underlying files have old Last-Modified dates."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "All 27 live selector JSON URLs returned HTTP 200 with 365 objects each on research date.",
+                "selector_id": "choiseNamazMonth",
+                "script_url": "https://muftiyatrd.ru/sites/all/themes/mytheme/js/namaz_time.js",
+                "endpoint_pattern": "https://muftiyatrd.ru/json/namaz/{literal_selector}.json",
+                "field_order": [
+                  "namaz_1",
+                  "voshod",
+                  "namaz_2",
+                  "namaz_3",
+                  "namaz_4",
+                  "namaz_5"
+                ],
+                "normalized_prayer_order": [
+                  "fajr",
+                  "sunrise",
+                  "dhuhr",
+                  "asr",
+                  "maghrib",
+                  "isha"
+                ],
+                "parser": "Fixed non-leap month slices/day-of-year in public script. Leap alternative is commented out. Some hour fields are unpadded; malformed minute/colon fields must fail closed.",
+                "cadence": "UNKNOWN; observed Last-Modified ranges 2018–2022, no dated validity statement.",
+                "sample_artifact": {
+                  "url": "https://muftiyatrd.ru/json/namaz/mahashkala.json",
+                  "sha256": "279893caec7b3a2d00c674ac40fe854cb1257723862ded3371f1a2c02c9a827e",
+                  "last_modified_date": "2018-06-04"
+                },
+                "excluded_commented_selector": "dokuzparinsk",
+                "schema_anomalies": [
+                  {
+                    "selector": "cumada",
+                    "zero_based_index": 333,
+                    "field": "namaz_2",
+                    "literal": "11:5"
+                  },
+                  {
+                    "selector": "dagogni",
+                    "zero_based_index": 123,
+                    "field": "namaz_1",
+                    "literal": "0252"
+                  },
+                  {
+                    "selector": "gergebil",
+                    "zero_based_index": 326,
+                    "field": "namaz_2",
+                    "literal": "11:4"
+                  },
+                  {
+                    "selector": "kazbek",
+                    "zero_based_index": 113,
+                    "field": "namaz_4",
+                    "literal": "18:5"
+                  },
+                  {
+                    "selector": "shamilkala",
+                    "zero_based_index": 357,
+                    "field": "namaz_4",
+                    "literal": "16:3"
+                  }
+                ]
+              },
+              "policy": {
+                "method": "https://muftiyatrd.ru/content/v-muftiyate-rd-obsudili-vopros-ob-opredelenii-vremeni-namazov-video describes timetable determination discussion, not a complete reproducible current calculation policy.",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "https://muftiyatrd.ru/fatawa/belye-nochi-v-mesyac-ramadan discusses a qualitative nearest-locality/proportional-night approach; insufficient deterministic parameters for a qualified calculation profile.",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "UNKNOWN-09-08",
+                  "times": [
+                    "03:47",
+                    "05:19",
+                    "11:52",
+                    "15:26",
+                    "18:18",
+                    "19:34"
+                  ],
+                  "note": "Makhachkala JSON index250 mapped by the live non-leap script; not a verified 2026 effective date.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "UNKNOWN-09-08",
+                  "times": [
+                    "03:46",
+                    "05:17",
+                    "11:50",
+                    "15:23",
+                    "18:14",
+                    "19:29"
+                  ],
+                  "note": "Derbent JSON index250; SHA256 eb7425668dd5be3be5a896021a831fedf89f9764adcc52e2720d5fec8a438843, Last-Modified 2022-11-16.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "UNKNOWN-09-08",
+                  "times": [
+                    "03:46",
+                    "05:19",
+                    "11:53",
+                    "15:24",
+                    "18:17",
+                    "19:33"
+                  ],
+                  "note": "Kaspiysk JSON index250; SHA256 32aa22e150cd2e6d01411a1445ca81897bc6f93b5534a566dffd952c3da0fc30, Last-Modified 2021-08-05.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public unauthenticated retrieval only. No separate permission requirement inferred. No substantial raw source artifact retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "No explicit current-year effective assertion; historic files are not automatically current merely because a live script reuses them.",
+                "Leap-day semantics are absent from live code; cannot invent February 29.",
+                "Five transports contain malformed prayer fields; preserve literal anomalies and fail closed.",
+                "Some selector labels are district names, not catalogue cities; exact scope mapping remains required.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "site:muftiyatrd.ru время намаза города районы; inspect actual JavaScript and JSON",
+          "urls_checked": [
+            "https://muftiyatrd.ru/vremya-namaza",
+            "https://muftiyatrd.ru/sites/all/themes/mytheme/js/namaz_time.js",
+            "https://muftiyatrd.ru/json/namaz/mahashkala.json",
+            "https://muftiyatrd.ru/json/namaz/derbent.json"
+          ],
+          "result": "Enumerated all 27 uncommented selector endpoints and fetched every one. Old last-modified dates, yearless 365-row arrays and live non-leap indexing retained explicitly."
+        },
+        {
+          "query": "site:muftiyatrd.ru определение времени намазов белые ночи",
+          "urls_checked": [
+            "https://muftiyatrd.ru/fatawa/belye-nochi-v-mesyac-ramadan",
+            "https://muftiyatrd.ru/content/v-muftiyate-rd-obsudili-vopros-ob-opredelenii-vremeni-namazov-video"
+          ],
+          "result": "Official qualitative policies do not supply a complete deterministic profile."
+        },
+        {
+          "query": "\"Республики Дагестан\" \"духовное управление\" \"шиит\" расписание",
+          "urls_checked": [],
+          "result": "No additional independently owned current public timetable verified; no claim that one authority exhausts all congregations."
+        }
+      ],
+      "unresolved": [
+        "At least five actual malformed fields need publisher-correct current artifacts or exclusion; no heuristic repair.",
+        "All public selector coverage requires exact catalogue mapping and a current effective-range decision before availability."
+      ],
+      "unavailable_reason": "Rich public first-party transport found, but currentness, year/leap semantics, malformed rows and some city/district scopes remain unresolved."
+    },
+    {
+      "code": "RU-IN",
+      "name": "Республика Ингушетия",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-in-spiritual-center",
+          "name": "Централизованная религиозная организация Духовный центр мусульман Республики Ингушетия",
+          "website": "UNKNOWN",
+          "ownership_evidence": [
+            {
+              "url": "https://ingislamcollege.ru/osnovnye-svedenija/",
+              "claim": "The institution's public indexed primary page names the Spiritual Center as founder; direct HTTPS retrieval now fails certificate verification, so current page transport was not reproduced.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://ingislamuniver.ru/wp-content/uploads/2025/11/programma-razvitiya-universiteta-na-2024-2030gg.pdf",
+              "claim": "Institution-owned program publication is an organizational follow-up candidate; not a prayer-time source.",
+              "evidence_label": "UNKNOWN",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Ингушетии\" \"муфтият\" официальный сайт; \"Духовный центр мусульман\" Ингушетии",
+          "urls_checked": [
+            "https://ingislamcollege.ru/osnovnye-svedenija/",
+            "https://ingislamuniver.ru/wp-content/uploads/2025/11/programma-razvitiya-universiteta-na-2024-2030gg.pdf"
+          ],
+          "result": "Found primary educational-founder evidence; own current muftiyat timetable transport not established."
+        },
+        {
+          "query": "site:ingislamcollege.ru намаз расписание; \"Ингушетии\" \"муфтият\" \"намаза\" 2026",
+          "urls_checked": [
+            "https://ingislamcollege.ru/"
+          ],
+          "result": "Results concerned educational class schedules, not prayer times. Commercial claim of 16-degree parameters excluded because no first-party policy was recovered."
+        },
+        {
+          "query": "Historical authority-domain follow-up islaming.ru",
+          "urls_checked": [
+            "http://www.islaming.ru/"
+          ],
+          "result": "Historical domain reference not sufficient proof of current website ownership or current schedule."
+        }
+      ],
+      "unresolved": [
+        "Current own authority domain/channel and effective timetable UNKNOWN; do not infer legal demise or continuity from historical disputes.",
+        "Scope, published timezone, Asr/Fajr/Isha/seasonal policy, date rows and update cadence UNKNOWN."
+      ],
+      "unavailable_reason": "Only organizational evidence found; no reproducible current first-party timetable or complete official calculation policy."
+    },
+    {
+      "code": "RU-KB",
+      "name": "Кабардино-Балкарская Республика",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-kb-dum",
+          "name": "Централизованная религиозная организация Духовное управление мусульман Кабардино-Балкарской Республики",
+          "website": "https://www.kbrdum.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://www.kbrdum.ru/home",
+              "claim": "Own homepage links the annual 2026 prayer calendar directly to cloud.mail.ru/public/3dJj/wg5Wr2Dge.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://www.kbrdum.ru/PDF/n126.pdf",
+              "claim": "Own December 25, 2025 newspaper masthead identifies DUM KBR as founder; printed calendar and annual PDF explicitly name DUM KBR.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-kb-dum-2026",
+              "type": "official_file",
+              "canonical_url": "https://cloud.mail.ru/public/3dJj/wg5Wr2Dge",
+              "scope": {
+                "kind": "subject",
+                "label": "Every month page explicitly says ПО КБР; republic-wide timetable scope is published, not inferred from Nalchik address."
+              },
+              "localities": [],
+              "effective_range": {
+                "start": "2026-01-01",
+                "end": "2026-12-31",
+                "evidence_label": "CONFIRMED_PUBLIC",
+                "basis": "Twelve month headings explicitly state 2026 and PO KBR."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "Official homepage -> public cloud share -> public DOWNLOADABLE dispatcher URL. No password, no blocked-public flag; ordinary public download returned 200.",
+                "filename": "2026kbr.pdf",
+                "bytes": 164268,
+                "raw_sha256": "9c60359cf7cefe71890c56c9348d9fe955c969888b26e469868ba7c3230b5264",
+                "public_share_file_sha1": "F33DAEC2436950E73D626D624C97E78B729FDFC3",
+                "parser": "Twelve text PDF pages; each month header gives month/year/scope; each row is day, Russian weekday, six HH:mm columns. Validate all expected days and weekday/year binding.",
+                "cadence": "Annual 2026 file; share mtime corresponds to January 1, 2026. No refresh SLA.",
+                "validation": {
+                  "pages": 12,
+                  "rows": 365,
+                  "month_row_counts": [
+                    31,
+                    28,
+                    31,
+                    30,
+                    31,
+                    30,
+                    31,
+                    31,
+                    30,
+                    31,
+                    30,
+                    31
+                  ],
+                  "weekday_mismatches": 0,
+                  "within_day_order_errors": 0,
+                  "independent_checks": "January and September pages visually inspected. All September 8 values independently match the authority homepage's current September 8 display.",
+                  "go_parser_full_reference_comparison": "PASS: all365 CandidatePrayerDay objects equal a separate per-page Python regex normalization; raw/text/reference hashes verified. This is not a human transcription or a qualification decision."
+                },
+                "raw_retention": "Downloaded/rendered outside Git; no whole-year rows committed.",
+                "independent_content_cross_check": {
+                  "url": "https://dinri-duneiri.ru/azan/2026.pdf",
+                  "bytes": 507138,
+                  "raw_sha256": "3276f1f302e364d0a92fdf01438abeb713434649ec834048d46156675521758c",
+                  "comparison": {
+                    "rows": 365,
+                    "exact_date_weekday_six_time_rows_equal": true,
+                    "normalized_json_sha256": "18d87135ff7c78d21486f1c3f561a0aa95f853b051f8ec298e8acaaa96c135b1",
+                    "serialization": "UTF-8 compact JSON [[ISO-date,Russian-weekday,[six HH:mm strings]],...] in calendar order; same for both independently downloaded PDFs."
+                  },
+                  "hosting_affiliation": "UNKNOWN",
+                  "use": "Content corroboration only; not a first-party alias or selectable source.",
+                  "ownership_check_url": "https://dinri-duneiri.ru/ru/contact"
+                },
+                "implemented_parser_version": "kbr-annual-pdf-text/v1",
+                "extracted_text_sha256": "8affa8876414d5d3d7a5fcd011cb83491e09d7b49adf593f6de57fa207b345a9",
+                "extractor": "PyMuPDF1.28.2 page.get_text('text',sort=False), form-feed joining12pages, UTF-8 with no other edits."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-01-01",
+                  "times": [
+                    "06:08",
+                    "07:38",
+                    "12:20",
+                    "14:31",
+                    "16:43",
+                    "18:23"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-06-21",
+                  "times": [
+                    "02:36",
+                    "04:24",
+                    "12:18",
+                    "16:22",
+                    "19:53",
+                    "21:43"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-09-08",
+                  "times": [
+                    "04:07",
+                    "05:37",
+                    "12:13",
+                    "15:46",
+                    "18:31",
+                    "20:14"
+                  ],
+                  "note": "All six values match the direct public homepage dated September 8, 2026.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-12-31",
+                  "times": [
+                    "06:08",
+                    "07:38",
+                    "12:20",
+                    "14:31",
+                    "16:41",
+                    "18:21"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public unauthenticated retrieval only. No separate permission requirement inferred. No substantial raw source artifact retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "site:kbrdum.ru \"2026\" \"график\"; site:kbrdum.ru \"2026\" \"Скачать\"",
+          "urls_checked": [
+            "https://www.kbrdum.ru/home",
+            "https://www.kbrdum.ru/PDF/n126.pdf",
+            "https://www.kbrdum.ru/PDF/n131.pdf",
+            "https://cloud.mail.ru/public/3dJj/wg5Wr2Dge"
+          ],
+          "result": "Followed homepage's actual public annual download, inspected PDF, validated all365 dated rows and compared current homepage."
+        },
+        {
+          "query": "Alternative direct annual PDF discovery and ownership verification",
+          "urls_checked": [
+            "https://dinri-duneiri.ru/azan/2026.pdf",
+            "https://dinri-duneiri.ru/",
+            "https://dinri-duneiri.ru/ru/contact"
+          ],
+          "result": "All365 rows match the canonical public cloud PDF exactly. Contact page names an individual but does not establish authority ownership; no kbrdum->dinri alias link found. Keep mirror only as independent content cross-check."
+        }
+      ],
+      "unresolved": [
+        "Annual table's published calculation parameters remain UNKNOWN; exact timetable ingestion does not invent them.",
+        "Direct mirror affiliation is not yet proven. Canonical homepage->public cloud ownership link is proven."
+      ],
+      "unavailable_reason": "Republic-wide exact 2026 timetable is implementation-ready pending machine qualification and activation; no external endorsement is required."
+    },
+    {
+      "code": "RU-KC",
+      "name": "Карачаево-Черкесская Республика",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-kc-dum",
+          "name": "Централизованная религиозная организация Духовное управление мусульман Карачаево-Черкесской Республики",
+          "website": "https://dumkchr.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://kchii.ru/sveden/common/",
+              "claim": "Authority-founded Islamic institute's own disclosure names DUM KCHR as founder, address Черкесск, Кавказская, 19, and official website dumkchr.ru.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Карачаево-Черкесии\" \"муфтият\" \"сайт\"; \"dumkchr.ru\"",
+          "urls_checked": [
+            "https://kchii.ru/sveden/common/",
+            "https://dumkchr.ru/"
+          ],
+          "result": "Institute disclosure establishes real organization and domain. Normal direct site connection resets; browser retrieval times out."
+        },
+        {
+          "query": "site:dumkchr.ru расписание намаз 2026",
+          "urls_checked": [
+            "https://dumkchr.ru/"
+          ],
+          "result": "No indexed current official timetable/policy recovered. Social-account mentions from aggregators are not ownership evidence."
+        }
+      ],
+      "unresolved": [
+        "No current reproducible timetable, locality scope, effective dates, timezone policy or method verified.",
+        "Europe/Moscow is a geographic candidate only; no republic-wide schedule inferred."
+      ],
+      "unavailable_reason": "Confirmed authority/domain cannot currently be retrieved; no alternative verified first-party timetable or complete calculation policy found."
+    },
+    {
+      "code": "RU-SE",
+      "name": "Республика Северная Осетия — Алания",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-se-dum",
+          "name": "Духовное управление мусульман Республики Северная Осетия — Алания",
+          "website": "https://islamosetia.ru/",
+          "ownership_evidence": [
+            {
+              "url": "https://islamosetia.ru/2018/05/27/duhovnye-upravleniya-musulman-osetii-i-chechni-podpisali-soglashenie/",
+              "claim": "Indexed own 2018 agreement article identifies the regional DUM and Хаджимурат Гацалов; current direct domain retrieval fails, so historical identity is not current timetable evidence.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://minnats.alania.gov.ru/activity/religion",
+              "claim": "Previously cited government religious-organization listing; current recheck timed out, so not promoted to newly reproduced ownership evidence.",
+              "evidence_label": "UNKNOWN",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": []
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "site:islamosetia.ru расписание календарь 2026; \"islamosetia.ru\" \"намаза\"",
+          "urls_checked": [
+            "https://islamosetia.ru/",
+            "https://islamosetia.ru/2018/05/27/duhovnye-upravleniya-musulman-osetii-i-chechni-podpisali-soglashenie/"
+          ],
+          "result": "Own historical article found, but direct retrieval resets/times out; no current source recovered."
+        },
+        {
+          "query": "\"Северной Осетии\" \"расписание\" \"2026\" \"муфтият\"",
+          "urls_checked": [
+            "https://minnats.alania.gov.ru/activity/religion"
+          ],
+          "result": "No exact current first-party prayer table or sufficient calculation profile; government recheck unavailable."
+        }
+      ],
+      "unresolved": [
+        "Current website ownership/availability beyond historical own-page evidence remains unresolved.",
+        "Exact localities, effective range, published timezone, policy and cadence UNKNOWN; no Vladikavkaz-to-republic extrapolation."
+      ],
+      "unavailable_reason": "Historical first-party organizational evidence exists but no current reproducible prayer source or complete policy was found."
+    },
+    {
+      "code": "RU-STA",
+      "name": "Ставропольский край",
+      "research_status": "researched; qualification not performed by this lane",
+      "authorities": [
+        {
+          "id": "ru-sta-dum",
+          "name": "Духовное управление мусульман Ставропольского края",
+          "website": "https://dumsk.com/",
+          "ownership_evidence": [
+            {
+              "url": "https://opsk26.ru/?p=3809",
+              "claim": "Regional Public Chamber's own event publication names the DUM and mufti Мухаммад Рахимов; organizational evidence only.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://t.me/s/dumsk26",
+              "claim": "Public channel bio identifies DUM of Stavropol Krai and links dumsk.com; reciprocal website-channel link cannot currently be checked.",
+              "evidence_label": "CONFIRMED_PUBLIC",
+              "checked_at": "2026-09-08"
+            },
+            {
+              "url": "https://dumsk.com/",
+              "claim": "Normal GET returned a Beget JavaScript/cookie challenge, not authority content. Challenge was not bypassed.",
+              "evidence_label": "UNKNOWN",
+              "checked_at": "2026-09-08"
+            }
+          ],
+          "sources": [
+            {
+              "id": "ru-sta-dum-pyatigorsk-august",
+              "type": "official_file",
+              "canonical_url": "https://t.me/dumsk26/4356",
+              "scope": {
+                "kind": "locality",
+                "label": "Both post caption and calendar image explicitly name Пятигорск."
+              },
+              "localities": [
+                {
+                  "name": "Пятигорск"
+                }
+              ],
+              "effective_range": {
+                "start": "2026-08-01",
+                "end": "2026-08-31",
+                "evidence_label": "INFERENCE",
+                "basis": "August image shows August 1 Saturday; public post timestamp July 31, 2026. Year bound contextually."
+              },
+              "timezone": {
+                "iana": "Europe/Moscow",
+                "evidence_label": "INFERENCE",
+                "basis": "Canonical geographic IANA mapping; publisher does not print an IANA identifier. Qualification must bind and verify locality timezone separately."
+              },
+              "transport": {
+                "access": "Public Telegram post/image; normal unauthenticated download, visually inspected.",
+                "published_at": "2026-07-31T17:57:17+00:00",
+                "cadence": "Monthly tables observed historically. Latest recovered prayer calendar August; no September table in inspected channel feed/search.",
+                "parser": "Raster date/weekday and six prayer columns."
+              },
+              "policy": {
+                "method": "UNKNOWN",
+                "asr": "UNKNOWN",
+                "fajr": "UNKNOWN",
+                "isha": "UNKNOWN",
+                "high_latitude": "UNKNOWN",
+                "seasonal": "UNKNOWN",
+                "rounding": "UNKNOWN",
+                "iqamah": "Not supplied; never infer from regional onset data.",
+                "jumuah": "UNKNOWN"
+              },
+              "comparison_evidence": [
+                {
+                  "date": "2026-08-01",
+                  "times": [
+                    "03:20",
+                    "04:55",
+                    "12:30",
+                    "16:14",
+                    "19:33",
+                    "21:13"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                },
+                {
+                  "date": "2026-08-31",
+                  "times": [
+                    "03:54",
+                    "05:29",
+                    "12:30",
+                    "15:51",
+                    "18:46",
+                    "20:26"
+                  ],
+                  "note": "Observed source row; order fajr, sunrise, dhuhr, asr, maghrib, isha.",
+                  "evidence_label": "CONFIRMED_PUBLIC",
+                  "checked_at": "2026-09-08"
+                }
+              ],
+              "terms_notes": "Public unauthenticated retrieval only. No separate permission requirement inferred. No substantial raw source artifact retained in Git; no redistribution licence verified.",
+              "qualification_gaps": [
+                "Expired August range; cannot publish as current September.",
+                "Channel reciprocal ownership link needs corroboration; website challenge was respected.",
+                "No scope beyond Pyatigorsk; no substitution for Stavropol city or other krai towns.",
+                "Machine-verifiable qualification, parser version, raw/normalized hashes, locality/timezone binding and activation remain a separate root implementation gate; this research record is not an approval."
+              ]
+            }
+          ]
+        }
+      ],
+      "search_trail": [
+        {
+          "query": "\"Ставропольского\" \"намаза\" \"духовное управление\"; official website/channel follow-up",
+          "urls_checked": [
+            "https://dumsk.com/",
+            "https://t.me/s/dumsk26",
+            "https://opsk26.ru/?p=3809"
+          ],
+          "result": "Main site serves a challenge; public channel and primary institution evidence researched without bypass."
+        },
+        {
+          "query": "Public channel расписание search and latest monthly media",
+          "urls_checked": [
+            "https://t.me/s/dumsk26?q=%D0%A0%D0%B0%D1%81%D0%BF%D0%B8%D1%81%D0%B0%D0%BD%D0%B8%D0%B5",
+            "https://t.me/dumsk26/4356"
+          ],
+          "result": "Explicit Pyatigorsk August2026 image inspected. No current September calendar recovered."
+        }
+      ],
+      "unresolved": [
+        "Current September exact data absent in inspected official-channel candidate.",
+        "Other independent communities and town-specific public sources not assumed absent merely because regional website is challenged; no additional verified current source found."
+      ],
+      "unavailable_reason": "Recovered Pyatigorsk calendar is expired; current first-party transport and complete ownership/validation proof remain unavailable."
+    }
+  ]
+}

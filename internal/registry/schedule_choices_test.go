@@ -170,6 +170,9 @@ func TestProjectCityScheduleChoicesExcludesBlockedAndLowerPrecedenceOptionsButKe
 	dataset.Sources[1].Status = domain.PrayerSourceStale
 	dataset.TimeTables[2].Effective = domain.DateRange{From: "2026-01-01", To: "2026-06-30"}
 	addSyntheticRegionalChoice(&dataset)
+	// Lower precedence is meaningful only within the same evidenced authority.
+	dataset.Sources[len(dataset.Sources)-1].AuthorityIDs = append([]string(nil), dataset.Sources[0].AuthorityIDs...)
+	dataset.Policies[len(dataset.Policies)-1].AuthorityIDs = append([]string(nil), dataset.Policies[0].AuthorityIDs...)
 
 	assessment := assessSyntheticChoices(t, dataset)
 	projected, err := ProjectCityScheduleChoices(RevisionPolicyAssessment{

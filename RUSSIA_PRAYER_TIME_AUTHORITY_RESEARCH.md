@@ -4,6 +4,11 @@ Date: 2026-08-30
 Scope: first-party public research for city/subject prayer-source resolution; 31 federal subjects investigated  
 Structured draft: `research/russia-prayer-source-registry-draft.json`
 
+Historical T034 report, superseded for current onboarding by T049 and ADR 0019.
+Do not treat its conclusions, transport failures or approval/partnership gates
+as current evidence. [The T049 baseline audit](research/t049/BASELINE_AUDIT.md)
+records the re-audit and identified gaps; nationwide follow-up is in progress.
+
 ## Executive result
 
 There is no evidence for one correct nationwide chain such as “Russia → DUM RF” or “Russia → CDUM.” Regional organizations publish different city tables, regional calculation policies, Ramadan-only artifacts, opaque widgets, and locality-specific calendars. Several subjects have parallel administrations. A first-party publisher can be confirmed without proving that it is the exclusive religious authority for every mosque in the subject.

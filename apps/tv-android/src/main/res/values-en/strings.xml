@@ -235,6 +235,12 @@
     <string name="source_test_data">TEST DATA</string>
     <string name="source_calculated_unofficial">CALCULATED — NOT OFFICIAL</string>
     <string name="source_approved">APPROVED DATA</string>
+    <string name="source_qualified">SOURCE VERIFIED BY NAMAZTIME</string>
+    <string name="source_qualification_stale">SOURCE NEEDS REFRESH</string>
+    <string name="field_source_qualification">Source qualification</string>
+    <string name="field_qualification_id">Qualification ID</string>
+    <string name="value_qualified">Verified by NamazTime</string>
+    <string name="data_state_qualified_public">Public source verified by NamazTime</string>
     <string name="support_code">Support code: %1$s</string>
     <string name="schedule_unavailable">Prayer schedule unavailable</string>
     <string name="schedule_loading">Loading local schedule</string>

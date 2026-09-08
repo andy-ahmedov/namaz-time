@@ -9,6 +9,7 @@ import ru.namaztime.tv.repository.LocalJumuahSession
 import ru.namaztime.tv.repository.LocalPrayerDay
 import ru.namaztime.tv.repository.LocalPrayerSchedule
 import ru.namaztime.tv.repository.LocalSnapshotDiagnostics
+import ru.namaztime.tv.repository.LocalQualificationDiagnostics
 import ru.namaztime.tv.repository.toTimeEngineInput
 import ru.namaztime.tv.repository.OperatorMosquePresentationIdentity
 import org.junit.Assert.assertEquals
@@ -133,6 +134,46 @@ class MainPrayerDisplayStateTest {
                 ).sourceLabel,
             )
         }
+    }
+
+    @Test
+    fun qualifiedPublicSourceIsNotPresentedAsHumanApprovedOrUnapproved() {
+        val base = schedule()
+        val qualified = base.copy(
+            sourceKind = "official_html",
+            iqamahRules = emptyList(),
+            diagnostics = requireNotNull(base.diagnostics).copy(
+                dataClassification = "production", approvalId = null, approvalStatus = null,
+                qualification = LocalQualificationDiagnostics("qualification-test", "a".repeat(64), "qualified",
+                    "namaztime:source-qualification/v1", "2026-08-19T10:00:00Z", "2026-08-21", "scope-test", "catalog-test"),
+            ),
+        )
+        val resolution = PrayerTimeEngine().resolve(qualified.toTimeEngineInput(), Instant.parse("2026-08-19T23:20:00Z")) as PrayerTimeResolution.Available
+        val russian = qualified.toPrayerDisplayUiState(resolution, strings())
+        assertEquals("ИСТОЧНИК ПРОВЕРЕН NAMAZTIME", russian.sourceLabel)
+        assertEquals(false, russian.sourceRequiresAttention)
+        assertEquals("SOURCE VERIFIED BY NAMAZTIME", qualified.toPrayerDisplayUiState(resolution, strings(AppLanguage.ENGLISH)).sourceLabel)
+        val synthetic = qualified.copy(diagnostics = requireNotNull(qualified.diagnostics).copy(dataClassification = "synthetic"))
+        assertEquals("ТЕСТОВЫЕ ДАННЫЕ", synthetic.toPrayerDisplayUiState(resolution, strings()).sourceLabel)
+    }
+
+    @Test
+    fun qualifiedSourceFreshnessUsesLocalDateWithoutDiscardingLastKnownGoodRows() {
+        val base = schedule()
+        val stale = base.copy(
+            sourceKind = "official_html", iqamahRules = emptyList(),
+            diagnostics = requireNotNull(base.diagnostics).copy(dataClassification = "production",
+                approvalId = null, approvalStatus = null,
+                qualification = LocalQualificationDiagnostics("qualification-stale-ui", "a".repeat(64), "qualified",
+                    "namaztime:source-qualification/v1", "2026-08-19T10:00:00Z", "2026-08-19", "scope-test", "catalog-test")),
+        )
+        // Still August 19 in UTC, already August 20 in the stored IANA zone.
+        val resolution = PrayerTimeEngine().resolve(stale.toTimeEngineInput(), Instant.parse("2026-08-19T23:20:00Z")) as PrayerTimeResolution.Available
+        val state = stale.toPrayerDisplayUiState(resolution, strings())
+        assertEquals("ИСТОЧНИК ТРЕБУЕТ ОБНОВЛЕНИЯ", state.sourceLabel)
+        assertEquals(true, state.sourceRequiresAttention)
+        assertEquals("03:14", state.rows.first().adhan)
+        assertEquals("SOURCE NEEDS REFRESH", stale.toPrayerDisplayUiState(resolution, strings(AppLanguage.ENGLISH)).sourceLabel)
     }
 
     @Test

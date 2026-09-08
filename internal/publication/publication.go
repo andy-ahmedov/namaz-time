@@ -20,18 +20,19 @@ import (
 )
 
 type PublishRequest struct {
-	Previous                          *domain.CandidateSchedule `json:"previous_candidate,omitempty"`
-	Candidate                         domain.CandidateSchedule  `json:"candidate"`
-	Diff                              DiffReport                `json:"diff"`
-	Approval                          domain.ApprovalDecision   `json:"approval"`
-	ApprovalEvidence                  *ApprovalEvidence         `json:"approval_evidence,omitempty"`
-	ApprovalReceiptBase64             string                    `json:"approval_receipt_base64,omitempty"`
-	ApprovalTrustBundleBase64         string                    `json:"approval_trust_bundle_base64,omitempty"`
-	PreviousApprovalTrustBundleBase64 string                    `json:"previous_approval_trust_bundle_base64,omitempty"`
-	MosquePrayerPolicy                *MosquePrayerPolicy       `json:"mosque_prayer_policy,omitempty"`
-	SnapshotID                        string                    `json:"snapshot_id"`
-	GeneratedAt                       time.Time                 `json:"generated_at"`
-	SigningKeyID                      string                    `json:"signing_key_id"`
+	Previous                          *domain.CandidateSchedule   `json:"previous_candidate,omitempty"`
+	Candidate                         domain.CandidateSchedule    `json:"candidate"`
+	Diff                              DiffReport                  `json:"diff"`
+	Approval                          domain.ApprovalDecision     `json:"approval,omitzero"`
+	Qualification                     *domain.SourceQualification `json:"qualification,omitempty"`
+	ApprovalEvidence                  *ApprovalEvidence           `json:"approval_evidence,omitempty"`
+	ApprovalReceiptBase64             string                      `json:"approval_receipt_base64,omitempty"`
+	ApprovalTrustBundleBase64         string                      `json:"approval_trust_bundle_base64,omitempty"`
+	PreviousApprovalTrustBundleBase64 string                      `json:"previous_approval_trust_bundle_base64,omitempty"`
+	MosquePrayerPolicy                *MosquePrayerPolicy         `json:"mosque_prayer_policy,omitempty"`
+	SnapshotID                        string                      `json:"snapshot_id"`
+	GeneratedAt                       time.Time                   `json:"generated_at"`
+	SigningKeyID                      string                      `json:"signing_key_id"`
 }
 
 type ApprovalEvidence struct {
@@ -69,41 +70,42 @@ type AuditMetadata struct {
 }
 
 type AuditReceipt struct {
-	SchemaVersion         string `json:"schema_version"`
-	Environment           string `json:"environment"`
-	Event                 string `json:"event"`
-	RequestID             string `json:"request_id"`
-	SnapshotID            string `json:"snapshot_id"`
-	SnapshotGeneratedAt   string `json:"snapshot_generated_at"`
-	SnapshotSHA256        string `json:"snapshot_sha256"`
-	CanonicalSHA256       string `json:"canonical_sha256"`
-	SigningKeyID          string `json:"signing_key_id"`
-	CandidateID           string `json:"candidate_id"`
-	RawSHA256             string `json:"raw_sha256"`
-	TranscriptionSHA256   string `json:"transcription_sha256"`
-	NormalizedSHA256      string `json:"normalized_sha256"`
-	DiffSHA256            string `json:"diff_sha256"`
-	ParserVersion         string `json:"parser_version"`
-	ApprovalID            string `json:"approval_id"`
-	ApproverIdentity      string `json:"approver_identity"`
-	ApprovedAt            string `json:"approved_at"`
-	ApprovalScope         string `json:"approval_scope"`
-	PrayerPolicySHA256    string `json:"prayer_policy_sha256,omitempty"`
-	ApprovalReceiptSHA256 string `json:"approval_receipt_sha256,omitempty"`
-	ApprovalTrustRevision uint64 `json:"approval_trust_revision,omitempty"`
-	ApprovalTrustSHA256   string `json:"approval_trust_sha256,omitempty"`
-	ApprovalKeyID         string `json:"approval_key_id,omitempty"`
-	SignerIdentity        string `json:"signer_identity"`
-	PublishedAt           string `json:"published_at"`
-	SignedAt              string `json:"signed_at"`
-	TrustBundleRevision   uint64 `json:"trust_bundle_revision"`
-	TrustBundleSHA256     string `json:"trust_bundle_sha256"`
-	SigningRequestSHA256  string `json:"signing_request_sha256"`
-	SigningRequestID      string `json:"signing_request_id"`
-	AttestationSignature  string `json:"attestation_ed25519_base64"`
-	PreviousReceiptSHA256 string `json:"previous_receipt_sha256,omitempty"`
-	ChainGenesisReason    string `json:"chain_genesis_reason,omitempty"`
-	ReceiptSHA256         string `json:"receipt_sha256"`
+	SchemaVersion         string                  `json:"schema_version"`
+	Environment           string                  `json:"environment"`
+	Event                 string                  `json:"event"`
+	RequestID             string                  `json:"request_id"`
+	SnapshotID            string                  `json:"snapshot_id"`
+	SnapshotGeneratedAt   string                  `json:"snapshot_generated_at"`
+	SnapshotSHA256        string                  `json:"snapshot_sha256"`
+	CanonicalSHA256       string                  `json:"canonical_sha256"`
+	SigningKeyID          string                  `json:"signing_key_id"`
+	CandidateID           string                  `json:"candidate_id"`
+	RawSHA256             string                  `json:"raw_sha256"`
+	TranscriptionSHA256   string                  `json:"transcription_sha256"`
+	NormalizedSHA256      string                  `json:"normalized_sha256"`
+	DiffSHA256            string                  `json:"diff_sha256"`
+	ParserVersion         string                  `json:"parser_version"`
+	ApprovalID            string                  `json:"approval_id,omitempty"`
+	ApproverIdentity      string                  `json:"approver_identity,omitempty"`
+	ApprovedAt            string                  `json:"approved_at,omitempty"`
+	ApprovalScope         string                  `json:"approval_scope,omitempty"`
+	Qualification         *QualificationReference `json:"qualification,omitempty"`
+	PrayerPolicySHA256    string                  `json:"prayer_policy_sha256,omitempty"`
+	ApprovalReceiptSHA256 string                  `json:"approval_receipt_sha256,omitempty"`
+	ApprovalTrustRevision uint64                  `json:"approval_trust_revision,omitempty"`
+	ApprovalTrustSHA256   string                  `json:"approval_trust_sha256,omitempty"`
+	ApprovalKeyID         string                  `json:"approval_key_id,omitempty"`
+	SignerIdentity        string                  `json:"signer_identity"`
+	PublishedAt           string                  `json:"published_at"`
+	SignedAt              string                  `json:"signed_at"`
+	TrustBundleRevision   uint64                  `json:"trust_bundle_revision"`
+	TrustBundleSHA256     string                  `json:"trust_bundle_sha256"`
+	SigningRequestSHA256  string                  `json:"signing_request_sha256"`
+	SigningRequestID      string                  `json:"signing_request_id"`
+	AttestationSignature  string                  `json:"attestation_ed25519_base64"`
+	PreviousReceiptSHA256 string                  `json:"previous_receipt_sha256,omitempty"`
+	ChainGenesisReason    string                  `json:"chain_genesis_reason,omitempty"`
+	ReceiptSHA256         string                  `json:"receipt_sha256"`
 }
 
 func Publish(request PublishRequest, privateKey ed25519.PrivateKey) (Result, error) {
@@ -168,6 +170,9 @@ func PublishWithSigner(ctx context.Context, request PublishRequest, signer Signe
 	}
 	prepared, err := PrepareSigning(request, policy)
 	if err != nil {
+		return Result{}, AuditReceipt{}, err
+	}
+	if err := validateQualificationPublicationTimes(request.Qualification, audit.SignedAt, audit.PublishedAt); err != nil {
 		return Result{}, AuditReceipt{}, err
 	}
 	canonical, err := base64.StdEncoding.DecodeString(prepared.CanonicalPayloadBase64)
@@ -312,13 +317,14 @@ func verifyWithPublicKey(data []byte, integrity domain.IntegrityMetadata, public
 func buildAuditReceipt(request PublishRequest, result Result, audit AuditMetadata) (AuditReceipt, error) {
 	snapshotHash := sha256.Sum256(result.JSON)
 	receipt := AuditReceipt{
-		SchemaVersion: "1.0", Environment: audit.Environment, Event: "snapshot.published",
-		RequestID:  publicationRequestID(request.Candidate.ID, request.Diff.SHA256, request.Approval.ID, request.SnapshotID, request.SigningKeyID),
+		SchemaVersion: result.Snapshot.SchemaVersion, Environment: audit.Environment, Event: "snapshot.published",
+		RequestID:  publicationRequestID(request.Candidate.ID, request.Diff.SHA256, admissionID(request.Approval.ID, qualificationReference(request.Qualification)), request.SnapshotID, request.SigningKeyID),
 		SnapshotID: request.SnapshotID, SnapshotGeneratedAt: result.Snapshot.GeneratedAt, SnapshotSHA256: hex.EncodeToString(snapshotHash[:]), CanonicalSHA256: result.Snapshot.Integrity.CanonicalSHA256,
 		SigningKeyID: request.SigningKeyID, CandidateID: request.Candidate.ID, RawSHA256: request.Candidate.Artifact.SHA256,
 		TranscriptionSHA256: request.Candidate.TranscriptionSHA256, NormalizedSHA256: request.Candidate.NormalizedSHA256,
 		DiffSHA256: request.Diff.SHA256, ParserVersion: request.Candidate.ParserVersion,
 		ApprovalID: request.Approval.ID, ApproverIdentity: request.Approval.Actor, ApprovedAt: request.Approval.ApprovedAt, ApprovalScope: request.Approval.Scope,
+		Qualification:      qualificationReference(request.Qualification),
 		PrayerPolicySHA256: request.Approval.PrayerPolicySHA256,
 		SignerIdentity:     audit.SignerIdentity, SignedAt: audit.SignedAt.UTC().Format(time.RFC3339), PublishedAt: audit.PublishedAt.UTC().Format(time.RFC3339), PreviousReceiptSHA256: audit.PreviousReceiptSHA256,
 		TrustBundleRevision: audit.TrustBundleRevision, TrustBundleSHA256: audit.TrustBundleSHA256,
@@ -365,6 +371,9 @@ func validChainMetadata(previousSHA256, genesisReason string) bool {
 }
 
 func validatePublishRequest(request PublishRequest) error {
+	if request.Qualification != nil {
+		return validateQualifiedPublishRequest(request)
+	}
 	if request.Candidate.Status == domain.CandidateValidationFailed || len(request.Candidate.Validation.Errors) > 0 {
 		return newError("publish snapshot", "candidate_invalid", errors.New("candidate contains blocking validation errors"))
 	}
@@ -418,6 +427,10 @@ func validatePublishRequest(request PublishRequest) error {
 	} else if request.ApprovalEvidence != nil || request.ApprovalReceiptBase64 != "" || request.ApprovalTrustBundleBase64 != "" || request.PreviousApprovalTrustBundleBase64 != "" {
 		return newError("publish snapshot", "approval_evidence_invalid", errors.New("synthetic publication cannot carry production approval evidence"))
 	}
+	return validatePublicationContent(request)
+}
+
+func validatePublicationContent(request PublishRequest) error {
 	normalizedSHA256, err := domain.CandidateNormalizedSHA256(request.Candidate)
 	if err != nil || normalizedSHA256 != request.Candidate.NormalizedSHA256 {
 		return newError("publish snapshot", "candidate_binding_mismatch", errors.New("normalized candidate fingerprint does not match content"))
@@ -539,6 +552,14 @@ func buildSnapshot(request PublishRequest) (domain.Snapshot, error) {
 			SigningKeyID:           request.SigningKeyID,
 			SignatureEd25519Base64: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
 		},
+	}
+	if request.Qualification != nil {
+		snapshot.SchemaVersion = "2.0"
+		snapshot.Source.Approval = domain.Approval{}
+		snapshot.Source.Qualification = request.Qualification
+		if err := snapshot.Validate(); err != nil {
+			return domain.Snapshot{}, newError("publish snapshot", "qualified_snapshot_invalid", err)
+		}
 	}
 	if err := snapshot.ValidateIqamahApplications(); err != nil {
 		return domain.Snapshot{}, newError("publish snapshot", "prayer_policy_invalid", err)

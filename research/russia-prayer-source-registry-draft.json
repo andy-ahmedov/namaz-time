@@ -1,6 +1,8 @@
 {
   "schema_version": "research-draft-0.1",
   "generated_on": "2026-08-30",
+  "lifecycle": "historical_superseded",
+  "superseded_by": "T049; see research/t049/BASELINE_AUDIT.md for current progress",
   "evidence_label": "CONFIRMED_PUBLIC",
   "purpose": "Clean-room candidate registry; not a production authority assignment or prayer dataset",
   "default_resolution": "unavailable",

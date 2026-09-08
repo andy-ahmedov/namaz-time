@@ -1,0 +1,3329 @@
+{
+  "schema_version": "t049-dumrt-localities/v1",
+  "researched_at": "2026-09-08",
+  "subject_code": "RU-TA",
+  "qualification_status": "not_assessed",
+  "coverage_tested": {
+    "from": "2026-09-01",
+    "to": "2026-09-30"
+  },
+  "comparison_fields_in_source_order": [
+    "suhur_end",
+    "morning_performed_in_mosques",
+    "sunrise",
+    "zenith",
+    "dhuhr",
+    "asr",
+    "maghrib",
+    "isha"
+  ],
+  "selector_artifact": {
+    "filename": "dumrt.html",
+    "canonical_url": "https://dumrt.ru/ru/help-info/prayertime/",
+    "sha256": "eb86c45ac5b35a0c04b5e7356e3fb1c761020bd09105ceb6bd9eff8e447de489",
+    "byte_length": 54686
+  },
+  "workbook_artifact": {
+    "filename": "dumrt-2026.xlsx",
+    "canonical_url": "https://dumrt.ru/netcat_files/multifile/2649/vremena_namazov_RT_2026_0.xlsx",
+    "sha256": "d7517876eb3c59c7dd3cb024a43ac4af0a1256d6db153ff0a053e54817c03b5a",
+    "byte_length": 932145,
+    "shared_strings": 1195,
+    "sheet_rows": 16062,
+    "headers": [
+      [
+        "Торак пункт",
+        "Көн",
+        "Сәхәр тәмам",
+        "Мәчетләрдә укыла",
+        "Кояш чыга",
+        "Зәвәл",
+        "Өйлә намазы",
+        "Икенде намазы",
+        "Ахшам намазы",
+        "Ястү намазы"
+      ],
+      [
+        "Населенный пункт",
+        "Дата",
+        "Завершение сухура",
+        "Совершается в мечетях",
+        "Восход солнца",
+        "Зенит",
+        "Зухр",
+        "Аср",
+        "Магриб",
+        "Иша"
+      ]
+    ],
+    "localities": 44
+  },
+  "catalog": {
+    "retained_filename": "russia-cities-2026-09-08.json",
+    "file_sha256": "d00cf6cb6b975e5ffd1ebb303c9ae101cb0a39ca5f444fafc7fbc27df6988231",
+    "revision": {
+      "id": "catalog-geonames-ru-2026-09-08-5267d8bf5e48a158",
+      "content_sha256": "5267d8bf5e48a158a004fa84ec3ce5171cfafab3857cade6e382fa49c3272a66",
+      "source_populated_places": 192152,
+      "imported_cities": 166559,
+      "missing_russian_names": 25425,
+      "excluded_admin_places": 168
+    },
+    "tatarstan_localities": 3266
+  },
+  "interpretation": "Source fields are compared literally. Parser execution is not qualification, endorsement or signed publication. No district-wide scope or unresolved alias is inferred.",
+  "summary": {
+    "selector_localities": 44,
+    "workbook_localities": 44,
+    "csv_current_year_rows": 16059,
+    "compared_values": 128472,
+    "mismatched_values": 0,
+    "missing_csv_dates": 1,
+    "unambiguous_canonical_bindings": 36,
+    "unresolved_canonical_bindings": 8,
+    "september_parser_pass": 43,
+    "september_parser_xlsx_equal": 43,
+    "annual_parser_pass": 8
+  },
+  "localities": [
+    {
+      "label": "Агрыз",
+      "filename": "Agriz.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Agriz.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Agriz.csv",
+      "retained_filename": "dumrt-Agriz.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "1747ec680407da7c1cb6b8607c735bd903fbee2f345ad4c90679b4294fa902ec",
+      "byte_length": 44897,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44897",
+        "last_modified": "Sat, 27 Dec 2025 10:49:08 GMT",
+        "etag": "\"af61-646ecc2748ff6\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-ce8f5a7c0f2c64be585724b8e0c04d02"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-ce8f5a7c0f2c64be585724b8e0c04d02"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-ce8f5a7c0f2c64be585724b8e0c04d02",
+            "name": "Агрыз",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:583983",
+            "geographic_source": "https://www.geonames.org/583983",
+            "latitude": 56.5234,
+            "longitude": 52.99431
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Агрыз",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "1747ec680407da7c1cb6b8607c735bd903fbee2f345ad4c90679b4294fa902ec",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "e14e3927498ee28e62f63ff193472b886855a926cdcef05b01cff77b5c93d488",
+        "fields_sha256": "02bafa8819f1b872157791ee20e8af4ed6ec2e5f750699ae8d36cb3bd0299b43",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 487: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Азнакаево",
+      "filename": "Aznakay.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Aznakay.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Aznakay.csv",
+      "retained_filename": "dumrt-Aznakay.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "c9f62212f57a1b6242eaaa26d929960dc55c8c17828f01a39d08c0d8b8538811",
+      "byte_length": 44898,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44898",
+        "last_modified": "Sat, 27 Dec 2025 10:49:10 GMT",
+        "etag": "\"af62-646ecc2899ead\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-3c3aeaaf26311907caa12196c518b7e5"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-3c3aeaaf26311907caa12196c518b7e5"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-3c3aeaaf26311907caa12196c518b7e5",
+            "name": "Азнакаево",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:580062",
+            "geographic_source": "https://www.geonames.org/580062",
+            "latitude": 54.85821,
+            "longitude": 53.08006
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Азнакаево",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "c9f62212f57a1b6242eaaa26d929960dc55c8c17828f01a39d08c0d8b8538811",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "e454627e11297e6daabf406326be5ee4581a1c327515b86d1a41b3de92697824",
+        "fields_sha256": "033d6c86a3ecd6322930d3c0cefdfa44d8cf88ca1a6abe67604cab014510ec8a",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 493: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Аксубаево",
+      "filename": "Aksubay.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Aksubay.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Aksubay.csv",
+      "retained_filename": "dumrt-Aksubay.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "395e183541aa32234d022aaa8ac182219ef6d55aefda58f91f1d9c5b5607098f",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:09 GMT",
+        "etag": "\"af60-646ecc27ef041\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-2c97089cbc4a16acadf8ea5a37bc524e"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-2c97089cbc4a16acadf8ea5a37bc524e"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-2c97089cbc4a16acadf8ea5a37bc524e",
+            "name": "Аксубаево",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:583583",
+            "geographic_source": "https://www.geonames.org/583583",
+            "latitude": 54.84716,
+            "longitude": 50.79631
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Аксубаево",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "395e183541aa32234d022aaa8ac182219ef6d55aefda58f91f1d9c5b5607098f",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "567bd6dded8909362a9e07610864588610a9bdea9c3888f8db9858ea1f629ed2",
+        "fields_sha256": "ac63843b68f70ae1fd9ec3f9f0615c9ad70cb62d14bfceb0796cbd597abfc072",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 493: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Актаныш",
+      "filename": "Aktanis.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Aktanis.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Aktanis.csv",
+      "retained_filename": "dumrt-Aktanis.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "4ceffccd508c453cebb62186f84cd16baa52fdc3fb7d76e198b7ed48cc3e29e9",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:09 GMT",
+        "etag": "\"af60-646ecc27effe1\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 364,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [
+        {
+          "row": 365,
+          "date_field": "31.12.2025",
+          "columns": 18
+        }
+      ],
+      "canonical_city_ids": [
+        "city-1e98315ca99d0149e1a30f2d36949f09"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-1e98315ca99d0149e1a30f2d36949f09"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-1e98315ca99d0149e1a30f2d36949f09",
+            "name": "Актаныш",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:583578",
+            "geographic_source": "https://www.geonames.org/583578",
+            "latitude": 55.71714,
+            "longitude": 54.07116
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Актаныш",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 364,
+        "compared_values": 2912,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [
+          "2026-01-01"
+        ],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "4ceffccd508c453cebb62186f84cd16baa52fdc3fb7d76e198b7ed48cc3e29e9",
+        "status": "fail",
+        "error": "dumrt CSV row 365: unsupported row schema",
+        "days": 0,
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 365: unsupported row schema",
+        "independent_xlsx_fields_equal": false
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "CSV annual coverage is incomplete; no workbook backfill was performed.",
+        "Whole-artifact schema is invalid. Comparison covers only individually parseable rows and is diagnostic, never a candidate.",
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Алексеевск",
+      "filename": "Aleksey.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Aleksey.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Aleksey.csv",
+      "retained_filename": "dumrt-Aleksey.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "bebc380883e95170d15e506461624770b1ab468e59e733792e45ee95d4ded4e2",
+      "byte_length": 44895,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44895",
+        "last_modified": "Sat, 27 Dec 2025 10:49:09 GMT",
+        "etag": "\"af5f-646ecc27f1f21\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [],
+      "catalog_binding": {
+        "status": "no_exact_catalog_match",
+        "canonical_city_ids": [],
+        "match_basis": "UNKNOWN",
+        "candidates": []
+      },
+      "timezone": "UNKNOWN",
+      "workbook_label": "Алексеевское",
+      "workbook_relation": "unique_full_content_match_identity_unresolved",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "bebc380883e95170d15e506461624770b1ab468e59e733792e45ee95d4ded4e2",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "0245c020dcb4c61b1ee7a434f9f8c70399a8b5896ff8e17221ab645d3a973fa5",
+        "fields_sha256": "229632492a9ebfa790e790513b199983c787780664bb4912a3012fc18721aaff",
+        "annual_status": "pass",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Exact canonical locality identity unresolved; no nearby/population/admin-class choice.",
+        "CSV and workbook contents agree, but HTML Алексеевск versus XLSX Алексеевское is not a verified geographic alias."
+      ]
+    },
+    {
+      "label": "Альметьевск",
+      "filename": "Almet.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Almet.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Almet.csv",
+      "retained_filename": "dumrt-Almet.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "a89300897830b0db7a847c01e24dbf96c3f15f239bf889d31e1e80c39180bde7",
+      "byte_length": 44898,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44898",
+        "last_modified": "Sat, 27 Dec 2025 10:49:09 GMT",
+        "etag": "\"af62-646ecc283b306\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-f4e532ad023427599f64bcf6d62104b3"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-f4e532ad023427599f64bcf6d62104b3"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-f4e532ad023427599f64bcf6d62104b3",
+            "name": "Альметьевск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:582432",
+            "geographic_source": "https://www.geonames.org/582432",
+            "latitude": 54.90395,
+            "longitude": 52.31793
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Альметьевск",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "a89300897830b0db7a847c01e24dbf96c3f15f239bf889d31e1e80c39180bde7",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "655259151dec4b2d6ecf9303bd469bbb3ce11e8dd37f908737b506a41ceca854",
+        "fields_sha256": "22e8654735ea06ce34d15854d8f3b3cf4f33ff48ec5a45b107bf7fb2617d6213",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 493: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Апастово",
+      "filename": "Apastovo.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Apastovo.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Apastovo.csv",
+      "retained_filename": "dumrt-Apastovo.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "da9429e0f177666ab0bdcf7b33266f39513badf06cf4342015ab9c5af9be7e2c",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:10 GMT",
+        "etag": "\"af60-646ecc2896fcd\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-a3274e63fa45b2465dbe5f92026331d5"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-a3274e63fa45b2465dbe5f92026331d5"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-a3274e63fa45b2465dbe5f92026331d5",
+            "name": "Апастово",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:581359",
+            "geographic_source": "https://www.geonames.org/581359",
+            "latitude": 55.20123,
+            "longitude": 48.51127
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Апастово",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "da9429e0f177666ab0bdcf7b33266f39513badf06cf4342015ab9c5af9be7e2c",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "b94bc0068adfa3eff0fe15ac951666d04d3ef07ac32fc371584360a2f0372fab",
+        "fields_sha256": "2c027e06e01346979fad0441377b699a509b14717bc31971b34922f6c3d69705",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 403: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Арск",
+      "filename": "Arsk.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Arsk.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Arsk.csv",
+      "retained_filename": "dumrt-Arsk.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "d298775c02196ac3926a7c9fa210f6e60d5c67287374630bc41330d4cc47c5e1",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:10 GMT",
+        "etag": "\"af60-646ecc2898f0d\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-31d68e77f2b9d87c6e441b54ea00d9af"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-31d68e77f2b9d87c6e441b54ea00d9af"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-31d68e77f2b9d87c6e441b54ea00d9af",
+            "name": "Арск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:580850",
+            "geographic_source": "https://www.geonames.org/580850",
+            "latitude": 56.09254,
+            "longitude": 49.87819
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Арск",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "d298775c02196ac3926a7c9fa210f6e60d5c67287374630bc41330d4cc47c5e1",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "cdca63b37198ddf491337b57c073d7169a54ed8b741bbf91b5048c31b5fba0c8",
+        "fields_sha256": "905f727af2f1f5b6b5351ed21b121aaaa00692f506560cc9908d2145b125f5a9",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 489: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Бавлы",
+      "filename": "Bavli.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Bavli.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Bavli.csv",
+      "retained_filename": "dumrt-Bavli.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "4f46d1d32dd7e194c7423449a58dbaaa8ca0a0f1ee3518b9eae6af3fa4b7c34d",
+      "byte_length": 44898,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44898",
+        "last_modified": "Sat, 27 Dec 2025 10:49:10 GMT",
+        "etag": "\"af62-646ecc2940e98\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-c4e29fee837a7239c468ffbf9b27d7db"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-c4e29fee837a7239c468ffbf9b27d7db"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-c4e29fee837a7239c468ffbf9b27d7db",
+            "name": "Бавлы",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:578638",
+            "geographic_source": "https://www.geonames.org/578638",
+            "latitude": 54.39759,
+            "longitude": 53.25116
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Бавлы",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "4f46d1d32dd7e194c7423449a58dbaaa8ca0a0f1ee3518b9eae6af3fa4b7c34d",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "9f95126992d3f5a7f28630362ba79291eadb2f6191ba75d36f0e70ad90079ff2",
+        "fields_sha256": "36b2c3111dc2fe4260f2c4e3e499cfd8a74a8eda34006fe63de875eb2864eea1",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 494: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Базарные Матаки",
+      "filename": "BazarnyeMataki.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/BazarnyeMataki.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/BazarnyeMataki.csv",
+      "retained_filename": "dumrt-BazarnyeMataki.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "860158362f8be8d3ae56cf9c203b4e6cc98d7fdbc16be0c511977a369c98f8c2",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:03 GMT",
+        "etag": "\"af60-646ecc21fd818\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-53514f9a9556e948c173d6a1340656d5"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-53514f9a9556e948c173d6a1340656d5"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-53514f9a9556e948c173d6a1340656d5",
+            "name": "Базарные Матаки",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:578467",
+            "geographic_source": "https://www.geonames.org/578467",
+            "latitude": 54.90693,
+            "longitude": 49.9342
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Базарные Матаки",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "860158362f8be8d3ae56cf9c203b4e6cc98d7fdbc16be0c511977a369c98f8c2",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "195cd4e5d16c3e935181ac9e7d56826f55b9052a1c1d80aa003235e363467996",
+        "fields_sha256": "83101ff8e27ef906b77ef0fea383b1ef54a33623850a35d4a8d8ce69c5d858e6",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 493: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Балтаси",
+      "filename": "Baltasi.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Baltasi.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Baltasi.csv",
+      "retained_filename": "dumrt-Baltasi.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "fc490f4c0afdfde5c7ac4d1564a4bb93cf12cad96ff4d626de99f3864947650d",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:10 GMT",
+        "etag": "\"af60-646ecc28e4232\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-9cbd35980f5981e8493a0b4f90bb647a"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-9cbd35980f5981e8493a0b4f90bb647a"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-9cbd35980f5981e8493a0b4f90bb647a",
+            "name": "Балтаси",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:579384",
+            "geographic_source": "https://www.geonames.org/579384",
+            "latitude": 56.34646,
+            "longitude": 50.20749
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Балтаси",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "fc490f4c0afdfde5c7ac4d1564a4bb93cf12cad96ff4d626de99f3864947650d",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "c16af0d7a20045e711647a3636929293783797d5b3adc94add8ad9b777afb3ce",
+        "fields_sha256": "c035f22925eef1313d2dba6c1cc303a67033a936e97bf6f61cbd0424669b8ee1",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 488: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Богатые Сабы",
+      "filename": "BogatyeSaby.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/BogatyeSaby.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/BogatyeSaby.csv",
+      "retained_filename": "dumrt-BogatyeSaby.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "4214091e918865df46b54010d187dd164dd13bc1ea675ab69661df98ea78b9a2",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:03 GMT",
+        "etag": "\"af60-646ecc21fd818\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-afaebefda3512c839478225dd2903236"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-afaebefda3512c839478225dd2903236"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-afaebefda3512c839478225dd2903236",
+            "name": "Богатые Сабы",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:575728",
+            "geographic_source": "https://www.geonames.org/575728",
+            "latitude": 56.00942,
+            "longitude": 50.44714
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Богатые Сабы",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "4214091e918865df46b54010d187dd164dd13bc1ea675ab69661df98ea78b9a2",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "4385ea64eb2e4693308a44f86bd1a4a6f8747f04e412c51fa52ea9903a2607cb",
+        "fields_sha256": "1f223fbfa9b32cba06d2bd7471c0a3842086bf9b488011fff70194c72842bd01",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 489: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Болгар",
+      "filename": "Bolgary.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Bolgary.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Bolgary.csv",
+      "retained_filename": "dumrt-Bolgary.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "1122e7a98783fa6aeae4631f9f334f44e6cc54c9b954b44e720d68923e0261d8",
+      "byte_length": 44895,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44895",
+        "last_modified": "Sat, 27 Dec 2025 10:49:03 GMT",
+        "etag": "\"af5f-646ecc21fb8d8\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [],
+      "catalog_binding": {
+        "status": "ambiguous_exact_catalog_matches",
+        "canonical_city_ids": [],
+        "match_basis": "UNKNOWN",
+        "candidates": [
+          {
+            "id": "city-68ba0fd66b4fd1bf4babed20e0517b07",
+            "name": "Болгар",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:570988",
+            "geographic_source": "https://www.geonames.org/570988",
+            "latitude": 55.41251,
+            "longitude": 51.6069
+          },
+          {
+            "id": "city-d1b1c281f84ab4cf6c67577f3458f7da",
+            "name": "Болгар",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:570990",
+            "geographic_source": "https://www.geonames.org/570990",
+            "latitude": 54.97417,
+            "longitude": 49.03083
+          }
+        ]
+      },
+      "timezone": "UNKNOWN",
+      "workbook_label": "Болгар",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "1122e7a98783fa6aeae4631f9f334f44e6cc54c9b954b44e720d68923e0261d8",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "6b077573ce5108c69f0abff2711f62079a74f7aa48b46d7b68f1f527e3bdbbb8",
+        "fields_sha256": "3a5294146fd062e04fe8f451331df859300b18292a9100b0f520a020c3944075",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 493: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Exact canonical locality identity unresolved; no nearby/population/admin-class choice.",
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Большая Атня",
+      "filename": "BolshAtna.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/BolshAtna.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/BolshAtna.csv",
+      "retained_filename": "dumrt-BolshAtna.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "12ba981f48477f6dd6f8ccdb45ebdb6989e3863e00299f31ad5ecbcb6048e097",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:03 GMT",
+        "etag": "\"af60-646ecc21fb8d8\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-9fc99b1bde762c7d35120ee974a33a4f"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-9fc99b1bde762c7d35120ee974a33a4f"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-9fc99b1bde762c7d35120ee974a33a4f",
+            "name": "Большая Атня",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:575221",
+            "geographic_source": "https://www.geonames.org/575221",
+            "latitude": 56.25059,
+            "longitude": 49.45161
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Большая Атня",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "12ba981f48477f6dd6f8ccdb45ebdb6989e3863e00299f31ad5ecbcb6048e097",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "eb75d67819e728bbcc3199b87798cb4b31719007c574bf5d38ce465181bdc9d4",
+        "fields_sha256": "d03688661890a88eaa8653da0f126bbf0a16fd3d85152666a606b5fed8531ea0",
+        "annual_status": "pass",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": []
+    },
+    {
+      "label": "Большие Кайбицы",
+      "filename": "BolshieKaybesy.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/BolshieKaybesy.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/BolshieKaybesy.csv",
+      "retained_filename": "dumrt-BolshieKaybesy.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "6f3e7101e3bab9bd6ca0157db59940303252f936c9b5bd53e6841d276e7836ec",
+      "byte_length": 44895,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44895",
+        "last_modified": "Sat, 27 Dec 2025 10:49:04 GMT",
+        "etag": "\"af5f-646ecc22a4804\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-5240a59fe0fba63a98414b7bf0b9abde"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-5240a59fe0fba63a98414b7bf0b9abde"
+        ],
+        "match_basis": "exact_existing_catalog_alias",
+        "candidates": [
+          {
+            "id": "city-5240a59fe0fba63a98414b7bf0b9abde",
+            "name": "Bol’shiye Kaybitsy",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:574183",
+            "geographic_source": "https://www.geonames.org/574183",
+            "latitude": 55.40331,
+            "longitude": 48.18552
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Большие Кайбицы",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "6f3e7101e3bab9bd6ca0157db59940303252f936c9b5bd53e6841d276e7836ec",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "d0a502c695be06f8a2ce20fdc5680aa8e97ed847af43e391fde768acb71f2a25",
+        "fields_sha256": "26cef342744d3ae89f805c7ffe8ffdcf7ccc8bfe2f91ca6aba3b1da2e4b449c1",
+        "annual_status": "pass",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": []
+    },
+    {
+      "label": "Бугульма",
+      "filename": "Bugulma.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Bugulma.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Bugulma.csv",
+      "retained_filename": "dumrt-Bugulma.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "94f96ec36be00a2be7c2eb4a244363f644b8670c4bbf1fd1707545de5a5fe618",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:04 GMT",
+        "etag": "\"af60-646ecc22a3864\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-0616213d0c8855dda653c51e75580f98"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-0616213d0c8855dda653c51e75580f98"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-0616213d0c8855dda653c51e75580f98",
+            "name": "Бугульма",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:571170",
+            "geographic_source": "https://www.geonames.org/571170",
+            "latitude": 54.5378,
+            "longitude": 52.7985
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Бугульма",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "94f96ec36be00a2be7c2eb4a244363f644b8670c4bbf1fd1707545de5a5fe618",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "ec0142ec91b1957846226e815d7095c59d4fe4394b1ecca85271780ad8ca0386",
+        "fields_sha256": "35ef173e962c17ec56a5544802db7be7e0bf31b4f9826ad75c6ebb26c6dc36e7",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 494: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Буинск",
+      "filename": "Buinsk.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Buinsk.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Buinsk.csv",
+      "retained_filename": "dumrt-Buinsk.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "3ab9f0108c05c26a5bd2315ce7a0ab68562f0063a00cb8bf4f7b0216cd154bc8",
+      "byte_length": 44895,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44895",
+        "last_modified": "Sat, 27 Dec 2025 10:49:04 GMT",
+        "etag": "\"af5f-646ecc22a6744\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-43d341edb9986da13b61b82aeb898e30"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-43d341edb9986da13b61b82aeb898e30"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-43d341edb9986da13b61b82aeb898e30",
+            "name": "Буинск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:571155",
+            "geographic_source": "https://www.geonames.org/571155",
+            "latitude": 54.97422,
+            "longitude": 48.29088
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Буинск",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "3ab9f0108c05c26a5bd2315ce7a0ab68562f0063a00cb8bf4f7b0216cd154bc8",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "608878f03975169c16f5651b2f038bc9ead51366060efb9c04f83e7114804d1a",
+        "fields_sha256": "be1d6140e27f3fffde3bbbef1b109903400e897e2243b8f017eb8a7bd355521d",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 493: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Верхний Услон",
+      "filename": "VerhUslon.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/VerhUslon.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/VerhUslon.csv",
+      "retained_filename": "dumrt-VerhUslon.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "2b8001843cf448dabd9d74d2e0a4d502c31b75a9e4623eac5651bfe0c6f99fdc",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:08 GMT",
+        "etag": "\"af60-646ecc269c24a\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-df5e463ec5af0262b079de7d9171bb7c"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-df5e463ec5af0262b079de7d9171bb7c"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-df5e463ec5af0262b079de7d9171bb7c",
+            "name": "Верхний Услон",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:474795",
+            "geographic_source": "https://www.geonames.org/474795",
+            "latitude": 55.768,
+            "longitude": 48.9776
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Верхний Услон",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "2b8001843cf448dabd9d74d2e0a4d502c31b75a9e4623eac5651bfe0c6f99fdc",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "0938f827d58d0e224aaaf227fe2c4d6771d72b20bef8656cc9d8fe59920701c8",
+        "fields_sha256": "c97de093ed95b9ad54c64314e478240bcfba121e6fc1ba29440dfc1fdd6c4170",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 490: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Высокая Гора",
+      "filename": "VicokayGora.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/VicokayGora.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/VicokayGora.csv",
+      "retained_filename": "dumrt-VicokayGora.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "1bfc7b8f063ad53511ab59bbbeee973644959a337882efaf059b885d546a0f8e",
+      "byte_length": 44895,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44895",
+        "last_modified": "Sat, 27 Dec 2025 10:49:08 GMT",
+        "etag": "\"af5f-646ecc2707911\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [],
+      "catalog_binding": {
+        "status": "ambiguous_exact_catalog_matches",
+        "canonical_city_ids": [],
+        "match_basis": "UNKNOWN",
+        "candidates": [
+          {
+            "id": "city-a39136f0064cd1db0c74a203190a6707",
+            "name": "Высокая Гора",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:470212",
+            "geographic_source": "https://www.geonames.org/470212",
+            "latitude": 55.90988,
+            "longitude": 49.31343
+          },
+          {
+            "id": "city-bc8cc21e6e1a6b21cc54cdf4d28dc849",
+            "name": "Высокая Гора",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:470211",
+            "geographic_source": "https://www.geonames.org/470211",
+            "latitude": 55.9334,
+            "longitude": 49.3068
+          }
+        ]
+      },
+      "timezone": "UNKNOWN",
+      "workbook_label": "Высокая Гора",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "1bfc7b8f063ad53511ab59bbbeee973644959a337882efaf059b885d546a0f8e",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "19227f88c898ccd052b2cd2860ac83fd5f37b5ed29354fab7d75980219be6ece",
+        "fields_sha256": "370ec6546e8b0794a255072742f9c95177347ac3a8d9f4d1a4b18726af405806",
+        "annual_status": "pass",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Exact canonical locality identity unresolved; no nearby/population/admin-class choice."
+      ]
+    },
+    {
+      "label": "Елабуга",
+      "filename": "Elabuga.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Elabuga.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Elabuga.csv",
+      "retained_filename": "dumrt-Elabuga.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "6697e54f65af488df9ad7047c6d629096776a6aec41e18ab8679d7f5e7f4f56c",
+      "byte_length": 44898,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:05 GMT",
+        "content_type": "text/csv",
+        "content_length": "44898",
+        "last_modified": "Sat, 27 Dec 2025 10:49:04 GMT",
+        "etag": "\"af62-646ecc23515b0\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-2b444516d496cc1a4f2e66eb304c335d"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-2b444516d496cc1a4f2e66eb304c335d"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-2b444516d496cc1a4f2e66eb304c335d",
+            "name": "Елабуга",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:468082",
+            "geographic_source": "https://www.geonames.org/468082",
+            "latitude": 55.76232,
+            "longitude": 52.04425
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Елабуга",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "6697e54f65af488df9ad7047c6d629096776a6aec41e18ab8679d7f5e7f4f56c",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "a14499c9ed5b0e170712ca9ca7c5efb228934396080bfd35dc05e16e6ea19b61",
+        "fields_sha256": "2100510b79fbf5863aa27563c6fd7fbc62626da0468d14607d183e3321f507a4",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 490: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Заинск",
+      "filename": "Zainsk.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Zainsk.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Zainsk.csv",
+      "retained_filename": "dumrt-Zainsk.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "e9ee2daa17cbb5eb4ed1dbdd4b23c1495e086b579c3c92982b506ff91744b89b",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:08 GMT",
+        "etag": "\"af60-646ecc2743235\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [],
+      "catalog_binding": {
+        "status": "ambiguous_exact_catalog_matches",
+        "canonical_city_ids": [],
+        "match_basis": "UNKNOWN",
+        "candidates": [
+          {
+            "id": "city-4dc3e6c8843fefa931beef33dfa095f1",
+            "name": "Заинск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:13408681",
+            "geographic_source": "https://www.geonames.org/13408681",
+            "latitude": 55.28359,
+            "longitude": 51.99865
+          },
+          {
+            "id": "city-6bac1633a5508e4983db75122e26fdd4",
+            "name": "Заинск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:465543",
+            "geographic_source": "https://www.geonames.org/465543",
+            "latitude": 55.3195,
+            "longitude": 52.06942
+          }
+        ]
+      },
+      "timezone": "UNKNOWN",
+      "workbook_label": "Заинск",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "e9ee2daa17cbb5eb4ed1dbdd4b23c1495e086b579c3c92982b506ff91744b89b",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "157d84d1999f50e4bd3aaf72277ec771e9f04fd732dabf1a497915f1963993d2",
+        "fields_sha256": "04bacd1a53b7f66716aee6f22da821582cb05e103e3135308b4c3559e3dc5775",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 491: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Exact canonical locality identity unresolved; no nearby/population/admin-class choice.",
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Зеленодольск",
+      "filename": "Zelenodolsk.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Zelenodolsk.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Zelenodolsk.csv",
+      "retained_filename": "dumrt-Zelenodolsk.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "50efe800ff154f3c0b601c25598cad0e8ee7eed27d9a6bd31b12ded863758a83",
+      "byte_length": 44895,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44895",
+        "last_modified": "Sat, 27 Dec 2025 10:49:08 GMT",
+        "etag": "\"af5f-646ecc27470b6\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-b3772c796c14047580a188548412fd00"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-b3772c796c14047580a188548412fd00"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-b3772c796c14047580a188548412fd00",
+            "name": "Зеленодольск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:463835",
+            "geographic_source": "https://www.geonames.org/463835",
+            "latitude": 55.84376,
+            "longitude": 48.51784
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Зеленодольск",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "50efe800ff154f3c0b601c25598cad0e8ee7eed27d9a6bd31b12ded863758a83",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "b80ccd5fed10ad8f38675f9fd7f7ab618db4b17f697d820fd535af497d332755",
+        "fields_sha256": "601e59335bf05c54b62b6a040756d458c576af141692063d47908e0495fc1348",
+        "annual_status": "pass",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": []
+    },
+    {
+      "label": "Казань",
+      "filename": "Kazan.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Kazan.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Kazan.csv",
+      "retained_filename": "dumrt-kazan.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "0257488eff3ecc192f643da1258085debebf4f3730cdda346b24b5a152095477",
+      "byte_length": 44895,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 21:43:59 GMT",
+        "content_type": "text/csv",
+        "content_length": "44895",
+        "last_modified": "Sat, 27 Dec 2025 10:49:04 GMT",
+        "etag": "\"af5f-646ecc2352550\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-a2f2e5705da15afdb69e35ed1ddbcded"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-a2f2e5705da15afdb69e35ed1ddbcded"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-a2f2e5705da15afdb69e35ed1ddbcded",
+            "name": "Казань",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:551487",
+            "geographic_source": "https://www.geonames.org/551487",
+            "latitude": 55.78874,
+            "longitude": 49.12214
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Казань",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "0257488eff3ecc192f643da1258085debebf4f3730cdda346b24b5a152095477",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "6781250d813e836091e2b6a71a7522c3e4839f6768f69cc3d8281ea22490669c",
+        "fields_sha256": "fc9976105265faefb740bd403db4cb61346c5fc6d12c9966d8a8995559fcb98f",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 490: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Камское Устье",
+      "filename": "KamskoeUstye.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/KamskoeUstye.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/KamskoeUstye.csv",
+      "retained_filename": "dumrt-KamskoeUstye.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "be49f24f832fbca803794d97a805cb736f826c49a3c1b3004be8f19a2af99b0d",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:04 GMT",
+        "etag": "\"af60-646ecc234f670\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [],
+      "catalog_binding": {
+        "status": "ambiguous_exact_catalog_matches",
+        "canonical_city_ids": [],
+        "match_basis": "UNKNOWN",
+        "candidates": [
+          {
+            "id": "city-2d991cfb66e1ebf0189a4cb214491673",
+            "name": "Камское Устье",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:553343",
+            "geographic_source": "https://www.geonames.org/553343",
+            "latitude": 55.19557,
+            "longitude": 49.26208
+          },
+          {
+            "id": "city-eb5f0529a1a83d464358c6b4b8278829",
+            "name": "Камское Устье",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:7077015",
+            "geographic_source": "https://www.geonames.org/7077015",
+            "latitude": 55.2483,
+            "longitude": 49.2084
+          }
+        ]
+      },
+      "timezone": "UNKNOWN",
+      "workbook_label": "Камское Устье",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "be49f24f832fbca803794d97a805cb736f826c49a3c1b3004be8f19a2af99b0d",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "73e6182feb961f590edd58accf39fb9c1f5f4a73294cc429dddaf51be9db1b86",
+        "fields_sha256": "3705d9442c63271badaa4404bf0242922d009d0832deec38aa4299203745f434",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 492: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Exact canonical locality identity unresolved; no nearby/population/admin-class choice.",
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Кукмор",
+      "filename": "Kukmor.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Kukmor.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Kukmor.csv",
+      "retained_filename": "dumrt-Kukmor.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "e13334b6afbc69b61a718aa0f723bde740ee1bf84aec8a6ccf43c8e6995c8c08",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:05 GMT",
+        "etag": "\"af60-646ecc23f75fb\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-a53c407e808d016d26c3f64433d89e4e"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-a53c407e808d016d26c3f64433d89e4e"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-a53c407e808d016d26c3f64433d89e4e",
+            "name": "Кукмор",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:539689",
+            "geographic_source": "https://www.geonames.org/539689",
+            "latitude": 56.18648,
+            "longitude": 50.89404
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Кукмор",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "e13334b6afbc69b61a718aa0f723bde740ee1bf84aec8a6ccf43c8e6995c8c08",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "70576a6125090eace7527accbeb7a811d70e677a281da9a17ab615cdf3a45898",
+        "fields_sha256": "7032a3af545d29ecd5104b2bd403886624687a9cc1f22c03c373a364fecdc008",
+        "annual_status": "pass",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": []
+    },
+    {
+      "label": "Лаишево",
+      "filename": "Laish.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Laish.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Laish.csv",
+      "retained_filename": "dumrt-Laish.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "417805c46f63ea816da15c9f262f0f7c0886d909207edab0d3798c5229d3b83f",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:05 GMT",
+        "etag": "\"af60-646ecc23fa4db\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-61d0e1d99a63dc0cb83fd830159cb8f5"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-61d0e1d99a63dc0cb83fd830159cb8f5"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-61d0e1d99a63dc0cb83fd830159cb8f5",
+            "name": "Лаишево",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:537158",
+            "geographic_source": "https://www.geonames.org/537158",
+            "latitude": 55.40559,
+            "longitude": 49.5521
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Лаишево",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "417805c46f63ea816da15c9f262f0f7c0886d909207edab0d3798c5229d3b83f",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "010423eb11fdd0b912a6346f923d0d0e21d280be553ba7716ec767692b9c2db2",
+        "fields_sha256": "9f3d7ca87ddf1a0117c0dd8c7329867778bcabbebc5aa57924461378ebfd20e5",
+        "annual_status": "pass",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": []
+    },
+    {
+      "label": "Лениногорск",
+      "filename": "Leninogorsk.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Leninogorsk.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Leninogorsk.csv",
+      "retained_filename": "dumrt-Leninogorsk.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "5208cffae3983ee461c75fbdc98131d8ad328cdc0efb90d3791fd0fb7edfdbb7",
+      "byte_length": 44898,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44898",
+        "last_modified": "Sat, 27 Dec 2025 10:49:05 GMT",
+        "etag": "\"af62-646ecc23fc41b\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-320f94783f520e8dc03f82e54a4c9a39"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-320f94783f520e8dc03f82e54a4c9a39"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-320f94783f520e8dc03f82e54a4c9a39",
+            "name": "Лениногорск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:536162",
+            "geographic_source": "https://www.geonames.org/536162",
+            "latitude": 54.5971,
+            "longitude": 52.45124
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Лениногорск",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "5208cffae3983ee461c75fbdc98131d8ad328cdc0efb90d3791fd0fb7edfdbb7",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "9c2073701242f19868bfea5bc1d62b7b6bc2fc1375d19214350c9f442a94b018",
+        "fields_sha256": "0d30186f66f856ce13b9fcfc2b41af4fe325fce5461ae6ea51094ec00cce9ed0",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 494: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Мамадыш",
+      "filename": "Mamadis.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Mamadis.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Mamadis.csv",
+      "retained_filename": "dumrt-Mamadis.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "6367e5b9a55e0c3566bfbb404bc8ddf0afa9cd5259a634208babf69776529dd7",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:05 GMT",
+        "etag": "\"af60-646ecc2464c03\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-1b03ac4b9759117f6b1fa3991e93ee03"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-1b03ac4b9759117f6b1fa3991e93ee03"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-1b03ac4b9759117f6b1fa3991e93ee03",
+            "name": "Мамадыш",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:529709",
+            "geographic_source": "https://www.geonames.org/529709",
+            "latitude": 55.70273,
+            "longitude": 51.40439
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Мамадыш",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "6367e5b9a55e0c3566bfbb404bc8ddf0afa9cd5259a634208babf69776529dd7",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "264ca1a8a863ccc130393a9fe21c783c49c66d988a70f30c26cc2d5cf7122af8",
+        "fields_sha256": "2224992a6f35a4698eb4202873c03b647896a22d662459826a21e158b8ddd0ab",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 490: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Менделеевск",
+      "filename": "Mendeleevsk.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Mendeleevsk.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Mendeleevsk.csv",
+      "retained_filename": "dumrt-Mendeleevsk.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "f0fb13ac79a8cc461867c5927281166167bf12c4e144b3efe6ebe32a27dcdb1e",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:06 GMT",
+        "etag": "\"af60-646ecc249f587\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-bf786d095f4e62374e68cfa4192b98bc"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-bf786d095f4e62374e68cfa4192b98bc"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-bf786d095f4e62374e68cfa4192b98bc",
+            "name": "Менделеевск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:527579",
+            "geographic_source": "https://www.geonames.org/527579",
+            "latitude": 55.89692,
+            "longitude": 52.31119
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Менделеевск",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "f0fb13ac79a8cc461867c5927281166167bf12c4e144b3efe6ebe32a27dcdb1e",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "95491031455f23fd4b0e804ef26974187b1fb66bf90c6a63ef361a6585aa32cc",
+        "fields_sha256": "4843a01ed0f48f26e06c1bc62fdddb923646763e13cbe24043c6f901684cbf3a",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 489: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Мензелинск",
+      "filename": "Menzilinsk.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Menzilinsk.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Menzilinsk.csv",
+      "retained_filename": "dumrt-Menzilinsk.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "d3c94c1a9afeeb349e7b27d7cda4d4fd2d93c245192101dfba90cbb4c1d5df8b",
+      "byte_length": 44898,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44898",
+        "last_modified": "Sat, 27 Dec 2025 10:49:06 GMT",
+        "etag": "\"af62-646ecc24a14c7\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [],
+      "catalog_binding": {
+        "status": "ambiguous_exact_catalog_matches",
+        "canonical_city_ids": [],
+        "match_basis": "UNKNOWN",
+        "candidates": [
+          {
+            "id": "city-8abc35bb05a9f29a160410bbeab6dc84",
+            "name": "Мензелинск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:527529",
+            "geographic_source": "https://www.geonames.org/527529",
+            "latitude": 55.72792,
+            "longitude": 53.1022
+          },
+          {
+            "id": "city-c8022e4eb8f49d5815b7d9cc7df0ee8f",
+            "name": "Мензелинск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:527528",
+            "geographic_source": "https://www.geonames.org/527528",
+            "latitude": 55.88333,
+            "longitude": 53.01667
+          }
+        ]
+      },
+      "timezone": "UNKNOWN",
+      "workbook_label": "Мензелинск",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "d3c94c1a9afeeb349e7b27d7cda4d4fd2d93c245192101dfba90cbb4c1d5df8b",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "5427ca69462c0f676ba8e1eee720f610d74da4f956db8ebbd32fb0b83e696eab",
+        "fields_sha256": "2bc40dd86b41ed2c6e34596e68742b5fc825cc52ab700ae5ef52ec2d9456236f",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 490: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Exact canonical locality identity unresolved; no nearby/population/admin-class choice.",
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Муслюмово",
+      "filename": "Muslimov.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Muslimov.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Muslimov.csv",
+      "retained_filename": "dumrt-Muslimov.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "7cf0e0a7e0a2db4ab7955cbeceae5fb260ebe749fb57dcd7199cb2df45057b31",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:06 GMT",
+        "etag": "\"af60-646ecc24a43a7\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [],
+      "catalog_binding": {
+        "status": "ambiguous_exact_catalog_matches",
+        "canonical_city_ids": [],
+        "match_basis": "UNKNOWN",
+        "candidates": [
+          {
+            "id": "city-981800c1cba1767713c3309a6b62d147",
+            "name": "Муслюмово",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:524183",
+            "geographic_source": "https://www.geonames.org/524183",
+            "latitude": 55.30706,
+            "longitude": 53.18855
+          },
+          {
+            "id": "city-e99044a581d54eea144440039ce09682",
+            "name": "Муслюмово",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:524185",
+            "geographic_source": "https://www.geonames.org/524185",
+            "latitude": 55.03806,
+            "longitude": 53.15944
+          }
+        ]
+      },
+      "timezone": "UNKNOWN",
+      "workbook_label": "Муслюмово",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "7cf0e0a7e0a2db4ab7955cbeceae5fb260ebe749fb57dcd7199cb2df45057b31",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "bfbafb4f6c64cb8529d9d1d59652b4b4fc358f303daf639e9f6cc8530746de69",
+        "fields_sha256": "c44e196e75c7b86d30a7efa9a61358dd30ffc6e6769d3f4d3f3a479a4e570fac",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 491: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Exact canonical locality identity unresolved; no nearby/population/admin-class choice.",
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Набережные Челны",
+      "filename": "NabChelny.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/NabChelny.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/NabChelny.csv",
+      "retained_filename": "dumrt-NabChelny.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "79f75271aec0109be1c93e949974caa0136b623d39c1b20a0a739adbb62e11db",
+      "byte_length": 44898,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44898",
+        "last_modified": "Sat, 27 Dec 2025 10:49:06 GMT",
+        "etag": "\"af62-646ecc250cb8e\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-f4b758a4402903ac4f1955f9e2a8c391"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-f4b758a4402903ac4f1955f9e2a8c391"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-f4b758a4402903ac4f1955f9e2a8c391",
+            "name": "Набережные Челны",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:523750",
+            "geographic_source": "https://www.geonames.org/523750",
+            "latitude": 55.73718,
+            "longitude": 52.41961
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Набережные Челны",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "79f75271aec0109be1c93e949974caa0136b623d39c1b20a0a739adbb62e11db",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "a8bc6cb06a54bf602819a6234b6b7b699ed744d819c5f212c49dc9b019180813",
+        "fields_sha256": "2f8b01805be48b7f15150a1b2b8b3925d15a2f86b33ea0080d2b5aefa1e5f651",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 490: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Нижнекамск",
+      "filename": "Nignekamsk.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Nignekamsk.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Nignekamsk.csv",
+      "retained_filename": "dumrt-Nignekamsk.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "de8d784d65aa2058d4dd91ea0ac6060f53b693aa16342fe45761d00e5bb4aba4",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:06 GMT",
+        "etag": "\"af60-646ecc2549452\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-d42257b6fd022b638280014911d70f57"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-d42257b6fd022b638280014911d70f57"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-d42257b6fd022b638280014911d70f57",
+            "name": "Нижнекамск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:521118",
+            "geographic_source": "https://www.geonames.org/521118",
+            "latitude": 55.63794,
+            "longitude": 51.81502
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Нижнекамск",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "de8d784d65aa2058d4dd91ea0ac6060f53b693aa16342fe45761d00e5bb4aba4",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "f738e0093fa1f8a7363c6a719d8adac2792e768ecc39b847397f9c5176c98156",
+        "fields_sha256": "0c017b7467b3718f110266c8ee65eacc5c4e84ddc9cc9ff82e61507afd49bc64",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 490: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Новошешминск",
+      "filename": "Novosesminsk.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Novosesminsk.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Novosesminsk.csv",
+      "retained_filename": "dumrt-Novosesminsk.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "b4ec4f22ec9a12ff74ed54a9877dfa132b4b787d268219fd4c1ba055725472af",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:06 GMT",
+        "etag": "\"af60-646ecc254c333\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-87008f1ca95163dd38277c3f85c05334"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-87008f1ca95163dd38277c3f85c05334"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-87008f1ca95163dd38277c3f85c05334",
+            "name": "Новошешминск",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:517958",
+            "geographic_source": "https://www.geonames.org/517958",
+            "latitude": 55.06637,
+            "longitude": 51.24061
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Новошешминск",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "b4ec4f22ec9a12ff74ed54a9877dfa132b4b787d268219fd4c1ba055725472af",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "136ef10d5fe32cd7f14967ef94cede3a1e698cf957c77fbb30b36294020f2dbf",
+        "fields_sha256": "8616f77589a60e90d464cb7ef5c215bbb8fbdf5358db4b28cb9868406202f5a4",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 492: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Нурлат",
+      "filename": "Nurlat.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Nurlat.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Nurlat.csv",
+      "retained_filename": "dumrt-Nurlat.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "d9c513c90a3a33681013fde43d60af2c1e8159d584639d597455e21568933064",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:06 GMT",
+        "etag": "\"af60-646ecc254c333\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-15ab256d74dfb2da4667d59ac3a135b9"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-15ab256d74dfb2da4667d59ac3a135b9"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-15ab256d74dfb2da4667d59ac3a135b9",
+            "name": "Нурлат",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:516716",
+            "geographic_source": "https://www.geonames.org/516716",
+            "latitude": 54.42903,
+            "longitude": 50.80598
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Нурлат",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "d9c513c90a3a33681013fde43d60af2c1e8159d584639d597455e21568933064",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "4a077dbb22b83461df6282faf02f71a943c471ea1ca04c63bd23d914e38532af",
+        "fields_sha256": "578fb5c53397ee36171f3084bd0e6649f7da1b5cbc2c195bbe557fcd9ceed816",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 495: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Пестрецы",
+      "filename": "Pestrezy.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Pestrezy.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Pestrezy.csv",
+      "retained_filename": "dumrt-Pestrezy.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "3f5772f5739f92525aa329e3be2b38be1d79ac6dd19a3025f18b0467288e40c8",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:07 GMT",
+        "etag": "\"af60-646ecc25b79fa\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-3ee098c4161d9c15d64425d72cc2f9a3"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-3ee098c4161d9c15d64425d72cc2f9a3"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-3ee098c4161d9c15d64425d72cc2f9a3",
+            "name": "Пестрецы",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:510342",
+            "geographic_source": "https://www.geonames.org/510342",
+            "latitude": 55.75408,
+            "longitude": 49.6511
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Пестрецы",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "3f5772f5739f92525aa329e3be2b38be1d79ac6dd19a3025f18b0467288e40c8",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "d6a87e0a76a886b15c2387e99268d2885d70fd15c4c6edd2ff4ff95693468d1d",
+        "fields_sha256": "0727073cbae964029ae8e9e3396b3a02724158ec6f2654485a6e06a2b9987562",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 490: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Рыбная Слобода",
+      "filename": "RibnayaSlpboda.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/RibnayaSlpboda.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/RibnayaSlpboda.csv",
+      "retained_filename": "dumrt-RibnayaSlpboda.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "9b00970abc7570375147da27bbac9a6de27fac0571cbe726fda83509e763c03d",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:07 GMT",
+        "etag": "\"af60-646ecc25f237e\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-1af422bd1bf1bc38af6ddf0e7595d89d"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-1af422bd1bf1bc38af6ddf0e7595d89d"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-1af422bd1bf1bc38af6ddf0e7595d89d",
+            "name": "Рыбная Слобода",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:499987",
+            "geographic_source": "https://www.geonames.org/499987",
+            "latitude": 55.46247,
+            "longitude": 50.14443
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Рыбная Слобода",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "9b00970abc7570375147da27bbac9a6de27fac0571cbe726fda83509e763c03d",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "e8547f36b7cd331e31ba85cf49b72f203cc488deebda9f6fda9b95b024e9a13c",
+        "fields_sha256": "ad5edaf10daf2e29d4ddcdb27d32db72d32b9678317bce41b35e29841a0b5895",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 491: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Сарманово",
+      "filename": "Sarmanovo2.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Sarmanovo2.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Sarmanovo2.csv",
+      "retained_filename": "dumrt-Sarmanovo2.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "14c55d2d01ac27efec965fe267f978e9ac093982e71f2e5d2a75e7403dcf6a89",
+      "byte_length": 44897,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44897",
+        "last_modified": "Sat, 27 Dec 2025 10:49:07 GMT",
+        "etag": "\"af61-646ecc25f42be\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-8c9e07a0ba2905bdd1f6ee130a054ef6"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-8c9e07a0ba2905bdd1f6ee130a054ef6"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-8c9e07a0ba2905bdd1f6ee130a054ef6",
+            "name": "Сарманово",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:498537",
+            "geographic_source": "https://www.geonames.org/498537",
+            "latitude": 55.25439,
+            "longitude": 52.58784
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Сарманово",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "14c55d2d01ac27efec965fe267f978e9ac093982e71f2e5d2a75e7403dcf6a89",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "6538ffb669cffc1170639ecfa960ac2a3c5fa1049c67f48ffb15bdc0075f9ba6",
+        "fields_sha256": "90b18cdade79c560825d0327bfddca24150ca310867f06f13b171776bfce10f1",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 491: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Старое Дрожжаное",
+      "filename": "StaroeChuprale.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/StaroeChuprale.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/StaroeChuprale.csv",
+      "retained_filename": "dumrt-StaroeChuprale.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "d2617c92f4ddd01cfdb2998e3b39d4a523cca00b4726f5edcfbfb2026a46b205",
+      "byte_length": 44895,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44895",
+        "last_modified": "Sat, 27 Dec 2025 10:49:07 GMT",
+        "etag": "\"af5f-646ecc25f525e\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-c6e5af09854fe5cca194e376c80385d2"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-c6e5af09854fe5cca194e376c80385d2"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-c6e5af09854fe5cca194e376c80385d2",
+            "name": "Старое Дрожжаное",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:488466",
+            "geographic_source": "https://www.geonames.org/488466",
+            "latitude": 54.72384,
+            "longitude": 47.55652
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Старое Дрожжаное",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "d2617c92f4ddd01cfdb2998e3b39d4a523cca00b4726f5edcfbfb2026a46b205",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "b8f5dabe37c373590d593d6acecf28708aebb8e2f0c6479ee0ad2f60e574b61b",
+        "fields_sha256": "c362466cdf959e1949611cfc4fe8e45741df97be8dd3554855b4974688782610",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 494: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Тетюши",
+      "filename": "Tet2.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Tet2.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Tet2.csv",
+      "retained_filename": "dumrt-Tet2.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "8dc29fbe61fc8ba7d35fab79c0b4cc0d8960474c5d8ed570eb05266db876ab21",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:07 GMT",
+        "etag": "\"af60-646ecc2660926\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-d62642bb77268bcc370a5e413f347135"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-d62642bb77268bcc370a5e413f347135"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-d62642bb77268bcc370a5e413f347135",
+            "name": "Тетюши",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:483150",
+            "geographic_source": "https://www.geonames.org/483150",
+            "latitude": 54.93768,
+            "longitude": 48.83267
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Тетюши",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "8dc29fbe61fc8ba7d35fab79c0b4cc0d8960474c5d8ed570eb05266db876ab21",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "cddfff66be5ea35b83d31114d1f264edddb333b0242dad71998f532d12e45c4a",
+        "fields_sha256": "19a8c1c7dd709a8e44d35ba09d6520aa1ddf4784e2896ba9308faddf3c48763d",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 493: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Тюлячи",
+      "filename": "Tulyachi.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Tulyachi.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Tulyachi.csv",
+      "retained_filename": "dumrt-Tulyachi.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "4d00f2adfd9adf59439271a0f7b6b405117ac00a3156575f3abe1c919367281e",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:06 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:08 GMT",
+        "etag": "\"af60-646ecc269b2aa\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-a3299eef7de636cd8ec5568fe2fce2b3"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-a3299eef7de636cd8ec5568fe2fce2b3"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-a3299eef7de636cd8ec5568fe2fce2b3",
+            "name": "Тюлячи",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:479850",
+            "geographic_source": "https://www.geonames.org/479850",
+            "latitude": 55.88889,
+            "longitude": 50.23416
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Тюлячи",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "4d00f2adfd9adf59439271a0f7b6b405117ac00a3156575f3abe1c919367281e",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "c5a2d49f35eb6c534ab334d99d09f5ee7649b9bb51a450bcf4ab5be7a77c7a00",
+        "fields_sha256": "cab7375583f99025f82b09c8375651618bebd56745e454ec6d5a50ddba24de15",
+        "annual_status": "pass",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": []
+    },
+    {
+      "label": "Уруссу",
+      "filename": "Urussu.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Urussu.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Urussu.csv",
+      "retained_filename": "dumrt-Urussu.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "b30742ab83ed32897b0bd6fa5e9068e4c79bc35b5224e8a03461dcb06f2fe44f",
+      "byte_length": 44898,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:07 GMT",
+        "content_type": "text/csv",
+        "content_length": "44898",
+        "last_modified": "Sat, 27 Dec 2025 10:49:08 GMT",
+        "etag": "\"af62-646ecc269b2aa\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-63705e13ea109e6bbdda04bfa9e1273f"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-63705e13ea109e6bbdda04bfa9e1273f"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-63705e13ea109e6bbdda04bfa9e1273f",
+            "name": "Уруссу",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:478565",
+            "geographic_source": "https://www.geonames.org/478565",
+            "latitude": 54.59701,
+            "longitude": 53.45625
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Уруссу",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "b30742ab83ed32897b0bd6fa5e9068e4c79bc35b5224e8a03461dcb06f2fe44f",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "cd09e9beb6c4cf40e12339d4a64b090fcf6b31df9d54f2ba22f8bc7f70d233c4",
+        "fields_sha256": "386dabb2ba396578852b6b7c9ee4bc6044221cc75179460448c84234af9c68e4",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 493: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Черемшан",
+      "filename": "Cheremsan.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Cheremsan.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Cheremsan.csv",
+      "retained_filename": "dumrt-Cheremsan.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "80e2d917ba08d20b1503afd4026621ae5ed9efc51f8f842719dfc45c123e7b0d",
+      "byte_length": 44898,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:07 GMT",
+        "content_type": "text/csv",
+        "content_length": "44898",
+        "last_modified": "Sat, 27 Dec 2025 10:49:04 GMT",
+        "etag": "\"af62-646ecc22a76e4\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [],
+      "catalog_binding": {
+        "status": "ambiguous_exact_catalog_matches",
+        "canonical_city_ids": [],
+        "match_basis": "UNKNOWN",
+        "candidates": [
+          {
+            "id": "city-ecd0d00edb75e087a1cc8f101481d0e5",
+            "name": "Черемшан",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:569318",
+            "geographic_source": "https://www.geonames.org/569318",
+            "latitude": 54.66128,
+            "longitude": 51.51143
+          },
+          {
+            "id": "city-f81f0e2661eaed801e608e3670cdc521",
+            "name": "Черемшан",
+            "region_id": "ru-ta",
+            "settlement_type": "PPL",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:569317",
+            "geographic_source": "https://www.geonames.org/569317",
+            "latitude": 55.26112,
+            "longitude": 48.11028
+          }
+        ]
+      },
+      "timezone": "UNKNOWN",
+      "workbook_label": "Черемшан",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "80e2d917ba08d20b1503afd4026621ae5ed9efc51f8f842719dfc45c123e7b0d",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "112d689d568611bf7505bd054c136c0828506b16b350d25a5fc908697af78876",
+        "fields_sha256": "d17fa59085953a66c30bea3295b3257f8d710ef557ff92bc8e305e9cce96d721",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 494: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Exact canonical locality identity unresolved; no nearby/population/admin-class choice.",
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    },
+    {
+      "label": "Чистополь",
+      "filename": "Chistop.csv",
+      "actual_url": "https://dumrt.ru/netcat_files/391/638/Chistop.csv?t=080926",
+      "canonical_url": "https://dumrt.ru/netcat_files/391/638/Chistop.csv",
+      "retained_filename": "dumrt-Chistop.csv",
+      "evidence_label": "CONFIRMED_PUBLIC",
+      "raw_sha256": "ce34509b48dce8c894c1ceb91e5ed7aea6e30eaf4cc56a49b5f868d37b64f3ca",
+      "byte_length": 44896,
+      "response_metadata": {
+        "http_status": 200,
+        "date": "Mon, 07 Sep 2026 22:11:07 GMT",
+        "content_type": "text/csv",
+        "content_length": "44896",
+        "last_modified": "Sat, 27 Dec 2025 10:49:04 GMT",
+        "etag": "\"af60-646ecc234f670\""
+      },
+      "source_year": 2026,
+      "csv_current_year_rows": 365,
+      "scope": "named locality only; not all surrounding district or republic",
+      "csv_schema_errors": [],
+      "canonical_city_ids": [
+        "city-bd9b1590e29f7d56c362c7042318fe67"
+      ],
+      "catalog_binding": {
+        "status": "unambiguous_exact_catalog_match",
+        "canonical_city_ids": [
+          "city-bd9b1590e29f7d56c362c7042318fe67"
+        ],
+        "match_basis": "exact_catalog_name",
+        "candidates": [
+          {
+            "id": "city-bd9b1590e29f7d56c362c7042318fe67",
+            "name": "Чистополь",
+            "region_id": "ru-ta",
+            "settlement_type": "PPLA2",
+            "timezone": "Europe/Moscow",
+            "geographic_source_id": "geonames:567990",
+            "geographic_source": "https://www.geonames.org/567990",
+            "latitude": 55.36612,
+            "longitude": 50.64399
+          }
+        ]
+      },
+      "timezone": "Europe/Moscow",
+      "workbook_label": "Чистополь",
+      "workbook_relation": "exact_label",
+      "annual_csv_xlsx_comparison": {
+        "common_dates": 365,
+        "compared_values": 2920,
+        "mismatched_values": 0,
+        "mismatch_locations": [],
+        "missing_csv_dates": [],
+        "unexpected_csv_dates": []
+      },
+      "september_parser": {
+        "parser_version": "dumrt-locality-csv/v1",
+        "raw_sha256": "ce34509b48dce8c894c1ceb91e5ed7aea6e30eaf4cc56a49b5f868d37b64f3ca",
+        "status": "pass",
+        "days": 30,
+        "from": "2026-09-01",
+        "to": "2026-09-30",
+        "normalized_sha256": "99ba4a2ebda115d55ebaa65a10baabd060ee64c451287d59ee1f8ecddfa78548",
+        "fields_sha256": "349843cdbda33cb8c758a183e21ad78a48c89440ef06374d27b8a12d97c81200",
+        "annual_status": "fail",
+        "annual_error": "dumrt CSV row 491: invalid time order or unsupported next-day time",
+        "independent_xlsx_fields_equal": true
+      },
+      "qualification_status": "not_assessed",
+      "qualification_gaps": [
+        "Whole-year public-parser normalization fails; only the explicitly tested range is reported."
+      ]
+    }
+  ]
+}

@@ -57,6 +57,13 @@ class SnapshotSelectionGuard(
         val days = dao.getPrayerDays(snapshotId)
         val expectedCount = ChronoUnit.DAYS.between(from, to) + 1
         if (days.size.toLong() != expectedCount) return false
+        val hasLocalPrayerPolicy = dao.countIqamahRules(snapshotId) != 0 ||
+            dao.countIqamahOverrides(snapshotId) != 0 || dao.countJumuahSessions(snapshotId) != 0
+        try {
+            persistedSourceQualification(snapshot, days, hasLocalPrayerPolicy)
+        } catch (_: IllegalArgumentException) {
+            return false
+        }
         return days.withIndex().all { (index, day) ->
             day.localDate == from.plusDays(index.toLong()).toString() &&
                 listOf(day.fajr, day.sunrise, day.dhuhr, day.asr, day.maghrib, day.isha)
@@ -77,7 +84,11 @@ class SnapshotSelectionGuard(
         val generatedAt = runCatching { Instant.parse(snapshot.generatedAt) }.getOrNull() ?: return false
         val productionTrustValid = snapshot.dataClassification != "production" ||
             productionTrust?.allows(snapshot.signingKeyId, generatedAt) == true
-        return snapshot.schemaVersion == "1.0" &&
+        val validAdmission = snapshot.schemaVersion == "2.0" ||
+            (snapshot.schemaVersion == "1.0" && snapshot.approvalStatus == "approved" &&
+                !snapshot.approvalId.isNullOrBlank() && !snapshot.approvedBy.isNullOrBlank() &&
+                SnapshotFormatValidation.parseRfc3339(snapshot.approvedAt.orEmpty()) != null && !snapshot.approvalScope.isNullOrBlank())
+        return validAdmission &&
             SnapshotFormatValidation.codePointLength(snapshot.snapshotId) in 8..128 &&
             snapshot.dataClassification in setOf("production", "synthetic") &&
             SnapshotFormatValidation.parseRfc3339(snapshot.generatedAt) != null &&
@@ -95,11 +106,6 @@ class SnapshotSelectionGuard(
             !coverageTo.isAfter(sourceTo) &&
             SnapshotFormatValidation.isSha256(snapshot.rawSha256) &&
             snapshot.parserVersion.isNotBlank() &&
-            snapshot.approvalStatus == "approved" &&
-            snapshot.approvalId.isNotBlank() &&
-            snapshot.approvedBy.isNotBlank() &&
-            SnapshotFormatValidation.parseRfc3339(snapshot.approvedAt) != null &&
-            snapshot.approvalScope.isNotBlank() &&
             SnapshotFormatValidation.isSha256(snapshot.canonicalSha256) &&
             snapshot.signingKeyId.isNotBlank() &&
             SnapshotFormatValidation.isEd25519SignatureEncoding(snapshot.signatureEd25519Base64) &&

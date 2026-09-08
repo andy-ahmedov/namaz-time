@@ -151,11 +151,17 @@ func (verifier *ArtifactReferenceVerifier) VerifySnapshot(ctx context.Context, s
 	if err != nil || snapshot.SnapshotID != snapshotID || receipt.SnapshotID != snapshotID {
 		return VerifiedSnapshot{}, fmt.Errorf("%w: snapshot identity: %v", ErrVerifiedReferenceMismatch, err)
 	}
-	return VerifiedSnapshot{
+	evidence := VerifiedSnapshot{
 		ID: snapshot.SnapshotID, MosqueID: snapshot.Mosque.ID, Timezone: snapshot.Mosque.Timezone,
 		Effective: snapshot.Coverage, PayloadSHA256: sha256Hex(artifact.Snapshot),
 		SigningKeyID: snapshot.Integrity.SigningKeyID, VerifiedAt: verifier.now().UTC(),
-	}, nil
+	}
+	if q := snapshot.Source.Qualification; q != nil {
+		evidence.QualificationID, evidence.QualificationSHA256 = q.ID, q.SHA256
+		context := snapshot.Mosque
+		evidence.PublicContext = &context
+	}
+	return evidence, nil
 }
 
 func decodePublicationTrustChain(currentBytes, previousBytes []byte) (*trust.Policy, error) {

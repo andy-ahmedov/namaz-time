@@ -61,6 +61,7 @@ type PrayerSource struct {
 	CanonicalURL      string             `json:"canonical_url,omitempty"`
 	Status            PrayerSourceStatus `json:"status"`
 	FreshThrough      string             `json:"fresh_through,omitempty"`
+	QualificationID   string             `json:"qualification_id,omitempty"`
 }
 
 type PrayerSourceStatus string
@@ -68,6 +69,7 @@ type PrayerSourceStatus string
 const (
 	PrayerSourceResearchOnly PrayerSourceStatus = "research_only"
 	PrayerSourceApproved     PrayerSourceStatus = "approved"
+	PrayerSourceQualified    PrayerSourceStatus = "qualified"
 	PrayerSourceStale        PrayerSourceStatus = "stale"
 	PrayerSourceUnavailable  PrayerSourceStatus = "unavailable"
 )
@@ -89,7 +91,8 @@ type PrayerPolicy struct {
 	CalculationProfileID string           `json:"calculation_profile_id,omitempty"`
 	MosqueIDs            []string         `json:"mosque_ids"`
 	Effective            DateRange        `json:"effective"`
-	ApprovalID           string           `json:"approval_id"`
+	ApprovalID           string           `json:"approval_id,omitempty"`
+	QualificationID      string           `json:"qualification_id,omitempty"`
 }
 
 type CalculationProfile struct {

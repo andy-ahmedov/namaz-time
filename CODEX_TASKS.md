@@ -844,6 +844,17 @@ schedule row, signature, TV UI/Room path or nationwide source coverage changed.
 
 ## T038 — second official regional source adapter
 
+**Status: DONE under the explicit T049 closure criterion (2026-09-08).**
+The independently implemented `kbr-annual-pdf-text/v1` adapter parses the
+authority-linked 2026 DUM KBR PDF with explicit republic-wide «ПО КБР» scope.
+Root verification reproduces all 365 rows against the separately extracted
+reference, with pinned raw PDF, extraction and reference SHA-256; malformed
+schema/date/order inputs fail closed. See
+[the adapter evidence](research/t049/KBR_ADAPTER.md). This closes the second
+regional-adapter requirement, not T049's still-pending nationwide qualification,
+signed materialization and runtime acceptance. The old written-confirmation
+blocker is superseded, and no external endorsement is claimed.
+
 **Goal:** prove the architecture on one non-Ulyanovsk locality using a directly
 onboarded first-party authority source.
 
@@ -859,7 +870,7 @@ evidence and deterministic validation are complete, not until a contact replies.
 **Non-goals:** choosing the easiest scraped page, inferring undocumented
 angles, subject-wide promotion from a city widget, or silent alternate source.
 
-**Acceptance:** one explicitly named locality/mosque has a complete retained
+**Historical acceptance, now continued within T049:** one explicitly named locality/mosque has a complete retained
 source-to-signed-snapshot chain and independently reviewed comparison evidence;
 all other localities remain unavailable.
 

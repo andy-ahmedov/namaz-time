@@ -717,12 +717,16 @@ func (s *Service) handleDeviceCityScheduleChoices(writer http.ResponseWriter, re
 	if choices == nil {
 		choices = []registry.CityScheduleChoice{}
 	}
+	schemaVersion := "device-city-schedule-choices/v1"
+	if projected.Revision.SchemaVersion == registry.QualifiedRegistrySchemaVersion {
+		schemaVersion = "device-city-schedule-choices/v2"
+	}
 	actions := []string{}
 	if projected.RevisionState == registry.RevisionStateStaged && len(choices) > 0 {
 		actions = append(actions, "request_selection")
 	}
 	writeJSON(writer, http.StatusOK, deviceCityScheduleChoicesResponse{
-		SchemaVersion: "device-city-schedule-choices/v1", Revision: projected.Revision,
+		SchemaVersion: schemaVersion, Revision: projected.Revision,
 		RevisionState: projected.RevisionState, Status: projected.Status,
 		AutomaticResolutionStatus: projected.AutomaticResolutionStatus,
 		AutomaticResolutionReason: projected.AutomaticResolutionReason,

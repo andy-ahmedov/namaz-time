@@ -569,7 +569,12 @@ private fun DeviceCityScheduleChoicesDocument.toChoiceSet(
     }
     if (projected.map { it.id }.distinct().size != projected.size ||
         projected.map { it.policyId }.distinct().size != projected.size ||
-        projected.map { it.tier }.distinct().size > 1 ||
+        projected.any { option ->
+            projected.any { other ->
+                option.authorities.map { it.id }.toSet() == other.authorities.map { it.id }.toSet() &&
+                    resolutionTierRank(other.tier) < resolutionTierRank(option.tier)
+            }
+        } ||
         (revisionState == "staged" && projected.any { it.executable })
     ) {
         return null
@@ -586,7 +591,10 @@ private fun DeviceCityScheduleChoicesDocument.toChoiceSet(
         0 -> if (automaticResolutionStatus !in setOf("stale", "unavailable")) return null
         1 -> if (automaticResolutionStatus != "resolved" || automaticResolutionReason != "resolved") return null
         else -> if (automaticResolutionStatus != "ambiguous" ||
-            automaticResolutionReason != "same_tier_ambiguous"
+            automaticResolutionReason !in setOf("same_tier_ambiguous", "multiple_authorities") ||
+            (projected.map { it.tier }.distinct().size > 1 && automaticResolutionReason != "multiple_authorities") ||
+            (automaticResolutionReason == "multiple_authorities" &&
+                projected.map { choice -> choice.authorities.map { it.id }.toSet() }.distinct().size < 2)
         ) {
             return null
         }
@@ -603,6 +611,14 @@ private fun DeviceCityScheduleChoicesDocument.toChoiceSet(
         choices = projected,
         requestAllowed = requestAllowed,
     )
+}
+
+private fun resolutionTierRank(tier: String): Int = when (tier) {
+    "exact_city_timetable" -> 0
+    "regional_official_timetable" -> 1
+    "approved_regional_calculation_profile" -> 2
+    "explicitly_configured_fallback" -> 3
+    else -> 4
 }
 
 private fun DeviceScheduleChoiceDocument.toChoice(
@@ -910,6 +926,7 @@ private val ASSESSMENT_STATUSES = setOf("resolved", "ambiguous", "stale", "unava
 private val ASSESSMENT_REASONS = setOf(
     "resolved",
     "same_tier_ambiguous",
+    "multiple_authorities",
     "stale_source",
     "source_unavailable",
     "source_not_approved",

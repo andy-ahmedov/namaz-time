@@ -43,10 +43,16 @@ object SnapshotDecoder {
     private val prayers = setOf("fajr", "dhuhr", "asr", "maghrib", "isha")
 
     fun decode(bytes: ByteArray): SnapshotPayload {
+        requireValue(bytes.size <= MAX_SNAPSHOT_BYTES, "$", "snapshot_too_large")
         val document = try {
             SnapshotFormatValidation.decodeUtf8(bytes)
         } catch (error: CharacterCodingException) {
             fail("$", "invalid_json", error)
+        }
+        try {
+            StrictJsonObjectKeyScanner(document, "invalid_json").scan()
+        } catch (error: SnapshotAuthenticityException) {
+            fail("$", error.code, error)
         }
         val element = try {
             json.parseToJsonElement(document)
@@ -62,11 +68,12 @@ object SnapshotDecoder {
             fail("$", "invalid_json", error)
         }
         validate(snapshot)
+        SourceQualificationValidation.validateWire(element as? JsonObject ?: fail("$", "invalid_json"), snapshot)
         return snapshot
     }
 
-    private fun validate(snapshot: SnapshotPayload) {
-        requireValue(snapshot.schemaVersion == "1.0", "schema_version", "unsupported_value")
+    internal fun validate(snapshot: SnapshotPayload) {
+        requireValue(snapshot.schemaVersion in setOf("1.0", "2.0"), "schema_version", "unsupported_value")
         text(snapshot.snapshotId, "snapshot_id", 8, 128)
         requireValue(
             snapshot.dataClassification in setOf("production", "synthetic"),
@@ -89,7 +96,7 @@ object SnapshotDecoder {
             "invalid_timezone",
         )
 
-        validateSource(snapshot.source)
+        validateSource(snapshot.source, snapshot.schemaVersion)
         val coverageFrom = date(snapshot.coverage.from, "coverage.from")
         val coverageTo = date(snapshot.coverage.to, "coverage.to")
         requireValue(!coverageTo.isBefore(coverageFrom), "coverage", "invalid_range")
@@ -130,7 +137,7 @@ object SnapshotDecoder {
         )
     }
 
-    private fun validateSource(source: SnapshotSource) {
+    private fun validateSource(source: SnapshotSource, schemaVersion: String) {
         text(source.sourceId, "source.source_id", 1, 128)
         requireValue(source.kind in providerKinds, "source.kind", "unsupported_value")
         if (source.kind == "calculation_profile") {
@@ -151,12 +158,18 @@ object SnapshotDecoder {
         }
         maxLength(source.licenseReference, "source.license_reference", 1000)
         maxLength(source.attribution, "source.attribution", 1000)
-        requireValue(source.approval.status == "approved", "source.approval.status", "unsupported_value")
-        text(source.approval.approvalId, "source.approval.approval_id", 1, 128)
-        text(source.approval.approvedBy, "source.approval.approved_by", 1, 240)
-        instant(source.approval.approvedAt, "source.approval.approved_at")
-        text(source.approval.approvalScope, "source.approval.approval_scope", 1, 1000)
-        maxLength(source.approval.note, "source.approval.note", 2000)
+        if (schemaVersion == "1.0") {
+            requireValue(source.qualification == null, "source.qualification", "qualification_requires_v2")
+            val approval = source.approval ?: fail("source.approval", "required")
+            requireValue(approval.status == "approved", "source.approval.status", "unsupported_value")
+            text(approval.approvalId, "source.approval.approval_id", 1, 128)
+            text(approval.approvedBy, "source.approval.approved_by", 1, 240)
+            instant(approval.approvedAt, "source.approval.approved_at")
+            text(approval.approvalScope, "source.approval.approval_scope", 1, 1000)
+            maxLength(approval.note, "source.approval.note", 2000)
+        } else {
+            requireValue(source.approval == null && source.qualification != null, "source.qualification", "conflicting_admission")
+        }
     }
 
     private fun validatePrayerDays(

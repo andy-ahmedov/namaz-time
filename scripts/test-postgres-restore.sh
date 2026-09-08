@@ -90,7 +90,7 @@ docker exec "${drill_container_id}" createdb \
 export NAMAZ_RESTORE_DRILL_MIGRATION_URL="postgres://namaz_time_test:local-integration-only@127.0.0.1:${drill_mapped_port}/${drill_source_database}?sslmode=disable"
 go run ./cmd/migrate \
   -database-url-env NAMAZ_RESTORE_DRILL_MIGRATION_URL \
-  -target-version 8
+  -target-version 9
 
 docker cp "${drill_fixture}" "${drill_container_id}:/tmp/namaz-time-restore-seed.sql" >/dev/null
 docker exec "${drill_container_id}" psql \
@@ -99,6 +99,10 @@ docker exec "${drill_container_id}" psql \
   --no-psqlrc \
   --set ON_ERROR_STOP=1 \
   --file /tmp/namaz-time-restore-seed.sql >/dev/null
+
+NAMAZ_TEST_POSTGRES_QUALIFIED_SEED_URL="${NAMAZ_RESTORE_DRILL_MIGRATION_URL}" \
+  go test -tags=integration ./internal/registry \
+    -run '^TestPostgresQualificationBackupSeed$' -count=1 -v
 
 docker exec "${drill_container_id}" pg_dump \
   --username namaz_time_test \
@@ -182,5 +186,9 @@ export NAMAZ_TEST_POSTGRES_RESTORE_RUNTIME_URL="postgres://${drill_runtime_role}
 go test -tags=integration ./internal/devices \
   -run '^TestPostgresBackupRestorePreservesCurrentFleetState$' \
   -count=1
+
+go test -tags=integration ./internal/registry \
+  -run '^TestPostgresQualifiedBackupRestorePreservesProofAndLegacyHashes$' \
+  -count=1 -v
 
 echo "postgres-restore-drill: PASS sha256=${drill_backup_sha256} bytes=${drill_backup_bytes}"

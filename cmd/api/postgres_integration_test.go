@@ -510,7 +510,7 @@ func createLeastPrivilegeRuntimeRole(t *testing.T, ownerPool *pgxpool.Pool, owne
 			admin_memberships, device_assignments, admin_requests, device_health TO namaz_runtime_test;
 		GRANT SELECT ON registry_revisions, registry_regions, registry_cities,
 			registry_city_aliases, registry_scopes, registry_authorities, registry_sources,
-			registry_source_authorities, registry_policies, registry_policy_authorities,
+			registry_source_authorities, registry_source_qualifications, registry_policies, registry_policy_authorities,
 			registry_policy_mosques, registry_calculation_profiles, registry_timetables,
 			registry_source_overrides, registry_source_override_fields,
 			registry_timetable_overrides, registry_active_revision, registry_audit_events,

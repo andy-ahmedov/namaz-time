@@ -1,16 +1,19 @@
 package registry
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"crypto/tls"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net"
 	"strings"
 	"time"
 
+	"github.com/andy-ahmedov/namaz-time/internal/canonicaljson"
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgconn"
@@ -106,6 +109,12 @@ func (store *PostgresRevisionStore) Stage(ctx context.Context, record RevisionRe
 	if store == nil || store.pool == nil {
 		return ErrRevisionInvalid
 	}
+	if err := validateRevisionQualification(record, dataset); err != nil {
+		return err
+	}
+	if _, err := New(dataset); err != nil {
+		return fmt.Errorf("%w: persisted dataset validation: %v", ErrRevisionInvalid, err)
+	}
 	datasetSHA256, err := DatasetSHA256(dataset)
 	if err != nil || datasetSHA256 != record.ContentSHA256 {
 		return fmt.Errorf("%w: persisted dataset hash mismatch", ErrRevisionInvalid)
@@ -196,9 +205,9 @@ func copyRegistryDataset(ctx context.Context, tx pgx.Tx, revisionID string, data
 	}
 	rows = rows[:0]
 	for _, item := range dataset.Sources {
-		rows = append(rows, []any{revisionID, item.ID, string(item.Kind), item.GeographicScopeID, item.CanonicalURL, string(item.Status), nullableText(item.FreshThrough)})
+		rows = append(rows, []any{revisionID, item.ID, string(item.Kind), item.GeographicScopeID, item.CanonicalURL, string(item.Status), nullableText(item.FreshThrough), nullableText(item.QualificationID)})
 	}
-	if err := copyRows(ctx, tx, "registry_sources", []string{"revision_id", "id", "kind", "scope_id", "canonical_url", "status", "fresh_through"}, rows); err != nil {
+	if err := copyRows(ctx, tx, "registry_sources", []string{"revision_id", "id", "kind", "scope_id", "canonical_url", "status", "fresh_through", "qualification_id"}, rows); err != nil {
 		return err
 	}
 	rows = rows[:0]
@@ -210,6 +219,21 @@ func copyRegistryDataset(ctx context.Context, tx pgx.Tx, revisionID string, data
 	if err := copyRows(ctx, tx, "registry_source_authorities", []string{"revision_id", "source_id", "authority_id", "position"}, rows); err != nil {
 		return err
 	}
+	qualificationBySource := make(map[string]domain.SourceQualification, len(dataset.Qualifications))
+	rows = rows[:0]
+	for _, item := range dataset.Qualifications {
+		proof, err := json.Marshal(item)
+		if err != nil || len(proof) > 1024*1024 {
+			return fmt.Errorf("%w: encode bounded qualification proof", ErrRevisionInvalid)
+		}
+		qualificationBySource[item.SourceID] = item
+		rows = append(rows, []any{revisionID, item.ID, item.SHA256, item.SourceID, item.Scope.ID, item.Authority.ID, item.CatalogRevision,
+			item.Timezone, item.Coverage.From, item.Coverage.To, publicQualificationContextID(item.Scope.ID), proof})
+	}
+	if err := copyRows(ctx, tx, "registry_source_qualifications", []string{"revision_id", "id", "qualification_sha256", "source_id", "scope_id", "authority_id", "catalog_revision_id",
+		"timezone", "effective_from", "effective_to", "public_context_id", "proof_json"}, rows); err != nil {
+		return err
+	}
 	rows = rows[:0]
 	for _, item := range dataset.CalculationProfiles {
 		rows = append(rows, []any{revisionID, item.ID, item.SourceID, item.GeographicScopeID, item.Version, item.Effective.From, item.Effective.To, item.ApprovalID})
@@ -219,9 +243,15 @@ func copyRegistryDataset(ctx context.Context, tx pgx.Tx, revisionID string, data
 	}
 	rows = rows[:0]
 	for _, item := range dataset.TimeTables {
-		rows = append(rows, []any{revisionID, item.ID, item.SourceID, item.GeographicScopeID, item.MosqueID, item.Timezone, item.Effective.From, item.Effective.To, item.PublishedSnapshotID})
+		var mosqueID, publicContextID, qualificationID any
+		if proof, qualified := qualificationBySource[item.SourceID]; qualified {
+			publicContextID, qualificationID = item.MosqueID, proof.ID
+		} else {
+			mosqueID = item.MosqueID
+		}
+		rows = append(rows, []any{revisionID, item.ID, item.SourceID, item.GeographicScopeID, mosqueID, item.Timezone, item.Effective.From, item.Effective.To, item.PublishedSnapshotID, publicContextID, qualificationID})
 	}
-	if err := copyRows(ctx, tx, "registry_timetables", []string{"revision_id", "id", "source_id", "scope_id", "mosque_id", "timezone", "effective_from", "effective_to", "published_snapshot_id"}, rows); err != nil {
+	if err := copyRows(ctx, tx, "registry_timetables", []string{"revision_id", "id", "source_id", "scope_id", "mosque_id", "timezone", "effective_from", "effective_to", "published_snapshot_id", "public_context_id", "qualification_id"}, rows); err != nil {
 		return err
 	}
 	rows = rows[:0]
@@ -253,10 +283,10 @@ func copyRegistryDataset(ctx context.Context, tx pgx.Tx, revisionID string, data
 	for _, item := range dataset.Policies {
 		rows = append(rows, []any{
 			revisionID, item.ID, string(item.Kind), item.GeographicScopeID, item.SourceID,
-			nullableText(item.TimeTableID), nullableText(item.CalculationProfileID), item.Effective.From, item.Effective.To, item.ApprovalID,
+			nullableText(item.TimeTableID), nullableText(item.CalculationProfileID), item.Effective.From, item.Effective.To, nullableText(item.ApprovalID), nullableText(item.QualificationID),
 		})
 	}
-	if err := copyRows(ctx, tx, "registry_policies", []string{"revision_id", "id", "kind", "scope_id", "source_id", "timetable_id", "calculation_profile_id", "effective_from", "effective_to", "approval_id"}, rows); err != nil {
+	if err := copyRows(ctx, tx, "registry_policies", []string{"revision_id", "id", "kind", "scope_id", "source_id", "timetable_id", "calculation_profile_id", "effective_from", "effective_to", "approval_id", "qualification_id"}, rows); err != nil {
 		return err
 	}
 	rows = rows[:0]
@@ -313,12 +343,18 @@ func loadRegistryRevision(ctx context.Context, querier registryQuerier, revision
 		}
 		return RevisionRecord{}, Dataset{}, fmt.Errorf("load registry revision: %w", err)
 	}
-	if record.SchemaVersion != RegistrySchemaVersion {
+	if record.SchemaVersion != RegistrySchemaVersion && record.SchemaVersion != QualifiedRegistrySchemaVersion {
 		return RevisionRecord{}, Dataset{}, fmt.Errorf("%w: stored schema version %d", ErrRevisionInvalid, record.SchemaVersion)
 	}
 	dataset, err := loadRegistryDataset(ctx, querier, revisionID)
 	if err != nil {
 		return RevisionRecord{}, Dataset{}, err
+	}
+	if err := validateRevisionQualification(record, dataset); err != nil {
+		return RevisionRecord{}, Dataset{}, err
+	}
+	if _, err := New(dataset); err != nil {
+		return RevisionRecord{}, Dataset{}, fmt.Errorf("%w: stored dataset validation: %v", ErrRevisionInvalid, err)
 	}
 	datasetSHA256, err := DatasetSHA256(dataset)
 	if err != nil || datasetSHA256 != record.ContentSHA256 {
@@ -421,14 +457,14 @@ func loadRegistryDataset(ctx context.Context, querier registryQuerier, revisionI
 	if err := finishRows(rows, "authorities"); err != nil {
 		return Dataset{}, err
 	}
-	rows, err = querier.Query(ctx, `SELECT id, kind, scope_id, canonical_url, status, COALESCE(fresh_through::text, '') FROM registry_sources WHERE revision_id = $1 ORDER BY id`, revisionID)
+	rows, err = querier.Query(ctx, `SELECT id, kind, scope_id, canonical_url, status, COALESCE(fresh_through::text, ''), COALESCE(qualification_id, '') FROM registry_sources WHERE revision_id = $1 ORDER BY id`, revisionID)
 	if err != nil {
 		return Dataset{}, fmt.Errorf("load registry sources: %w", err)
 	}
 	sourceByID := make(map[string]int)
 	for rows.Next() {
 		var item domain.PrayerSource
-		if err := rows.Scan(&item.ID, &item.Kind, &item.GeographicScopeID, &item.CanonicalURL, &item.Status, &item.FreshThrough); err != nil {
+		if err := rows.Scan(&item.ID, &item.Kind, &item.GeographicScopeID, &item.CanonicalURL, &item.Status, &item.FreshThrough, &item.QualificationID); err != nil {
 			rows.Close()
 			return Dataset{}, fmt.Errorf("load registry source: %w", err)
 		}
@@ -458,6 +494,30 @@ func loadRegistryDataset(ctx context.Context, querier registryQuerier, revisionI
 	if err := finishRows(rows, "source authorities"); err != nil {
 		return Dataset{}, err
 	}
+	rows, err = querier.Query(ctx, `SELECT id, qualification_sha256, source_id, scope_id, authority_id, catalog_revision_id,
+		timezone, effective_from::text, effective_to::text, public_context_id, proof_json
+		FROM registry_source_qualifications WHERE revision_id=$1 ORDER BY id`, revisionID)
+	if err != nil {
+		return Dataset{}, fmt.Errorf("load registry source qualifications: %w", err)
+	}
+	for rows.Next() {
+		var identity storedQualificationIdentity
+		var raw []byte
+		if err := rows.Scan(&identity.ID, &identity.SHA256, &identity.SourceID, &identity.ScopeID, &identity.AuthorityID, &identity.CatalogRevision,
+			&identity.Timezone, &identity.Coverage.From, &identity.Coverage.To, &identity.PublicContextID, &raw); err != nil {
+			rows.Close()
+			return Dataset{}, fmt.Errorf("load registry source qualification: %w", err)
+		}
+		proof, err := decodeStoredQualification(raw, identity)
+		if err != nil {
+			rows.Close()
+			return Dataset{}, err
+		}
+		dataset.Qualifications = append(dataset.Qualifications, proof)
+	}
+	if err := finishRows(rows, "source qualifications"); err != nil {
+		return Dataset{}, err
+	}
 	rows, err = querier.Query(ctx, `SELECT id, source_id, scope_id, version, effective_from::text, effective_to::text, approval_id FROM registry_calculation_profiles WHERE revision_id = $1 ORDER BY id`, revisionID)
 	if err != nil {
 		return Dataset{}, fmt.Errorf("load registry calculation profiles: %w", err)
@@ -473,7 +533,7 @@ func loadRegistryDataset(ctx context.Context, querier registryQuerier, revisionI
 	if err := finishRows(rows, "calculation profiles"); err != nil {
 		return Dataset{}, err
 	}
-	rows, err = querier.Query(ctx, `SELECT id, source_id, scope_id, mosque_id, timezone, effective_from::text, effective_to::text, published_snapshot_id FROM registry_timetables WHERE revision_id = $1 ORDER BY id`, revisionID)
+	rows, err = querier.Query(ctx, `SELECT id, source_id, scope_id, COALESCE(mosque_id, public_context_id), timezone, effective_from::text, effective_to::text, published_snapshot_id FROM registry_timetables WHERE revision_id = $1 ORDER BY id`, revisionID)
 	if err != nil {
 		return Dataset{}, fmt.Errorf("load registry timetables: %w", err)
 	}
@@ -547,14 +607,14 @@ func loadRegistryDataset(ctx context.Context, querier registryQuerier, revisionI
 	if err := finishRows(rows, "timetable overrides"); err != nil {
 		return Dataset{}, err
 	}
-	rows, err = querier.Query(ctx, `SELECT id, kind, scope_id, source_id, COALESCE(timetable_id, ''), COALESCE(calculation_profile_id, ''), effective_from::text, effective_to::text, approval_id FROM registry_policies WHERE revision_id = $1 ORDER BY id`, revisionID)
+	rows, err = querier.Query(ctx, `SELECT id, kind, scope_id, source_id, COALESCE(timetable_id, ''), COALESCE(calculation_profile_id, ''), effective_from::text, effective_to::text, COALESCE(approval_id, ''), COALESCE(qualification_id, '') FROM registry_policies WHERE revision_id = $1 ORDER BY id`, revisionID)
 	if err != nil {
 		return Dataset{}, fmt.Errorf("load registry policies: %w", err)
 	}
 	policyByID := make(map[string]int)
 	for rows.Next() {
 		var item domain.PrayerPolicy
-		if err := rows.Scan(&item.ID, &item.Kind, &item.GeographicScopeID, &item.SourceID, &item.TimeTableID, &item.CalculationProfileID, &item.Effective.From, &item.Effective.To, &item.ApprovalID); err != nil {
+		if err := rows.Scan(&item.ID, &item.Kind, &item.GeographicScopeID, &item.SourceID, &item.TimeTableID, &item.CalculationProfileID, &item.Effective.From, &item.Effective.To, &item.ApprovalID, &item.QualificationID); err != nil {
 			rows.Close()
 			return Dataset{}, fmt.Errorf("load registry policy: %w", err)
 		}
@@ -668,13 +728,21 @@ func (store *PostgresRevisionStore) Activate(ctx context.Context, activation Act
 		}
 	}
 	for _, snapshot := range activation.Snapshots {
+		var mosqueID, publicContextID any
+		if snapshot.QualificationID == "" {
+			mosqueID = snapshot.MosqueID
+		} else {
+			publicContextID = snapshot.MosqueID
+		}
 		if _, err := tx.Exec(ctx, `
 			INSERT INTO registry_verified_snapshots (
 				event_id, revision_id, snapshot_id, mosque_id, timezone,
-				effective_from, effective_to, payload_sha256, signing_key_id, verified_at
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
-			eventID, activation.RevisionID, snapshot.ID, snapshot.MosqueID, snapshot.Timezone,
+				effective_from, effective_to, payload_sha256, signing_key_id, verified_at,
+				public_context_id, qualification_id, qualification_sha256
+			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+			eventID, activation.RevisionID, snapshot.ID, mosqueID, snapshot.Timezone,
 			snapshot.Effective.From, snapshot.Effective.To, snapshot.PayloadSHA256, snapshot.SigningKeyID, snapshot.VerifiedAt,
+			publicContextID, nullableText(snapshot.QualificationID), nullableText(snapshot.QualificationSHA256),
 		); err != nil {
 			return mapRegistryWriteError("insert verified snapshot", err)
 		}
@@ -875,6 +943,40 @@ func nullableText(value string) any {
 		return nil
 	}
 	return value
+}
+
+type storedQualificationIdentity struct {
+	ID, SHA256, SourceID, ScopeID, AuthorityID, CatalogRevision, Timezone, PublicContextID string
+	Coverage                                                                               domain.DateRange
+}
+
+func decodeStoredQualification(raw []byte, identity storedQualificationIdentity) (domain.SourceQualification, error) {
+	invalid := fmt.Errorf("%w: stored qualification proof or normalized references differ", ErrRevisionInvalid)
+	if len(raw) == 0 || len(raw) > 1024*1024 {
+		return domain.SourceQualification{}, invalid
+	}
+	canonical, err := canonicaljson.WithoutRootMembers(raw, "qualification_id", "sha256")
+	if err != nil {
+		return domain.SourceQualification{}, invalid
+	}
+	digest := sha256.Sum256(canonical)
+	if hex.EncodeToString(digest[:]) != identity.SHA256 {
+		return domain.SourceQualification{}, invalid
+	}
+	var proof domain.SourceQualification
+	decoder := json.NewDecoder(bytes.NewReader(raw))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&proof); err != nil || proof.Validate() != nil || proof.ID != identity.ID || proof.SHA256 != identity.SHA256 ||
+		proof.SourceID != identity.SourceID || proof.Scope.ID != identity.ScopeID || proof.Authority.ID != identity.AuthorityID || proof.CatalogRevision != identity.CatalogRevision ||
+		proof.Timezone != identity.Timezone || proof.Coverage != identity.Coverage || identity.PublicContextID != publicQualificationContextID(proof.Scope.ID) {
+		return domain.SourceQualification{}, invalid
+	}
+	return proof, nil
+}
+
+func publicQualificationContextID(scopeID string) string {
+	digest := sha256.Sum256([]byte(scopeID))
+	return "public-scope-" + hex.EncodeToString(digest[:16])
 }
 
 func rollbackRegistryTx(tx pgx.Tx) {

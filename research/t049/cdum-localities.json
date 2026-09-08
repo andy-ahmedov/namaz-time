@@ -1,0 +1,2684 @@
+{
+  "schema_version": "t049-cdum-localities/v1",
+  "researched_at": "2026-09-08",
+  "authority": {
+    "id": "cdum-russia",
+    "name": "Центральное духовное управление мусульман России",
+    "website": "https://cdum.ru/",
+    "ownership_evidence": [
+      {
+        "url": "https://cdum.ru/",
+        "claim": "Publisher website identifies itself as CDUM; each independently downloaded city page repeats the CDUM identity and current city2026 navigation.",
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "checked_at": "2026-09-08"
+      }
+    ]
+  },
+  "qualification_note": "Research and parser support are not source qualification or public activation. No external human approval/partnership is required; exact catalog/timezone/provenance/validation remain separate machine-qualification responsibilities.",
+  "raw_artifact_note": "Substantial raw HTML and response headers retained outside Git; only metadata and small comparison samples are committed.",
+  "parser_version": "cdum-city-html/v1",
+  "localities": [
+    {
+      "id": "cdum-cheboksary-2026",
+      "locality": "Чебоксары",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/cheboksary/Cheboksary.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Чебоксары"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "cheboksary.html",
+        "headers_filename": "cheboksary.headers",
+        "raw_sha256": "df3dfd122ee201d9fba1a5c69fc275e8c9d12ea3b3b7530e68b728c9c8e47095",
+        "raw_bytes": 1079058,
+        "captured_at": "2026-09-07T22:39:37.550Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Чебоксары",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 0,
+        "nonascending_dates": [],
+        "first_nonascending_example": null,
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/cheboksary/Cheboksary.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "02:47",
+            "05:06",
+            "11:51",
+            "16:19",
+            "18:30",
+            "20:39"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 365,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": null,
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/cheboksary/Cheboksary.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/cheboksary/Cheboksary.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-chelyabinsk-2026",
+      "locality": "Челябинск",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/Chelyabinsk/Chelyabinsk2015.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Челябинск"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "chelyabinsk.html",
+        "headers_filename": "chelyabinsk.headers",
+        "raw_sha256": "0a53f5a9dbbb9821668d2d52abe1cf84751e3e684ef3ccca450ee2bccd1ae338",
+        "raw_bytes": 1096669,
+        "captured_at": "2026-09-07T22:38:13.675Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Челябинск",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 7,
+        "nonascending_dates": [
+          "2026-05-08",
+          "2026-05-09",
+          "2026-05-10",
+          "2026-08-02",
+          "2026-08-03",
+          "2026-08-04",
+          "2026-08-05"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-05-08",
+          "first_nonascending_column": 6,
+          "fields": [
+            "3:10",
+            "4:57",
+            "12:53",
+            "18:12",
+            "20:45",
+            "0:07"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/Chelyabinsk/Chelyabinsk2015.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:56",
+            "06:11",
+            "12:54",
+            "17:23",
+            "19:32",
+            "21:37"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 0,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": "2026-05-08",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/Chelyabinsk/Chelyabinsk2015.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/Chelyabinsk/Chelyabinsk2015.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-ekaterinburg-2026",
+      "locality": "Екатеринбург",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/ekb/Ekb2015.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Екатеринбург"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "ekaterinburg.html",
+        "headers_filename": "ekaterinburg.headers",
+        "raw_sha256": "5cf348b2445b2ee50651ea7c9f37a7e9f66fcf58f5f653e97ffc98c97f3ef42c",
+        "raw_bytes": 1096659,
+        "captured_at": "2026-09-07T22:38:13.266Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Екатеринбург",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 8,
+        "nonascending_dates": [
+          "2026-05-01",
+          "2026-05-02",
+          "2026-05-03",
+          "2026-05-04",
+          "2026-08-08",
+          "2026-08-09",
+          "2026-08-10",
+          "2026-08-11"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-05-01",
+          "first_nonascending_column": 6,
+          "fields": [
+            "1:14",
+            "5:09",
+            "12:57",
+            "18:09",
+            "20:42",
+            "0:00"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/ekb/Ekb2015.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:49",
+            "06:12",
+            "12:57",
+            "17:25",
+            "19:38",
+            "21:50"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 0,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": "2026-05-01",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/ekb/Ekb2015.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ekb/Ekb2015.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-izhevsk-2026",
+      "locality": "Ижевск",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/izhevsk/Izhevsk2015.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Ижевск"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "izhevsk.html",
+        "headers_filename": "izhevsk.headers",
+        "raw_sha256": "b36985293e2f7f3d90a7fb54bae520d5dd4ee58edd9f9a3daa17b9482377f786",
+        "raw_bytes": 1079044,
+        "captured_at": "2026-09-07T22:38:43.578Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Ижевск",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 2,
+        "nonascending_dates": [
+          "2026-05-04",
+          "2026-08-08"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-05-04",
+          "first_nonascending_column": 6,
+          "fields": [
+            "2:48",
+            "4:31",
+            "12:26",
+            "17:43",
+            "20:18",
+            "0:11"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/izhevsk/Izhevsk2015.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:18",
+            "05:41",
+            "12:27",
+            "16:55",
+            "19:07",
+            "21:20"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 0,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": "2026-05-04",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/izhevsk/Izhevsk2015.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/izhevsk/Izhevsk2015.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-kazan-2026",
+      "locality": "Казань",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/Kazan/Kazan.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Казань"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "kazan.html",
+        "headers_filename": "kazan.headers",
+        "raw_sha256": "edb650f88ad3dcbef86b8112907aa45cfca65ee3132b15884d5946225e44c507",
+        "raw_bytes": 1079047,
+        "captured_at": "2026-09-07T22:38:13.262Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Казань",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 1,
+        "nonascending_dates": [
+          "2026-08-08"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-08-08",
+          "first_nonascending_column": 2,
+          "fields": [
+            "23:59",
+            "4:01",
+            "11:49",
+            "17:05",
+            "19:36",
+            "22:07"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/Kazan/Kazan.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "02:44",
+            "05:01",
+            "11:41",
+            "16:10",
+            "18:20",
+            "20:10"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 0,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": "2026-08-08",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/Kazan/Kazan.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/Kazan/Kazan.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-khabarovsk-2026",
+      "locality": "Хабаровск",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/khabarovsk/Habarovsk2015.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Хабаровск"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "khabarovsk.html",
+        "headers_filename": "khabarovsk.headers",
+        "raw_sha256": "bf6f7f2ac9d24fdca2ea49751923eb48d12211b1a423a39e1927897fef6f80e4",
+        "raw_bytes": 1096656,
+        "captured_at": "2026-09-07T22:39:37.554Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Хабаровск",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 20,
+        "nonascending_dates": [
+          "2026-06-13",
+          "2026-06-14",
+          "2026-06-15",
+          "2026-06-16",
+          "2026-06-17",
+          "2026-06-18",
+          "2026-06-19",
+          "2026-06-20",
+          "2026-06-21",
+          "2026-06-22",
+          "2026-06-23",
+          "2026-06-24",
+          "2026-06-25",
+          "2026-06-26",
+          "2026-06-27",
+          "2026-06-28",
+          "2026-06-29",
+          "2026-06-30",
+          "2026-07-01",
+          "2026-07-02"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-06-13",
+          "first_nonascending_column": 6,
+          "fields": [
+            "1:29",
+            "4:56",
+            "13:02",
+            "18:32",
+            "21:04",
+            "0:00"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/khabarovsk/Habarovsk2015.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "04:33",
+            "06:24",
+            "13:00",
+            "17:31",
+            "19:30",
+            "21:14"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 0,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": "2026-06-13",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/khabarovsk/Habarovsk2015.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/khabarovsk/Habarovsk2015.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown. Web tool returned cached2025 in one response; fresh direct retained bytes explicitly sayХабаровск2026. Do not infer currentness solely from matching2015/2026 weekdays."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-kirov-2026",
+      "locality": "Киров",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/%D0%9A%D0%B8%D1%80%D0%BE%D0%B2/Kirov.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Киров"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "kirov.html",
+        "headers_filename": "kirov.headers",
+        "raw_sha256": "c54f55cdff23159d88f6b24752f8494894fe7339a908a64c5e429b5dc29b0a19",
+        "raw_bytes": 1079042,
+        "captured_at": "2026-09-07T22:38:13.122Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Киров",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 0,
+        "nonascending_dates": [],
+        "first_nonascending_example": null,
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/%D0%9A%D0%B8%D1%80%D0%BE%D0%B2/Kirov.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "02:19",
+            "04:53",
+            "11:41",
+            "16:08",
+            "18:24",
+            "20:46"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 365,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": null,
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/%D0%9A%D0%B8%D1%80%D0%BE%D0%B2/Kirov.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/%D0%9A%D0%B8%D1%80%D0%BE%D0%B2/Kirov.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-kurgan-2026",
+      "locality": "Курган",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/Kurgan/Kurgan.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Курган"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "kurgan.html",
+        "headers_filename": "kurgan.headers",
+        "raw_sha256": "820bb45aca3c891d887856fbaaf48f57cef4265d8d4d7ee6f5e6c4c5ef332413",
+        "raw_bytes": 1079042,
+        "captured_at": "2026-09-07T22:38:43.634Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Курган",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 4,
+        "nonascending_dates": [
+          "2026-05-08",
+          "2026-05-09",
+          "2026-08-03",
+          "2026-08-04"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-05-08",
+          "first_nonascending_column": 6,
+          "fields": [
+            "2:53",
+            "4:40",
+            "12:37",
+            "17:57",
+            "20:31",
+            "0:02"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/Kurgan/Kurgan.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:39",
+            "05:55",
+            "12:38",
+            "17:07",
+            "19:17",
+            "21:23"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 0,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": "2026-05-08",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/Kurgan/Kurgan.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/Kurgan/Kurgan.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-orenburg-2026",
+      "locality": "Оренбург",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/orenburg/Orenburg2015.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Оренбург"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "orenburg.html",
+        "headers_filename": "orenburg.headers",
+        "raw_sha256": "2098271506d3e6edc71f221c6e27d8c43c184b581c1b81f88a22559d778e3a23",
+        "raw_bytes": 2167055,
+        "captured_at": "2026-09-07T22:38:43.964Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Оренбург",
+        "current_city_year_link": true,
+        "visible_month_tables": 24,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 730,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 48,
+        "nonascending_dates": [
+          "2026-05-16",
+          "2026-05-17",
+          "2026-05-18",
+          "2026-05-19",
+          "2026-05-20",
+          "2026-05-21",
+          "2026-05-22",
+          "2026-05-23",
+          "2026-05-24",
+          "2026-05-25",
+          "2026-05-26",
+          "2026-07-17",
+          "2026-07-18",
+          "2026-07-19",
+          "2026-07-20",
+          "2026-07-21",
+          "2026-07-22",
+          "2026-07-23",
+          "2026-07-24",
+          "2026-07-25",
+          "2026-07-26",
+          "2026-07-27",
+          "2026-07-28",
+          "2026-07-29",
+          "2026-05-16",
+          "2026-05-17",
+          "2026-05-18",
+          "2026-05-19",
+          "2026-05-20",
+          "2026-05-21",
+          "2026-05-22",
+          "2026-05-23",
+          "2026-05-24",
+          "2026-05-25",
+          "2026-05-26",
+          "2026-07-17",
+          "2026-07-18",
+          "2026-07-19",
+          "2026-07-20",
+          "2026-07-21",
+          "2026-07-22",
+          "2026-07-23",
+          "2026-07-24",
+          "2026-07-25",
+          "2026-07-26",
+          "2026-07-27",
+          "2026-07-28",
+          "2026-07-29"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-05-16",
+          "first_nonascending_column": 6,
+          "fields": [
+            "2:13",
+            "5:23",
+            "13:18",
+            "18:40",
+            "21:09",
+            "0:00"
+          ]
+        },
+        "note": "Two visible annual sequences, not commented legacy data. Both sequences' date weekdays match2026; duplicated coverage is invalid."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/orenburg/Orenburg2015.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "04:39",
+            "06:41",
+            "13:19",
+            "17:49",
+            "19:53",
+            "21:46"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": false,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 0,
+        "q4_days": 0,
+        "annual_days": 0,
+        "september_first_rejection": "unsupported locality: duplicated visible source",
+        "q4_first_rejection": "unsupported locality: duplicated visible source",
+        "annual_first_rejection": "unsupported locality: duplicated visible source",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/orenburg/Orenburg2015.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/orenburg/Orenburg2015.php"
+          ],
+          "result": "Duplicated visible full-year sequences found; cannot select a convenient half."
+        }
+      ],
+      "qualification_gaps": [
+        "Visible duplicated annual coverage fails schema validation.",
+        "No source-specific repair or first-half selection authorized."
+      ],
+      "unavailable_reason": "Visible duplicate annual sequence: unavailable until first-party source is corrected or separately documented non-ambiguous schema exists."
+    },
+    {
+      "id": "cdum-penza-2026",
+      "locality": "Пенза",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/%D0%9F%D0%B5%D0%BD%D0%B7%D0%B0/Penza2015.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Пенза"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "penza.html",
+        "headers_filename": "penza.headers",
+        "raw_sha256": "e51da0f5607aa604714adb8ed7b905af49e689d457a982955b28c95877670589",
+        "raw_bytes": 1079042,
+        "captured_at": "2026-09-07T22:39:08.472Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Пенза",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 0,
+        "nonascending_dates": [],
+        "first_nonascending_example": null,
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/%D0%9F%D0%B5%D0%BD%D0%B7%D0%B0/Penza2015.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:13",
+            "05:19",
+            "12:00",
+            "16:29",
+            "18:35",
+            "20:33"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 365,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": null,
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/%D0%9F%D0%B5%D0%BD%D0%B7%D0%B0/Penza2015.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/%D0%9F%D0%B5%D0%BD%D0%B7%D0%B0/Penza2015.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-perm-2026",
+      "locality": "Пермь",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/%D0%9F%D0%B5%D1%80%D0%BC%D1%8C/Perm.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Пермь"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "perm.html",
+        "headers_filename": "perm.headers",
+        "raw_sha256": "7a7c349eb8112ad7441bfbc53c8143c4c6f61f0c3741ea04f0f4b065aa20856d",
+        "raw_bytes": 1079019,
+        "captured_at": "2026-09-07T22:39:08.616Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Пермь",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 23,
+        "nonascending_dates": [
+          "2026-04-26",
+          "2026-04-27",
+          "2026-04-28",
+          "2026-04-29",
+          "2026-04-30",
+          "2026-06-18",
+          "2026-06-19",
+          "2026-06-20",
+          "2026-06-21",
+          "2026-06-22",
+          "2026-06-23",
+          "2026-06-24",
+          "2026-06-25",
+          "2026-06-26",
+          "2026-06-27",
+          "2026-06-28",
+          "2026-06-29",
+          "2026-08-12",
+          "2026-08-13",
+          "2026-08-14",
+          "2026-08-15",
+          "2026-08-16",
+          "2026-08-17"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-04-26",
+          "first_nonascending_column": 6,
+          "fields": [
+            "1:53",
+            "5:34",
+            "13:15",
+            "18:21",
+            "20:53",
+            "0:07"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/%D0%9F%D0%B5%D1%80%D0%BC%D1%8C/Perm.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:57",
+            "06:27",
+            "13:15",
+            "17:42",
+            "19:57",
+            "22:16"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 0,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": "2026-04-26",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/%D0%9F%D0%B5%D1%80%D0%BC%D1%8C/Perm.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/%D0%9F%D0%B5%D1%80%D0%BC%D1%8C/Perm.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-salekhard-2026",
+      "locality": "Салехард",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/Surgut/Surgut2015.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Салехард"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "salekhard.html",
+        "headers_filename": "salekhard.headers",
+        "raw_sha256": "00a7de64b0b547a0c75b0edfbca687c020bda0683d70ae1601bed5fef74cb43b",
+        "raw_bytes": 1096718,
+        "captured_at": "2026-09-07T22:39:37.578Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Салехард",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 22,
+        "nonascending_dates": [
+          "2026-04-05",
+          "2026-05-30",
+          "2026-05-31",
+          "2026-06-01",
+          "2026-06-02",
+          "2026-06-03",
+          "2026-06-04",
+          "2026-06-05",
+          "2026-07-07",
+          "2026-07-08",
+          "2026-07-09",
+          "2026-07-10",
+          "2026-07-11",
+          "2026-07-12",
+          "2026-07-13",
+          "2026-07-14",
+          "2026-07-15",
+          "2026-09-06",
+          "2026-12-19",
+          "2026-12-21",
+          "2026-12-22",
+          "2026-12-23"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-04-05",
+          "first_nonascending_column": 6,
+          "fields": [
+            "3:57",
+            "5:29",
+            "12:38",
+            "17:04",
+            "19:45",
+            "0:04"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/Surgut/Surgut2015.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:54",
+            "05:27",
+            "12:33",
+            "16:55",
+            "19:34",
+            "23:29"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 0,
+        "q4_days": 0,
+        "annual_days": 0,
+        "september_first_rejection": "2026-09-06",
+        "q4_first_rejection": "2026-12-19",
+        "annual_first_rejection": "2026-04-05",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/Surgut/Surgut2015.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/Surgut/Surgut2015.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown. LegacySurgutfilename is not scope evidence; both actualtitle andnav identifyСалехард, notСургут."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile.",
+        "September2026 rejects September6; Q4 rejects December19. A usable September8 row does not make either complete requested range usable."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-samara-2026",
+      "locality": "Самара",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/samara/Samara2015.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Самара"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "samara.html",
+        "headers_filename": "samara.headers",
+        "raw_sha256": "266fa69cd94939c67761abcaa34531a101cedc27137d794da47385f7a0ae2e4f",
+        "raw_bytes": 1079040,
+        "captured_at": "2026-09-07T22:39:08.608Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Самара",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 6,
+        "nonascending_dates": [
+          "2026-05-17",
+          "2026-05-18",
+          "2026-07-24",
+          "2026-07-25",
+          "2026-07-26",
+          "2026-07-27"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-05-17",
+          "first_nonascending_column": 6,
+          "fields": [
+            "2:40",
+            "4:36",
+            "12:38",
+            "18:03",
+            "20:37",
+            "0:03"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/samara/Samara2015.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:52",
+            "05:59",
+            "12:39",
+            "17:09",
+            "19:15",
+            "21:12"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 0,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": "2026-05-17",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/samara/Samara2015.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/samara/Samara2015.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-ulyanovsk-2026",
+      "locality": "Ульяновск",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/Ulyanovsk/Ulyanovsk2015.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Ульяновск"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "ulyanovsk.html",
+        "headers_filename": "ulyanovsk.headers",
+        "raw_sha256": "9cc170377e8e03f5be77265a338cca85912b6f173532056b511d1fabd60800a1",
+        "raw_bytes": 1079052,
+        "captured_at": "2026-09-07T22:39:08.824Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Ульяновск",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 6,
+        "nonascending_dates": [
+          "2026-05-12",
+          "2026-05-13",
+          "2026-07-29",
+          "2026-07-30",
+          "2026-07-31",
+          "2026-08-01"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-05-12",
+          "first_nonascending_column": 6,
+          "fields": [
+            "2:55",
+            "4:46",
+            "12:45",
+            "18:07",
+            "20:41",
+            "0:07"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/Ulyanovsk/Ulyanovsk2015.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:53",
+            "06:04",
+            "12:46",
+            "17:15",
+            "19:23",
+            "21:25"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 0,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": "2026-05-12",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/Ulyanovsk/Ulyanovsk2015.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/Ulyanovsk/Ulyanovsk2015.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-yoshkar-ola-2026",
+      "locality": "Йошкар-Ола",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/yoshkar-ola/Yoshkar-Ola2015.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Йошкар-Ола"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "yoshkar-ola.html",
+        "headers_filename": "yoshkar-ola.headers",
+        "raw_sha256": "92a92fe27add1a003ded093029bf709ea5d5f6d164ddbe4c4e8dabdd4e5421cf",
+        "raw_bytes": 1079061,
+        "captured_at": "2026-09-07T22:38:43.662Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Йошкар-Ола",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "nonascending_day_count": 1,
+        "nonascending_dates": [
+          "2026-05-02"
+        ],
+        "first_nonascending_example": {
+          "date": "2026-05-02",
+          "first_nonascending_column": 2,
+          "fields": [
+            "23:53",
+            "3:58",
+            "11:47",
+            "17:01",
+            "19:34",
+            "22:54"
+          ]
+        },
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/yoshkar-ola/Yoshkar-Ola2015.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "02:41",
+            "05:03",
+            "11:48",
+            "16:16",
+            "18:28",
+            "20:40"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file tests passed against the implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 0,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": "2026-05-02",
+        "notes": "Every failure returned nil days. Parser validates every source date/clock and all12months; order failures outside explicitly requested coverage are never returned or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Follow independently checked current CDUM2026 city navigation",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/yoshkar-ola/Yoshkar-Ola2015.php"
+          ],
+          "result": "Ordinary public HTTPS GET, status200, raw/header capture outside Git. No access-control bypass."
+        },
+        {
+          "query": "Inspect exact current city/year, table schema, all rows and September8; compare stale web cache against fresh direct response when necessary",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/yoshkar-ola/Yoshkar-Ola2015.php"
+          ],
+          "result": "Exact city2026 navigation, city h1 and complete 365 weekday rows. Source parameters remain unknown."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-astrakhan-2026",
+      "locality": "Астрахань",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/astrakhan/Astrakhan.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Астрахань"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "astrakhan.html",
+        "headers_filename": "astrakhan.headers",
+        "raw_sha256": "01c4a3f61e02cb11da3f1cd87c7378a68e8478787f37ebe2aff1064dbaf9248d",
+        "raw_bytes": 1096676,
+        "captured_at": "2026-09-07T22:51:07.897Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Астрахань",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "first_field_error": null,
+        "nonascending_day_count": 0,
+        "nonascending_dates": [],
+        "first_nonascending_example": null,
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/astrakhan/Astrakhan.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "04:29",
+            "06:15",
+            "12:48",
+            "17:19",
+            "19:16",
+            "20:55"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file matrix passed against implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 365,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": null,
+        "notes": "Every failure returned nil days. No unknown marker was stripped or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Locate retained CDUM HTML in south lane before avoiding a duplicate fetch; no raw HTML file available in the supplied directory",
+          "urls_checked": [],
+          "result": "South lane had reported an earlier annual inspection. Required raw reproduction was unavailable, so one fresh ordinary HTTPS GET was necessary."
+        },
+        {
+          "query": "Follow explicit current CDUM2026 city navigation; inspect raw exact title/currentyear/all365rows and compare independently against original public page",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/astrakhan/Astrakhan.php"
+          ],
+          "result": "HTTP200UTF8, raw/header capture outsideGit. Exact cityh1/current2026nav; all365weekdays2026. Complete annual six-event clock syntax and same-day ordering passed independent inspection."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-rostov-on-don-2026",
+      "locality": "Ростов-на-Дону",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/Rostov-na-Dony/Rostov.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Ростов-на-Дону"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "rostov-on-don.html",
+        "headers_filename": "rostov-on-don.headers",
+        "raw_sha256": "bbfa6b85c22651e2d3c581a0b22621e70de2548ebaca3193e2290e163d8bca31",
+        "raw_bytes": 1079079,
+        "captured_at": "2026-09-07T22:51:07.877Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Ростов-на-Дону",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 0,
+        "first_field_error": null,
+        "nonascending_day_count": 0,
+        "nonascending_dates": [],
+        "first_nonascending_example": null,
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/Rostov-na-Dony/Rostov.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:59",
+            "05:47",
+            "12:21",
+            "16:52",
+            "18:50",
+            "20:31"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": true,
+        "verification": "Hash-bound retained-file matrix passed against implemented parser; no source qualification or publication.",
+        "september_days": 30,
+        "q4_days": 92,
+        "annual_days": 365,
+        "september_first_rejection": null,
+        "q4_first_rejection": null,
+        "annual_first_rejection": null,
+        "notes": "Every failure returned nil days. No unknown marker was stripped or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Locate retained CDUM HTML in south lane before avoiding a duplicate fetch; no raw HTML file available in the supplied directory",
+          "urls_checked": [],
+          "result": "South lane had reported an earlier annual inspection. Required raw reproduction was unavailable, so one fresh ordinary HTTPS GET was necessary."
+        },
+        {
+          "query": "Follow explicit current CDUM2026 city navigation; inspect raw exact title/currentyear/all365rows and compare independently against original public page",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/Rostov-na-Dony/Rostov.php"
+          ],
+          "result": "HTTP200UTF8, raw/header capture outsideGit. Exact cityh1/current2026nav; all365weekdays2026. Complete annual six-event clock syntax and same-day ordering passed independent inspection."
+        }
+      ],
+      "qualification_gaps": [
+        "Hash-bound authority/catalog/timezone/source qualification remains outside parser.",
+        "Annual same-day validation must reject every anomalous date; only explicit complete-month requests may proceed when all requested days are valid.",
+        "Unknown astronomy parameters do not authorize a calculation_profile."
+      ],
+      "unavailable_reason": null
+    },
+    {
+      "id": "cdum-volgograd-2026",
+      "locality": "Волгоград",
+      "provider_kind": "official_html",
+      "canonical_url": "https://cdum.ru/time-namaz/%D0%92%D0%BE%D0%BB%D0%B3%D0%BE%D0%B3%D1%80%D0%B0%D0%B4/Volgograd.php",
+      "scope": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "localities": [
+          "Волгоград"
+        ],
+        "note": "Only the explicit city title. No surrounding subject, neighboring city or filename-based geographic expansion."
+      },
+      "effective_range": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "from": "2026-01-01",
+        "to": "2026-12-31",
+        "proof": "Visible exact city2026 navigation plus matching city h1. Weekdays checked separately; repeated Gregorian calendars or legacy filenames alone do not prove the year."
+      },
+      "timezone": {
+        "evidence_label": "UNKNOWN",
+        "iana": null,
+        "note": "Caller must bind exact canonical locality to catalog IANA timezone. The source HTML does not declare IANA timezone."
+      },
+      "transport": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "method": "GET",
+        "http_status": 200,
+        "content_type": "text/html; charset=utf-8",
+        "raw_filename": "volgograd.html",
+        "headers_filename": "volgograd.headers",
+        "raw_sha256": "2fa5983123fe1dd1bac155618dc6dba11bb2a82e54c026c9978f13ab2ffd3e7c",
+        "raw_bytes": 1079074,
+        "captured_at": "2026-09-07T22:51:07.877Z",
+        "cadence": "Annual2026 navigation. Within-year replacement frequency UNKNOWN."
+      },
+      "inspection": {
+        "evidence_label": "CONFIRMED_PUBLIC",
+        "title": "Волгоград",
+        "current_city_year_link": true,
+        "visible_month_tables": 12,
+        "month_row_counts": [
+          31,
+          28,
+          31,
+          30,
+          31,
+          30,
+          31,
+          31,
+          30,
+          31,
+          30,
+          31
+        ],
+        "day_rows": 365,
+        "weekday_error_count": 0,
+        "field_error_count": 13,
+        "first_field_error": {
+          "date": "2026-06-15",
+          "column": 1,
+          "field": "1:33*"
+        },
+        "nonascending_day_count": 0,
+        "nonascending_dates": [],
+        "first_nonascending_example": null,
+        "note": "Twelve visible source tables after ignoring comments/scripts/noscript/templates; seven columns=date plus six events."
+      },
+      "comparison_evidence": [
+        {
+          "url": "https://cdum.ru/time-namaz/%D0%92%D0%BE%D0%BB%D0%B3%D0%BE%D0%B3%D1%80%D0%B0%D0%B4/Volgograd.php",
+          "date": "2026-09-08",
+          "event_order": [
+            "fajr",
+            "sunrise",
+            "dhuhr",
+            "asr",
+            "maghrib",
+            "isha"
+          ],
+          "values": [
+            "03:35",
+            "05:26",
+            "12:02",
+            "16:33",
+            "18:32",
+            "20:16"
+          ],
+          "evidence_label": "CONFIRMED_PUBLIC",
+          "note": "Small independent visible-row inspection, not a bulk source dataset."
+        }
+      ],
+      "policy": {
+        "evidence_label": "UNKNOWN",
+        "asr": "Not stated; do not infer school/factor from times.",
+        "fajr": "Angles and offsets not verified.",
+        "isha": "Angles and offsets not verified.",
+        "seasonal": "No verified high-latitude or civil-day offset semantics; preserve/reject source anomalies without guessing.",
+        "iqamah": "No iqamah inferred from regional onset columns.",
+        "jumuah": "No mosque-local Jumuah inferred."
+      },
+      "parser_check": {
+        "evidence_label": "PROPOSAL",
+        "supported_binding": false,
+        "verification": "Hash-bound retained-file matrix passed against implemented parser; no source qualification or publication.",
+        "september_days": 0,
+        "q4_days": 0,
+        "annual_days": 0,
+        "september_first_rejection": "unsupported locality: unexplained Fajr markers",
+        "q4_first_rejection": "unsupported locality: unexplained Fajr markers",
+        "annual_first_rejection": "unsupported locality: unexplained Fajr markers",
+        "notes": "Every failure returned nil days. No unknown marker was stripped or repaired."
+      },
+      "search_trail": [
+        {
+          "query": "Locate retained CDUM HTML in south lane before avoiding a duplicate fetch; no raw HTML file available in the supplied directory",
+          "urls_checked": [],
+          "result": "South lane had reported an earlier annual inspection. Required raw reproduction was unavailable, so one fresh ordinary HTTPS GET was necessary."
+        },
+        {
+          "query": "Follow explicit current CDUM2026 city navigation; inspect raw exact title/currentyear/all365rows and compare independently against original public page",
+          "urls_checked": [
+            "https://cdum.ru/time-namaz/ufa2014/Ufa2015.php",
+            "https://cdum.ru/time-namaz/%D0%92%D0%BE%D0%BB%D0%B3%D0%BE%D0%B3%D1%80%D0%B0%D0%B4/Volgograd.php"
+          ],
+          "result": "HTTP200UTF8, raw/header capture outsideGit. Exact cityh1/current2026nav; all365weekdays2026. Thirteen Fajr fields carry an unexplained asterisk, firstJune15=1:33*. Marker not stripped or guessed."
+        }
+      ],
+      "qualification_gaps": [
+        "Thirteen unexplained Fajr asterisk markers; semantic meaning not established. No stripping marker or choosing only convenient months.",
+        "Exact canonical catalog/timezone/hash-bound qualification remains separate; currentness alone cannot override failed source validation."
+      ],
+      "unavailable_reason": "Unexplained Fajr markers make the annual source unsupported; no marker-stripping repair is authorized."
+    }
+  ]
+}

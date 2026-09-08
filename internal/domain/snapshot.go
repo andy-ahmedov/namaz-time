@@ -57,21 +57,22 @@ type Mosque struct {
 }
 
 type SourceMetadata struct {
-	SourceID           string       `json:"source_id"`
-	Kind               ProviderKind `json:"kind"`
-	AuthorityName      string       `json:"authority_name"`
-	AuthorityBranch    string       `json:"authority_branch,omitempty"`
-	GeographicScope    string       `json:"geographic_scope"`
-	CanonicalURL       string       `json:"canonical_url,omitempty"`
-	RetrievedAt        string       `json:"retrieved_at"`
-	EffectiveFrom      string       `json:"effective_from"`
-	EffectiveTo        string       `json:"effective_to"`
-	RawSHA256          string       `json:"raw_sha256"`
-	ParserVersion      string       `json:"parser_version"`
-	CalculationProfile string       `json:"calculation_profile,omitempty"`
-	LicenseReference   string       `json:"license_reference,omitempty"`
-	Attribution        string       `json:"attribution,omitempty"`
-	Approval           Approval     `json:"approval"`
+	SourceID           string               `json:"source_id"`
+	Kind               ProviderKind         `json:"kind"`
+	AuthorityName      string               `json:"authority_name"`
+	AuthorityBranch    string               `json:"authority_branch,omitempty"`
+	GeographicScope    string               `json:"geographic_scope"`
+	CanonicalURL       string               `json:"canonical_url,omitempty"`
+	RetrievedAt        string               `json:"retrieved_at"`
+	EffectiveFrom      string               `json:"effective_from"`
+	EffectiveTo        string               `json:"effective_to"`
+	RawSHA256          string               `json:"raw_sha256"`
+	ParserVersion      string               `json:"parser_version"`
+	CalculationProfile string               `json:"calculation_profile,omitempty"`
+	LicenseReference   string               `json:"license_reference,omitempty"`
+	Attribution        string               `json:"attribution,omitempty"`
+	Approval           Approval             `json:"approval,omitzero"`
+	Qualification      *SourceQualification `json:"qualification,omitempty"`
 }
 
 type Approval struct {
@@ -209,6 +210,9 @@ func validateSnapshotJSONShape(data []byte) error {
 	root, ok := document.(map[string]any)
 	if !ok {
 		return fmt.Errorf("snapshot root must be an object")
+	}
+	if err := validateQualifiedWireShape(root); err != nil {
+		return err
 	}
 	if mosque, exists := root["mosque"].(map[string]any); exists {
 		if country, present := mosque["country_code"]; present {

@@ -55,6 +55,7 @@ import androidx.tv.material3.Text
 import ru.namaztime.tv.AppBuildIdentity
 import ru.namaztime.tv.R
 import ru.namaztime.tv.repository.LocalPrayerSchedule
+import ru.namaztime.tv.repository.hasPublicSourceQualification
 import ru.namaztime.tv.repository.ScheduleLayoutMode
 import ru.namaztime.tv.repository.OperatorIqamahConfiguration
 import ru.namaztime.tv.repository.OperatorMosquePresentationIdentity
@@ -874,8 +875,12 @@ private fun SettingsContent(
         SettingsDestination.SOURCE -> listOf(
             R.string.field_authority to (schedule.attribution ?: schedule.authorityName),
             R.string.field_source_type to sourceKindLabel(schedule.sourceKind),
-            R.string.field_approval to appString(
-                if (diagnostics?.approvalStatus == "approved") R.string.value_approved else R.string.value_not_approved,
+            (if (schedule.hasPublicSourceQualification) R.string.field_source_qualification else R.string.field_approval) to appString(
+                when {
+                    schedule.hasPublicSourceQualification -> R.string.value_qualified
+                    diagnostics?.approvalStatus == "approved" -> R.string.value_approved
+                    else -> R.string.value_not_approved
+                },
             ),
             R.string.field_source_id to schedule.sourceId,
             R.string.field_raw_hash to (diagnostics?.rawSha256 ?: appString(R.string.value_not_available)),
@@ -920,13 +925,16 @@ private fun SettingsContent(
                 )
             }.orEmpty().ifEmpty { appString(R.string.value_not_available) },
             R.string.field_parser to (diagnostics?.parserVersion ?: appString(R.string.value_not_available)),
-            R.string.field_approval_id to (diagnostics?.approvalId ?: appString(R.string.value_not_available)),
+            (if (schedule.hasPublicSourceQualification) R.string.field_qualification_id else R.string.field_approval_id) to
+                ((if (schedule.hasPublicSourceQualification) diagnostics?.qualification?.qualificationId else diagnostics?.approvalId)
+                    ?: appString(R.string.value_not_available)),
             R.string.field_signing_key to (diagnostics?.signingKeyId ?: appString(R.string.value_not_available)),
             R.string.field_data_state to appString(
-                if (diagnostics?.dataClassification == "production" && diagnostics.approvalStatus == "approved") {
-                    R.string.data_state_approved_real
-                } else {
-                    R.string.data_state_synthetic
+                when {
+                    diagnostics?.dataClassification == "synthetic" -> R.string.data_state_synthetic
+                    diagnostics?.dataClassification == "production" && schedule.hasPublicSourceQualification -> R.string.data_state_qualified_public
+                    diagnostics?.dataClassification == "production" && diagnostics.approvalStatus == "approved" -> R.string.data_state_approved_real
+                    else -> R.string.source_unverified
                 },
             ),
         )

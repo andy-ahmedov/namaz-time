@@ -1,6 +1,7 @@
 package ru.namaztime.tv.repository
 
 import ru.namaztime.tv.data.local.SnapshotDao
+import ru.namaztime.tv.data.local.persistedSourceQualification
 import ru.namaztime.tv.data.snapshot.SnapshotFormatValidation
 import ru.namaztime.tv.domain.IqamahDateOverrideInput
 import ru.namaztime.tv.domain.CampaignInput
@@ -107,14 +108,35 @@ data class LocalSnapshotDiagnostics(
     val generatedAt: String = "",
     val rawSha256: String,
     val parserVersion: String,
-    val approvalId: String,
-    val approvalStatus: String = "approved",
-    val approvedBy: String = "",
-    val approvedAt: String = "",
-    val approvalScope: String = "",
+    val approvalId: String?,
+    val approvalStatus: String? = "approved",
+    val approvedBy: String? = null,
+    val approvedAt: String? = null,
+    val approvalScope: String? = null,
+    val qualification: LocalQualificationDiagnostics? = null,
     val signingKeyId: String,
     val canonicalSha256: String = "",
 )
+
+data class LocalQualificationDiagnostics(
+    val qualificationId: String,
+    val sha256: String,
+    val state: String,
+    val decisionSystem: String,
+    val qualifiedAt: String,
+    val freshThrough: String,
+    val scopeId: String,
+    val catalogRevision: String,
+)
+
+val LocalPrayerSchedule.hasPublicSourceQualification: Boolean
+    get() = sourceKind in setOf("official_api", "official_file", "official_html", "mosque_calendar") &&
+        diagnostics?.let { metadata ->
+            metadata.qualification?.state == "qualified" &&
+                metadata.qualification.decisionSystem == "namaztime:source-qualification/v1" &&
+                metadata.approvalId == null && metadata.approvalStatus == null &&
+                metadata.approvedBy == null && metadata.approvedAt == null && metadata.approvalScope == null
+        } == true
 
 class CorruptLocalSnapshotException(val code: String) : IllegalStateException(code)
 
@@ -274,6 +296,11 @@ class RoomPrayerScheduleRepository(
                     dao.observeJumuahSessions(snapshot.snapshotId),
                     dao.observeCampaigns(snapshot.snapshotId),
                 ) { days, rules, overrides, sessions, campaigns ->
+                    val qualification = try {
+                        persistedSourceQualification(snapshot, days, rules.isNotEmpty() || overrides.isNotEmpty() || sessions.isNotEmpty())
+                    } catch (_: IllegalArgumentException) {
+                        throw CorruptLocalSnapshotException("invalid_source_qualification")
+                    }
                     LocalPrayerSchedule(
                         snapshotId = snapshot.snapshotId,
                         mosqueId = snapshot.mosqueId,
@@ -305,6 +332,10 @@ class RoomPrayerScheduleRepository(
                             approvedBy = snapshot.approvedBy,
                             approvedAt = snapshot.approvedAt,
                             approvalScope = snapshot.approvalScope,
+                            qualification = qualification?.let { q ->
+                                LocalQualificationDiagnostics(q.qualificationId, q.sha256, q.state, q.decisionSystem,
+                                    q.qualifiedAt, q.freshThrough, q.scope.id, q.catalogRevision)
+                            },
                             signingKeyId = snapshot.signingKeyId,
                             canonicalSha256 = snapshot.canonicalSha256,
                         ),

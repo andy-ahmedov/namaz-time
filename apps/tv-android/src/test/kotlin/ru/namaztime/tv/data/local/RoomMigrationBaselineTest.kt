@@ -11,6 +11,22 @@ import org.junit.Test
 
 class RoomMigrationBaselineTest {
     @Test
+    fun versionFourKeepsQualificationSeparateFromNullableLegacyApproval() {
+        val schema = File("schemas/ru.namaztime.tv.data.local.NamazDatabase/4.json")
+        assertTrue("Room v4 schema must be committed", schema.isFile)
+        val database = Json.parseToJsonElement(schema.readText()).jsonObject.getValue("database").jsonObject
+        assertEquals(4, database.getValue("version").jsonPrimitive.content.toInt())
+        val snapshot = database.getValue("entities").jsonArray.single {
+            it.jsonObject.getValue("tableName").jsonPrimitive.content == "snapshots"
+        }.jsonObject
+        val fields = snapshot.getValue("fields").jsonArray.associateBy { it.jsonObject.getValue("columnName").jsonPrimitive.content }
+        listOf("approvalId", "approvalStatus", "approvedBy", "approvedAt", "approvalScope",
+            "qualificationId", "qualificationSha256", "qualificationJson").forEach { column ->
+            assertEquals("false", fields.getValue(column).jsonObject["notNull"]?.jsonPrimitive?.content ?: "false")
+        }
+    }
+
+    @Test
     fun versionOneSchemaIsExportedForFutureMigrationTests() {
         val schema = File(
             "schemas/ru.namaztime.tv.data.local.NamazDatabase/1.json",

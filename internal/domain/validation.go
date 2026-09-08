@@ -64,8 +64,8 @@ func (s Snapshot) Validate() error {
 	}
 
 	validateRequired(&result, "schema_version", s.SchemaVersion)
-	if s.SchemaVersion != "" && s.SchemaVersion != "1.0" {
-		add("schema_version", "unsupported_value", "must be 1.0")
+	if s.SchemaVersion != "" && s.SchemaVersion != "1.0" && s.SchemaVersion != "2.0" {
+		add("schema_version", "unsupported_value", "must be 1.0 or 2.0")
 	}
 	validateText(&result, "snapshot_id", s.SnapshotID, 8, 128)
 	validateRequired(&result, "data_classification", string(s.DataClassification))
@@ -92,6 +92,7 @@ func (s Snapshot) Validate() error {
 	}
 
 	validateSource(&result, s.Source)
+	validateQualifiedSnapshot(&result, s)
 	coverageFrom, coverageFromOK := validateDate(&result, "coverage.from", s.Coverage.From)
 	coverageTo, coverageToOK := validateDate(&result, "coverage.to", s.Coverage.To)
 	if coverageFromOK && coverageToOK && coverageTo.Before(coverageFrom) {
@@ -528,6 +529,12 @@ func validateSource(result *ValidationErrors, source SourceMetadata) {
 	}
 	validateMaxLength(result, "source.license_reference", source.LicenseReference, 1000)
 	validateMaxLength(result, "source.attribution", source.Attribution, 1000)
+	if source.Qualification != nil {
+		if err := source.Qualification.Validate(); err != nil {
+			result.Items = append(result.Items, ValidationError{"source.qualification", "invalid_qualification", err.Error()})
+		}
+		return // The versioned qualification branch never invents an approval.
+	}
 	validateRequired(result, "source.approval.status", source.Approval.Status)
 	if source.Approval.Status != "" && source.Approval.Status != "approved" {
 		result.Items = append(result.Items, ValidationError{"source.approval.status", "unsupported_value", "must be approved"})

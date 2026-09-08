@@ -4,6 +4,7 @@ import androidx.room.withTransaction
 import ru.namaztime.tv.data.snapshot.ActivatableSnapshot
 import ru.namaztime.tv.data.snapshot.SnapshotActivationGate
 import ru.namaztime.tv.data.snapshot.SnapshotPayload
+import ru.namaztime.tv.data.snapshot.SourceQualificationValidation
 import ru.namaztime.tv.domain.IqamahDateOverrideInput
 import ru.namaztime.tv.domain.IqamahRuleInput
 import ru.namaztime.tv.domain.JumuahSessionInput
@@ -109,6 +110,9 @@ class SnapshotImporter(
         replacementPolicy: SnapshotReplacementPolicy? = null,
     ): SnapshotImportResult {
         val snapshot = input.payload
+        if (snapshot.schemaVersion == "2.0" || snapshot.source.qualification != null) {
+            SourceQualificationValidation.validate(snapshot)
+        }
         timeEngine.validate(snapshot.toTimeEngineInput())?.let { code ->
             throw SnapshotImportException("time_engine_${code.lowercase(Locale.ROOT)}")
         }
@@ -317,12 +321,15 @@ private fun SnapshotPayload.toEntity() = SnapshotEntity(
     calculationProfile = source.calculationProfile,
     licenseReference = source.licenseReference,
     attribution = source.attribution,
-    approvalId = source.approval.approvalId,
-    approvalStatus = source.approval.status,
-    approvedBy = source.approval.approvedBy,
-    approvedAt = source.approval.approvedAt,
-    approvalScope = source.approval.approvalScope,
-    approvalNote = source.approval.note,
+    approvalId = source.approval?.approvalId,
+    approvalStatus = source.approval?.status,
+    approvedBy = source.approval?.approvedBy,
+    approvedAt = source.approval?.approvedAt,
+    approvalScope = source.approval?.approvalScope,
+    approvalNote = source.approval?.note,
+    qualificationId = source.qualification?.qualificationId,
+    qualificationSha256 = source.qualification?.sha256,
+    qualificationJson = source.qualification?.let(SourceQualificationValidation::encode),
     coverageFrom = coverage.from,
     coverageTo = coverage.to,
     canonicalSha256 = integrity.canonicalSha256,

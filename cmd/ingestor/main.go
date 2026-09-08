@@ -59,6 +59,8 @@ func run(args []string, stdout, stderr io.Writer) int {
 		return runInspect(args[1:], stdout, stderr)
 	case "inspect-effective":
 		return runInspectEffective(args[1:], stdout, stderr)
+	case "inspect-public":
+		return runInspectPublic(args[1:], stdout, stderr)
 	default:
 		writeUsage(stderr)
 		return 2
@@ -124,6 +126,7 @@ func writeUsage(stderr io.Writer) {
 	fmt.Fprintln(stderr, "usage:")
 	fmt.Fprintln(stderr, "  ingestor inspect --fixture-dir <directory>")
 	fmt.Fprintln(stderr, "  ingestor inspect-effective --baseline-dir <directory> --override-dir <directory> [--policy-file <file>]")
+	fmt.Fprintln(stderr, "  ingestor inspect-public --manifest <file> --catalog <file> --raw <file> --at <UTC> --out <new-file> [--extracted <file>] [--previous <candidate-file>]")
 }
 
 func inspectEffective(baselineDirectory, overrideDirectory, policyPath string) (inspection, error) {

@@ -537,7 +537,9 @@ paths:
       summary: Return every eligible authoritative schedule choice for one canonical city
       description: >-
         Choice discovery is separate from automatic resolution. The response never truncates,
-        ranks, or auto-selects same-precedence authorities. Omitting revision_id reads the active
+        ranks, or auto-selects independent authorities, including choices at different specificity
+        tiers. Specificity suppresses a lower-tier option only within the same explicit authority-ID
+        set. Omitting revision_id reads the active
         revision; supplying it allows an immutable staged revision to be reviewed. Blocked and
         lower-precedence options remain available from prayer-policy-options.
       parameters:
@@ -932,6 +934,7 @@ components:
           enum:
             - resolved
             - same_tier_ambiguous
+            - multiple_authorities
             - stale_source
             - source_unavailable
             - source_not_approved
@@ -987,6 +990,7 @@ components:
           enum:
             - resolved
             - same_tier_ambiguous
+            - multiple_authorities
             - stale_source
             - source_unavailable
             - source_not_approved
@@ -996,7 +1000,8 @@ components:
         selection_required:
           type: boolean
           description: >-
-            True when multiple equal-precedence eligible choices are shown. Ordering never selects a choice.
+            True when multiple eligible choices are shown, including independent authorities at
+            different specificity tiers. Ordering never selects a choice.
         date:
           type: string
           format: date
@@ -1030,7 +1035,9 @@ components:
         - allowed_actions
       properties:
         schema_version:
-          const: device-city-schedule-choices/v1
+          type: string
+          enum: [device-city-schedule-choices/v1, device-city-schedule-choices/v2]
+          description: v2 is emitted for registry revisions carrying public source qualification; v1 is legacy-only.
         revision:
           $ref: '#/components/schemas/RegistryRevision'
         revision_state:
@@ -1047,6 +1054,7 @@ components:
           enum:
             - resolved
             - same_tier_ambiguous
+            - multiple_authorities
             - stale_source
             - source_unavailable
             - source_not_approved
@@ -1085,7 +1093,6 @@ components:
         - blocked_reason
         - policy_id
         - policy_kind
-        - approval_id
         - effective
         - scope
         - authorities
@@ -1102,6 +1109,14 @@ components:
             anyOf:
               - required: [timetable_id]
               - required: [timetable]
+      allOf:
+        - oneOf:
+            - required: [approval_id]
+              not:
+                required: [qualification]
+            - required: [qualification]
+              not:
+                required: [approval_id]
       properties:
         choice_id:
           type: string
@@ -1134,6 +1149,10 @@ components:
           enum: [timetable, calculation_profile]
         approval_id:
           type: string
+          description: Present only for legacy approval-bound choices.
+        qualification:
+          $ref: '#/components/schemas/SourceQualification'
+          description: Present for public first-party qualified choices; never combined with approval_id.
         effective:
           $ref: '#/components/schemas/DateRange'
         scope:
@@ -1181,6 +1200,28 @@ components:
           type: string
         reason:
           type: string
+    SourceQualification:
+      type: object
+      additionalProperties: false
+      required: [qualification_id, sha256, decision_system, source_id, catalog_revision, scope, timezone, coverage]
+      properties:
+        qualification_id:
+          type: string
+        sha256:
+          type: string
+          pattern: '^[0-9a-f]{64}$'
+        decision_system:
+          const: namaztime:source-qualification/v1
+        source_id:
+          type: string
+        catalog_revision:
+          type: string
+        scope:
+          $ref: '#/components/schemas/GeographicScope'
+        timezone:
+          type: string
+        coverage:
+          $ref: '#/components/schemas/DateRange'
     RegistryPolicyOption:
       type: object
       additionalProperties: false

@@ -17,18 +17,55 @@ boundary, not a broken repository link. Remote CI is not rerun or claimed green.
 | Phase | Status | Required evidence / remaining work |
 |---|---|---|
 | 0: persistent policy reconciliation | DONE | ADR 0019, AGENTS, streamlined provider skill, source checklist and governing docs separate qualification from optional endorsement. `make docs-check test-skills` PASS: 2 package checks, 130 runtime/data cases, 2 explicit non-bundled upstream module skips. Provider frontmatter validation and `git diff --check` PASS. No application/schema/signing changes in this checkpoint. |
-| 1: previous research/demo audit | IN_PROGRESS | Reverify T034–T041 conclusions, catalog scope, actual PostgreSQL/pilot and debug synthetic paths; report historical versus current evidence |
-| 2–3: nationwide research and scope resolution | TODO | Derive every subject from actual catalog mapping; retained per-subject search trail, independent authorities, exact scope/currentness and unavailable reasons |
-| 4/6: qualified providers and verified activation | TODO | Hash-bound machine-verifiable qualification without fake approval; deterministic real adapters/policies, publication/signing, migrations/contracts and local materialization |
+| 1: previous research/demo audit | DONE | `research/t049/BASELINE_AUDIT.md`: 83 mapped subjects versus old 31 (52 gaps), current debug factory/constant-row projection, persisted legacy admission and pilot inspected; narrow pilot/artifact tests and 4 research tests PASS. No live NamazTime PostgreSQL instance found; fresh isolated DB gate remains required. |
+| 2–3: nationwide research and scope resolution | IN_PROGRESS | All four ledgers delivered: western 29, eastern 21, southern 13 and Volga/Ural 20 subjects. Cross-ledger synthesis, currentness reconciliation and qualification remain in progress. Current hash-pinned GeoNames import contains 166,559 localities and 83 mapped subjects; old pilot catalog bindings remain unchanged. DUM RT Kazan CSV and XLSX agree for all 365 dates, including unrepresentable May 5 Fajr 23:54: explicit September coverage passes, full-year coverage fails closed. No inferred day offset or regional expansion. |
+| 4/6: qualified providers and verified activation | IN_PROGRESS | DUM RT CSV, Omsk JSON, KBR extracted-PDF text, CDUM HTML and Sochi XLSX parsers have synthetic and retained-artifact checks. Qualification/snapshot/signing/audit v2 and Go registry v2 admission pass narrow tests without human approval; every activated qualified snapshot must carry the exact proof hash, and canonical scope/catalog bindings are checked. PostgreSQL v9 migration, rollback refusal, reapply and backup/restore integration pass. Android v2/Room v4 passes 135 focused tests reported by the Android lane, including cross-language signed fixture and legacy LKG. KBR now has a real hash-bound qualification inspection outside Git; signed materialization and normal setup still remain to be completed. |
 | 5: normal setup/runtime | TODO | Canonical search, all independent real choices/previews, signed local activation, explicit synthetic test-only path, no generic fallback |
 | Evidence and repository gates | TODO | Representative real patterns, pilot byte regression, parser drift/stale tests, PostgreSQL up/down/reapply/restore if changed, Android emulator + full requested gates |
 
 Scope includes coherent local checkpoint commits, not push/PR/deployment,
 signing-key changes, organization contact or production-data deletion. Unknown
 source evidence makes that source/city unavailable, not the whole task blocked.
-T038's written-confirmation blocker is superseded; close T038 only after a real
-second non-Ulyanovsk adapter is implemented and validated. No new source has yet
+T038 is DONE under the explicit T049 closure rule: the second non-Ulyanovsk
+regional adapter (DUM KBR annual PDF, explicit republic-wide scope) is implemented
+and verified against all 365 retained first-party rows. No new source has yet
 been qualified, materialized or activated by T049.
+
+Current narrow evidence: `go test ./internal/registry ./internal/devices -count=1`
+PASS, retained Kazan September hash-bound provider test PASS, and Android
+`DeviceScheduleChoiceClientTest` PASS after its new mixed-authority test failed
+against the previous global-tier rejection. Agents report full retained Omsk
+122-day and KBR 365-day comparisons; root integration review and aggregate
+gates remain pending. These checks do not establish runtime activation.
+
+Qualification protocol narrow checks: `go test ./internal/domain
+./internal/publication ./internal/registry ./internal/qualification` PASS after
+test-first evidence/hash/catalog/timestamp/order/DST and protected-signing tests.
+Snapshot v2 and signing/audit v2 JSON Schema positive cases pass; legacy snapshot
+and publication tests still pass. Public source qualification cannot create
+iqamah/Jumuah or a generic calculation policy. Research-validation totals are
+not activation counts: DUM RT has 43 September parser passes, 36 unambiguous
+catalog bindings (35 overlap), 8 unresolved identity mappings; CDUM has 17
+September parser passes, with canonical mapping still to be admitted.
+
+Registry v2 narrow checks pass for exact proof/source/authority/scope/catalog
+binding, public geographic contexts without fake mosque approvals, independent
+active choices with mandatory explicit selection, expiry and signed-proof swaps.
+The public-import builder now joins the five strict adapters to retained raw
+hashes, an exact canonical catalog and evidence-bound qualification.
+`ingestor inspect-public` and the qualified `publisher assemble` branch pass
+synthetic CLI tests, reject mixed human-approval inputs and protect existing
+output files; real operational manifests and runtime wiring remain pending.
+
+Independent trust review findings were reproduced with failing regression tests
+and fixed: exact Int64 JSON Schema bounds, freshness at actual signing/publication
+instants (not only generated-at), and receipt ordering
+`decision <= generated <= signed <= published`. Correctly re-signed invalid
+receipts are rejected; historical authenticated LKG verification remains valid.
+Latest root checks: `go test ./internal/publication ./internal/registry
+./cmd/publisher ./internal/onboarding -count=1` PASS; DUM KBR opt-in primary
+PDF/text/reference hash check PASS with all 365 fields equal. Full gates and
+real activation are still outstanding.
 
 ## 2026-09-08 — repository instruction and skill cleanup
 
@@ -268,7 +305,7 @@ unchanged.
 | T035 licensed canonical Russia city catalog and search | DONE | GeoNames RU selected under CC BY 4.0 after OSM/ODbL comparison; exact 2026-08-29 inputs are size/SHA-pinned and bulk outputs stay outside Git. Deterministic importer/search/diff yields 166,557 Russian-named cities across 83 mapped subjects, explicit exclusions, stable IDs, IANA timezone/provenance and nine non-auto-selected `Киров` results. Two full imports are byte-identical; docs/narrow/lint gates pass. |
 | T036 persisted policy registry with verified reference adapters | DONE | PostgreSQL v6 persists immutable schema-v1 geography/source/policy/payload/override revisions, canonical hashes, active pointer and append-only activation evidence. Service activation verifies exact approval/signed-snapshot references, source freshness and same-tier uniqueness; duplicate city search never auto-selects. Real PostgreSQL, migration rollback/reapply and least-privilege restore gates pass. |
 | T037 Ulyanovsk persisted end-to-end migration | DONE | Hard-coded executable seed removed. Reviewed bindings compose the pinned 166,557-city GeoNames catalog with real approval/publication evidence; immutable PostgreSQL activation plus authenticated setup search resolves canonical Ulyanovsk → RU-ULY → explicit dual-evidence source/policy/timetable → Second Cathedral Mosque → unchanged signed snapshot. Real rollback, duplicate/unknown non-selection, API least privilege, full Go/PostgreSQL/Android/docs gates and raw snapshot SHA-256 `78233e7b…50b` pass. |
-| T038 second official regional source adapter | IN_PROGRESS | T049 / ADR 0019 supersedes the old written-confirmation blocker. Completion requires a second implemented and verified non-Ulyanovsk first-party adapter with exact scope; research alone does not satisfy it. |
+| T038 second official regional source adapter | DONE | Closed by T049's explicit adapter criterion: `kbr-annual-pdf-text/v1` validates the authority-linked 2026 PDF explicitly scoped «ПО КБР»; all 365 raw/extracted/reference rows and hashes match. See `research/t049/KBR_ADAPTER.md`. Nationwide qualification, signed materialization and runtime integration remain T049 work, not claimed complete by this adapter result. |
 | T039 ambiguity, unavailability and staleness operator workflow | DONE | versioned admin assessment explains deterministic tier, authority/source evidence, freshness/range and stable blocked reasons; an authenticated mosque operator can append only a selectable staged choice as `pending_review`. PostgreSQL v7 makes requests idempotent/append-only and serializes against activation. Ambiguous/stale/unavailable never publish or select a neighboring/nationwide method; active revision, assignments, signed Ulyanovsk bytes and TV last-known-good remain unchanged. |
 | T040 multi-authority city schedule choices | DONE | Checkpoints `4f0c9dd`, `3e41749`, `b7f8e76` add a non-persisted `CityScheduleChoiceSet` and authenticated `/setup/schedule-choices` v1 projection. It returns every highest-tier eligible authority choice with stable identity/provenance, neutral order and no top-N; multiplicity requires explicit selection while resolver ambiguity and T039 `pending_review` remain fail closed. 0/1/2/3/5/8 synthetic, PostgreSQL active/staged/stale, full/race/lint/docs/security and unchanged Ulyanovsk SHA-256 gates pass; no migration or new real source was added. |
 | T041 Android TV city and schedule setup flow | DONE | Checkpoints `6375915`, `a5456ec`, `64ed91d`, `08500e5`, `cc02d51`, `824f279`, `ea37c5e`, `5bab92f`, `8840ffa` provide a provisioned-device-only API boundary, append-only schema-v8 `pending_review` handoff, canonical Cyrillic/alias city search, duplicate-city disambiguation, complete 0..N authority choices with visible evidence/approval/freshness, explicit proposal/pending UI and last-known-good preservation. Android 16 TV-emulator evidence covers system IME, D-pad scrolling, one/many/unavailable/pending states and Back/focus recovery; physical TV remains unclaimed. Clean dependency-home strict verification, full docs/Go/PostgreSQL/restore/Android debug+release/lint/race/vulnerability/secret gates pass, release excludes the debug evidence renderer, Room schema is unchanged and Ulyanovsk retains raw SHA-256 `78233e7b…50b`. |

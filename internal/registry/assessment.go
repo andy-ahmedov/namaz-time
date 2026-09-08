@@ -22,6 +22,7 @@ type AssessmentReason string
 const (
 	AssessmentReasonResolved            AssessmentReason = "resolved"
 	AssessmentReasonSameTierAmbiguous   AssessmentReason = "same_tier_ambiguous"
+	AssessmentReasonMultipleAuthorities AssessmentReason = "multiple_authorities"
 	AssessmentReasonStaleSource         AssessmentReason = "stale_source"
 	AssessmentReasonSourceUnavailable   AssessmentReason = "source_unavailable"
 	AssessmentReasonSourceUnapproved    AssessmentReason = "source_not_approved"
@@ -44,16 +45,17 @@ const (
 )
 
 type PolicyOption struct {
-	Tier               ResolutionTier             `json:"tier"`
-	Selectable         bool                       `json:"selectable"`
-	BlockedReason      OptionBlockedReason        `json:"blocked_reason"`
-	Scope              domain.GeographicScope     `json:"scope"`
-	Authorities        []domain.PrayerAuthority   `json:"authorities"`
-	Source             domain.PrayerSource        `json:"source"`
-	Policy             domain.PrayerPolicy        `json:"policy"`
-	TimeTable          *domain.TimeTable          `json:"timetable,omitempty"`
-	CalculationProfile *domain.CalculationProfile `json:"calculation_profile,omitempty"`
-	SourceOverrides    []domain.SourceOverride    `json:"source_overrides"`
+	Qualification      *domain.SourceQualification `json:"qualification,omitempty"`
+	Tier               ResolutionTier              `json:"tier"`
+	Selectable         bool                        `json:"selectable"`
+	BlockedReason      OptionBlockedReason         `json:"blocked_reason"`
+	Scope              domain.GeographicScope      `json:"scope"`
+	Authorities        []domain.PrayerAuthority    `json:"authorities"`
+	Source             domain.PrayerSource         `json:"source"`
+	Policy             domain.PrayerPolicy         `json:"policy"`
+	TimeTable          *domain.TimeTable           `json:"timetable,omitempty"`
+	CalculationProfile *domain.CalculationProfile  `json:"calculation_profile,omitempty"`
+	SourceOverrides    []domain.SourceOverride     `json:"source_overrides"`
 }
 
 type PolicyAssessment struct {
@@ -93,7 +95,7 @@ func (r Registry) Assess(request ResolveRequest) (PolicyAssessment, error) {
 		Options: []PolicyOption{},
 	}
 	for _, policy := range r.policies {
-		if !contains(policy.MosqueIDs, request.MosqueID) {
+		if policy.QualificationID == "" && !contains(policy.MosqueIDs, request.MosqueID) {
 			continue
 		}
 		scope, exists := findByID(r.scopes, policy.GeographicScopeID, func(item domain.GeographicScope) string { return item.ID })
@@ -123,6 +125,12 @@ func (r Registry) assessPolicyOption(policy domain.PrayerPolicy, scope domain.Ge
 		Tier: tier, Selectable: false, BlockedReason: OptionEligible, Scope: scope,
 		Source: cloneSource(source), Policy: clonePolicy(policy), SourceOverrides: []domain.SourceOverride{},
 	}
+	if policy.QualificationID != "" {
+		if q, found := findByID(r.qualifications, policy.QualificationID, func(q domain.SourceQualification) string { return q.ID }); found {
+			cloned := cloneQualification(q)
+			option.Qualification = &cloned
+		}
+	}
 	for _, authorityID := range policy.AuthorityIDs {
 		authority, _ := findByID(r.authorities, authorityID, func(item domain.PrayerAuthority) string { return item.ID })
 		option.Authorities = append(option.Authorities, authority)
@@ -138,7 +146,7 @@ func (r Registry) assessPolicyOption(policy domain.PrayerPolicy, scope domain.Ge
 	switch policy.Kind {
 	case domain.PrayerPolicyTimeTable:
 		timetable, found := findByID(r.timeTables, policy.TimeTableID, func(item domain.TimeTable) string { return item.ID })
-		if !found || (timetable.MosqueID != "" && timetable.MosqueID != request.MosqueID) ||
+		if !found || (policy.QualificationID == "" && timetable.MosqueID != "" && timetable.MosqueID != request.MosqueID) ||
 			timetable.Timezone != city.Timezone || !dateInRange(request.Date, timetable.Effective) {
 			option.BlockedReason = OptionScheduleUnavailable
 			return option
@@ -184,30 +192,40 @@ func (r Registry) assessPolicyOption(policy domain.PrayerPolicy, scope domain.Ge
 }
 
 func (assessment *PolicyAssessment) finalize() {
-	bestRank := int(^uint(0) >> 1)
+	// Specificity compares only the same explicit authority identity set.
+	// A region-scoped independent organization is not subordinate to a city's
+	// other publisher. Affiliation is never guessed from names or geography.
 	bestCount := 0
-	for _, option := range assessment.Options {
+	firstRank := -1
+	mixedRanks := false
+	for index, option := range assessment.Options {
 		if !option.Selectable {
 			continue
 		}
 		rank := resolutionTierRank(option.Tier)
-		if rank < bestRank {
-			bestRank = rank
-			bestCount = 1
-		} else if rank == bestRank {
+		for _, other := range assessment.Options {
+			if other.Selectable && resolutionTierRank(other.Tier) < rank && sameStrings(option.Policy.AuthorityIDs, other.Policy.AuthorityIDs) {
+				assessment.Options[index].Selectable = false
+				assessment.Options[index].BlockedReason = OptionLowerPrecedence
+				break
+			}
+		}
+		if assessment.Options[index].Selectable {
 			bestCount++
+			if firstRank < 0 {
+				firstRank = rank
+			} else if rank != firstRank {
+				mixedRanks = true
+			}
 		}
 	}
 	if bestCount > 0 {
-		for index := range assessment.Options {
-			if assessment.Options[index].Selectable && resolutionTierRank(assessment.Options[index].Tier) > bestRank {
-				assessment.Options[index].Selectable = false
-				assessment.Options[index].BlockedReason = OptionLowerPrecedence
-			}
-		}
 		if bestCount > 1 {
 			assessment.Status = AssessmentAmbiguous
 			assessment.Reason = AssessmentReasonSameTierAmbiguous
+			if mixedRanks {
+				assessment.Reason = AssessmentReasonMultipleAuthorities
+			}
 		} else {
 			assessment.Status = AssessmentResolved
 			assessment.Reason = AssessmentReasonResolved
@@ -242,7 +260,7 @@ func (assessment *PolicyAssessment) finalize() {
 
 func sourceBlockedReason(source domain.PrayerSource, date string) OptionBlockedReason {
 	switch source.Status {
-	case domain.PrayerSourceApproved:
+	case domain.PrayerSourceApproved, domain.PrayerSourceQualified:
 		if source.FreshThrough == "" || source.FreshThrough < date {
 			return OptionSourceNotFresh
 		}

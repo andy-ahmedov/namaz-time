@@ -17,6 +17,7 @@ import (
 )
 
 const policyBindingsSchemaVersion = "namaztime-policy-bindings/v1"
+const qualifiedPolicyBindingsSchemaVersion = "namaztime-policy-bindings/v2"
 
 type PolicyBindingsRevision struct {
 	ID                   string    `json:"id"`
@@ -30,15 +31,16 @@ type PolicyBindingsRevision struct {
 }
 
 type PolicyBindings struct {
-	SchemaVersion       string                      `json:"schema_version"`
-	RegistryRevision    PolicyBindingsRevision      `json:"registry_revision"`
-	Scopes              []domain.GeographicScope    `json:"scopes"`
-	Authorities         []domain.PrayerAuthority    `json:"authorities"`
-	Sources             []domain.PrayerSource       `json:"sources"`
-	Policies            []domain.PrayerPolicy       `json:"policies"`
-	CalculationProfiles []domain.CalculationProfile `json:"calculation_profiles"`
-	TimeTables          []domain.TimeTable          `json:"timetables"`
-	SourceOverrides     []domain.SourceOverride     `json:"source_overrides"`
+	Qualifications      []domain.SourceQualification `json:"qualifications,omitempty"`
+	SchemaVersion       string                       `json:"schema_version"`
+	RegistryRevision    PolicyBindingsRevision       `json:"registry_revision"`
+	Scopes              []domain.GeographicScope     `json:"scopes"`
+	Authorities         []domain.PrayerAuthority     `json:"authorities"`
+	Sources             []domain.PrayerSource        `json:"sources"`
+	Policies            []domain.PrayerPolicy        `json:"policies"`
+	CalculationProfiles []domain.CalculationProfile  `json:"calculation_profiles"`
+	TimeTables          []domain.TimeTable           `json:"timetables"`
+	SourceOverrides     []domain.SourceOverride      `json:"source_overrides"`
 }
 
 func DecodePolicyBindings(data []byte) (PolicyBindings, error) {
@@ -47,11 +49,16 @@ func DecodePolicyBindings(data []byte) (PolicyBindings, error) {
 		return PolicyBindings{}, fmt.Errorf("decode policy bindings: %w", err)
 	}
 	revision := bindings.RegistryRevision
-	if bindings.SchemaVersion != policyBindingsSchemaVersion || revision.SchemaVersion != RegistrySchemaVersion ||
+	if !validPolicyBindingsSchema(bindings) ||
 		!validAuditText(revision.ID, 160) || !validAuditText(revision.CatalogRevisionID, 200) || !validSHA256(revision.CatalogContentSHA256) ||
 		!validAuditText(revision.CreatedBy, 160) || !validAuditText(revision.Reason, 1000) || revision.CreatedAt.IsZero() ||
 		!isCanonicalUTC(revision.CreatedAt) || (revision.ParentRevisionID != "" && !validAuditText(revision.ParentRevisionID, 160)) {
 		return PolicyBindings{}, fmt.Errorf("decode policy bindings: %w: invalid revision metadata", ErrRevisionInvalid)
+	}
+	for _, q := range bindings.Qualifications {
+		if err := q.Validate(); err != nil || q.CatalogRevision != revision.CatalogRevisionID {
+			return PolicyBindings{}, fmt.Errorf("decode policy bindings: %w: invalid qualification %q", ErrRevisionInvalid, q.ID)
+		}
 	}
 	return bindings, nil
 }
@@ -66,18 +73,22 @@ func ComposeCatalog(catalog geography.Catalog, bindings PolicyBindings) (Revisio
 		return RevisionRecord{}, Dataset{}, fmt.Errorf("compose registry catalog: %w", err)
 	}
 	revision := bindings.RegistryRevision
-	if bindings.SchemaVersion != policyBindingsSchemaVersion || revision.SchemaVersion != RegistrySchemaVersion ||
+	if !validPolicyBindingsSchema(bindings) ||
 		revision.CatalogRevisionID != validated.Revision.ID || revision.CatalogContentSHA256 != validated.Revision.ContentSHA256 {
 		return RevisionRecord{}, Dataset{}, fmt.Errorf("%w: policy bindings target another geographic catalog", ErrRevisionInvalid)
 	}
 	dataset := Dataset{
-		Cities: append([]domain.City(nil), validated.Cities...), Regions: append([]domain.Region(nil), validated.Regions...),
+		Qualifications: append([]domain.SourceQualification(nil), bindings.Qualifications...),
+		Cities:         append([]domain.City(nil), validated.Cities...), Regions: append([]domain.Region(nil), validated.Regions...),
 		Scopes: append([]domain.GeographicScope(nil), bindings.Scopes...), Authorities: append([]domain.PrayerAuthority(nil), bindings.Authorities...),
 		Sources: append([]domain.PrayerSource(nil), bindings.Sources...), Policies: append([]domain.PrayerPolicy(nil), bindings.Policies...),
 		CalculationProfiles: append([]domain.CalculationProfile(nil), bindings.CalculationProfiles...),
 		TimeTables:          append([]domain.TimeTable(nil), bindings.TimeTables...), SourceOverrides: append([]domain.SourceOverride(nil), bindings.SourceOverrides...),
 	}
 	dataset = cloneDataset(dataset)
+	if err := validateRevisionQualification(RevisionRecord{SchemaVersion: revision.SchemaVersion, CatalogRevisionID: revision.CatalogRevisionID}, dataset); err != nil {
+		return RevisionRecord{}, Dataset{}, err
+	}
 	if _, err := New(dataset); err != nil {
 		return RevisionRecord{}, Dataset{}, fmt.Errorf("%w: %v", ErrRevisionInvalid, err)
 	}
@@ -90,6 +101,13 @@ func ComposeCatalog(catalog geography.Catalog, bindings PolicyBindings) (Revisio
 		CatalogRevisionID: revision.CatalogRevisionID, ContentSHA256: contentSHA256,
 		CreatedAt: revision.CreatedAt, CreatedBy: revision.CreatedBy, Reason: revision.Reason,
 	}, dataset, nil
+}
+
+func validPolicyBindingsSchema(bindings PolicyBindings) bool {
+	if len(bindings.Qualifications) == 0 {
+		return bindings.SchemaVersion == policyBindingsSchemaVersion && bindings.RegistryRevision.SchemaVersion == RegistrySchemaVersion
+	}
+	return bindings.SchemaVersion == qualifiedPolicyBindingsSchemaVersion && bindings.RegistryRevision.SchemaVersion == QualifiedRegistrySchemaVersion
 }
 
 func decodeRegistryJSON(data []byte, target any) error {

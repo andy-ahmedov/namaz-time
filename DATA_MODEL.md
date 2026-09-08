@@ -19,6 +19,18 @@ contracts explicitly without fake approvers or silent reinterpretation.
 
 ## Main entities
 
+### `source_qualification` (T049)
+
+The immutable public first-party branch is implemented in
+`internal/domain/qualification.go`; its executable creation/verification lives
+in `internal/qualification`. It binds actual organization evidence, exact
+canonical scope, capture metadata, raw/normalized/onset/diff/validation hashes,
+parser, compared dates, bounded freshness and NamazTime's machine decision.
+It contains no invented human approval. Snapshot and signing/audit v2 carry this
+branch separately; v1 keeps actual legacy approval. See
+[the qualification protocol](PUBLIC_SOURCE_QUALIFICATION.md) for canonical hashes,
+geographic display-context compatibility and integration status.
+
 ### `mosque`
 
 ```text

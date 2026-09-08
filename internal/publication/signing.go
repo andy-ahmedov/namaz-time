@@ -23,37 +23,39 @@ var (
 )
 
 const publicationAttestationDomain = "namaz-time/publication-attestation/v1\x00"
+const qualificationAttestationDomain = "namaz-time/publication-attestation/v2\x00"
 
 // SigningRequest is public, non-secret material suitable for transfer to an
 // isolated Ed25519 signer. The signer signs CanonicalPayloadBase64 verbatim.
 type SigningRequest struct {
-	SchemaVersion                     string          `json:"schema_version"`
-	RequestID                         string          `json:"request_id"`
-	Environment                       string          `json:"environment"`
-	TrustBundleRevision               uint64          `json:"trust_bundle_revision"`
-	TrustBundleSHA256                 string          `json:"trust_bundle_sha256"`
-	SigningKeyID                      string          `json:"signing_key_id"`
-	CanonicalSHA256                   string          `json:"canonical_sha256"`
-	CanonicalPayloadBase64            string          `json:"canonical_payload_base64"`
-	CandidateID                       string          `json:"candidate_id"`
-	RawSHA256                         string          `json:"raw_sha256"`
-	TranscriptionSHA256               string          `json:"transcription_sha256"`
-	NormalizedSHA256                  string          `json:"normalized_sha256"`
-	DiffSHA256                        string          `json:"diff_sha256"`
-	ParserVersion                     string          `json:"parser_version"`
-	ApprovalID                        string          `json:"approval_id"`
-	ApproverIdentity                  string          `json:"approver_identity"`
-	ApprovedAt                        string          `json:"approved_at"`
-	ApprovalScope                     string          `json:"approval_scope"`
-	PrayerPolicySHA256                string          `json:"prayer_policy_sha256,omitempty"`
-	ApprovalReceiptSHA256             string          `json:"approval_receipt_sha256,omitempty"`
-	ApprovalTrustRevision             uint64          `json:"approval_trust_revision,omitempty"`
-	ApprovalTrustSHA256               string          `json:"approval_trust_sha256,omitempty"`
-	ApprovalKeyID                     string          `json:"approval_key_id,omitempty"`
-	ApprovalReceiptBase64             string          `json:"approval_receipt_base64,omitempty"`
-	ApprovalTrustBundleBase64         string          `json:"approval_trust_bundle_base64,omitempty"`
-	PreviousApprovalTrustBundleBase64 string          `json:"previous_approval_trust_bundle_base64,omitempty"`
-	Snapshot                          domain.Snapshot `json:"unsigned_snapshot"`
+	SchemaVersion                     string                  `json:"schema_version"`
+	RequestID                         string                  `json:"request_id"`
+	Environment                       string                  `json:"environment"`
+	TrustBundleRevision               uint64                  `json:"trust_bundle_revision"`
+	TrustBundleSHA256                 string                  `json:"trust_bundle_sha256"`
+	SigningKeyID                      string                  `json:"signing_key_id"`
+	CanonicalSHA256                   string                  `json:"canonical_sha256"`
+	CanonicalPayloadBase64            string                  `json:"canonical_payload_base64"`
+	CandidateID                       string                  `json:"candidate_id"`
+	RawSHA256                         string                  `json:"raw_sha256"`
+	TranscriptionSHA256               string                  `json:"transcription_sha256"`
+	NormalizedSHA256                  string                  `json:"normalized_sha256"`
+	DiffSHA256                        string                  `json:"diff_sha256"`
+	ParserVersion                     string                  `json:"parser_version"`
+	ApprovalID                        string                  `json:"approval_id,omitempty"`
+	ApproverIdentity                  string                  `json:"approver_identity,omitempty"`
+	ApprovedAt                        string                  `json:"approved_at,omitempty"`
+	ApprovalScope                     string                  `json:"approval_scope,omitempty"`
+	Qualification                     *QualificationReference `json:"qualification,omitempty"`
+	PrayerPolicySHA256                string                  `json:"prayer_policy_sha256,omitempty"`
+	ApprovalReceiptSHA256             string                  `json:"approval_receipt_sha256,omitempty"`
+	ApprovalTrustRevision             uint64                  `json:"approval_trust_revision,omitempty"`
+	ApprovalTrustSHA256               string                  `json:"approval_trust_sha256,omitempty"`
+	ApprovalKeyID                     string                  `json:"approval_key_id,omitempty"`
+	ApprovalReceiptBase64             string                  `json:"approval_receipt_base64,omitempty"`
+	ApprovalTrustBundleBase64         string                  `json:"approval_trust_bundle_base64,omitempty"`
+	PreviousApprovalTrustBundleBase64 string                  `json:"previous_approval_trust_bundle_base64,omitempty"`
+	Snapshot                          domain.Snapshot         `json:"unsigned_snapshot"`
 }
 
 type SigningResponse struct {
@@ -71,37 +73,38 @@ type SigningResponse struct {
 }
 
 type publicationAttestation struct {
-	SchemaVersion         string `json:"schema_version"`
-	Environment           string `json:"environment"`
-	RequestID             string `json:"request_id"`
-	PublicationRequestID  string `json:"publication_request_id"`
-	SigningRequestSHA256  string `json:"signing_request_sha256"`
-	SnapshotID            string `json:"snapshot_id"`
-	SnapshotSHA256        string `json:"snapshot_sha256"`
-	CanonicalSHA256       string `json:"canonical_sha256"`
-	SigningKeyID          string `json:"signing_key_id"`
-	CandidateID           string `json:"candidate_id"`
-	RawSHA256             string `json:"raw_sha256"`
-	TranscriptionSHA256   string `json:"transcription_sha256"`
-	NormalizedSHA256      string `json:"normalized_sha256"`
-	DiffSHA256            string `json:"diff_sha256"`
-	ParserVersion         string `json:"parser_version"`
-	ApprovalID            string `json:"approval_id"`
-	ApproverIdentity      string `json:"approver_identity"`
-	ApprovedAt            string `json:"approved_at"`
-	ApprovalScope         string `json:"approval_scope"`
-	PrayerPolicySHA256    string `json:"prayer_policy_sha256,omitempty"`
-	ApprovalReceiptSHA256 string `json:"approval_receipt_sha256,omitempty"`
-	ApprovalTrustRevision uint64 `json:"approval_trust_revision,omitempty"`
-	ApprovalTrustSHA256   string `json:"approval_trust_sha256,omitempty"`
-	ApprovalKeyID         string `json:"approval_key_id,omitempty"`
-	TrustBundleRevision   uint64 `json:"trust_bundle_revision"`
-	TrustBundleSHA256     string `json:"trust_bundle_sha256"`
-	SignerIdentity        string `json:"signer_identity"`
-	SignedAt              string `json:"signed_at"`
-	PublishedAt           string `json:"published_at"`
-	PreviousReceiptSHA256 string `json:"previous_receipt_sha256,omitempty"`
-	ChainGenesisReason    string `json:"chain_genesis_reason,omitempty"`
+	SchemaVersion         string                  `json:"schema_version"`
+	Environment           string                  `json:"environment"`
+	RequestID             string                  `json:"request_id"`
+	PublicationRequestID  string                  `json:"publication_request_id"`
+	SigningRequestSHA256  string                  `json:"signing_request_sha256"`
+	SnapshotID            string                  `json:"snapshot_id"`
+	SnapshotSHA256        string                  `json:"snapshot_sha256"`
+	CanonicalSHA256       string                  `json:"canonical_sha256"`
+	SigningKeyID          string                  `json:"signing_key_id"`
+	CandidateID           string                  `json:"candidate_id"`
+	RawSHA256             string                  `json:"raw_sha256"`
+	TranscriptionSHA256   string                  `json:"transcription_sha256"`
+	NormalizedSHA256      string                  `json:"normalized_sha256"`
+	DiffSHA256            string                  `json:"diff_sha256"`
+	ParserVersion         string                  `json:"parser_version"`
+	ApprovalID            string                  `json:"approval_id,omitempty"`
+	ApproverIdentity      string                  `json:"approver_identity,omitempty"`
+	ApprovedAt            string                  `json:"approved_at,omitempty"`
+	ApprovalScope         string                  `json:"approval_scope,omitempty"`
+	Qualification         *QualificationReference `json:"qualification,omitempty"`
+	PrayerPolicySHA256    string                  `json:"prayer_policy_sha256,omitempty"`
+	ApprovalReceiptSHA256 string                  `json:"approval_receipt_sha256,omitempty"`
+	ApprovalTrustRevision uint64                  `json:"approval_trust_revision,omitempty"`
+	ApprovalTrustSHA256   string                  `json:"approval_trust_sha256,omitempty"`
+	ApprovalKeyID         string                  `json:"approval_key_id,omitempty"`
+	TrustBundleRevision   uint64                  `json:"trust_bundle_revision"`
+	TrustBundleSHA256     string                  `json:"trust_bundle_sha256"`
+	SignerIdentity        string                  `json:"signer_identity"`
+	SignedAt              string                  `json:"signed_at"`
+	PublishedAt           string                  `json:"published_at"`
+	PreviousReceiptSHA256 string                  `json:"previous_receipt_sha256,omitempty"`
+	ChainGenesisReason    string                  `json:"chain_genesis_reason,omitempty"`
 }
 
 func PrepareSigning(request PublishRequest, policy *trust.Policy) (SigningRequest, error) {
@@ -142,7 +145,7 @@ func PrepareSigning(request PublishRequest, policy *trust.Policy) (SigningReques
 	snapshot.Integrity.CanonicalSHA256 = hex.EncodeToString(hash[:])
 	binding := sha256.Sum256([]byte(
 		request.Candidate.ID + "\x00" + request.Candidate.Artifact.SHA256 + "\x00" + request.Candidate.TranscriptionSHA256 + "\x00" +
-			request.Candidate.NormalizedSHA256 + "\x00" + request.Diff.SHA256 + "\x00" + request.Approval.ID + "\x00" +
+			request.Candidate.NormalizedSHA256 + "\x00" + request.Diff.SHA256 + "\x00" + admissionID(request.Approval.ID, qualificationReference(request.Qualification)) + "\x00" +
 			request.Approval.PrayerPolicySHA256 + "\x00" + approvalEvidenceBinding(request.ApprovalEvidence) + "\x00" +
 			request.SnapshotID + "\x00" + request.SigningKeyID + "\x00" + hex.EncodeToString(hash[:]),
 	))
@@ -155,7 +158,7 @@ func PrepareSigning(request PublishRequest, policy *trust.Policy) (SigningReques
 		approvalKeyID = request.ApprovalEvidence.ApprovalKeyID
 	}
 	return SigningRequest{
-		SchemaVersion: "1.0", RequestID: "signing-" + hex.EncodeToString(binding[:16]), Environment: policy.Environment(),
+		SchemaVersion: snapshot.SchemaVersion, RequestID: "signing-" + hex.EncodeToString(binding[:16]), Environment: policy.Environment(),
 		TrustBundleRevision: policy.Revision(), TrustBundleSHA256: policy.SHA256(),
 		SigningKeyID: request.SigningKeyID, CanonicalSHA256: hex.EncodeToString(hash[:]),
 		CanonicalPayloadBase64: base64.StdEncoding.EncodeToString(canonical),
@@ -163,6 +166,7 @@ func PrepareSigning(request PublishRequest, policy *trust.Policy) (SigningReques
 		TranscriptionSHA256: request.Candidate.TranscriptionSHA256, NormalizedSHA256: request.Candidate.NormalizedSHA256,
 		DiffSHA256: request.Diff.SHA256, ParserVersion: request.Candidate.ParserVersion,
 		ApprovalID: request.Approval.ID, ApproverIdentity: request.Approval.Actor, ApprovedAt: request.Approval.ApprovedAt,
+		Qualification: qualificationReference(request.Qualification),
 		ApprovalScope: request.Approval.Scope, PrayerPolicySHA256: request.Approval.PrayerPolicySHA256,
 		ApprovalReceiptSHA256: approvalReceiptSHA256, ApprovalTrustRevision: approvalTrustRevision,
 		ApprovalTrustSHA256: approvalTrustSHA256, ApprovalKeyID: approvalKeyID,
@@ -198,6 +202,9 @@ func FinalizeSigning(request PublishRequest, prepared SigningRequest, response S
 	}
 	if audit.PublishedAt.IsZero() || audit.PublishedAt.Before(signedAt) {
 		return Result{}, AuditReceipt{}, newError("finalize signing", "audit_metadata_invalid", errors.New("published_at must not precede signed_at"))
+	}
+	if err := validateQualificationPublicationTimes(request.Qualification, signedAt, audit.PublishedAt); err != nil {
+		return Result{}, AuditReceipt{}, err
 	}
 	if response.PublishedAt != audit.PublishedAt.UTC().Format(time.RFC3339) ||
 		response.PreviousReceiptSHA256 != audit.PreviousReceiptSHA256 || response.ChainGenesisReason != audit.ChainGenesisReason ||
@@ -267,14 +274,15 @@ func BuildAttestationPayload(prepared SigningRequest, response SigningResponse) 
 		return nil, "", err
 	}
 	attestation := publicationAttestation{
-		SchemaVersion: "1.0", Environment: prepared.Environment, RequestID: prepared.RequestID,
-		PublicationRequestID: publicationRequestID(prepared.CandidateID, prepared.DiffSHA256, prepared.ApprovalID, prepared.Snapshot.SnapshotID, prepared.SigningKeyID),
+		SchemaVersion: prepared.SchemaVersion, Environment: prepared.Environment, RequestID: prepared.RequestID,
+		PublicationRequestID: publicationRequestID(prepared.CandidateID, prepared.DiffSHA256, admissionID(prepared.ApprovalID, prepared.Qualification), prepared.Snapshot.SnapshotID, prepared.SigningKeyID),
 		SigningRequestSHA256: requestSHA256, SnapshotID: prepared.Snapshot.SnapshotID, SnapshotSHA256: snapshotSHA256,
 		CanonicalSHA256: prepared.CanonicalSHA256, SigningKeyID: prepared.SigningKeyID,
 		CandidateID: prepared.CandidateID, RawSHA256: prepared.RawSHA256,
 		TranscriptionSHA256: prepared.TranscriptionSHA256, NormalizedSHA256: prepared.NormalizedSHA256,
 		DiffSHA256: prepared.DiffSHA256, ParserVersion: prepared.ParserVersion,
 		ApprovalID: prepared.ApprovalID, ApproverIdentity: prepared.ApproverIdentity, ApprovedAt: prepared.ApprovedAt,
+		Qualification: prepared.Qualification,
 		ApprovalScope: prepared.ApprovalScope, PrayerPolicySHA256: prepared.PrayerPolicySHA256,
 		ApprovalReceiptSHA256: prepared.ApprovalReceiptSHA256, ApprovalTrustRevision: prepared.ApprovalTrustRevision,
 		ApprovalTrustSHA256: prepared.ApprovalTrustSHA256, ApprovalKeyID: prepared.ApprovalKeyID,
@@ -287,7 +295,7 @@ func BuildAttestationPayload(prepared SigningRequest, response SigningResponse) 
 	if err != nil {
 		return nil, "", newError("build attestation", "encode_failed", err)
 	}
-	return append([]byte(publicationAttestationDomain), encoded...), requestSHA256, nil
+	return append([]byte(attestationDomain(prepared.SchemaVersion)), encoded...), requestSHA256, nil
 }
 
 func EncodeSigningRequest(request SigningRequest) ([]byte, error) {
@@ -342,10 +350,10 @@ func VerifyPublicationAdmission(snapshot []byte, receipt AuditReceipt, policy *t
 		return fmt.Errorf("decode publication snapshot: %w", err)
 	}
 	if receipt.SnapshotID != envelope.SnapshotID || receipt.SnapshotGeneratedAt != envelope.GeneratedAt || receipt.SigningKeyID != envelope.Integrity.SigningKeyID || receipt.CanonicalSHA256 != envelope.Integrity.CanonicalSHA256 ||
-		receipt.ApprovalID != envelope.Source.Approval.ID || receipt.ApproverIdentity != envelope.Source.Approval.ApprovedBy || receipt.ApprovedAt != envelope.Source.Approval.ApprovedAt || receipt.ApprovalScope != envelope.Source.Approval.Scope {
+		receipt.SchemaVersion != envelope.SchemaVersion || receipt.ApprovalID != envelope.Source.Approval.ID || receipt.ApproverIdentity != envelope.Source.Approval.ApprovedBy || receipt.ApprovedAt != envelope.Source.Approval.ApprovedAt || receipt.ApprovalScope != envelope.Source.Approval.Scope {
 		return errors.New("audit receipt does not bind snapshot identity, integrity and approval")
 	}
-	return nil
+	return verifyQualificationReceiptBinding(receipt, envelope.Source.Qualification)
 }
 
 func VerifyAuditReceipt(receipt AuditReceipt, previous *AuditReceipt) error {
@@ -385,13 +393,14 @@ func VerifyAuditReceiptHead(receipt AuditReceipt, policy *trust.Policy) error {
 		return fmt.Errorf("audit receipt trust policy rejected key: %w", err)
 	}
 	attestation := publicationAttestation{
-		SchemaVersion: "1.0", Environment: receipt.Environment, RequestID: receipt.SigningRequestID,
+		SchemaVersion: receipt.SchemaVersion, Environment: receipt.Environment, RequestID: receipt.SigningRequestID,
 		PublicationRequestID: receipt.RequestID, SigningRequestSHA256: receipt.SigningRequestSHA256,
 		SnapshotID: receipt.SnapshotID, SnapshotSHA256: receipt.SnapshotSHA256,
 		CanonicalSHA256: receipt.CanonicalSHA256, SigningKeyID: receipt.SigningKeyID,
 		CandidateID: receipt.CandidateID, RawSHA256: receipt.RawSHA256, TranscriptionSHA256: receipt.TranscriptionSHA256,
 		NormalizedSHA256: receipt.NormalizedSHA256, DiffSHA256: receipt.DiffSHA256, ParserVersion: receipt.ParserVersion,
 		ApprovalID: receipt.ApprovalID, ApproverIdentity: receipt.ApproverIdentity, ApprovedAt: receipt.ApprovedAt, ApprovalScope: receipt.ApprovalScope,
+		Qualification:      receipt.Qualification,
 		PrayerPolicySHA256: receipt.PrayerPolicySHA256, ApprovalReceiptSHA256: receipt.ApprovalReceiptSHA256,
 		ApprovalTrustRevision: receipt.ApprovalTrustRevision, ApprovalTrustSHA256: receipt.ApprovalTrustSHA256,
 		ApprovalKeyID:       receipt.ApprovalKeyID,
@@ -405,35 +414,49 @@ func VerifyAuditReceiptHead(receipt AuditReceipt, policy *trust.Policy) error {
 		return fmt.Errorf("encode audit attestation: %w", err)
 	}
 	signature, err := base64.StdEncoding.DecodeString(receipt.AttestationSignature)
-	if err != nil || len(signature) != ed25519.SignatureSize || base64.StdEncoding.EncodeToString(signature) != receipt.AttestationSignature || !ed25519.Verify(publicKey, append([]byte(publicationAttestationDomain), encoded...), signature) {
+	if err != nil || len(signature) != ed25519.SignatureSize || base64.StdEncoding.EncodeToString(signature) != receipt.AttestationSignature || !ed25519.Verify(publicKey, append([]byte(attestationDomain(receipt.SchemaVersion)), encoded...), signature) {
 		return errors.New("audit receipt signer attestation is invalid")
 	}
 	return nil
 }
 
 func verifyAuditReceiptSelf(receipt AuditReceipt) error {
-	if receipt.SchemaVersion != "1.0" || receipt.Event != "snapshot.published" || (receipt.Environment != "test" && receipt.Environment != "staging" && receipt.Environment != "production") || !publicationRequestIDPattern.MatchString(receipt.RequestID) ||
+	if (receipt.SchemaVersion != "1.0" && receipt.SchemaVersion != "2.0") || receipt.Event != "snapshot.published" || (receipt.Environment != "test" && receipt.Environment != "staging" && receipt.Environment != "production") || !publicationRequestIDPattern.MatchString(receipt.RequestID) ||
 		len(receipt.SnapshotID) < 1 || len(receipt.SnapshotID) > 128 || len(receipt.SigningKeyID) < 1 || len(receipt.SigningKeyID) > 128 ||
 		len(receipt.CandidateID) < 1 || len(receipt.CandidateID) > 128 || len(receipt.ParserVersion) < 1 || len(receipt.ParserVersion) > 128 ||
-		len(receipt.ApprovalID) < 1 || len(receipt.ApprovalID) > 128 || len(receipt.ApproverIdentity) < 1 || len(receipt.ApproverIdentity) > 240 ||
 		len(receipt.SignerIdentity) < 1 || len(receipt.SignerIdentity) > 240 || strings.EqualFold(strings.TrimSpace(receipt.ApproverIdentity), strings.TrimSpace(receipt.SignerIdentity)) || receipt.TrustBundleRevision == 0 ||
-		!validSHA256(receipt.SigningRequestSHA256) || !signingRequestIDPattern.MatchString(receipt.SigningRequestID) || len(receipt.ApprovalScope) < 1 || len(receipt.ApprovalScope) > 500 {
+		!validSHA256(receipt.SigningRequestSHA256) || !signingRequestIDPattern.MatchString(receipt.SigningRequestID) {
 		return errors.New("audit receipt required metadata is missing")
 	}
-	if receipt.Environment == "production" && (!validSHA256(receipt.PrayerPolicySHA256) || !validSHA256(receipt.ApprovalReceiptSHA256) || receipt.ApprovalTrustRevision == 0 || !validSHA256(receipt.ApprovalTrustSHA256) || receipt.ApprovalKeyID == "") {
-		return errors.New("production audit receipt authenticated approval evidence is missing")
+	decisionTime := receipt.ApprovedAt
+	if receipt.SchemaVersion == "2.0" {
+		if err := validateQualificationReference(receipt.Qualification); err != nil {
+			return err
+		}
+		if receipt.ApprovalID != "" || receipt.ApproverIdentity != "" || receipt.ApprovedAt != "" || receipt.ApprovalScope != "" || receipt.PrayerPolicySHA256 != "" || receipt.ApprovalReceiptSHA256 != "" || receipt.ApprovalTrustRevision != 0 || receipt.ApprovalTrustSHA256 != "" || receipt.ApprovalKeyID != "" {
+			return errors.New("public qualification receipt cannot contain legacy approval evidence")
+		}
+		decisionTime = receipt.Qualification.QualifiedAt
+	} else {
+		if receipt.Qualification != nil || len(receipt.ApprovalID) < 1 || len(receipt.ApprovalID) > 128 || len(receipt.ApproverIdentity) < 1 || len(receipt.ApproverIdentity) > 240 || len(receipt.ApprovalScope) < 1 || len(receipt.ApprovalScope) > 500 {
+			return errors.New("legacy audit receipt approval metadata is missing or conflicting")
+		}
+		if receipt.Environment == "production" && (!validSHA256(receipt.PrayerPolicySHA256) || !validSHA256(receipt.ApprovalReceiptSHA256) || receipt.ApprovalTrustRevision == 0 || !validSHA256(receipt.ApprovalTrustSHA256) || receipt.ApprovalKeyID == "") {
+			return errors.New("production audit receipt authenticated approval evidence is missing")
+		}
 	}
 	for _, hash := range []string{receipt.SnapshotSHA256, receipt.CanonicalSHA256, receipt.RawSHA256, receipt.TranscriptionSHA256, receipt.NormalizedSHA256, receipt.DiffSHA256, receipt.TrustBundleSHA256, receipt.ReceiptSHA256} {
 		if !validSHA256(hash) {
 			return errors.New("audit receipt contains invalid SHA-256")
 		}
 	}
-	approvedAt, approvedErr := time.Parse(time.RFC3339, receipt.ApprovedAt)
+	approvedAt, approvedErr := time.Parse(time.RFC3339, decisionTime)
+	generatedAt, generatedErr := time.Parse(time.RFC3339, receipt.SnapshotGeneratedAt)
 	signedAt, signedErr := time.Parse(time.RFC3339, receipt.SignedAt)
 	publishedAt, publishedErr := time.Parse(time.RFC3339, receipt.PublishedAt)
-	if approvedErr != nil || signedErr != nil || publishedErr != nil ||
-		approvedAt.UTC().Format(time.RFC3339) != receipt.ApprovedAt || signedAt.UTC().Format(time.RFC3339) != receipt.SignedAt || publishedAt.UTC().Format(time.RFC3339) != receipt.PublishedAt ||
-		signedAt.Before(approvedAt) || publishedAt.Before(signedAt) {
+	if approvedErr != nil || generatedErr != nil || signedErr != nil || publishedErr != nil ||
+		approvedAt.UTC().Format(time.RFC3339) != decisionTime || signedAt.UTC().Format(time.RFC3339) != receipt.SignedAt || publishedAt.UTC().Format(time.RFC3339) != receipt.PublishedAt ||
+		generatedAt.UTC().Format(time.RFC3339) != receipt.SnapshotGeneratedAt || generatedAt.Before(approvedAt) || signedAt.Before(generatedAt) || publishedAt.Before(signedAt) {
 		return errors.New("audit receipt timestamp ordering is invalid")
 	}
 	if !validChainMetadata(receipt.PreviousReceiptSHA256, receipt.ChainGenesisReason) {
@@ -450,6 +473,13 @@ func verifyAuditReceiptSelf(receipt AuditReceipt) error {
 		return errors.New("audit receipt hash does not match content")
 	}
 	return nil
+}
+
+func attestationDomain(schemaVersion string) string {
+	if schemaVersion == "2.0" {
+		return qualificationAttestationDomain
+	}
+	return publicationAttestationDomain
 }
 
 func approvalEvidenceBinding(evidence *ApprovalEvidence) string {
