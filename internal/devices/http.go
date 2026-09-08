@@ -969,8 +969,12 @@ func (s *Service) handleAdminCityScheduleChoices(writer http.ResponseWriter, req
 	if projected.RevisionState == registry.RevisionStateStaged && len(choices) > 0 {
 		actions = append(actions, "request_binding")
 	}
+	schemaVersion := "city-schedule-choices/v1"
+	if projected.Revision.SchemaVersion == 2 {
+		schemaVersion = "city-schedule-choices/v2"
+	}
 	writeJSON(writer, http.StatusOK, adminCityScheduleChoicesResponse{
-		SchemaVersion: "city-schedule-choices/v1", Revision: projected.Revision,
+		SchemaVersion: schemaVersion, Revision: projected.Revision,
 		RevisionState: projected.RevisionState, Status: projected.Status,
 		AutomaticResolutionStatus: projected.AutomaticResolutionStatus,
 		AutomaticResolutionReason: projected.AutomaticResolutionReason,

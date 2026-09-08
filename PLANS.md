@@ -20,7 +20,7 @@ boundary, not a broken repository link. Remote CI is not rerun or claimed green.
 | 1: previous research/demo audit | DONE | `research/t049/BASELINE_AUDIT.md`: 83 mapped subjects versus old 31 (52 gaps), current debug factory/constant-row projection, persisted legacy admission and pilot inspected; narrow pilot/artifact tests and 4 research tests PASS. No live NamazTime PostgreSQL instance found; fresh isolated DB gate remains required. |
 | 2–3: nationwide research and scope resolution | IN_PROGRESS | All four ledgers delivered: western 29, eastern 21, southern 13 and Volga/Ural 20 subjects. Cross-ledger synthesis, currentness reconciliation and qualification remain in progress. Current hash-pinned GeoNames import contains 166,559 localities and 83 mapped subjects; old pilot catalog bindings remain unchanged. DUM RT Kazan CSV and XLSX agree for all 365 dates, including unrepresentable May 5 Fajr 23:54: explicit September coverage passes, full-year coverage fails closed. No inferred day offset or regional expansion. |
 | 4/6: qualified providers and verified activation | IN_PROGRESS | DUM RT CSV, Omsk JSON, KBR extracted-PDF text, CDUM HTML and Sochi XLSX parsers have synthetic and retained-artifact checks. Qualification/snapshot/signing/audit v2 and Go registry v2 admission pass narrow tests without human approval; every activated qualified snapshot must carry the exact proof hash, and canonical scope/catalog bindings are checked. PostgreSQL v9 migration, rollback refusal, reapply and backup/restore integration pass. Android v2/Room v4 passes 135 focused tests reported by the Android lane, including cross-language signed fixture and legacy LKG. Real qualification, signed materialization and normal setup remain incomplete; the first KBR inspection was quarantined for invalid retrieval metadata. |
-| 5: normal setup/runtime | IN_PROGRESS | Local bundle exporter and Android normal-route integration are under narrow verification; no real bundle/device activation yet. Full canonical SQLite roundtrip and synthetic cross-language bundle checks are separate from representative real E2E. |
+| 5: normal setup/runtime | IN_PROGRESS | First real KBR + retained Uly bundle passed concrete registry Stage/Activate and reference verification, with all 166,559 canonical localities searchable and exactly 203 covered. Android default-anchor bundle tests pass on API 28/35; controlled emulator installation/interactive E2E remains pending. |
 | Evidence and repository gates | TODO | Representative real patterns, pilot byte regression, parser drift/stale tests, PostgreSQL up/down/reapply/restore if changed, Android emulator + full requested gates |
 
 Scope includes coherent local checkpoint commits, not push/PR/deployment,
@@ -30,7 +30,8 @@ T038 is DONE under the explicit T049 closure rule: the second non-Ulyanovsk
 regional adapter (DUM KBR annual PDF, explicit republic-wide scope) is implemented
 and verified against all 365 retained first-party rows. Two sources now have
 evidence-reviewed qualifications (KBR and Saratov, below); no new source has
-yet been signed, materialized or activated by T049.
+yet been activated on a device. KBR and Saratov are now signed/materialized
+locally; additional exact-city materialization is in progress.
 
 Correction after checkpoint `da4c906`: the first operational KBR inspection
 passed structural validation but used an unobserved PDF capture timestamp and
@@ -77,6 +78,79 @@ three dated value comparisons; full-catalog `inspect-public` PASS at
 attribution requirement must be supported before selectable runtime admission;
 no signature or activation is claimed. Source iqamah/performance notices remain
 separate from the exact onset table.
+
+KBR local materialization: existing schedule key `pilot-local-schedule-2026-02`
+and the unchanged production trust revision 3 were used through an isolated,
+ignored one-shot operator (`research/private/t049-operator/`). It independently
+pins/re-imports the original PDF/text/home/share, complete catalog, manifest,
+publication request and all four trust bundles before any key access.
+Independent read-only review found two response-recovery defects (premature
+final-file creation and stale absence-check race); both were corrected and
+the reservation interleaving regression was observed RED then GREEN. Operator
+race tests PASS; review confirmed the final ordering without key access.
+
+The operator returned two verified signatures at `2026-09-08T02:21:55Z`.
+Separate `publisher finalize` then `publisher verify` PASS for
+`ru-kb-dum-2026-t049-v1`, snapshot raw SHA-256
+`5ce03d71326d83890cba7a9c94b1a0bafd827ea26cf0f54187d6c141e29e0239`,
+publication receipt raw SHA-256
+`429888772261e378def4783ee73f3c9d2c120d93af41493b14ef27cd1371c225`.
+The fresh local T049 ledger is separate from the pilot ledger; no existing key,
+pilot bytes, approval or device state changed. Inputs, response, snapshot and
+receipt remain in the KBR re-capture directory outside Git. Normal local bundle
+admission subsequently passed below; real emulator E2E remains pending. Checkpoint `15f554a` records the
+reviewed parser/contract/Saratov-dispatch corrections; no push was performed.
+
+First real local setup export at `2026-09-08T02:28:55Z`: actual
+`ComposeCatalog -> PersistentService.Stage/Activate -> ArtifactReferenceVerifier`
+PASS, bundle `local-setup-d19f162a4fc1413907be592fd5aafa74` outside Git in
+`namaztime-artifacts/t049-setup-real.a1cCCM/bundle`. All 83 subjects, 166,559
+localities, 204,641 aliases and 371,200 normalized name/city pairs are retained.
+Exactly 202 KBR localities and the exact legacy Ulyanovsk mosque choice have
+bindings; neither city-only evidence nor legacy mosque scope was expanded.
+Both signed snapshots are byte-identical to their inputs. Actual registry
+content hash is `56969e7fcc97cda53312f4c6928539bd0a653a14dde3a2f7e9f55dd8f532de93`.
+The Android lane reports default-anchor bundle/SQLite/proof checks PASS on
+API 28 and 35, including all three exact Nalchik alias matches and explicit
+selection of GeoNames 523523, KBR v2, retained Uly v1, and Omsk unavailable.
+These are local test/admission results, not a device installation claim.
+
+Root aggregate Go gates after exporter integration:
+`make test-go lint-go test-go-race security-go` PASS, including all packages,
+race detector, vet/staticcheck and no known Go vulnerabilities. Operator-only
+follow-up adds closed native Saratov pins and an authenticated KBR predecessor
+on the same local ledger; synthetic race tests and `--check-saratov` PASS
+without key access. Independent review and signing remain separate gates.
+Lead also visually checked the public Omsk June/September images against all
+ten retained sample dates, including summer and lunar-date transitions;
+the fixed published Dhuhr value does not prove an astronomical calculation
+rule or establish mosque iqamah.
+
+Saratov local materialization: repeated independent operator review found no
+remaining actionable issue; at `2026-09-08T02:44:46Z` the existing isolated
+signer returned both signatures. Separate `publisher finalize`/`verify` PASS,
+continuing the same T049 ledger from the authenticated KBR receipt (no second
+genesis). Snapshot raw SHA-256
+`ca90c6417ee78be2f10641b5dc0f759137af836462889c9ef0b51d55a8ddca41`,
+receipt raw SHA-256
+`91551a60d4eed1874a244b19b62ba4bb0398beaf2a8a4544e5b690a5c50e4b9d`.
+Signed source attribution and a user-initiated HTTPS source link have passed
+focused Android tests; actual device selection is still pending.
+
+The first root `make test-android-all` run reached 609 tests and failed four
+legacy expectations: two still assert Room version 3 instead of 4, and two
+expect the now-removed implicit synthetic debug route. Four external-fixture
+opt-ins were explicitly skipped in this environment-free broad run; the Android
+lane previously ran them with retained fixtures. These failures are not waived:
+the affected tests are being updated to assert the new normal route while
+retaining explicit synthetic-scenario persistence and LKG coverage. Full
+debug/release lint/build gates have not yet completed.
+
+Operator docs now distinguish current v9 proof storage/downgrade refusal from
+legacy v6–v8 handoffs, including the qualification-table reader grant. An admin
+schema-2 choice envelope regression was reproduced RED and corrected to v2;
+device-v2 behavior remains unchanged. `make docs-check test-contracts` and
+`go test ./internal/devices -count=1` PASS after that correction.
 
 Current narrow evidence: `go test ./internal/registry ./internal/devices -count=1`
 PASS, retained Kazan September hash-bound provider test PASS, and Android

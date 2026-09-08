@@ -1010,6 +1010,13 @@ func TestAdminCityScheduleChoicesExposeEveryEligibleAuthorityWithoutAutoSelectio
 		t.Fatalf("schedule-choice assessment call = %q %#v", registryBackend.assessmentID, registryBackend.assessRequest)
 	}
 
+	registryBackend.assessment.Revision.SchemaVersion = 2
+	qualifiedEnvelope := adminRequest(t, http.MethodGet, choicesURL, nil, "admin-bearer-token-schedule-choices", "")
+	if qualifiedEnvelope.StatusCode != http.StatusOK ||
+		!strings.Contains(qualifiedEnvelope.Body, `"schema_version":"city-schedule-choices/v2"`) {
+		t.Fatalf("schema-2 admin choices lack v2 envelope: %d %s", qualifiedEnvelope.StatusCode, qualifiedEnvelope.Body)
+	}
+	registryBackend.assessment.Revision.SchemaVersion = 1
 	registryBackend.assessment.Result.Status = registrydomain.AssessmentUnavailable
 	registryBackend.assessment.Result.Reason = registrydomain.AssessmentReasonNoPolicy
 	registryBackend.assessment.Result.Options = nil

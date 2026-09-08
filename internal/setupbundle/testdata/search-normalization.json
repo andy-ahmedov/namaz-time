@@ -1,0 +1,14 @@
+[
+  {"input":"  КИРОВ  ","normalized":"киров"},
+  {"input":"\tSAINT\n  PETERSBURG\r","normalized":"saint petersburg"},
+  {"input":"\u0085\u00a0Набережные\u202fЧелны\u3000","normalized":"набережные челны"},
+  {"input":"Ёлки","normalized":"ёлки"},
+  {"input":"ЕЛКИ","normalized":"елки"},
+  {"input":"İSTANBUL","normalized":"istanbul"},
+  {"input":"ΟΣ","normalized":"οσ"},
+  {"input":"İ\u0307","normalized":"i\u0307"},
+  {"input":"Straße","normalized":"straße"},
+  {"input":"Й И\u0306","normalized":"й и\u0306"},
+  {"input":"A\u200bB","normalized":"a\u200bb"},
+  {"input":"\t\u00a0\u205f\n","normalized":""}
+]

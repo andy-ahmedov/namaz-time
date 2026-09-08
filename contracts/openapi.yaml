@@ -973,7 +973,7 @@ components:
         - allowed_actions
       properties:
         schema_version:
-          const: city-schedule-choices/v1
+          enum: [city-schedule-choices/v1, city-schedule-choices/v2]
         revision:
           $ref: '#/components/schemas/RegistryRevision'
         revision_state:

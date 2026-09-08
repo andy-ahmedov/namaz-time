@@ -256,12 +256,12 @@ or credential:
 ```bash
 go run ./cmd/migrate \
   -database-url-env NAMAZ_MIGRATION_DATABASE_URL \
-  -target-version 8
+  -target-version 9
 ```
 
 The command applies embedded migrations under a transaction-scoped advisory
 lock and exits. Only then start the API with `NAMAZ_DATABASE_URL` for the
-least-privileged runtime role. API startup performs a read-only exact-v8 ledger
+least-privileged runtime role. API startup performs a read-only exact-v9 ledger
 check and refuses missing, lower, gapped or future schemas. The runtime role must
 not own schema/functions/triggers.
 
@@ -279,12 +279,27 @@ tables and `SELECT`/`INSERT` on append-only `registry_binding_requests`, but no
 revision/active-pointer/audit/DDL write privilege. Verify the grants in
 staging rather than granting broad schema ownership.
 
+T049 adds `SELECT` on `registry_source_qualifications` to those registry-reader
+grants. Qualification rows and their full JSONB evidence are append-only; the
+runtime must not insert, modify or delete them. Source qualification is separate
+from optional external endorsement and legacy mosque approval. See
+`PERSISTED_POLICY_REGISTRY.md` and `REGISTRY_OPERATOR_WORKFLOW.md` for the
+qualified public-source publication/admission path and local offline bundle.
+
 T041 additionally requires `SELECT`/`INSERT` on append-only
 `device_registry_binding_requests`; no `UPDATE`, `DELETE`, registry revision
 write or active-pointer write is granted. Optional `device_setup_revision_ids`
 maps each mosque to one immutable staged review revision. It is private server
 configuration, never a client parameter, and does not select an authority
 inside that revision.
+
+For a controlled v9-to-v8 rollback, stop writers and take a verified backup.
+Migration `000009` refuses while any schema-2 revision, qualification record or
+qualified verified-snapshot evidence remains, including inactive history.
+Do not delete evidence or disable guards to force a downgrade. Only a
+legacy-only database can roll down and reapply without discarding public proofs;
+an active-pointer rollback to a retained revision does not remove those proofs.
+Resume with a binary matching the resulting schema, never the v9 API on v8.
 
 For a controlled v8-to-v7 rollback, stop device setup proposal writes,
 export/verify pending `device_registry_binding_requests`, and run
@@ -315,7 +330,7 @@ drops only latest health and `last_seen_at`. For T012-to-T011, then run target
 `1`; migration `000002` down drops admin identities, idempotency evidence and
 assignments while v1 mosque/device/pairing/rate/audit state remains. The command
 rejects target `0`; complete schema removal exists only as a repository test
-helper. The current v6 binary refuses to start on any lower target until v6 is
+helper. The current v9 binary refuses to start on any lower target until v9 is
 reapplied.
 
 Run the restart/concurrency/migration suite in a disposable local PostgreSQL 18

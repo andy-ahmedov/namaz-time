@@ -1,19 +1,61 @@
 # Persisted executable prayer-policy registry
 
-Date: 2026-08-30
-Status: T040 multi-authority choice projection implemented; no nationwide prayer-source rollout
+Date: 2026-09-08
+Status: T049 qualification-backed registry implemented; local rollout verification in progress
 
 ## T049 policy supersession (2026-09-08)
 
 [ADR 0019](docs/adr/0019-public-first-party-source-qualification.md) is the current
 onboarding policy: public first-party qualification may authorize local
 materialization/activation without external human approval or partnership.
-Legacy approval verifiers remain for the existing pilot. T049 must add actual
+Legacy approval verifiers remain for the existing pilot. T049 adds actual
 qualification verification, independent authority choices and signed activation;
-the v6–v8 behavior documented below is the inspected baseline, not a requirement
+the v6–v8 behavior documented below is the inspected legacy baseline, not a requirement
 to manufacture a mosque approval or reject all multi-authority revisions.
 
-## Outcome
+## Current T049 public-source branch
+
+`PROPOSAL` — schema-2 registry datasets carry complete immutable
+`SourceQualification` records, separate from human approvals. The domain and
+concrete artifact verifier bind the proof hash to the exact source, authority,
+scope, canonical catalog revision/content hash, timezone, effective range,
+retrieval metadata, parser, validation/diff and independently compared values.
+Qualification creation is deterministic evidence validation, not proof that an
+unreviewed website is authoritative; retained research must establish that fact.
+
+PostgreSQL migration **v9** adds `registry_source_qualifications` with normalized
+binding columns and full immutable JSONB proof. Public source/policy/timetable/
+verified-snapshot rows reference that exact proof and public geographic context.
+The context is not a mosque and does not create `registry_policy_mosques`,
+`approved_by`, endorsement or iqamah. Approval and qualification branches are
+mutually exclusive. Existing schema-1 pilot bytes and approval receipts remain
+unchanged. Snapshot/signing/audit schema 2 authenticate the full qualification;
+NamazTime's signature attests its artifact, not external endorsement.
+
+Stage/Activate validate current source evidence and exact signed references.
+Independent qualified authorities may coexist in one active revision and are
+all projected as explicit choices; specificity suppresses a less-specific
+option only within an evidenced authority chain. An ambiguous automatic result
+does not authorize selecting a winner. Expired, unproven, unsupported or
+out-of-scope sources remain unavailable, with no geographic/calculated fallback.
+
+The API reader additionally needs `SELECT` on
+`registry_source_qualifications`, never proof/pointer mutation privileges.
+Migration v9 down refuses with SQLSTATE `55000` while **any** schema-2 revision,
+qualification or qualified verified snapshot is retained, even when inactive.
+Do not delete evidence to force downgrade. A legacy-only database can migrate
+v9 -> v8 -> v9 without changing retained pilot proofs. Active-pointer rollback
+and schema downgrade remain different operations; preserve a verified backup.
+
+The separate [local setup bundle](PUBLIC_LOCAL_SETUP_BUNDLE.md) exporter uses
+the same concrete Stage/Activate verifier, complete catalog and fixed existing
+trust anchors without mutating a server database. Explicit Android selection
+authenticates the materialized snapshot and atomically compares/replaces local
+state. It neither signs data nor converts the legacy remote `pending_review`
+request into an activation endpoint. Real local admission/test evidence and
+outstanding emulator gates are recorded in [PLANS.md](PLANS.md).
+
+## Legacy v6–v8 outcome and retained workflow
 
 `PROPOSAL`: PostgreSQL migration v6 persists immutable, versioned city/source
 registry revisions. A staged revision may contain research-only records, but it

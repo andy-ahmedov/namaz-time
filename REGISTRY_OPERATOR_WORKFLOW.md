@@ -1,8 +1,8 @@
 # Registry ambiguity, staleness and unavailability workflow
 
-Date: 2026-08-30
+Date: 2026-09-08
 
-Status: T040 choice discovery plus T039 control-plane review handoff implemented
+Status: T049 public local activation and retained T039–T041 remote review handoff
 
 ## T049 policy supersession (2026-09-08)
 
@@ -10,11 +10,48 @@ Status: T040 choice discovery plus T039 control-plane review handoff implemented
 autonomous first-party qualification from optional external endorsement. An
 operator's explicit choice of a qualified, verified signed artifact need not
 wait for an external approver. All independent qualified authorities must be
-visible, even when their scope specificity differs. T049 evolves this boundary;
-the T039–T041 API and pending-review behavior below document the existing legacy
-contract until that implementation is verified, not a universal approval gate.
+visible, even when their scope specificity differs. The T039–T041 pending-review
+behavior below documents the retained legacy contract, not a universal approval
+gate. Public qualification and the local signed-selection path are implemented
+separately; the API does not gain an implicit remote activation operation.
 
-## Outcome
+## Current public-source operator path
+
+1. Retain public raw bytes and each evidence page's own retrieval metadata/hash
+   outside Git when redistribution rights are unclear. Establish real publisher
+   identity, exact scope, currentness, time semantics, terms and value comparisons.
+2. Run `ingestor inspect-public` with a strict import manifest and the complete
+   pinned canonical catalog. An unsupported schema, invalid date/value, incomplete
+   proof or scope mismatch is an error, not a reason to invent approval/fallback.
+3. Use `publisher assemble` and `prepare`, then the separately authorized existing
+   signer abstraction. `finalize` verifies both signatures and publication-ledger
+   continuity; `verify` checks the resulting snapshot/receipt. No key material
+   belongs in manifests, the API, the TV or Git.
+4. Bind each independent qualified source to its exact published artifact in a
+   schema-2 registry. Concrete Stage/Activate revalidates it. Public source
+   qualification is not a human `pending_review` request.
+5. For task-authorized offline local delivery, use
+   `registryctl export-local-setup` with the three required input SHA-256 pins.
+   Follow [PUBLIC_LOCAL_SETUP_BUNDLE.md](PUBLIC_LOCAL_SETUP_BUNDLE.md) for the
+   closed inventory, fixed trust, full city index and debug build property.
+   This creates a local admitted bundle, not a remote production deployment.
+6. Select the exact canonical city and authority explicitly on the TV. Preview
+   shows real values, scope, coverage and provenance. Activation rechecks the
+   signed payload and preview's expected active snapshot in one local transaction.
+   An error, stale choice or concurrent selection preserves last-known-good.
+
+Admin and device choice envelopes use their respective `.../v2` version for
+schema-2 revisions, including retained legacy choices within such a revision.
+All applicable independently qualified authorities are returned without top-N.
+Unproven places remain searchable but unavailable. The automatic resolver still
+does not choose a religious authority for the operator. Source attribution must
+be retained; required hyperlinks are an explicit user action, never TV scraping.
+
+See [PERSISTED_POLICY_REGISTRY.md](PERSISTED_POLICY_REGISTRY.md) for v9 proof
+storage, reader grants and downgrade refusal. Local/public activation does not
+remove or rewrite existing mosque approvals, pilot receipts or review history.
+
+## Retained legacy review outcome
 
 `PROPOSAL`: a policy that cannot resolve automatically must remain visible and
 explainable without becoming executable. The operator workflow therefore has
