@@ -851,8 +851,9 @@ Root verification reproduces all 365 rows against the separately extracted
 reference, with pinned raw PDF, extraction and reference SHA-256; malformed
 schema/date/order inputs fail closed. See
 [the adapter evidence](research/t049/KBR_ADAPTER.md). This closes the second
-regional-adapter requirement, not T049's still-pending nationwide qualification,
-signed materialization and runtime acceptance. The old written-confirmation
+regional-adapter requirement; T049's subsequent nationwide qualification,
+signed materialization and runtime acceptance are recorded separately in
+[the final handoff](research/t049/ACCEPTANCE.md). The old written-confirmation
 blocker is superseded, and no external endorsement is claimed.
 
 **Goal:** prove the architecture on one non-Ulyanovsk locality using a directly
@@ -1357,7 +1358,7 @@ See `docs/evidence/t048-compact-polish/README.md`.
 
 ## T049 — nationwide verified first-party prayer-source onboarding
 
-Status: IN_PROGRESS (2026-09-08). Baseline: `325a343` on clean `main`, actual
+Status: DONE (2026-09-08), local acceptance. Baseline: `325a343` on clean `main`, actual
 origin/main confirmed; prior CI failure on a local-only reference link reproduced.
 
 The [full owner assignment](docs/tasks/T049-nationwide-first-party-onboarding.md)
@@ -1377,3 +1378,18 @@ and signing/last-known-good regressions, docs/skills, full Go/race/security,
 PostgreSQL/restore and strict Android gates. Record progress in PLANS.md.
 Local checkpoint commits are allowed; push/PR, deployment, key changes,
 organization contact and production-data deletion are not authorized.
+
+Result: all 83 actual catalog subjects researched; 48 public qualified policies
+plus the retained legacy Ulyanovsk policy locally signed/verified/admitted.
+The complete catalog remains searchable: 248 covered and 166,311 unavailable
+localities, 250 current choices at the pinned report time. Six real adapters,
+independent Kazan authorities, exact scope/partial coverage, PostgreSQL v9 proof
+storage and normal verified debug setup replace implicit demo behavior.
+Representative real emulator patterns and both Kazan activations/restarts pass;
+the final debug state is the original Ulyanovsk mosque after cold restart, with
+unchanged original stored data and local iqamah settings. T038 is DONE.
+Full required local gates pass, including 621 Android tests with zero skips;
+skills have 130 passes and two explicit unavailable upstream-module skips.
+See [ACCEPTANCE.md](research/t049/ACCEPTANCE.md) for baseline, all counts/states,
+commits, exact checks/pins, migration/rollback and the navigation incident's
+private-pilot-preference verification limit. No push, PR or deployment.

@@ -3,8 +3,9 @@
 This report supersedes the historical 31-subject T034 draft for current source
 onboarding. It does not retroactively validate that draft. The complete task
 and the previous demo/approval-policy audit are in [the assignment](../../docs/tasks/T049-nationwide-first-party-onboarding.md)
-and [BASELINE_AUDIT.md](BASELINE_AUDIT.md). T049 remains in progress; see
-[PLANS.md](../../PLANS.md) for later materialization and runtime checkpoints.
+and [BASELINE_AUDIT.md](BASELINE_AUDIT.md). See
+[ACCEPTANCE.md](ACCEPTANCE.md) for final-artifact verification and limitations,
+and [PLANS.md](../../PLANS.md) for the chronological checkpoints.
 
 ## Complete research inventory
 
@@ -72,8 +73,9 @@ made the retained Ulyanovsk choice non-executable in September. That package
 was held from installation. Mixed-proof 365-date and Android decoder regressions
 now pass; the corrected export retains original Uly continuously January–December
 and CDUM separately in September. No signed snapshot, approval or qualification
-was changed to repair the defect. Representative expanded runtime acceptance
-remains a separate requirement, not implied by export or compiler success.
+was changed to repair the defect. Representative expanded runtime evidence is
+recorded separately in [ACCEPTANCE.md](ACCEPTANCE.md), not inferred from export
+or compiler success.
 
 Six first-party authority IDs have qualified public publications: DUM RT,
 CDUM Russia, DUM KBR, DUM Saratov, DUM Omsk and the local Muslim organization

@@ -6,7 +6,9 @@ Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
 ## T049 — nationwide verified first-party prayer-source onboarding
 
-Status: IN_PROGRESS. Full owner requirements are preserved in
+Status: DONE (2026-09-08), within the authorized local acceptance scope.
+Final result, artifact pins and genuine limitations are in
+[ACCEPTANCE.md](research/t049/ACCEPTANCE.md). Full owner requirements are preserved in
 [the assignment](docs/tasks/T049-nationwide-first-party-onboarding.md).
 Baseline verified 2026-09-08: clean main and actual origin/main both
 `325a343f3fabec337e56df0abcd93c2812be2c67`. GitHub CI run 34162587927 failed
@@ -17,11 +19,11 @@ boundary, not a broken repository link. Remote CI is not rerun or claimed green.
 | Phase | Status | Required evidence / remaining work |
 |---|---|---|
 | 0: persistent policy reconciliation | DONE | ADR 0019, AGENTS, streamlined provider skill, source checklist and governing docs separate qualification from optional endorsement. `make docs-check test-skills` PASS: 2 package checks, 130 runtime/data cases, 2 explicit non-bundled upstream module skips. Provider frontmatter validation and `git diff --check` PASS. No application/schema/signing changes in this checkpoint. |
-| 1: previous research/demo audit | DONE | `research/t049/BASELINE_AUDIT.md`: 83 mapped subjects versus old 31 (52 gaps), current debug factory/constant-row projection, persisted legacy admission and pilot inspected; narrow pilot/artifact tests and 4 research tests PASS. No live NamazTime PostgreSQL instance found; fresh isolated DB gate remains required. |
+| 1: previous research/demo audit | DONE | `research/t049/BASELINE_AUDIT.md`: 83 mapped subjects versus old 31 (52 gaps), previous debug factory/constant-row projection, persisted legacy admission and pilot inspected. No live NamazTime PostgreSQL instance was found at baseline; the fresh isolated v9 DB gate subsequently passed. |
 | 2–3: nationwide research and scope resolution | DONE | Four pinned ledgers cover the exact 83-subject catalog set, 166,559 localities and 204,641 aliases; superseding machine registry retains all research/search-trail pointers and current operational proof links. Qualified source scopes, currentness and values were separately rechecked; unsupported localities remain unavailable. No inferred day offset, repair or regional expansion. |
 | 4/6: qualified providers and verified activation | DONE | Six deterministic public adapters, 48 complete qualified sources, two-signature publication/receipt verification and corrected real Go Stage/Activate/export pass, plus unchanged retained legacy Uly. PostgreSQL v9 up/down-refusal/reapply/backup-restore and Go test/race/lint/security pass. Full catalog remains intact; 248 covered localities and 250 current choices at the recorded report time. Device runtime acceptance remains phase 5. |
-| 5: normal setup/runtime | IN_PROGRESS | First real KBR + retained Uly bundle passed concrete registry Stage/Activate and reference verification, with all 166,559 canonical localities searchable and exactly 203 covered. API 28/35 tests and first controlled API 36 emulator activation/restart/unavailable/Uly-return pass. Runtime exposed long-text preview clipping and an incorrect availability badge; focused layout fixes and expanded-bundle E2E remain required. |
-| Evidence and repository gates | IN_PROGRESS | PostgreSQL v9 up/down refusal/reapply/restore, Go race/security and first full Android gate pass. Expanded-bundle production test exposed September suppression of retained Uly; correction, repeated affected gates and expanded representative runtime remain required. |
+| 5: normal setup/runtime | DONE | Clean b1855c0 final48 APK installed in place on debug API 36 emulator. Both real Kazan authorities activate/restart independently; unrelated homonym remains unavailable with unchanged Room. Arsk selector, exact Saratov monthly/source-handler absence, Sochi annual, Omsk partial and corrected KBR previews match real values. Full provenance D-pad/Back works. Original Uly six-row preview and final activation/cold restart pass; original ordered data and device iqamah projections are unchanged. |
+| Evidence and repository gates | DONE | Exact make test/lint, Go/race/security, PostgreSQL v9 migration/refusal/reapply/restore and strict Android 621 tests/zero skips PASS. Skills: 130 pass, 2 explicit upstream skips. Real final48 export/audit PASS; the rejected final47 legacy-suppression defect is fixed and covered RED→GREEN. Final documentation and secret-scan handoff recorded in ACCEPTANCE.md. |
 
 Scope includes coherent local checkpoint commits, not push/PR/deployment,
 signing-key changes, organization contact or production-data deletion. Unknown
@@ -30,8 +32,29 @@ T038 is DONE under the explicit T049 closure rule: the second non-Ulyanovsk
 regional adapter (DUM KBR annual PDF, explicit republic-wide scope) is implemented
 and verified against all 365 retained first-party rows. Forty-eight public
 sources now have evidence-reviewed, locally signed qualifications and verified
-local admission. The controlled debug emulator has activated KBR and retained
-the exact Ulyanovsk snapshot; expanded-bundle runtime acceptance is in progress.
+local admission. The controlled debug emulator is left on the exact original
+Ulyanovsk snapshot after the final48 representative runtime round and cold restart.
+
+Final implementation commit `b1855c0`; installed/frozen debug APK SHA-256
+`bacc07465c4eb37f9a4f57518faaa8b84b270c61be19793db7759699debc5b3f`.
+Original ordered Uly snapshot/days/rules/overrides/Jumuah projection before and
+after the round is identical:
+`58d4b431876cf92d1ec2b70ab864b6548eb3699164a555906ff51bfa227efc47`.
+Device-local iqamah/show setting projection is unchanged:
+`0825ae2eb1e2ad41318e5942c59c1e79efd34b9e92e5db05b734cacdabedb9b5`.
+Pilot APK/certificate/install identity remains unchanged. A test-navigation
+extra Back briefly revealed the pre-existing pilot task and opened its Settings;
+no text/Save/source/iqamah action was issued. Whole private pilot preference
+equality is UNKNOWN because ordinary access is unavailable; no bypass or restore
+was attempted. This incident and the foreground guard correction are documented
+in ACCEPTANCE.md. Physical-TV acceptance, clock-health discrepancy, future source
+updates and remote operation remain separate; no push/PR/deployment occurred.
+
+### Retained chronological checkpoints
+
+The following entries preserve the investigation, earlier failures and then-current
+pending work. The final status above and ACCEPTANCE.md supersede their progress
+wording; old artifacts are not silently relabelled as final evidence.
 
 Corrected final48 export (04:05:00Z) is now the operational checkpoint:
 raw manifest `ba8a5b9bb7e7ac24651836bcb1cd31788fd2472a451cbb3a2aae5a56e051718f`,
