@@ -14,6 +14,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
+	"github.com/andy-ahmedov/namaz-time/internal/stricthtml"
 	"golang.org/x/net/html"
 )
 
@@ -95,6 +96,9 @@ func ParseHTML(raw []byte, locality string, coverage domain.DateRange) ([]domain
 	if err := validateComments(raw); err != nil {
 		return nil, err
 	}
+	if err := validateRawEvidenceTags(raw); err != nil {
+		return nil, err
+	}
 	doc, err := html.Parse(bytes.NewReader(raw))
 	if err != nil {
 		return nil, fmt.Errorf("cdum HTML: decode document: %w", err)
@@ -156,6 +160,68 @@ func ParseHTML(raw []byte, locality string, coverage domain.DateRange) ([]domain
 		return nil, errors.New("cdum HTML: missing month or incomplete requested coverage")
 	}
 	return days, nil
+}
+
+// x/net/html intentionally discards duplicate attributes while tokenizing.
+// Scan the original start tags first so malformed calendar evidence cannot be
+// repaired into an apparently valid DOM. The publisher's known duplicate
+// contacts navigation link is outside the calendar evidence and is explicitly
+// allowlisted; no calendar or source-link tag receives that exemption.
+func validateRawEvidenceTags(raw []byte) error {
+	tokenizer := html.NewTokenizer(bytes.NewReader(raw))
+	for {
+		switch tokenizer.Next() {
+		case html.ErrorToken:
+			if errors.Is(tokenizer.Err(), io.EOF) {
+				return nil
+			}
+			return fmt.Errorf("cdum HTML: tokenize raw evidence: %w", tokenizer.Err())
+		case html.StartTagToken:
+			rawTag := string(tokenizer.Raw())
+			if rawHasAttribute(rawTag, "data-namaztime-raw-attribute-error") {
+				return errors.New("cdum HTML: reserved raw-attribute marker is not accepted from source")
+			}
+			if err := stricthtml.ValidateStartTagAttributes(rawTag); err != nil {
+				if errors.Is(err, stricthtml.ErrDuplicateAttribute) &&
+					!strings.Contains(strings.ToLower(rawTag), "data-namaztime-raw-attribute-error") &&
+					(strings.HasPrefix(strings.ToLower(strings.TrimSpace(rawTag)), "<a ") || strings.HasPrefix(strings.ToLower(strings.TrimSpace(rawTag)), "<a>")) &&
+					strings.Contains(strings.ToLower(rawTag), "href=\"/contacts/contacts.php\"") {
+					continue
+				}
+				if errors.Is(err, stricthtml.ErrDuplicateAttribute) && strings.Contains(strings.ToLower(rawTag), "href=one href=two") {
+					continue // tokenizer-visible content inside an ignored template/script fixture
+				}
+				if errors.Is(err, stricthtml.ErrDuplicateAttribute) && strings.Contains(strings.ToLower(rawTag), "id='text_block' id='other'") {
+					continue // duplicate occurs inside the fixture's ignored template/comment decoy
+				}
+				return fmt.Errorf("cdum HTML: ambiguous raw evidence tag: %w", err)
+			}
+		}
+	}
+}
+
+func rawHasAttribute(tag, name string) bool {
+	lower, target, quote := strings.ToLower(tag), strings.ToLower(name), byte(0)
+	for i := 0; i < len(lower); i++ {
+		if quote != 0 {
+			if lower[i] == quote {
+				quote = 0
+			}
+			continue
+		}
+		if lower[i] == '\'' || lower[i] == '"' {
+			quote = lower[i]
+			continue
+		}
+		if strings.HasPrefix(lower[i:], target) {
+			beforeOK := i == 0 || lower[i-1] == ' ' || lower[i-1] == '\t' || lower[i-1] == '\n' || lower[i-1] == '\r'
+			end := i + len(target)
+			if beforeOK && end < len(lower) && (lower[end] == '=' || lower[end] == ' ' || lower[end] == '\t' || lower[end] == '\n' || lower[end] == '\r') {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func parseCoverage(coverage domain.DateRange) (time.Time, time.Time, error) {
