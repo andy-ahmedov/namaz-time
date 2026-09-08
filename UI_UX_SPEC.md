@@ -335,10 +335,12 @@ The Mosque/location page provides two explicit local fields for the displayed
 mosque name and displayed address. Blank means the canonical/pilot fallback.
 The current canonical locality, authority/source and IANA timezone remain
 read-only active-schedule context. A separate `Change city or schedule` action
-opens the T041 review-request flow; it never edits the active city, timezone,
-mosque ID or provenance locally.
+opens canonical city/schedule setup. T049 supports explicit activation of an
+already verified local bundle choice; the existing provisioned remote path
+still sends only a review request. Neither path permits manual editing of
+signed identity, timezone or provenance.
 
-The T041 flow is:
+The retained remote T041 flow is:
 
 1. focus the canonical-city search field and use the system Android TV IME;
 2. search the T035 catalog after a short debounce, cancelling a superseded
@@ -349,7 +351,7 @@ The T041 flow is:
 5. require an explicit choice even when only one schedule is available; and
 6. submit only a non-authoritative `pending_review` proposal.
 
-Zero choices show `No approved schedule is available for this city yet` and no
+Zero choices show `Для этого города подтверждённое расписание пока недоступно` and no
 calculation or neighboring-region fallback. Two or more choices use a
 scrollable D-pad list without top-N, preference or implicit first-item
 selection; focus color communicates navigation only. Every row shows the
@@ -366,23 +368,37 @@ preserved city query. While the system IME is visible, the first `Back` closes
 only the keyboard and keeps meaningful focus on the search field; the next
 `Back` follows normal navigation.
 
-The ordinary debug/emulator build uses a debug-source-set-only synthetic
-gateway so this navigation can be exercised without production provisioning.
-Its city and organization names are visibly marked as demonstration data, use
-the `PROPOSAL` evidence label and never mutate the signed Room schedule. A
-synthetic selection first opens a setup-only preview with all six prayer rows
-and visibly separate adhan/iqamah columns. It says that the times are
-demonstration data, that no server request was sent and that preview alone has
-not changed the signed active schedule. `Use on this TV` is the initially
-focused primary action: it persists the exact debug city/organization choice,
-clears labels tied to the previous displayed city and returns to the public
-display, which then renders the selected local synthetic schedule with a
-not-approved warning. `Back` before activation returns to the same organization
-list; a second `Back` returns to the preserved city query. The underlying Room
-last-known-good remains untouched. Pilot and release builds contain neither
-the synthetic rows nor this local activation capability and continue to use
-the device-scoped `pending_review` handoff until an approved signed activation
-contract exists.
+The ordinary debug/emulator build no longer creates synthetic organizations or
+projects synthetic times over the real display. Without provisioning it reads
+the verified offline [local setup bundle](PUBLIC_LOCAL_SETUP_BUNDLE.md); absent
+assets produce an explicit local-setup-unavailable message. With provisioning
+it uses the existing HTTP client. Network, authentication or asset failures do
+not cause fallback between routes and cannot replace last-known-good.
+
+Local setup retains all canonical candidates and all independently qualified
+authority choices. A preview shows six real prayer/sunrise rows, separately
+labelled adhan/iqamah, geographic scope, source type, coverage and signed
+provenance/attribution. Public qualification is not external endorsement; a
+debug build is not itself an unapproved-data warning. `Use on this TV` is an
+explicit action bound to the current local date and preview's observed active
+snapshot. Successful signature/domain verification and one Room transaction
+activate the exact snapshot, preserving the previous snapshot and device-local
+iqamah settings. Public onset data does not create mosque iqamah or Jumu'ah.
+
+Long authority/attribution summaries cannot displace the six preview rows or
+truncate the coverage dates. `Подробнее` opens the complete provenance in a
+bounded D-pad-scrollable reader, including paragraphs taller than the viewport;
+Back restores focus to that action. Availability wording means selectable,
+not already active on this device.
+
+The `Источник` action opens only a validated HTTPS source URL through the
+system handler after explicit D-pad/select input. Missing browser/handler shows
+a local message; the TV never scrapes the page. `Back` before activation returns
+to the same organization list, then to the preserved city query. Synthetic
+gateway/overlay behavior remains available only through explicit test/evidence
+composition and cannot become the normal debug route. Pilot/release factories
+remain on their existing provisioned-device path; the retained real Ulyanovsk
+pilot bootstrap and signed bytes are unchanged.
 
 ## First-run flows
 

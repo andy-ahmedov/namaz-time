@@ -102,7 +102,8 @@ not produce a canonical selection.
 T040 adds
 `GET /v1/admin/mosques/{mosqueId}/setup/schedule-choices` as a smaller
 setup/presentation projection of the same `PolicyAssessment`. It returns only
-the complete set of highest-precedence eligible choices; this is not a second
+the complete set of eligible choices, with specificity applied only within the
+same evidenced authority chain; this is not a second
 resolver. The T039 endpoint above continues to return the complete applicable
 option set, including lower-precedence, stale, unavailable, research-only,
 out-of-range and schedule-missing records.
@@ -116,8 +117,11 @@ name; NamazTime does not invent abbreviations or use the source/transport name
 as an authority label. Equal labels do not merge choices because policy and
 stable choice IDs remain distinct.
 
-The endpoint accepts an optional immutable `revision_id`. Without it, the sole
-resolved active choice can be marked executable. With a staged revision, all
+The endpoint accepts an optional immutable `revision_id`. In an active revision,
+each eligible admitted choice is executable through explicit local selection,
+including retained approval-bound choices alongside qualified public sources.
+This does not resolve ambiguity, change a remote device assignment or activate
+Room. With a staged revision, all
 eligible choices remain selectable but non-executable and the existing
 `request_binding` action leads only to `pending_review`. No top-N limit exists.
 Any future transport bounding must use explicit pagination or equivalent

@@ -2,7 +2,7 @@
 
 ## Architecture goal
 
-The system must keep showing an approved schedule when the network, backend, parser or device process fails. Accuracy, provenance and recovery have priority over real-time freshness and feature count.
+The system must keep showing its authenticated last-known-good schedule when the network, backend, parser or device process fails. Public first-party source qualification and retained legacy mosque approval are separate admission branches (ADR 0019). Accuracy, provenance and recovery have priority over real-time freshness and feature count.
 
 ## System context
 
@@ -16,7 +16,7 @@ Official authority / mosque / approved calculation profile
                       |
            normalize -> validate -> diff
                       |
-               human approval
+     public qualification / legacy approval
                       |
             snapshot publisher/signing
                       |
@@ -31,12 +31,16 @@ Official authority / mosque / approved calculation profile
                   TV UI
 ```
 
-Production publication has two independent signatures. A dedicated approver
-key signs the exact candidate/diff/warnings and canonical mosque prayer policy;
-the approval public trust bundle cannot sign snapshots. The publisher verifies
-that receipt and recreates approval-bound canonical bytes, and an isolated KMS/HSM signer
+Production publication has two independent artifact signatures. For the retained
+legacy branch, a separate approver key signs the exact candidate/diff/warnings
+and canonical mosque prayer policy; the approval public trust bundle cannot
+sign snapshots. The public first-party branch instead carries the complete
+hash-bound source qualification, without a fictional human approval or mosque.
+The publisher verifies the applicable evidence and recreates canonical bytes;
+an isolated signer abstraction (local for authorized offline work, KMS/HSM for
+the future managed deployment)
 returns Ed25519 signatures over both the snapshot and a domain-separated
-provenance/approval/trust/actor/audit-chain attestation. Finalization verifies both against a
+provenance/qualification-or-approval/trust/actor/audit-chain attestation. Finalization verifies both against a
 versioned environment-scoped public trust bundle before emitting immutable
 snapshot and signer-attested hash-chained receipt. Go registry admission
 requires this receipt and anchors one registry artifact to the durable release
@@ -101,6 +105,17 @@ platform/        boot, keep-screen-on, clock/network diagnostics
 ```
 
 Composables only observe local state. A network response never directly mutates what is visible; it first passes signature/schema/domain validation and an atomic activation transaction.
+
+T049's normal debug setup uses the existing device-scoped HTTP client when
+provisioned, or a separately generated verified offline setup bundle when
+credentials are absent. Transport/authentication errors never change routes.
+The bundle contains the complete immutable SQLite city index and every admitted
+authority choice, with unchanged signed snapshots and fixed public trust anchors.
+Explicit selection revalidates the preview's current date and expected active
+snapshot before atomic Room activation. Missing or stale sources stay unavailable;
+no synthetic overlay or calculated fallback participates in normal display.
+Pilot/release routing and the exact retained Ulyanovsk bootstrap stay unchanged.
+See [PUBLIC_LOCAL_SETUP_BUNDLE.md](PUBLIC_LOCAL_SETUP_BUNDLE.md).
 
 The T018 display route owns a Compose `DisposableEffect` that sets the host
 view's `keepScreenOn` flag and restores its prior value when that route leaves

@@ -9,8 +9,174 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Assert.fail
 import org.junit.Test
+import kotlinx.serialization.json.*
+import ru.namaztime.tv.data.snapshot.qualifiedSnapshotDocument
+import ru.namaztime.tv.data.snapshot.withQualificationHash
 
 class DeviceScheduleChoiceClientTest {
+    @Test
+    fun canonicalAliasesRetainCatalogWhitespaceAndDoNotDisappearDuringChoiceValidation() = runTest {
+        val alias = "\u00a0Alias\t Town\u0085"
+        val response = Json.parseToJsonElement(choiceSetResponse(1)).jsonObject.let { root ->
+            JsonObject(root + ("city" to JsonObject(root.getValue("city").jsonObject +
+                ("aliases" to JsonArray(listOf(JsonPrimitive(alias)))))))
+        }
+        val result = client(ChoiceRecordingTransport(SyncHttpResponse(200, emptyMap(), response.toString().encodeToByteArray())))
+            .loadScheduleChoices(CITY_ID, SETUP_DATE)
+        assertTrue("raw catalog alias rejected: $result", result is DeviceSetupResult.Success<*>)
+        assertEquals(listOf(alias), (result as DeviceSetupResult.Success).value.city.aliases)
+    }
+
+    @Test
+    fun qualifiedV2KeepsEveryIndependentExecutableChoiceWithoutHumanApprovalOrRemoteActivation() = runTest {
+        val response = qualifiedChoiceSetResponse()
+        val result = client(ChoiceRecordingTransport(SyncHttpResponse(200, emptyMap(), response.encodeToByteArray())))
+            .loadScheduleChoices(CITY_ID, LocalDate.parse("2026-09-08"))
+        assertTrue("qualified response rejected: $result", result is DeviceSetupResult.Success<*>)
+        val set = (result as DeviceSetupResult.Success).value
+        assertEquals(2, set.choices.size)
+        assertTrue(set.selectionRequired)
+        assertFalse(set.requestAllowed)
+        assertTrue(set.choices.all { it.executable && !it.requestable && !it.activationAllowed })
+        assertTrue(set.choices.all { it.approvalId == null })
+    }
+
+    @Test
+    fun mixedActiveV2PreservesExecutableLegacyAndPublicChoicesWithoutAutoSelection() = runTest {
+        val transport = ChoiceRecordingTransport(SyncHttpResponse(200, emptyMap(), mixedActiveChoiceSetResponse().toString().encodeToByteArray()))
+        val result = client(transport).loadScheduleChoices(CITY_ID, LocalDate.parse("2026-09-08"))
+        assertTrue("mixed admitted response rejected: $result", result is DeviceSetupResult.Success<*>)
+        val set = (result as DeviceSetupResult.Success).value
+        assertEquals(listOf(choiceId(0), choiceId(1)), set.choices.map { it.id })
+        assertTrue(set.selectionRequired)
+        assertFalse(set.requestAllowed)
+        assertTrue(set.choices.all { it.selectable && it.executable && !it.requestable && !it.activationAllowed && it.localPreview == null })
+        assertEquals("synthetic-approval-1", set.choices[1].approvalId)
+        assertEquals(null, set.choices[1].qualification)
+        assertEquals(null, set.choices[0].approvalId)
+        assertTrue(set.choices[0].qualification != null)
+        assertEquals(listOf("GET"), transport.requests.map { it.method })
+    }
+
+    @Test
+    fun mixedV2KeepsLegacyProofStrictAndRejectsIneligibleActiveOrExecutableStagedChoices() = runTest {
+        val original = mixedActiveChoiceSetResponse()
+        val legacy = original.getValue("choices").jsonArray[1].jsonObject
+        val malformedLegacy = listOf(
+            JsonObject(legacy - "approval_id"),
+            JsonObject(legacy + ("approval_id" to JsonNull)),
+            JsonObject(legacy + ("approval_id" to JsonPrimitive(""))),
+            JsonObject(legacy + ("qualification" to JsonNull)),
+            JsonObject(legacy + ("scope" to JsonObject(legacy.getValue("scope").jsonObject +
+                ("city_id" to JsonPrimitive("another-city"))))),
+            JsonObject(legacy + ("source" to JsonObject(legacy.getValue("source").jsonObject +
+                ("geographic_scope_id" to JsonPrimitive("another-scope"))))),
+            JsonObject(legacy + ("source" to JsonObject(legacy.getValue("source").jsonObject +
+                ("fresh_through" to JsonPrimitive("2026-09-07"))))),
+            JsonObject(legacy + ("timetable" to JsonObject(legacy.getValue("timetable").jsonObject +
+                ("source_id" to JsonPrimitive("another-source"))))),
+            JsonObject(legacy + ("executable" to JsonPrimitive(false))),
+        )
+        val invalid = malformedLegacy.map { replacement ->
+            JsonObject(original + ("choices" to JsonArray(listOf(original.getValue("choices").jsonArray[0], replacement))))
+        } + JsonObject(original + mapOf(
+            "revision_state" to JsonPrimitive("staged"),
+            "allowed_actions" to JsonArray(listOf(JsonPrimitive("request_selection"))),
+        ))
+        invalid.forEachIndexed { index, body ->
+            val result = client(ChoiceRecordingTransport(SyncHttpResponse(200, emptyMap(), body.toString().encodeToByteArray())))
+                .loadScheduleChoices(CITY_ID, LocalDate.parse("2026-09-08"))
+            assertEquals("mixed malformed variant $index", DeviceSetupResult.Failure("setup_response_invalid", false), result)
+        }
+    }
+
+    @Test
+    fun mixedStagedV2RemainsNonExecutableAndRequiresExplicitReviewRequest() = runTest {
+        val active = mixedActiveChoiceSetResponse()
+        val staged = JsonObject(active + mapOf(
+            "revision_state" to JsonPrimitive("staged"),
+            "allowed_actions" to JsonArray(listOf(JsonPrimitive("request_selection"))),
+            "choices" to JsonArray(active.getValue("choices").jsonArray.map {
+                JsonObject(it.jsonObject + ("executable" to JsonPrimitive(false)))
+            }),
+        ))
+        val result = client(ChoiceRecordingTransport(SyncHttpResponse(200, emptyMap(), staged.toString().encodeToByteArray())))
+            .loadScheduleChoices(CITY_ID, LocalDate.parse("2026-09-08"))
+        assertTrue("mixed staged response rejected: $result", result is DeviceSetupResult.Success<*>)
+        val set = (result as DeviceSetupResult.Success).value
+        assertTrue(set.selectionRequired && set.requestAllowed)
+        assertTrue(set.choices.all { !it.executable && it.requestable && !it.activationAllowed })
+    }
+
+    private fun mixedActiveChoiceSetResponse(): JsonObject {
+        val root = Json.parseToJsonElement(qualifiedChoiceSetResponse()).jsonObject
+        val legacy = JsonObject(Json.parseToJsonElement(choiceDocument(1, false)).jsonObject +
+            ("executable" to JsonPrimitive(true)))
+        return JsonObject(root + ("choices" to JsonArray(listOf(root.getValue("choices").jsonArray[0], legacy))))
+    }
+
+    @Test
+    fun qualifiedChoiceWireRejectsBranchConfusionProofTamperAndCatalogScopeSourceMismatch() = runTest {
+        val original = qualifiedChoiceSetResponse()
+        val invalid = listOf(
+            original.replace("device-city-schedule-choices/v2", "device-city-schedule-choices/v1"),
+            original.replace("\"qualified\"", "\"approved\""),
+            original.replace("\"qualification\":{", "\"approval_id\":\"fake-approval\",\"qualification\":{"),
+            original.replace("\"qualification\":{", "\"approval_id\":null,\"qualification\":{"),
+            original.replace("\"qualification\":{", "\"approval_id\":\"\",\"qualification\":{"),
+            original.replace("\"qualified_at\":", "\"qualified_at\":\"2026-09-08T10:00:00Z\",\"qualified_at\":"),
+            original.replace("Synthetic test authority", "Unbound authority"),
+            original.replace("\"catalog_revision_id\":\"catalog-synthetic-v1\"", "\"catalog_revision_id\":\"different-catalog\""),
+            original.replace("\"source_kind\":\"official_html\"", "\"source_kind\":\"manual_import\""),
+            original.replace("\"timezone\":\"Europe/Moscow\"", "\"timezone\":\"Europe/Kirov\""),
+        )
+        invalid.forEachIndexed { index, value ->
+            val result = client(ChoiceRecordingTransport(SyncHttpResponse(200, emptyMap(), value.encodeToByteArray())))
+                .loadScheduleChoices(CITY_ID, LocalDate.parse("2026-09-08"))
+            assertEquals("malformed variant $index", DeviceSetupResult.Failure("setup_response_invalid", false), result)
+        }
+    }
+
+    private fun qualifiedChoiceSetResponse(): String {
+        val root = Json.parseToJsonElement(choiceSetResponse(2)).jsonObject.toMutableMap()
+        root["schema_version"] = JsonPrimitive("device-city-schedule-choices/v2")
+        root["revision"] = JsonObject(root.getValue("revision").jsonObject + mapOf(
+            "schema_version" to JsonPrimitive(2), "catalog_revision_id" to JsonPrimitive("catalog-synthetic-v1"),
+        ))
+        root["revision_state"] = JsonPrimitive("active")
+        root["date"] = JsonPrimitive("2026-09-08")
+        root["allowed_actions"] = JsonArray(emptyList())
+        root["city"] = JsonObject(root.getValue("city").jsonObject + ("timezone" to JsonPrimitive("Europe/Moscow")))
+        root["choices"] = JsonArray((0..1).map { index ->
+            val choice = Json.parseToJsonElement(choiceDocument(index, false)).jsonObject.toMutableMap()
+            val authority = qualifiedSnapshotDocument().getValue("source").jsonObject.getValue("qualification").jsonObject
+                .getValue("authority").jsonObject
+            val q = JsonObject(qualifiedSnapshotDocument().getValue("source").jsonObject.getValue("qualification").jsonObject + mapOf(
+                "source_id" to JsonPrimitive("synthetic-source-$index"),
+                "authority" to JsonObject(authority + ("id" to JsonPrimitive("synthetic-authority-$index"))),
+                "scope" to choice.getValue("scope"),
+            )).withQualificationHash()
+            choice.remove("approval_id")
+            choice["qualification"] = q
+            choice["executable"] = JsonPrimitive(true)
+            choice["effective"] = q.getValue("coverage")
+            choice["authorities"] = JsonArray(listOf(q.getValue("authority")))
+            choice["source"] = JsonObject(choice.getValue("source").jsonObject + mapOf(
+                "kind" to q.getValue("source_kind"), "canonical_url" to q.getValue("canonical_url"),
+                "status" to JsonPrimitive("qualified"), "qualification_id" to q.getValue("qualification_id"),
+                "fresh_through" to q.getValue("fresh_through"),
+            ))
+            choice["timetable"] = JsonObject(choice.getValue("timetable").jsonObject + mapOf(
+                "effective" to q.getValue("coverage"),
+                "mosque_id" to JsonPrimitive("public-scope-" + ru.namaztime.tv.data.snapshot.fixtureHash(
+                    q.getValue("scope").jsonObject.getValue("id").jsonPrimitive.content.encodeToByteArray(),
+                ).take(32)),
+            ))
+            JsonObject(choice)
+        })
+        return JsonObject(root).toString()
+    }
+
     @Test
     fun keepsIndependentRegionalChoiceAlongsideAnotherCityAuthority() = runTest {
         val original = choiceDocument(1, duplicateLabels = false)

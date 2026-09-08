@@ -329,18 +329,21 @@ allows a staged revision to be reviewed. The local Gregorian `date` and
 mosque-scoped admin bearer remain mandatory. `/setup/cities` continues to
 return geography only; authorities never become duplicate city rows.
 
-The response is `city-schedule-choices/v1` and carries the canonical city,
+The response is `city-schedule-choices/v2` and carries the canonical city,
 federal subject, IANA timezone, revision identity/state, underlying automatic
-resolution status/reason, and the complete set of highest-precedence eligible
-choices. Each choice has a stable city+policy-derived ID, canonical authority
+resolution status/reason, and the complete set of eligible choices, retaining
+each authority's most-specific applicable evidence without cross-authority ranking.
+Each choice has a stable city+policy-derived ID, canonical authority
 label and organization records, evidence labels, geographic scope, source,
-approval/effective range, tier, and exact timetable or calculation-profile
-reference. `selectable` means the assessed option may be explicitly chosen;
-`executable` is true only for the sole resolved option in the active revision.
+qualification or retained approval, effective range, tier, and exact timetable
+or calculation-profile reference. `selectable` means the assessed option may be explicitly chosen;
+`executable` is true for each eligible admitted option in the active revision,
+including a retained approval-bound option alongside qualified public choices.
+It does not mean automatic resolution or that a device has activated the option.
 A staged choice remains non-executable and uses the existing
 `pending_review` handoff.
 
-Multiple equal-tier choices produce `status=available`,
+Multiple independent eligible choices produce `status=available`,
 `selection_required=true`, and preserve the resolver's underlying
 `automatic_resolution_status=ambiguous`. Ordering is neutral tier/policy-ID
 ordering and never selects the first item. Stale, unavailable, research-only,

@@ -11,16 +11,22 @@ import androidx.compose.ui.test.getUnclippedBoundsInRoot
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onNodeWithTag
 import androidx.compose.ui.test.onNodeWithText
+import androidx.compose.ui.test.onAllNodesWithText
 import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performKeyInput
+import androidx.compose.ui.test.performSemanticsAction
 import androidx.compose.ui.test.performTextReplacement
 import androidx.compose.ui.test.pressKey
+import androidx.compose.ui.semantics.SemanticsActions
+import androidx.compose.ui.text.TextLayoutResult
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -41,6 +47,152 @@ import ru.namaztime.tv.sync.PendingDeviceScheduleChoiceRequest
 class DeviceSetupScreenUiTest {
     @get:Rule
     val compose = createComposeRule()
+
+    @Test
+    fun missingLocalBundleHasAnHonestNotConfiguredMessage() {
+        compose.setContent { NamazTvTheme {
+            DeviceScheduleSetupScreen(state = DeviceSetupUiState(query = "Москва",
+                search = CitySearchUiState.Error("setup_local_not_configured", false)),
+                activeSchedule = null, onQueryChanged = {}, onRetrySearch = {}, onCitySelected = {}, onBack = {})
+        } }
+        compose.onNodeWithText("Локальный каталог источников не установлен в этой сборке").assertIsDisplayed()
+        compose.onNodeWithText("Демонстрационный режим").assertDoesNotExist()
+    }
+
+    @Test
+    @Config(sdk = [28, 35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    @OptIn(ExperimentalTestApi::class)
+    fun productionPreviewIsNotDemoAndSourceLinkRequiresExplicitDpadActionWithLocalBrowserError() {
+        val preview = debugPreview().copy(
+            dataClassification = "production",
+            provenance = ru.namaztime.tv.sync.DeviceSchedulePreviewProvenance(
+                "synthetic-protocol-production-test", "a".repeat(64), "b".repeat(64), "synthetic-parser/v1", "2026-08-30T09:00:00Z",
+            ),
+        )
+        val item = scheduleChoice(0).copy(localPreview = preview, activationAllowed = true,
+            source = scheduleChoice(0).source.copy(canonicalUrl = "https://dumso.ru/raspisanie"))
+        var clickedUrl: String? = null
+        var activated = false
+        compose.setContent {
+            NamazTvTheme {
+                DeviceScheduleSetupScreen(
+                    state = choiceState(listOf(item)).copy(step = DeviceSetupStep.PREVIEW,
+                        submission = ScheduleChoiceSubmissionUiState.Preview(item, preview)),
+                    activeSchedule = activeScheduleSummary(), onQueryChanged = {}, onRetrySearch = {},
+                    onCitySelected = {}, onBack = {}, onActivatePreview = { activated = true },
+                    onOpenSource = { clickedUrl = it; false },
+                )
+            }
+        }
+        compose.onNodeWithText("Демонстрационный режим").assertDoesNotExist()
+        compose.onNodeWithText("Подписанное расписание").assertIsDisplayed()
+        assertNull(clickedUrl)
+        compose.onNodeWithTag(DEVICE_SETUP_ACTIVATE_PREVIEW_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag(DEVICE_SETUP_SOURCE_LINK_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        assertEquals("https://dumso.ru/raspisanie", clickedUrl)
+        assertEquals(false, activated)
+        compose.onNodeWithText("На этом телевизоре нет доступного браузера").assertIsDisplayed()
+        assertAllPreviewRowsVisible()
+    }
+
+    @Test
+    fun executableLegacyChoiceDescribesAvailabilityNotAnUnverifiedActiveIdentity() {
+        val item = longLegacyChoice()
+        compose.setContent { NamazTvTheme {
+            DeviceScheduleSetupScreen(
+                state = choiceState(listOf(item)), activeSchedule = activeScheduleSummary(),
+                onQueryChanged = {}, onRetrySearch = {}, onCitySelected = {}, onBack = {},
+            )
+        } }
+        compose.onNodeWithText("Доступно для выбора").assertIsDisplayed()
+        compose.onNodeWithText("Уже используется").assertDoesNotExist()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun longLegacyPreviewKeepsAllSixRowsAndFullCoverageAt720p() = assertLongLegacyPreviewFits()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun longLegacyPreviewKeepsAllSixRowsAndFullCoverageAt1080p() = assertLongLegacyPreviewFits()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun longLegacyPreviewKeepsAllSixRowsAndFullCoverageAt4k() = assertLongLegacyPreviewFits()
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    @OptIn(ExperimentalTestApi::class)
+    fun longLegacyFullProvenanceIsDpadReachableAndBackDoesNotActivate() {
+        val item = longLegacyChoice()
+        var activated = false
+        renderPreview(item, onActivate = { activated = true })
+        compose.onNodeWithTag(DEVICE_SETUP_ACTIVATE_PREVIEW_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithText("Подробнее").assertIsFocused()
+            .performKeyInput { pressKey(Key.Enter) }
+        assertFullTextVisible(item.authorityLabel)
+        compose.onRoot().performKeyInput { pressKey(Key.DirectionDown) }
+        assertFullTextVisible(item.scopeDescription)
+        // The focusable reader scrolls within paragraphs, including ones taller than its viewport.
+        repeat(16) { compose.onRoot().performKeyInput { pressKey(Key.DirectionDown) } }
+        assertFullTextVisible(item.localPreview!!.provenance!!.attribution!!)
+        compose.onRoot().performKeyInput { pressKey(Key.Back) }
+        compose.onNodeWithText("Подробнее").assertIsFocused()
+        assertAllPreviewRowsVisible()
+        assertFalse(activated)
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "ldrtl-w960dp-h540dp-land-xhdpi")
+    fun mixedArabicLegacyPreviewKeepsSixRowsAndCoverageReadable() {
+        val item = longLegacyChoice().copy(
+            authorityLabel = "مركز إسلامي اصطناعي لاختبار الواجهة فقط · Синтетическая организация · Synthetic test only",
+        )
+        renderPreview(item)
+        assertAllPreviewRowsVisible()
+        assertFullTextVisible("2026-01-01 — 2026-12-31")
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    @OptIn(ExperimentalTestApi::class)
+    fun dpadCanReadTheMiddleAndEndOfAttributionTallerThanTheDetailsViewport() {
+        val base = longLegacyChoice()
+        val attribution = (1..55).joinToString("\n") { "Синтетическая строка $it · attribution test only" }
+        val item = base.copy(localPreview = base.localPreview!!.copy(
+            provenance = base.localPreview.provenance!!.copy(attribution = attribution),
+        ))
+        renderPreview(item)
+        compose.onNodeWithTag(DEVICE_SETUP_ACTIVATE_PREVIEW_TAG).performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithText("Подробнее").performKeyInput { pressKey(Key.Enter) }
+        var middleWasReadable = false
+        var endWasReadable = false
+        repeat(80) {
+            if (!middleWasReadable || !endWasReadable) {
+                middleWasReadable = middleWasReadable || textMarkerIsInsideDetailsViewport(attribution, "Синтетическая строка 28")
+                endWasReadable = endWasReadable || textMarkerIsInsideDetailsViewport(attribution, "Синтетическая строка 55")
+                if (!middleWasReadable || !endWasReadable) compose.onRoot().performKeyInput { pressKey(Key.DirectionDown) }
+            }
+        }
+        assertTrue("D-pad skipped the middle of a tall proof paragraph", middleWasReadable)
+        assertTrue("D-pad skipped the end of a tall proof paragraph", endWasReadable)
+        compose.onRoot().performKeyInput { pressKey(Key.Back) }
+        compose.onNodeWithText("Подробнее").assertIsFocused()
+        assertAllPreviewRowsVisible()
+    }
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun longLegacyActivationFailureLeavesAllSixRowsAndReadableError() {
+        val item = longLegacyChoice()
+        renderPreview(item, activation = ScheduleActivationUiState.Error(item, "selection_changed", true))
+        assertAllPreviewRowsVisible()
+        assertFullTextVisible("2026-01-01 — 2026-12-31")
+        assertFullTextVisible("Не удалось применить расписание. Предыдущее расписание продолжает работать.")
+    }
 
     @Test
     fun emptySearchRequestsTextFieldFocusAndShowsCurrentScheduleSafety() {
@@ -534,6 +686,18 @@ class DeviceSetupScreenUiTest {
     @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
     fun previewFits4kDensitySafeFrame() = assertPreviewFitsSafeFrame()
 
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-mdpi")
+    fun productionPreviewFits720pWithoutRowsOverlappingActions() = assertPreviewFitsSafeFrame(production = true)
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun productionPreviewFits1080pWithoutRowsOverlappingActions() = assertPreviewFitsSafeFrame(production = true)
+
+    @Test
+    @Config(sdk = [35], qualifiers = "w1280dp-h720dp-land-xxhdpi")
+    fun productionPreviewFits4kWithoutRowsOverlappingActions() = assertPreviewFitsSafeFrame(production = true)
+
     private fun assertSetupFitsSafeFrame() {
         compose.setContent {
             NamazTvTheme {
@@ -602,11 +766,17 @@ class DeviceSetupScreenUiTest {
         assert(root.bottom - screen.bottom >= rootHeight * 0.04f)
     }
 
-    private fun assertPreviewFitsSafeFrame() {
+    private fun assertPreviewFitsSafeFrame(production: Boolean = false) {
         val item = scheduleChoice(0).copy(
             requestable = false,
             source = scheduleChoice(0).source.copy(status = "synthetic_debug"),
-            localPreview = debugPreview(),
+            localPreview = debugPreview().copy(
+                dataClassification = if (production) "production" else "synthetic",
+                provenance = if (production) ru.namaztime.tv.sync.DeviceSchedulePreviewProvenance(
+                    "synthetic-production-fixture", "a".repeat(64), "b".repeat(64), "test-parser/v1", "2026-08-30T00:00:00Z",
+                    attribution = "Синтетическая организация — исходное расписание: https://authority.example/calendar",
+                ) else null,
+            ),
             activationAllowed = true,
         )
         compose.setContent {
@@ -635,7 +805,104 @@ class DeviceSetupScreenUiTest {
             ).assertIsDisplayed()
         }
         compose.onNodeWithText("Использовать на этом телевизоре").assertIsFocused()
+        if (production) {
+            val finalRow = compose.onNodeWithTag("${DEVICE_SETUP_PREVIEW_ROW_TAG_PREFIX}isha").getUnclippedBoundsInRoot()
+            val action = compose.onNodeWithTag(DEVICE_SETUP_ACTIVATE_PREVIEW_TAG).getUnclippedBoundsInRoot()
+            org.junit.Assert.assertTrue("last prayer row overlaps activation", finalRow.bottom <= action.top)
+            compose.onNodeWithTag(DEVICE_SETUP_SOURCE_LINK_TAG).assertIsDisplayed()
+            assertFullTextVisible("Источник")
+            assertFullTextVisible("Подробнее")
+        }
     }
+
+    private fun assertLongLegacyPreviewFits() {
+        renderPreview(longLegacyChoice())
+        assertAllPreviewRowsVisible()
+        assertFullTextVisible("2026-01-01 — 2026-12-31")
+        val heading = compose.onNodeWithText("Текущее активное расписание")
+        val headingLayout = mutableListOf<TextLayoutResult>()
+        heading.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(headingLayout) }
+        assertFalse("left context heading is clipped", headingLayout.single().hasVisualOverflow)
+        val headingBounds = heading.getUnclippedBoundsInRoot()
+        val previewBounds = compose.onNodeWithTag(DEVICE_SETUP_PREVIEW_TAG).getUnclippedBoundsInRoot()
+        val layout = headingLayout.single()
+        for (index in layout.layoutInput.text.indices) {
+            val glyphRight = layout.getBoundingBox(index).right / compose.density.density + headingBounds.left.value
+            assertTrue("left context glyph crosses the preview column", glyphRight <= previewBounds.left.value)
+        }
+    }
+
+    private fun assertAllPreviewRowsVisible() {
+        val action = compose.onNodeWithTag(DEVICE_SETUP_ACTIVATE_PREVIEW_TAG).getUnclippedBoundsInRoot()
+        DeviceSchedulePreviewPrayer.entries.forEach { prayer ->
+            val row = compose.onNodeWithTag("$DEVICE_SETUP_PREVIEW_ROW_TAG_PREFIX${prayer.name.lowercase()}")
+                .assertIsDisplayed().getUnclippedBoundsInRoot()
+            assertTrue("$prayer overlaps activation", row.bottom <= action.top)
+        }
+    }
+
+    private fun assertFullTextVisible(text: String) {
+        val layouts = mutableListOf<TextLayoutResult>()
+        compose.onNodeWithText(text, useUnmergedTree = true).assertIsDisplayed()
+            .performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        assertFalse("text is visually truncated: $text", layouts.single().hasVisualOverflow)
+    }
+
+    private fun textMarkerIsInsideDetailsViewport(text: String, marker: String): Boolean {
+        if (compose.onAllNodesWithText(text, useUnmergedTree = true).fetchSemanticsNodes().isEmpty()) return false
+        val layouts = mutableListOf<TextLayoutResult>()
+        val node = compose.onNodeWithText(text, useUnmergedTree = true)
+        node.performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
+        val glyph = layouts.single().getBoundingBox(text.indexOf(marker))
+        val bounds = node.getUnclippedBoundsInRoot()
+        val viewport = compose.onNodeWithTag(DEVICE_SETUP_PROVENANCE_CONTENT_TAG).getUnclippedBoundsInRoot()
+        val top = bounds.top.value + glyph.top / compose.density.density
+        val bottom = bounds.top.value + glyph.bottom / compose.density.density
+        return top >= viewport.top.value && bottom <= viewport.bottom.value
+    }
+
+    private fun renderPreview(
+        item: DeviceScheduleChoice,
+        onActivate: () -> Unit = {},
+        activation: ScheduleActivationUiState = ScheduleActivationUiState.Idle,
+    ) {
+        compose.setContent { NamazTvTheme {
+            DeviceScheduleSetupScreen(
+                state = choiceState(listOf(item)).copy(
+                    step = DeviceSetupStep.PREVIEW,
+                    submission = ScheduleChoiceSubmissionUiState.Preview(item, item.localPreview!!),
+                    activation = activation,
+                ),
+                activeSchedule = activeScheduleSummary(), onQueryChanged = {}, onRetrySearch = {},
+                onCitySelected = {}, onBack = {}, onActivatePreview = onActivate,
+            )
+        } }
+    }
+
+    private fun longLegacyChoice(): DeviceScheduleChoice = scheduleChoice(
+        0,
+        "Синтетическое региональное духовное управление мусульман длинной области в составе " +
+            "независимой синтетической организации / synthetic-attributed schedule publisher " +
+            "(legal name deliberately unconfirmed in this synthetic UI fixture)",
+    ).copy(
+        executable = true,
+        requestable = false,
+        activationAllowed = true,
+        source = scheduleChoice(0).source.copy(canonicalUrl = null),
+        scopeDescription = "Синтетическая Вторая соборная мечеть тестового города, " +
+            "только расписание этой мечети; географический охват не расширяется на соседние населённые пункты",
+        localPreview = debugPreview().copy(
+            dataClassification = "production",
+            evidenceLabel = "CONFIRMED_PUBLIC · UNKNOWN",
+            provenance = ru.namaztime.tv.sync.DeviceSchedulePreviewProvenance(
+                "synthetic-long-legacy-fixture", "a".repeat(64), "b".repeat(64),
+                "synthetic-effective-schedule/v1", "2026-08-20T11:31:33Z",
+                attribution = "Синтетическое региональное духовное управление мусульман длинной области " +
+                    "в составе независимой синтетической организации · source.example.invalid · " +
+                    "Synthetic August source marks: first spelling / second spelling / third spelling",
+            ),
+        ),
+    )
 
     private fun city(
         id: String,

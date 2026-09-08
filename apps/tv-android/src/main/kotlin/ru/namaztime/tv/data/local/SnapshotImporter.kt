@@ -3,6 +3,7 @@ package ru.namaztime.tv.data.local
 import androidx.room.withTransaction
 import ru.namaztime.tv.data.snapshot.ActivatableSnapshot
 import ru.namaztime.tv.data.snapshot.SnapshotActivationGate
+import ru.namaztime.tv.data.snapshot.SnapshotAuthenticity
 import ru.namaztime.tv.data.snapshot.SnapshotPayload
 import ru.namaztime.tv.data.snapshot.SourceQualificationValidation
 import ru.namaztime.tv.domain.IqamahDateOverrideInput
@@ -87,6 +88,26 @@ class SnapshotImporter(
     suspend fun importAndActivate(input: ActivatableSnapshot): SnapshotImportResult =
         importAndActivate(input, replaceableActiveSnapshotIds = null)
 
+    /** Explicit local selection, bound to the active snapshot observed for the preview. */
+    suspend fun activateSelected(
+        input: ActivatableSnapshot,
+        expectedActiveSnapshotId: String?,
+    ): SnapshotImportResult {
+        if (input.authenticity != SnapshotAuthenticity.AUTHENTICATED ||
+            input.payload.dataClassification != "production"
+        ) {
+            throw SnapshotImportException("selection_requires_authenticated_production")
+        }
+        return importAndActivate(
+            input,
+            replaceableActiveSnapshotIds = null,
+            expectedSelection = ExpectedSelection(expectedActiveSnapshotId),
+        )
+    }
+
+    // A wrapper distinguishes “expect no active snapshot” from an unconditional sync import.
+    private data class ExpectedSelection(val activeSnapshotId: String?)
+
     suspend fun replaceAndActivate(
         input: ActivatableSnapshot,
         replaceableActiveSnapshotIds: Set<String>,
@@ -108,6 +129,7 @@ class SnapshotImporter(
         input: ActivatableSnapshot,
         replaceableActiveSnapshotIds: Set<String>?,
         replacementPolicy: SnapshotReplacementPolicy? = null,
+        expectedSelection: ExpectedSelection? = null,
     ): SnapshotImportResult {
         val snapshot = input.payload
         if (snapshot.schemaVersion == "2.0" || snapshot.source.qualification != null) {
@@ -122,7 +144,13 @@ class SnapshotImporter(
             val stalePreviousSnapshotId = selection?.previousSnapshotId
                 ?.takeIf { it != snapshot.snapshotId }
             val activeSnapshotId = selection?.activeSnapshotId
+            if (expectedSelection != null && activeSnapshotId != expectedSelection.activeSnapshotId) {
+                return@withTransaction SnapshotImportResult.SelectionChanged(activeSnapshotId)
+            }
             if (activeSnapshotId == snapshot.snapshotId && dao.snapshotExists(snapshot.snapshotId)) {
+                if (dao.getSnapshot(snapshot.snapshotId)?.canonicalSha256 != snapshot.integrity.canonicalSha256) {
+                    throw SnapshotImportException("snapshot_id_conflict")
+                }
                 return@withTransaction SnapshotImportResult.AlreadyActive(snapshot.snapshotId)
             }
             val replacedSnapshotId = when {
@@ -249,7 +277,7 @@ class SnapshotImporter(
     }
 }
 
-private fun SnapshotPayload.toTimeEngineInput() = PrayerScheduleInput(
+internal fun SnapshotPayload.toTimeEngineInput() = PrayerScheduleInput(
     timezoneId = mosque.timezone,
     days = prayerDays.map { day ->
         PrayerDayInput(

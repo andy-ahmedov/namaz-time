@@ -606,10 +606,12 @@ authority records/evidence labels, source, geographic scope, effective range,
 approval ID and exactly one timetable or calculation profile. Its stable ID is
 derived from the canonical city ID and policy ID.
 
-The projection includes all highest-precedence eligible options without a
-cardinality cap. Zero options is unavailable; one active resolved option may be
-executable; multiple equal-tier options remain selectable for explicit review
-but non-executable and keep automatic resolution ambiguous. Blocked and
-lower-precedence options stay in T039's complete assessment. Existing
+The current T049 projection includes each authority's most-specific eligible
+options without a cardinality cap or cross-authority precedence. Zero options
+is unavailable. Every eligible admitted active option is executable through
+explicit selection, whether public-qualified or retained approval-bound;
+multiple options keep automatic resolution ambiguous. Staged choices remain
+non-executable. Executable does not mean selected on a device. Blocked and
+same-authority lower-specificity options stay in T039's complete assessment. Existing
 `PrayerAuthority.Name` supplies the canonical presentation name, so migration
 v8, display slots and persisted religious ranking are deliberately absent.

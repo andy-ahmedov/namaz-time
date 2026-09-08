@@ -1,0 +1,633 @@
+{
+  "schema_version": "t049-operational-proof-index/v1",
+  "index_id": "t049-local-final48-prior-admission-2026-09-08-v3",
+  "catalog": {
+    "raw_sha256": "d00cf6cb6b975e5ffd1ebb303c9ae101cb0a39ca5f444fafc7fbc27df6988231",
+    "revision_id": "catalog-geonames-ru-2026-09-08-5267d8bf5e48a158",
+    "content_sha256": "5267d8bf5e48a158a004fa84ec3ce5171cfafab3857cade6e382fa49c3272a66"
+  },
+  "research_inputs": [
+    {
+      "path": "research/t049/regions-east.json",
+      "sha256": "37336c6ddfbd6ce266ab60c91c46ed92a4f6cdbc9e9c5b207d0f6f6226c0dcd5"
+    },
+    {
+      "path": "research/t049/regions-south.json",
+      "sha256": "38cdfd1e65838357b6f6a125845ea022926f364ea74216e73d5f0c033fdeb0ce"
+    },
+    {
+      "path": "research/t049/regions-volga-ural.json",
+      "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313"
+    },
+    {
+      "path": "research/t049/regions-west.json",
+      "sha256": "d5099ad97ea43bb18df64215f99009fd6b3072d09ee90cfa1a52daf81e7639a4"
+    }
+  ],
+  "admission": {
+    "kind": "previously_verified_local_setup_export",
+    "verified_at": "2026-09-08T04:05:00Z",
+    "record": {
+      "path": "/home/andy/github.com/andy-ahmedov/namaztime-artifacts/t049-setup-expanded.KaooWx/EXPORT_HANDOFF_FINAL48.md",
+      "sha256": "b8b0a546f3352198aa7183bae1f1c445c7bf1ae7e298822bc76023257f49aef5"
+    },
+    "manifest": {
+      "path": "/home/andy/github.com/andy-ahmedov/namaztime-artifacts/t049-setup-expanded.KaooWx/bundle-final48/manifest.json",
+      "sha256": "ba8a5b9bb7e7ac24651836bcb1cd31788fd2472a451cbb3a2aae5a56e051718f"
+    },
+    "registry_revision_id": "registry-t049-reviewed-local-2026-09-08-v3",
+    "registry_content_sha256": "09d02182d67155386a98b0115b17262be7837adbac61c56ac157db2b27e54092",
+    "verification_command": "go run ./cmd/registryctl export-local-setup -catalog /home/andy/github.com/andy-ahmedov/namaztime-artifacts/t049-sources.w1vQaE/russia-cities-2026-09-08.json -catalog-sha256 d00cf6cb6b975e5ffd1ebb303c9ae101cb0a39ca5f444fafc7fbc27df6988231 -bindings /home/andy/github.com/andy-ahmedov/namaztime-artifacts/t049-setup-expanded.KaooWx/inputs-final48/bindings.json -bindings-sha256 68816a33f98aa4fd98886cf2cf8721c484eb4ac9b939b710a5651c37120acb64 -artifacts /home/andy/github.com/andy-ahmedov/namaztime-artifacts/t049-setup-expanded.KaooWx/inputs-final48/reference-artifacts.json -artifacts-sha256 b76c854374b83084db633363723ff73cccfefcb95dfc6da697344c58816c908a -artifact-root /home/andy/github.com/andy-ahmedov -output /home/andy/github.com/andy-ahmedov/namaztime-artifacts/t049-setup-expanded.KaooWx/bundle-final48 -actor namaztime:t049-local-bundle -reason 'Local qualified first-party schedules with retained Ulyanovsk independently selectable; no remote deployment'",
+    "claim": "Previously executed successfully at the recorded time: real ComposeCatalog, ArtifactReferenceVerifier and PersistentService.Stage/Activate using the full pinned canonical catalog, unchanged production revision 3/previous/test/staging trust roots, all 48 complete public qualifications and signed snapshots/receipts, and exact retained Ulyanovsk approval/snapshot. The pinned handoff records actual command and source/reference pins. This index records local admission, not PostgreSQL/server/device activation, a new qualification, re-verification, or external endorsement. Its raw SHA-256 must be trusted independently by the report compiler caller. The corrected projection preserves the original annual Ulyanovsk choice alongside September CDUM; no signed data or proof was changed to repair the prior export's missing September binding."
+  },
+  "policy_research_bindings": [
+    {
+      "policy_id": "policy-cdum-chelyabinsk-2026",
+      "relation": "public_source_evidence",
+      "note": "Explicit CDUM exact-city calendar research lineage. Later current capture, qualification and signed publication must independently establish the accepted monthly scope/range; the preparation index and this mapping are not admission. Other authorities remain independent.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/1/authorities/0/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-cdum-ekaterinburg-2026",
+      "relation": "public_source_evidence",
+      "note": "Explicit CDUM exact-city calendar research lineage. Later current capture, qualification and signed publication must independently establish the accepted monthly scope/range; the preparation index and this mapping are not admission. Other authorities remain independent.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/13/authorities/0/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-cdum-izhevsk-2026",
+      "relation": "public_source_evidence",
+      "note": "Explicit CDUM exact-city calendar research lineage. Later current capture, qualification and signed publication must independently establish the accepted monthly scope/range; the preparation index and this mapping are not admission. Other authorities remain independent.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/16/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-cdum-kazan-2026",
+      "relation": "public_source_evidence",
+      "note": "Explicit research lineage mapping only. Qualification, exact scope/range and any later admission must come from the independently verified signed publication and actual exporter; this draft does not update research status or make a choice selectable.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/0/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-cdum-khabarovsk-2026",
+      "relation": "public_source_evidence",
+      "note": "The earlier Khabarovsk CDUM ledger records cached-year/transport and annual ordering gaps. This links publisher/calendar identity only; later direct current capture and separately validated September proof are required. It does not silently repair old evidence, qualify an annual calendar or expand the city to the krai. No admission is asserted.",
+      "references": [
+        {
+          "path": "research/t049/regions-east.json",
+          "sha256": "37336c6ddfbd6ce266ab60c91c46ed92a4f6cdbc9e9c5b207d0f6f6226c0dcd5",
+          "pointer": "/subjects/14/authorities/0/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-cdum-perm-2026",
+      "relation": "public_source_evidence",
+      "note": "Explicit CDUM exact-city calendar research lineage. Later current capture, qualification and signed publication must independently establish the accepted monthly scope/range; the preparation index and this mapping are not admission. Other authorities remain independent.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/19/authorities/2/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-cdum-ulyanovsk-2026",
+      "relation": "public_source_evidence",
+      "note": "Explicit CDUM exact-city calendar research lineage. Later current capture, qualification and signed publication must independently establish the accepted monthly scope/range; the preparation index and this mapping are not admission. Other authorities remain independent.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/17/authorities/0/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-cdum-yoshkar-ola-2026",
+      "relation": "public_source_evidence",
+      "note": "Explicit CDUM exact-city calendar research lineage. Later current capture, qualification and signed publication must independently establish the accepted monthly scope/range; the preparation index and this mapping are not admission. Other authorities remain independent.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/6/authorities/0/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-dumso-saratov-monthly",
+      "relation": "public_source_evidence",
+      "note": "Explicit research lineage mapping only. Qualification, exact scope/range and any later admission must come from the independently verified signed publication and actual exporter; this draft does not update research status or make a choice selectable.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/12/authorities/0/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-kb-dum-2026",
+      "relation": "public_source_evidence",
+      "note": "Explicit research lineage mapping only. Qualification, exact scope/range and any later admission must come from the independently verified signed publication and actual exporter; this draft does not update research status or make a choice selectable.",
+      "references": [
+        {
+          "path": "research/t049/regions-south.json",
+          "sha256": "38cdfd1e65838357b6f6a125845ea022926f364ea74216e73d5f0c033fdeb0ce",
+          "pointer": "/subjects/9/authorities/0/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-kda-sochi-mrom-2026",
+      "relation": "public_source_evidence",
+      "note": "Explicit research lineage mapping only. Qualification, exact scope/range and any later admission must come from the independently verified signed publication and actual exporter; this draft does not update research status or make a choice selectable.",
+      "references": [
+        {
+          "path": "research/t049/regions-south.json",
+          "sha256": "38cdfd1e65838357b6f6a125845ea022926f364ea74216e73d5f0c033fdeb0ce",
+          "pointer": "/subjects/4/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-oms-omsk-json-monthly",
+      "relation": "public_source_evidence",
+      "note": "Explicit research lineage mapping only. Qualification, exact scope/range and any later admission must come from the independently verified signed publication and actual exporter; this draft does not update research status or make a choice selectable.",
+      "references": [
+        {
+          "path": "research/t049/regions-east.json",
+          "sha256": "37336c6ddfbd6ce266ab60c91c46ed92a4f6cdbc9e9c5b207d0f6f6226c0dcd5",
+          "pointer": "/subjects/7/authorities/0/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-agriz-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-aksubay-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-almet-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-apastovo-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-arsk-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-aznakay-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-baltasi-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-bavli-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-bazarnyemataki-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-bogatyesaby-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-bolshatna-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-bolshiekaybesy-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-bugulma-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-buinsk-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-chistop-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-elabuga-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-kazan-2026",
+      "relation": "public_source_evidence",
+      "note": "The DUMRT locality selector research record includes Kazan. This shared research reference does not extend the separately qualified exact Kazan September scope to the republic, all selector localities or the full year. No admission is asserted here.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-kukmor-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-laish-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-leninogorsk-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-mamadis-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-mendeleevsk-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-nabchelny-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-nignekamsk-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-novosesminsk-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-nurlat-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-pestrezy-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-ribnayaslpboda-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-sarmanovo2-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-staroechuprale-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-tet2-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-tulyachi-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-urussu-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-verhuslon-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ru-ta-dumrt-zelenodolsk-2026",
+      "relation": "public_source_evidence",
+      "note": "Shared DUMRT locality-selector research lineage only; this source retains its own exact canonical city and September 2026 qualification/publication. Does not expand a city to the republic, admit all 44 selector options, repair ambiguous identities, or infer annual coverage. This is not admission.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/14/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-ulyanovsk-second-cathedral-2026",
+      "relation": "retained_legacy_context_only",
+      "note": "Context reference to the researched RDUM Ulyanovsk baseline publisher only. The actual admitted source remains the exact legacy composite effective-ulyanovsk-2026-v1: retained annual PDF plus August photo override and original Second Cathedral Mosque approval. No research source is publicly qualified or made citywide by this link. The original SHA 78233e7be3dd8ac9013ae8f44e8e2fdea587a3780b6dadabb97a290ed57ec50b, mosque, address, canonical GeoNames 479123 city, source components and approval remain unchanged.",
+      "references": [
+        {
+          "path": "research/t049/regions-volga-ural.json",
+          "sha256": "466e86914168fd743c804acd31ccb42a04a8393f0b90c14718b5ba01a925d313",
+          "pointer": "/subjects/17/authorities/1/sources/0"
+        }
+      ]
+    },
+    {
+      "policy_id": "policy-cdum-rostov-on-don-2026",
+      "relation": "public_source_evidence",
+      "note": "Exact existing CDUM city-source research reference for Rostov-on-Don. The lane's annual discovery evidence and research authority ID ru-cdum are preserved as historical evidence; this mapping neither qualifies the annual timetable nor substitutes the regional islam-rostov.ru source. Any operational range, qualification and admission remain bound to their separate reviewed inspection, signed artifact and actual exporter evidence. Only the unique existing canonical RU-ROS alias Ростов-на-Дону maps to city-d618d18efd9a315b463b7c4d6442f5c2; no name repair, fuzzy matching or region-wide expansion.",
+      "references": [
+        {
+          "path": "research/t049/regions-south.json",
+          "sha256": "38cdfd1e65838357b6f6a125845ea022926f364ea74216e73d5f0c033fdeb0ce",
+          "pointer": "/subjects/5/authorities/2/sources/0"
+        }
+      ]
+    }
+  ]
+}

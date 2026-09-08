@@ -6,6 +6,7 @@ import (
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/andy-ahmedov/namaz-time/internal/domain"
 )
@@ -57,7 +58,7 @@ func TestProjectCityScheduleChoicesPreservesEveryEligibleChoice(t *testing.T) {
 	}
 }
 
-func TestProjectCityScheduleChoicesMarksOnlyOneResolvedActiveChoiceExecutable(t *testing.T) {
+func TestProjectCityScheduleChoicesKeepsEveryActiveChoiceExecutableWithoutResolvingAmbiguity(t *testing.T) {
 	assessment := assessSyntheticChoices(t, syntheticChoiceDataset(1))
 	active, err := ProjectCityScheduleChoices(RevisionPolicyAssessment{
 		Revision: RevisionRecord{ID: "revision-active-choice-0001"}, State: RevisionStateActive, Result: assessment,
@@ -76,11 +77,208 @@ func TestProjectCityScheduleChoicesMarksOnlyOneResolvedActiveChoiceExecutable(t 
 	if err != nil {
 		t.Fatalf("ProjectCityScheduleChoices(active ambiguous) error = %v", err)
 	}
+	if !activeAmbiguous.SelectionRequired || activeAmbiguous.AutomaticResolutionStatus != AssessmentAmbiguous {
+		t.Fatalf("multiple executable choices became an automatic selection = %#v", activeAmbiguous)
+	}
 	for _, choice := range activeAmbiguous.Choices {
-		if choice.Executable {
-			t.Fatalf("ambiguous ordering made choice executable = %#v", activeAmbiguous)
+		if !choice.Executable {
+			t.Fatalf("another eligible choice suppressed an active approved choice = %#v", activeAmbiguous)
 		}
 	}
+}
+
+func TestProjectCityScheduleChoicesKeepsVerifiedLegacyDuringPublicOverlap(t *testing.T) {
+	for _, reverse := range []bool{false, true} {
+		name := "original_order"
+		if reverse {
+			name = "reversed_order"
+		}
+		t.Run(name, func(t *testing.T) {
+			dataset, approvals, snapshots := mixedAdmissionChoiceFixture(t)
+			if reverse {
+				slices.Reverse(dataset.Policies)
+				slices.Reverse(dataset.Sources)
+				slices.Reverse(dataset.Authorities)
+				slices.Reverse(dataset.TimeTables)
+			}
+			store := newFakeRevisionStore()
+			service, err := NewPersistentService(PersistentServiceConfig{
+				Store: store, ApprovalVerifier: approvals, SnapshotVerifier: snapshots, Now: testNow,
+			})
+			if err != nil {
+				t.Fatal(err)
+			}
+			revision := RevisionRecord{ID: "revision-synthetic-mixed-choices", SchemaVersion: 2, CatalogRevisionID: "catalog-1", CreatedBy: "synthetic-test", Reason: "independent public and mosque-approved choices"}
+			if err := service.Stage(t.Context(), revision, dataset); err != nil {
+				t.Fatal(err)
+			}
+			request := ResolveRequest{CityID: testCityID, MosqueID: testMosqueID, Date: "2026-09-08"}
+			staged, err := service.AssessRevision(t.Context(), revision.ID, request)
+			if err != nil {
+				t.Fatal(err)
+			}
+			stagedChoices, err := ProjectCityScheduleChoices(staged)
+			if err != nil || len(stagedChoices.Choices) != 2 || !stagedChoices.SelectionRequired {
+				t.Fatalf("staged mixed choices = %+v, %v", stagedChoices, err)
+			}
+			for _, choice := range stagedChoices.Choices {
+				if choice.Executable {
+					t.Fatal("staged choice became executable without admission")
+				}
+			}
+			if err := service.Activate(t.Context(), revision.ID, "synthetic-test", "verify both admission branches"); err != nil {
+				t.Fatal(err)
+			}
+			if len(store.activations) != 1 || len(store.activations[0].Approvals) != 1 || len(store.activations[0].Snapshots) != 2 {
+				t.Fatal("active mixed revision did not retain separate verified approval and snapshot evidence")
+			}
+			annual := domain.DateRange{From: "2026-01-01", To: "2026-12-31"}
+			for date, _ := time.Parse(time.DateOnly, annual.From); date.Format(time.DateOnly) <= annual.To; date = date.AddDate(0, 0, 1) {
+				request.Date = date.Format(time.DateOnly)
+				assessment, err := service.AssessRevision(t.Context(), "", request)
+				if err != nil {
+					t.Fatal(err)
+				}
+				choices, err := ProjectCityScheduleChoices(assessment)
+				if err != nil {
+					t.Fatal(err)
+				}
+				overlap := date.Month() == time.September
+				want := 1
+				if overlap {
+					want = 2
+				}
+				if len(choices.Choices) != want || choices.SelectionRequired != overlap {
+					t.Fatalf("choice gap or expansion on %s: %+v", request.Date, choices)
+				}
+				for _, choice := range choices.Choices {
+					if !choice.Selectable || !choice.Executable || choice.BlockedReason != OptionEligible || choice.Tier != ResolutionExactCityTimetable {
+						t.Fatalf("eligible admitted choice %s suppressed on %s: executable=%v", choice.PolicyID, request.Date, choice.Executable)
+					}
+					if choice.PolicyID == testPolicyID {
+						if choice.Qualification != nil || choice.ApprovalID != testApprovalID || choice.Effective != annual ||
+							choice.TimeTable == nil || choice.TimeTable.MosqueID != testMosqueID || choice.TimeTable.PublishedSnapshotID != testSnapshotID ||
+							!reflect.DeepEqual(choice.SourceOverrides, dataset.SourceOverrides) || len(choice.Authorities) != 2 {
+							t.Fatal("legacy approval, original mosque/snapshot, annual range, authority set or override changed")
+						}
+					} else if choice.PolicyID != testPolicyID+"-public" || choice.Qualification == nil || choice.ApprovalID != "" ||
+						!reflect.DeepEqual(*choice.Qualification, dataset.Qualifications[0]) {
+						t.Fatal("public proof acquired legacy approval or changed")
+					}
+				}
+				resolved, err := service.Resolve(t.Context(), request)
+				if overlap {
+					if !errors.Is(err, ErrPolicyAmbiguous) || choices.AutomaticResolutionStatus != AssessmentAmbiguous {
+						t.Fatalf("overlap automatically selected an authority on %s: %v", request.Date, err)
+					}
+				} else if err != nil || resolved.Policy.ID != testPolicyID {
+					t.Fatalf("retained annual policy changed outside overlap on %s: %v", request.Date, err)
+				}
+			}
+			for _, date := range []string{"2026-08-31", "2026-09-01", "2026-09-30", "2026-10-01"} {
+				assessment, err := service.AssessRevision(t.Context(), "", ResolveRequest{CityID: testCityID, MosqueID: "other-synthetic-mosque", Date: date})
+				if err != nil {
+					t.Fatal(err)
+				}
+				choices, err := ProjectCityScheduleChoices(assessment)
+				if err != nil {
+					t.Fatal(err)
+				}
+				for _, choice := range choices.Choices {
+					if choice.Qualification == nil || choice.PolicyID != testPolicyID+"-public" {
+						t.Fatal("legacy approval leaked to another mosque context")
+					}
+				}
+			}
+		})
+	}
+}
+
+func TestMixedChoiceActivationStillRequiresExactLegacyApprovalAndSnapshot(t *testing.T) {
+	for _, test := range []struct {
+		name   string
+		mutate func(*fakeApprovalVerifier, *fakeSnapshotVerifier)
+	}{
+		{"missing approval", func(a *fakeApprovalVerifier, _ *fakeSnapshotVerifier) { delete(a.evidence, testApprovalID) }},
+		{"wrong approval mosque", func(a *fakeApprovalVerifier, _ *fakeSnapshotVerifier) {
+			v := a.evidence[testApprovalID]
+			v.MosqueID = "other-synthetic-mosque"
+			a.evidence[testApprovalID] = v
+		}},
+		{"missing legacy snapshot", func(_ *fakeApprovalVerifier, s *fakeSnapshotVerifier) { delete(s.evidence, testSnapshotID) }},
+		{"wrong legacy snapshot mosque", func(_ *fakeApprovalVerifier, s *fakeSnapshotVerifier) {
+			v := s.evidence[testSnapshotID]
+			v.MosqueID = "other-synthetic-mosque"
+			s.evidence[testSnapshotID] = v
+		}},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			dataset, approvals, snapshots := mixedAdmissionChoiceFixture(t)
+			test.mutate(approvals, snapshots)
+			store := newFakeRevisionStore()
+			service, err := NewPersistentService(PersistentServiceConfig{Store: store, ApprovalVerifier: approvals, SnapshotVerifier: snapshots, Now: testNow})
+			if err != nil {
+				t.Fatal(err)
+			}
+			revision := RevisionRecord{ID: "revision-synthetic-invalid-legacy", SchemaVersion: 2, CatalogRevisionID: "catalog-1", CreatedBy: "synthetic-test", Reason: "reject incomplete mixed admission"}
+			if err := service.Stage(t.Context(), revision, dataset); err != nil {
+				t.Fatal(err)
+			}
+			if err := service.Activate(t.Context(), revision.ID, "synthetic-test", "must reject invalid legacy evidence"); err == nil || len(store.activations) != 0 {
+				t.Fatal("public proof substituted for invalid legacy admission")
+			}
+		})
+	}
+}
+
+func mixedAdmissionChoiceFixture(t *testing.T) (Dataset, *fakeApprovalVerifier, *fakeSnapshotVerifier) {
+	t.Helper()
+	legacy := executableDataset()
+	addApprovedOverride(&legacy, testApprovalID)
+	legacy.Authorities = append(legacy.Authorities, domain.PrayerAuthority{ID: "authority-synthetic-legacy-component", Name: "Synthetic retained component publisher", EvidenceLabel: "PROPOSAL"})
+	legacy.Sources[0].AuthorityIDs = append(legacy.Sources[0].AuthorityIDs, legacy.Authorities[1].ID)
+	legacy.Policies[0].AuthorityIDs = append(legacy.Policies[0].AuthorityIDs, legacy.Authorities[1].ID)
+	public := qualifiedDataset(t)
+	public.Authorities[0].ID += "-public"
+	public.Sources[0].ID += "-public"
+	public.Sources[0].AuthorityIDs = []string{public.Authorities[0].ID}
+	public.Policies[0].ID += "-public"
+	public.Policies[0].AuthorityIDs = public.Sources[0].AuthorityIDs
+	public.Policies[0].SourceID = public.Sources[0].ID
+	public.TimeTables[0].ID += "-public"
+	public.TimeTables[0].SourceID = public.Sources[0].ID
+	public.TimeTables[0].PublishedSnapshotID += "-public"
+	public.Policies[0].TimeTableID = public.TimeTables[0].ID
+	coverage := domain.DateRange{From: "2026-09-01", To: "2026-09-30"}
+	public.Policies[0].Effective, public.TimeTables[0].Effective = coverage, coverage
+	public.Sources[0].FreshThrough = coverage.To
+	q := &public.Qualifications[0]
+	q.Authority, q.SourceID, q.Coverage, q.FreshThrough, q.ValidatedDays = public.Authorities[0], public.Sources[0].ID, coverage, coverage.To, 30
+	comparison := q.Comparisons[0]
+	q.Comparisons = nil
+	for _, date := range []string{"2026-09-01", "2026-09-08", "2026-09-30"} {
+		comparison.Day.Date = date
+		q.Comparisons = append(q.Comparisons, comparison)
+	}
+	sealRegistryProof(t, q)
+	public.Sources[0].QualificationID, public.Policies[0].QualificationID = q.ID, q.ID
+	snapshots := qualifiedSnapshotVerifier(public)
+	publicEvidence := snapshots.evidence[testSnapshotID]
+	publicEvidence.ID = public.TimeTables[0].PublishedSnapshotID
+	snapshots.evidence[publicEvidence.ID] = publicEvidence
+	snapshots.evidence[testSnapshotID] = VerifiedSnapshot{
+		ID: testSnapshotID, MosqueID: testMosqueID, Timezone: legacy.Cities[0].Timezone,
+		Effective: legacy.Policies[0].Effective, PayloadSHA256: repeatHex("b"), SigningKeyID: "synthetic-production-key", VerifiedAt: testNow(),
+	}
+	approvals := &fakeApprovalVerifier{evidence: map[string]VerifiedApproval{
+		testApprovalID: {ID: testApprovalID, MosqueID: testMosqueID, EvidenceSHA256: repeatHex("a"), VerifiedAt: testNow()},
+	}}
+	legacy.Authorities = append(legacy.Authorities, public.Authorities...)
+	legacy.Sources = append(legacy.Sources, public.Sources...)
+	legacy.Policies = append(legacy.Policies, public.Policies...)
+	legacy.TimeTables = append(legacy.TimeTables, public.TimeTables...)
+	legacy.Qualifications = public.Qualifications
+	return legacy, approvals, snapshots
 }
 
 func TestProjectCityScheduleChoicesPreservesCalculationProfileIdentity(t *testing.T) {

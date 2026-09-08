@@ -5,6 +5,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.resetMain
@@ -85,6 +87,21 @@ class DeviceSetupViewModelTest {
         assertEquals(listOf("Киров", "Ульяновск"), gateway.queries)
         val result = model.state.value.search as CitySearchUiState.Results
         assertEquals("Ульяновск", result.candidates.single().canonicalName)
+    }
+
+    @Test
+    fun lateNonCooperativeCatalogReadCannotOverwriteTheNewQuery() = runTest(dispatcher) {
+        val gateway = RecordingCityGateway { query ->
+            if (query == "Киров") withContext(NonCancellable) { delay(2_000) }
+            DeviceSetupResult.Success(listOf(city(query, "RU-ULY")))
+        }
+        val model = DeviceSetupViewModel(gateway, SavedStateHandle())
+        model.onQueryChanged("Киров")
+        advanceTimeBy(300); runCurrent()
+        model.onQueryChanged("Ульяновск")
+        advanceTimeBy(300); runCurrent()
+        advanceTimeBy(2_000); runCurrent()
+        assertEquals("Ульяновск", (model.state.value.search as CitySearchUiState.Results).candidates.single().canonicalName)
     }
 
     @Test

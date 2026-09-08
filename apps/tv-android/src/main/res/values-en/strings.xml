@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">NamazTime</string>
+    <string name="device_setup_choice_qualification">NamazTime qualification: %1$s · fresh through %2$s</string>
+    <string name="device_setup_choice_qualified_available">Verified by NamazTime · your choice</string>
+    <string name="device_setup_signed_preview">Signed schedule</string>
+    <string name="device_setup_public_preview_explanation">Prayer onsets verified by NamazTime against the first-party source, not an external endorsement. Local iqamah settings are preserved.</string>
+    <string name="device_setup_legacy_preview_explanation">Retained approved schedule for this specific mosque. Applying it requires your explicit choice; local settings are preserved.</string>
+    <string name="device_setup_source_link">Source</string>
+    <string name="device_setup_source_browser_unavailable">No browser is available on this TV</string>
+    <string name="device_setup_local_not_configured">The local source catalog is not installed in this build</string>
     <string name="open_settings">Settings</string>
     <string name="settings_title">Settings</string>
     <string name="return_to_display">Return to schedule</string>
@@ -67,7 +75,16 @@
     <string name="device_setup_choice_identity">%1$s · %2$s</string>
     <string name="device_setup_schedule_type_timetable">published timetable</string>
     <string name="device_setup_schedule_type_calculation">approved calculation profile</string>
-    <string name="device_setup_choice_active">Currently active</string>
+    <string name="device_setup_choice_available">Available to select</string>
+    <string name="device_setup_provenance_action">Details</string>
+    <string name="device_setup_provenance_title">About the source</string>
+    <string name="device_setup_provenance_scroll">Up and down: full details; Back: return to the schedule</string>
+    <string name="device_setup_scope">Applicable scope</string>
+    <string name="device_setup_provenance_basis">Evidence</string>
+    <string name="device_setup_provenance_choice">Schedule choice</string>
+    <string name="device_setup_snapshot_hash">Signed content SHA-256</string>
+    <string name="device_setup_attribution">Attribution and original source</string>
+    <string name="device_setup_provenance_note">About activation</string>
     <string name="device_setup_choice_submitting">Submitting choice: %1$s…</string>
     <string name="device_setup_choice_request_error">Could not submit the choice. The current schedule was not changed.</string>
     <string name="device_setup_choice_selected">Selected schedule: %1$s</string>

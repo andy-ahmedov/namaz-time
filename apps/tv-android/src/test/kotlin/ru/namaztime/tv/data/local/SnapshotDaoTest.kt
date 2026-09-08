@@ -53,9 +53,9 @@ class SnapshotDaoTest {
     }
 
     @Test
-    fun currentDatabaseOpensAtVersionThreeAndProtectsActiveSnapshot() = runTest {
+    fun currentDatabaseOpensAtVersionFourAndProtectsActiveSnapshot() = runTest {
         val sqlite = database.openHelper.writableDatabase
-        assertEquals(3, sqlite.version)
+        assertEquals(4, sqlite.version)
         val tableNames = buildSet {
             sqlite.query(
                 "SELECT name FROM sqlite_master WHERE type = 'table' AND name NOT LIKE 'sqlite_%'",
@@ -89,6 +89,8 @@ class SnapshotDaoTest {
         assertThrows(SQLiteConstraintException::class.java) {
             sqlite.delete("snapshots", "snapshotId = ?", arrayOf(SNAPSHOT_ID))
         }
+        assertEquals(SNAPSHOT_ID, dao.getSelection()?.activeSnapshotId)
+        assertEquals(snapshot(), dao.getSnapshot(SNAPSHOT_ID))
     }
 
     private fun snapshot() = SnapshotEntity(

@@ -18,20 +18,101 @@ boundary, not a broken repository link. Remote CI is not rerun or claimed green.
 |---|---|---|
 | 0: persistent policy reconciliation | DONE | ADR 0019, AGENTS, streamlined provider skill, source checklist and governing docs separate qualification from optional endorsement. `make docs-check test-skills` PASS: 2 package checks, 130 runtime/data cases, 2 explicit non-bundled upstream module skips. Provider frontmatter validation and `git diff --check` PASS. No application/schema/signing changes in this checkpoint. |
 | 1: previous research/demo audit | DONE | `research/t049/BASELINE_AUDIT.md`: 83 mapped subjects versus old 31 (52 gaps), current debug factory/constant-row projection, persisted legacy admission and pilot inspected; narrow pilot/artifact tests and 4 research tests PASS. No live NamazTime PostgreSQL instance found; fresh isolated DB gate remains required. |
-| 2–3: nationwide research and scope resolution | IN_PROGRESS | All four ledgers delivered: western 29, eastern 21, southern 13 and Volga/Ural 20 subjects. Cross-ledger synthesis, currentness reconciliation and qualification remain in progress. Current hash-pinned GeoNames import contains 166,559 localities and 83 mapped subjects; old pilot catalog bindings remain unchanged. DUM RT Kazan CSV and XLSX agree for all 365 dates, including unrepresentable May 5 Fajr 23:54: explicit September coverage passes, full-year coverage fails closed. No inferred day offset or regional expansion. |
-| 4/6: qualified providers and verified activation | IN_PROGRESS | DUM RT CSV, Omsk JSON, KBR extracted-PDF text, CDUM HTML and Sochi XLSX parsers have synthetic and retained-artifact checks. Qualification/snapshot/signing/audit v2 and Go registry v2 admission pass narrow tests without human approval; every activated qualified snapshot must carry the exact proof hash, and canonical scope/catalog bindings are checked. PostgreSQL v9 migration, rollback refusal, reapply and backup/restore integration pass. Android v2/Room v4 passes 135 focused tests reported by the Android lane, including cross-language signed fixture and legacy LKG. Real qualification, signed materialization and normal setup remain incomplete; the first KBR inspection was quarantined for invalid retrieval metadata. |
-| 5: normal setup/runtime | IN_PROGRESS | First real KBR + retained Uly bundle passed concrete registry Stage/Activate and reference verification, with all 166,559 canonical localities searchable and exactly 203 covered. Android default-anchor bundle tests pass on API 28/35; controlled emulator installation/interactive E2E remains pending. |
-| Evidence and repository gates | TODO | Representative real patterns, pilot byte regression, parser drift/stale tests, PostgreSQL up/down/reapply/restore if changed, Android emulator + full requested gates |
+| 2–3: nationwide research and scope resolution | DONE | Four pinned ledgers cover the exact 83-subject catalog set, 166,559 localities and 204,641 aliases; superseding machine registry retains all research/search-trail pointers and current operational proof links. Qualified source scopes, currentness and values were separately rechecked; unsupported localities remain unavailable. No inferred day offset, repair or regional expansion. |
+| 4/6: qualified providers and verified activation | DONE | Six deterministic public adapters, 48 complete qualified sources, two-signature publication/receipt verification and corrected real Go Stage/Activate/export pass, plus unchanged retained legacy Uly. PostgreSQL v9 up/down-refusal/reapply/backup-restore and Go test/race/lint/security pass. Full catalog remains intact; 248 covered localities and 250 current choices at the recorded report time. Device runtime acceptance remains phase 5. |
+| 5: normal setup/runtime | IN_PROGRESS | First real KBR + retained Uly bundle passed concrete registry Stage/Activate and reference verification, with all 166,559 canonical localities searchable and exactly 203 covered. API 28/35 tests and first controlled API 36 emulator activation/restart/unavailable/Uly-return pass. Runtime exposed long-text preview clipping and an incorrect availability badge; focused layout fixes and expanded-bundle E2E remain required. |
+| Evidence and repository gates | IN_PROGRESS | PostgreSQL v9 up/down refusal/reapply/restore, Go race/security and first full Android gate pass. Expanded-bundle production test exposed September suppression of retained Uly; correction, repeated affected gates and expanded representative runtime remain required. |
 
 Scope includes coherent local checkpoint commits, not push/PR/deployment,
 signing-key changes, organization contact or production-data deletion. Unknown
 source evidence makes that source/city unavailable, not the whole task blocked.
 T038 is DONE under the explicit T049 closure rule: the second non-Ulyanovsk
 regional adapter (DUM KBR annual PDF, explicit republic-wide scope) is implemented
-and verified against all 365 retained first-party rows. Two sources now have
-evidence-reviewed qualifications (KBR and Saratov, below); no new source has
-yet been activated on a device. KBR and Saratov are now signed/materialized
-locally; additional exact-city materialization is in progress.
+and verified against all 365 retained first-party rows. Forty-eight public
+sources now have evidence-reviewed, locally signed qualifications and verified
+local admission. The controlled debug emulator has activated KBR and retained
+the exact Ulyanovsk snapshot; expanded-bundle runtime acceptance is in progress.
+
+Corrected final48 export (04:05:00Z) is now the operational checkpoint:
+raw manifest `ba8a5b9bb7e7ac24651836bcb1cd31788fd2472a451cbb3a2aae5a56e051718f`,
+registry `registry-t049-reviewed-local-2026-09-08-v3`.
+The compiler's 04:08:18Z state verifies 49 current policies (48 public + one
+legacy), 248 covered / 166,311 unavailable localities, 250 city/choice bindings,
+and two multi-choice cities (Kazan and Ulyanovsk). Subject coverage is one full,
+12 partial, 70 unavailable. Legacy Uly now has one uninterrupted annual binding;
+CDUM's September table is separate. The 48th public source is CDUM Rostov,
+qualified through its exact existing RU-ROS alias, with 180 compared onset
+fields and no guessed identity. Its signed/published timestamp is 04:02:55Z;
+final isolated ledger SHA-256 is
+`43cf186c04352d7cb1a983ad573517f6f5fcfd8766f15e740a17efcb974b3a8a`.
+Current public ranges: two annual, 45 September-only, one June–September.
+The rejected final47 checkpoint below remains chronological failure evidence.
+
+Independent final48 delta audit PASS (outside-Git report SHA-256
+`0d863168cb26751dd4345d5e3245964f9fdd550ceb69c85a3952cc89ddb7aa8d`),
+reviewed in full by root: exact expected 250 city-policy pairs, complete catalog,
+unchanged prior snapshots/proofs/trust and all 2,202 public days / 13,212 onset
+fields. Fixed-bundle expiry correctly leaves three annual policies on October 1.
+Expanded production Android regression is GREEN, including original Uly+CDUM,
+Kazan two independent authorities, no homonym fallback and Omsk partial bounds.
+`make test-android-all` PASS: 67 suites / 621 tests, zero failures/errors/skips,
+strict dependency verification, debug/release lint/build identity and unchanged
+Room schema files. Build identity remains code 10 / HEAD60bc5b9 dirty; no pilot
+APK install is implied. Exact `make test` and `make lint` now both PASS with
+the real final48 and synthetic interop fixture environments: Android reused
+621 passing cases, skills 132 cases with two explicit upstream skips, research
+38+12 and public-contract three cases. Full-history secret scan PASS across
+125 commits; staged implementation/metadata scan PASS, with no raw source or
+private operator/key artifact staged. Gradle is idle for the coherent local
+checkpoint before a commit-bound debug APK and round-two emulator interactions.
+
+Latest checkpoint (2026-09-08 03:47 UTC): all 34 further exact DUM RT locality
+sources and seven fresh CDUM exact-city sources passed root raw/catalog/value
+adjudication, closed signing checks, two-signature materialization, separate
+finalization and receipt-chain verification. Total: 47 qualified public sources
+(two annual, 44 September-only, one June–September), plus unchanged legacy Uly.
+Final isolated ledger raw SHA-256:
+`84f39028209cc9c6da991c650fe25006f7b69839ad7918b4cc15d2210d28747d`.
+No dataset repair, key change or remote deployment occurred.
+
+Expanded local export actually passed ComposeCatalog/Stage/Activate/reference
+verification at 03:36:59Z; raw manifest
+`a9bd9866bed518d5de18256ac85099002bf9b08929ee386ca117cd3e51b3a260`.
+The compiler checked all 83 subjects and derives 247 currently covered localities,
+166,312 unavailable, one full/11 partial/71 unavailable subjects. Admission is
+not runtime acceptance: the full Android gate reached 618 tests with two failures
+because the exported September choices exclude the unchanged legacy Uly policy
+when CDUM applies. The actual bindings split legacy coverage into January–August
+and October–December. This is not a stale `.single` test: the required retained
+choice is missing. The package is held from installation while the Go projection
+rule and synthetic regression are investigated; no signed data is changed.
+
+Root cause confirmed: `ProjectCityScheduleChoices` marked legacy `Executable`
+only in its single-choice branch, while public choices used per-option active
+eligibility. Adding CDUM left legacy selectable but non-executable, and the
+exporter faithfully removed that interval. Android's HTTP decoder and OpenAPI
+also retained the same sole-legacy restriction. The correction aligns active
+eligibility for both proof branches, preserves explicit selection and staged
+pending-review semantics, and does not change authority precedence or freshness.
+
+Projection correction is now RED→GREEN: the verified mixed fixture preserves
+legacy on all 365 dates, exposes both choices in September in both input orders,
+keeps automatic resolution ambiguous, and rejects wrong/missing legacy approval
+or snapshot context. Android mixed v2 decoder tests preserve the same strict
+semantics (37 focused client/bundle tests PASS). Root reviewed both changes.
+`make test-go lint-go test-go-race security-go` PASS after the Go fix; no known
+Go vulnerabilities. The repeated affected `make test-postgres` also PASS,
+including v9 migration/refusal/reapply/least-privilege and exact backup/restore;
+dump SHA-256 `ecd61fe3d3d248df6f1f87a5a6d357041146184256107d3c6714455e4ca98dc9`,
+151,797 bytes. Corrected immutable export and real Android gate remain pending.
+
+Focused preview fixes passed 56 tests, including 720p/1080p/4K, all six values,
+coverage dates, long/RTL names, availability wording, source-handler absence,
+and D-pad access to lines 28 and 55 of an oversized attribution paragraph.
+The latter was reproduced RED before correction; Back restores action focus.
+The corrected layout is not yet runtime-verified. `make test-research` now
+includes both 38 compiler/tool tests and 12 independent DUM RT comparator tests;
+all pass. Later paragraphs below retain chronological checkpoint evidence.
 
 Correction after checkpoint `da4c906`: the first operational KBR inspection
 passed structural validation but used an unobserved PDF capture timestamp and
@@ -144,13 +225,73 @@ opt-ins were explicitly skipped in this environment-free broad run; the Android
 lane previously ran them with retained fixtures. These failures are not waived:
 the affected tests are being updated to assert the new normal route while
 retaining explicit synthetic-scenario persistence and LKG coverage. Full
-debug/release lint/build gates have not yet completed.
+debug/release lint/build gates had not yet completed at that checkpoint.
+
+Follow-up root aggregate Android check PASS after the four expectation fixes:
+`NAMAZTIME_ANDROID_LOCAL_SETUP_INTEROP=…/t049-setup-synthetic.Yoq9cZ
+NAMAZTIME_ANDROID_PRODUCTION_SETUP_BUNDLE=…/t049-setup-real.a1cCCM/bundle
+GRADLE_USER_HOME=/tmp/namaz-time-gradle make test-android-all`.
+The XML results contain 67 suites / 609 tests, zero skips, failures or errors;
+debug/release lint, assembly, strict dependency verification and build identity
+checks pass. No Room schema was silently regenerated. This validates local
+fixtures and builds, not physical-device behavior.
+
+Current `make test-postgres` also PASS, using only newly isolated gate containers:
+v9 migration, qualified-proof persistence, downgrade refusal, legacy rollback /
+reapply, least-privilege access and backup/restore. Restored legacy and qualified
+snapshot hashes match their seed bytes; dump SHA-256
+`c160e1cda49a31a908ba9b825280f6e7ab26981bd0e4d1ae2130d22c9084dd52`.
+No production database or pilot ledger was modified.
+
+Additional local publications continue the authenticated T049 receipt chain:
+DUM RT Kazan and CDUM Kazan each cover September only and remain independent
+authorities; Sochi covers 365 dates for the exact city; Omsk covers June–September
+only (122 dates). Each request was re-imported against retained raw evidence,
+the complete catalog and unchanged trust anchors before the existing isolated
+signer returned two signatures; separate publisher finalization succeeded.
+Omsk snapshot raw SHA-256 is
+`72d3b23005d5f674ae04cd030f0034a4c492b7cbd087d9a460233765913d5a53`.
+These five additions are not yet claimed device-selectable. DUM RT's 34 further
+exact-locality September candidates are in root adjudication, with 8,160 source
+fields / 6,120 onset values independently matched to its official workbook.
+Eight unresolved identities and the malformed Aktanysh CSV remain excluded;
+no inferred scope, repaired raw row or annual extension is allowed.
 
 Operator docs now distinguish current v9 proof storage/downgrade refusal from
 legacy v6–v8 handoffs, including the qualification-table reader grant. An admin
 schema-2 choice envelope regression was reproduced RED and corrected to v2;
 device-v2 behavior remains unchanged. `make docs-check test-contracts` and
 `go test ./internal/devices -count=1` PASS after that correction.
+
+First controlled emulator round (`CONFIRMED_RUNTIME`): only
+`ru.namaztime.tv.debug` was upgraded in place on `emulator-5554`, API 36,
+1920×1080, density 320. Pilot package/APK/version/install timestamps unchanged.
+Normal search selected exact Nalchik GeoNames 523523; all six actual local
+September 7 KBR values match the raw PDF and signed snapshot. Explicit
+activation and force-stop/relaunch retained KBR. Omsk was unavailable in this
+initial bundle and left the complete Room projection unchanged; an unknown
+query produced no fallback. Explicit return and cold restart retained the
+original Uly snapshot, all six September 8 main-screen values and original
+approval. The device-iqamah settings projection is byte-identical through both
+selections; KBR has no invented iqamah/Jumu'ah, while Uly's signed local rules
+remain stored. Raw evidence is outside Git in `t049-runtime.avZADz`.
+
+Root visually reviewed KBR preview, failed Uly preview and final Uly main
+screenshots. Long Uly authority/attribution content clips two preview rows;
+the legacy executable badge incorrectly implies device activation; the KBR
+preview truncates its effective end date. These actual failures are not waived
+by the 609-test gate: a bounded screen/strings regression fix and repeat runtime
+are in progress. Emulator clock differs from host UTC; actual mosque-local
+dates were used without changing the device clock. This is not physical-TV
+acceptance or an external-network-disabled test.
+
+Nationwide compiler handoff: exact subject-set equality PASS for 83 catalog
+subjects, 161 authority occurrences / 65 source-candidate records, retaining
+all evidence/search-trail pointers. Root reviewed the full compiler and reran
+its 34 boundary tests; `make docs-check test-research` PASS (38 research tests).
+The initial pinned report records only the actually admitted two-policy bundle,
+not the later locally signed sources. See `research/t049/README.md`; the final
+expanded admission must replace its operational checkpoint before completion.
 
 Current narrow evidence: `go test ./internal/registry ./internal/devices -count=1`
 PASS, retained Kazan September hash-bound provider test PASS, and Android

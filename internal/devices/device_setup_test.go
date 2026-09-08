@@ -96,12 +96,13 @@ func TestDeviceSetupManagerFailsClosedForImplicitOrActiveSelection(t *testing.T)
 		deviceID = "device-setup-display-0002"
 		cityID   = "city-device-setup-0002"
 	)
-	assessment := syntheticDeviceSetupAssessment(mosqueID, cityID, "revision-active-setup-0002", 1)
+	assessment := syntheticDeviceSetupAssessment(mosqueID, cityID, "revision-active-setup-0002", 2)
 	assessment.State = registry.RevisionStateActive
 	registryBackend := &recordingDeviceSetupRegistry{assessment: assessment}
+	repository := &recordingDeviceSetupRepository{}
 	manager, err := NewDeviceSetupManager(DeviceSetupManagerConfig{
 		Registry:   registryBackend,
-		Repository: &recordingDeviceSetupRepository{},
+		Repository: repository,
 	})
 	if err != nil {
 		t.Fatalf("NewDeviceSetupManager() error = %v", err)
@@ -111,9 +112,14 @@ func TestDeviceSetupManagerFailsClosedForImplicitOrActiveSelection(t *testing.T)
 		Mosque:   MosqueIdentity{ID: mosqueID, Name: "Synthetic setup mosque", Timezone: "Europe/Moscow"},
 	}
 	choices, err := manager.ScheduleChoices(t.Context(), principal, cityID, "2026-08-30")
-	if err != nil || len(choices.Choices) != 1 || !choices.Choices[0].Executable ||
+	if err != nil || len(choices.Choices) != 2 || !choices.SelectionRequired || choices.AutomaticResolutionStatus != registry.AssessmentAmbiguous ||
 		registryBackend.assessmentID != "" {
 		t.Fatalf("active ScheduleChoices() = %#v, %v; revision=%q", choices, err, registryBackend.assessmentID)
+	}
+	for _, choice := range choices.Choices {
+		if !choice.Selectable || !choice.Executable || choice.ApprovalID == "" || choice.Qualification != nil {
+			t.Fatalf("active approved alternative was suppressed = %#v", choice)
+		}
 	}
 
 	_, err = manager.RequestScheduleChoice(t.Context(), principal, DeviceScheduleChoiceCommand{
@@ -128,6 +134,9 @@ func TestDeviceSetupManagerFailsClosedForImplicitOrActiveSelection(t *testing.T)
 	})
 	if !errors.Is(err, ErrDeviceSetupNotRequestable) {
 		t.Fatalf("active choice request error = %v", err)
+	}
+	if repository.creates != 0 {
+		t.Fatal("active or implicit selection created a staged binding request")
 	}
 }
 

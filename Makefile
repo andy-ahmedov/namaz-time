@@ -67,6 +67,7 @@ test-contracts:
 
 test-research:
 	python3 -m unittest discover -s research/tools -p 'test_*.py'
+	python3 -B -m unittest discover -s research/t049 -p 'test_*.py'
 
 test-android-unit:
 	./gradlew $(GRADLE_FLAGS) :apps:tv-android:testDebugUnitTest

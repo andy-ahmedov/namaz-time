@@ -110,7 +110,10 @@ func ProjectCityScheduleChoices(assessment RevisionPolicyAssessment) (CitySchedu
 		if err != nil {
 			return CityScheduleChoiceSet{}, err
 		}
-		choice.Executable = assessment.State == RevisionStateActive && choice.Qualification != nil
+		// Active revision admission verifies each legacy approval or public
+		// qualification independently. Another eligible choice does not undo
+		// that admission; SelectionRequired still forbids automatic resolution.
+		choice.Executable = assessment.State == RevisionStateActive
 		projected.Choices = append(projected.Choices, choice)
 	}
 
@@ -124,7 +127,6 @@ func ProjectCityScheduleChoices(assessment RevisionPolicyAssessment) (CitySchedu
 			return CityScheduleChoiceSet{}, fmt.Errorf("%w: one selectable choice is not resolved", ErrRevisionInvalid)
 		}
 		projected.Status = CityScheduleChoicesAvailable
-		projected.Choices[0].Executable = assessment.State == RevisionStateActive
 	default:
 		if assessment.Result.Status != AssessmentAmbiguous {
 			return CityScheduleChoiceSet{}, fmt.Errorf("%w: multiple selectable choices are not marked ambiguous", ErrRevisionInvalid)

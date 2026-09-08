@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">NamazTime</string>
+    <string name="device_setup_choice_qualification">Квалификация NamazTime: %1$s · актуально по %2$s</string>
+    <string name="device_setup_choice_qualified_available">Проверен NamazTime · выбор за вами</string>
+    <string name="device_setup_signed_preview">Подписанное расписание</string>
+    <string name="device_setup_public_preview_explanation">Начала намазов проверены NamazTime по первоисточнику. Это не внешнее одобрение. Местные настройки икамата сохранятся.</string>
+    <string name="device_setup_legacy_preview_explanation">Сохранённое подтверждённое расписание конкретной мечети. Применение требует вашего явного выбора; местные настройки сохранятся.</string>
+    <string name="device_setup_source_link">Источник</string>
+    <string name="device_setup_source_browser_unavailable">На этом телевизоре нет доступного браузера</string>
+    <string name="device_setup_local_not_configured">Локальный каталог источников не установлен в этой сборке</string>
     <string name="open_settings">Настройки</string>
     <string name="settings_title">Настройки</string>
     <string name="return_to_display">Вернуться к расписанию</string>
@@ -67,7 +75,16 @@
     <string name="device_setup_choice_identity">%1$s · %2$s</string>
     <string name="device_setup_schedule_type_timetable">готовое расписание</string>
     <string name="device_setup_schedule_type_calculation">утверждённый расчётный профиль</string>
-    <string name="device_setup_choice_active">Уже используется</string>
+    <string name="device_setup_choice_available">Доступно для выбора</string>
+    <string name="device_setup_provenance_action">Подробнее</string>
+    <string name="device_setup_provenance_title">Об источнике</string>
+    <string name="device_setup_provenance_scroll">Вверх и вниз — полные сведения; назад — к расписанию</string>
+    <string name="device_setup_scope">Область применения</string>
+    <string name="device_setup_provenance_basis">Основание</string>
+    <string name="device_setup_provenance_choice">Вариант расписания</string>
+    <string name="device_setup_snapshot_hash">SHA-256 подписанного содержимого</string>
+    <string name="device_setup_attribution">Авторство и первоисточник</string>
+    <string name="device_setup_provenance_note">О применении</string>
     <string name="device_setup_choice_submitting">Отправляем выбор: %1$s…</string>
     <string name="device_setup_choice_request_error">Не удалось отправить выбор. Текущее расписание не изменено.</string>
     <string name="device_setup_choice_selected">Выбрано расписание: %1$s</string>

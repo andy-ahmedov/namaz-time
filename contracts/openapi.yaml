@@ -1140,8 +1140,10 @@ components:
         executable:
           type: boolean
           description: >-
-            True for each admitted public choice in the active revision; multiple choices
-            require explicit selection. Legacy choices require a sole resolved active choice.
+            True for each eligible admitted choice in the active revision, whether
+            qualified public or retained approval-bound. Multiple choices require
+            explicit selection; executable never means automatic resolution or device
+            activation. Staged choices remain non-executable.
         blocked_reason:
           const: eligible
         policy_id:

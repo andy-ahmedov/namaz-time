@@ -179,6 +179,19 @@ internal class QualifiedSnapshotSigner {
 
     fun verifier(status: String = "active"): SnapshotAuthenticityVerifier = verifierForFixture(keyId, keyPair.publicKey, status)
 
+    fun localSetupTrustFiles(): Map<String, ByteArray> {
+        fun production(revision: Int) = JsonObject(
+            Json.parseToJsonElement(trustBundle("production", keyId, keyPair.publicKey).decodeToString()).jsonObject +
+                ("revision" to JsonPrimitive(revision)),
+        ).toString().encodeToByteArray()
+        return mapOf(
+            "trust/production.json" to production(3),
+            "trust/previous-production.json" to production(2),
+            "trust/test.json" to otherBundles[0],
+            "trust/staging.json" to otherBundles[1],
+        )
+    }
+
     fun verifierForFixture(id: String, publicKey: ByteArray, status: String = "active"): SnapshotAuthenticityVerifier = SnapshotAuthenticityVerifier(
         trustBundle("production", id, publicKey, status),
         minimumTrustBundleRevision = 1,

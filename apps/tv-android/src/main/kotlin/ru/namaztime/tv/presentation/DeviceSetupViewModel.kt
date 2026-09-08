@@ -335,6 +335,9 @@ class DeviceSetupViewModel(
             } catch (error: CancellationException) {
                 throw error
             }
+            if (mutableState.value.step != DeviceSetupStep.SEARCH || mutableState.value.query.trim() != query) {
+                return@launch
+            }
             mutableState.value = mutableState.value.copy(
                 search = when (result) {
                     is DeviceSetupResult.Success -> if (result.value.isEmpty()) {

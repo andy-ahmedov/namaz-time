@@ -168,7 +168,10 @@ exact public or retained legacy context. It retains executable choices and
 merges only adjacent identical bindings. Scope, source freshness, policy/table
 coverage, and same-authority specificity therefore come from the Go registry,
 not a separate Android religious resolver. Independent authorities remain
-independent choices. No top-N, capital, neighboring-city, generic calculation,
+independent choices. A retained eligible mosque-approved choice remains
+executable alongside a public choice; eligibility is not conditioned on being
+the sole option. Selection remains explicit and does not rewrite either proof.
+No top-N, capital, neighboring-city, generic calculation,
 or insertion-order fallback is permitted.
 
 At selection time Android uses the selected city's IANA timezone and intersects

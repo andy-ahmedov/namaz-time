@@ -4,6 +4,7 @@ import java.io.IOException
 import java.net.URI
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
@@ -15,6 +16,12 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import ru.namaztime.tv.data.snapshot.SnapshotSourceQualification
+import ru.namaztime.tv.data.snapshot.SourceQualificationValidation
+import ru.namaztime.tv.data.snapshot.StrictJsonObjectKeyScanner
 
 sealed interface DeviceSetupResult<out T> {
     data class Success<T>(val value: T) : DeviceSetupResult<T>
@@ -72,6 +79,17 @@ data class DeviceSchedulePreview(
     val timezone: String,
     val evidenceLabel: String,
     val rows: List<DeviceSchedulePreviewRow>,
+    val dataClassification: String = "synthetic",
+    val provenance: DeviceSchedulePreviewProvenance? = null,
+)
+
+data class DeviceSchedulePreviewProvenance(
+    val snapshotId: String,
+    val canonicalSha256: String,
+    val rawSha256: String,
+    val parserVersion: String,
+    val retrievedAt: String,
+    val attribution: String? = null,
 )
 
 data class DeviceScheduleChoice(
@@ -84,7 +102,7 @@ data class DeviceScheduleChoice(
     val requestable: Boolean,
     val policyId: String,
     val policyKind: String,
-    val approvalId: String,
+    val approvalId: String?,
     val effectiveFrom: LocalDate,
     val effectiveTo: LocalDate,
     val scopeId: String,
@@ -98,6 +116,7 @@ data class DeviceScheduleChoice(
     val publishedSnapshotId: String?,
     val localPreview: DeviceSchedulePreview? = null,
     val activationAllowed: Boolean = false,
+    val qualification: SnapshotSourceQualification? = null,
 )
 
 data class DeviceCityScheduleChoiceSet(
@@ -256,9 +275,7 @@ class DeviceSetupClient(
         if (response.body.size > MAX_DEVICE_SETUP_RESPONSE_BYTES) {
             return DeviceSetupResult.Failure("setup_response_invalid", retryable = false)
         }
-        val document = decodeSetupDocument<DeviceCityScheduleChoicesDocument>(response.body)
-            ?: return DeviceSetupResult.Failure("setup_response_invalid", retryable = false)
-        val projected = document.toChoiceSet(cityId, date)
+        val projected = decodeDeviceScheduleChoiceSet(response.body, cityId, date)
             ?: return DeviceSetupResult.Failure("setup_response_invalid", retryable = false)
         return DeviceSetupResult.Success(projected)
     }
@@ -445,6 +462,7 @@ private data class PrayerSourceDocument(
     @SerialName("canonical_url") val canonicalUrl: String? = null,
     val status: String,
     @SerialName("fresh_through") val freshThrough: String? = null,
+    @SerialName("qualification_id") val qualificationId: String? = null,
 )
 
 @Serializable
@@ -490,7 +508,8 @@ private data class DeviceScheduleChoiceDocument(
     @SerialName("blocked_reason") val blockedReason: String,
     @SerialName("policy_id") val policyId: String,
     @SerialName("policy_kind") val policyKind: String,
-    @SerialName("approval_id") val approvalId: String,
+    @SerialName("approval_id") val approvalId: String? = null,
+    val qualification: JsonObject? = null,
     val effective: DateRangeDocument,
     val scope: GeographicScopeDocument,
     val authorities: List<PrayerAuthorityDocument>,
@@ -535,7 +554,28 @@ private data class DeviceRegistryBindingRequestDocument(
 )
 
 private inline fun <reified T> decodeSetupDocument(body: ByteArray): T? = try {
-    deviceSetupJson.decodeFromString<T>(body.decodeToString(throwOnInvalidSequence = true))
+    val text = body.decodeToString(throwOnInvalidSequence = true)
+    StrictJsonObjectKeyScanner(text, "setup_response_invalid").scan()
+    deviceSetupJson.decodeFromString<T>(text)
+} catch (_: Exception) {
+    null
+}
+
+internal fun decodeDeviceScheduleChoiceSet(
+    body: ByteArray,
+    cityId: String,
+    date: LocalDate,
+): DeviceCityScheduleChoiceSet? = try {
+    val text = body.decodeToString(throwOnInvalidSequence = true)
+    StrictJsonObjectKeyScanner(text, "setup_response_invalid").scan()
+    val raw = deviceSetupJson.parseToJsonElement(text).jsonObject
+    raw.getValue("choices").jsonArray.forEach { element ->
+        val choice = element.jsonObject
+        // Presence, not decoded defaults: even null/empty approval is a conflicting branch.
+        require(("qualification" in choice) != ("approval_id" in choice))
+        if ("qualification" !in choice) require("qualification_id" !in choice.getValue("source").jsonObject)
+    }
+    deviceSetupJson.decodeFromString<DeviceCityScheduleChoicesDocument>(text).toChoiceSet(cityId, date)
 } catch (_: Exception) {
     null
 }
@@ -544,7 +584,9 @@ private fun DeviceCityScheduleChoicesDocument.toChoiceSet(
     expectedCityId: String,
     expectedDate: LocalDate,
 ): DeviceCityScheduleChoiceSet? {
-    if (schemaVersion != DEVICE_CITY_SCHEDULE_CHOICES_SCHEMA ||
+    if (schemaVersion !in setOf(DEVICE_CITY_SCHEDULE_CHOICES_SCHEMA, DEVICE_CITY_SCHEDULE_CHOICES_V2_SCHEMA) ||
+        (schemaVersion == DEVICE_CITY_SCHEDULE_CHOICES_V2_SCHEMA) != (revision.schemaVersion == 2) ||
+        (schemaVersion == DEVICE_CITY_SCHEDULE_CHOICES_SCHEMA && choices.any { it.qualification != null }) ||
         date.toLocalDateOrNull() != expectedDate || city.cityId != expectedCityId ||
         !revision.isValid() || revisionState !in REVISION_STATES ||
         status !in CHOICE_SET_STATUSES || automaticResolutionStatus !in ASSESSMENT_STATUSES ||
@@ -565,6 +607,8 @@ private fun DeviceCityScheduleChoicesDocument.toChoiceSet(
             expectedCityId = expectedCityId,
             expectedDate = expectedDate,
             requestable = requestAllowed,
+            catalogRevision = revision.catalogRevisionId,
+            cityTimezone = city.timezone,
         ) ?: return null
     }
     if (projected.map { it.id }.distinct().size != projected.size ||
@@ -579,12 +623,9 @@ private fun DeviceCityScheduleChoicesDocument.toChoiceSet(
     ) {
         return null
     }
-    val executableCount = projected.count { it.executable }
-    if (executableCount > 1 ||
-        (revisionState == "active" && automaticResolutionStatus == "resolved" &&
-            (projected.size != 1 || executableCount != 1)) ||
-        (automaticResolutionStatus == "ambiguous" && executableCount != 0)
-    ) {
+    // Executability is publication eligibility, not an implicit device selection.
+    // Both admitted proof branches remain available when independent choices coexist.
+    if (revisionState == "active" && projected.any { !it.executable }) {
         return null
     }
     when (projected.size) {
@@ -625,22 +666,30 @@ private fun DeviceScheduleChoiceDocument.toChoice(
     expectedCityId: String,
     expectedDate: LocalDate,
     requestable: Boolean,
+    catalogRevision: String,
+    cityTimezone: String,
 ): DeviceScheduleChoice? {
     val effectiveRange = effective.toRangeOrNull() ?: return null
+    val proof = qualification?.let {
+        try { SourceQualificationValidation.decode(it.toString()) } catch (_: Exception) { return null }
+    }
     if (!CHOICE_ID_PATTERN.matches(choiceId) || !displayLabel.isBoundedText(1, 500) ||
         !authorityLabel.isBoundedText(1, 500) || tier !in RESOLUTION_TIERS ||
         !selectable || blockedReason != "eligible" || !validSetupIdentifier(policyId) ||
-        policyKind !in POLICY_KINDS || !validSetupIdentifier(approvalId) ||
+        policyKind !in POLICY_KINDS ||
+        (proof == null && (approvalId == null || !validSetupIdentifier(approvalId))) ||
+        (proof != null && approvalId != null) ||
         expectedDate !in effectiveRange || !scope.isValidFor(expectedCityId) ||
         authorities.isEmpty() || authorities.map { it.id }.distinct().size != authorities.size ||
-        authorities.any { !it.isValid() } || !source.isValid(expectedDate) ||
+        authorities.any { !it.isValid() } || !source.isValid(expectedDate, proof != null) ||
         source.geographicScopeId != scope.id ||
         source.authorityIds.toSet() != authorities.map { it.id }.toSet() ||
         sourceOverrides.map { it.id }.distinct().size != sourceOverrides.size ||
-        sourceOverrides.any { !it.isValid(expectedDate) }
+        sourceOverrides.any { !it.isValid(effectiveRange) }
     ) {
         return null
     }
+    if (proof != null && !matchesQualification(proof, catalogRevision, cityTimezone)) return null
     val scheduleId: String
     val scheduleKind: String
     val scheduleTimezone: String?
@@ -704,7 +753,30 @@ private fun DeviceScheduleChoiceDocument.toChoice(
         scheduleKind = scheduleKind,
         scheduleTimezone = scheduleTimezone,
         publishedSnapshotId = publishedSnapshotId,
+        qualification = proof,
     )
+}
+
+private fun DeviceScheduleChoiceDocument.matchesQualification(
+    q: SnapshotSourceQualification,
+    catalogRevision: String,
+    cityTimezone: String,
+): Boolean {
+    val authority = authorities.singleOrNull() ?: return false
+    val table = timetable ?: return false
+    val publicContextId = "public-scope-" + MessageDigest.getInstance("SHA-256")
+        .digest(q.scope.id.encodeToByteArray()).joinToString("") { "%02x".format(it.toInt() and 255) }.take(32)
+    return policyKind == "timetable" && sourceOverrides.isEmpty() &&
+        q.catalogRevision == catalogRevision && q.timezone == cityTimezone &&
+        authority.id == q.authority.id && authority.name == q.authority.name &&
+        authority.branch.orEmpty() == q.authority.branch && authority.website.orEmpty() == q.authority.website &&
+        authority.evidenceLabel == q.authority.evidenceLabel &&
+        scope.id == q.scope.id && scope.kind == q.scope.kind && scope.cityId.orEmpty() == q.scope.cityId &&
+        scope.regionId == q.scope.regionId && scope.description == q.scope.description &&
+        source.id == q.sourceId && source.kind == q.sourceKind && source.canonicalUrl == q.canonicalUrl &&
+        source.qualificationId == q.qualificationId && source.freshThrough == q.freshThrough &&
+        effective.from == q.coverage.from && effective.to == q.coverage.to &&
+        table.effective == effective && table.timezone == q.timezone && table.mosqueId == publicContextId
 }
 
 private fun DeviceScheduleChoiceRequestDocument.toPendingRequest(
@@ -747,7 +819,7 @@ private fun DeviceScheduleChoiceRequestDocument.toPendingRequest(
 }
 
 private fun RegistryRevisionDocument.isValid(): Boolean =
-    validSetupIdentifier(id) && schemaVersion >= 1 &&
+    validSetupIdentifier(id) && schemaVersion in 1..2 &&
         (parentRevisionId == null || validSetupIdentifier(parentRevisionId)) &&
         validSetupIdentifier(catalogRevisionId) && SHA256_PATTERN.matches(contentSha256) &&
         createdAt.toInstantOrNull() != null && createdBy.isBoundedText(1, 240) &&
@@ -767,11 +839,13 @@ private fun PrayerAuthorityDocument.isValid(): Boolean =
         (branch == null || branch.isBoundedText(1, 500)) &&
         (website == null || website.isSafeReferenceUri()) && evidenceLabel in EVIDENCE_LABELS
 
-private fun PrayerSourceDocument.isValid(expectedDate: LocalDate): Boolean =
+private fun PrayerSourceDocument.isValid(expectedDate: LocalDate, qualified: Boolean): Boolean =
     validSetupIdentifier(id) && kind in SOURCE_KINDS && authorityIds.isNotEmpty() &&
         authorityIds.size == authorityIds.distinct().size && authorityIds.all(::validSetupIdentifier) &&
         validSetupIdentifier(geographicScopeId) &&
-        (canonicalUrl == null || canonicalUrl.isSafeReferenceUri()) && status == "approved" &&
+        (canonicalUrl == null || canonicalUrl.isSafeReferenceUri()) &&
+        status == (if (qualified) "qualified" else "approved") &&
+        (qualified || qualificationId == null) &&
         (freshThrough == null || (freshThrough.toLocalDateOrNull()?.let { !it.isBefore(expectedDate) } == true))
 
 private fun TimeTableDocument.isValid(
@@ -800,10 +874,10 @@ private fun CalculationProfileDocument.isValid(
         expectedDate in range && validSetupIdentifier(approvalId)
 }
 
-private fun SourceOverrideDocument.isValid(expectedDate: LocalDate): Boolean {
+private fun SourceOverrideDocument.isValid(coverage: ClosedRange<LocalDate>): Boolean {
     val range = effective.toRangeOrNull() ?: return false
     return validSetupIdentifier(id) && validSetupIdentifier(baseSourceId) &&
-        validSetupIdentifier(overrideSourceId) && expectedDate in range &&
+        validSetupIdentifier(overrideSourceId) && range.start >= coverage.start && range.endInclusive <= coverage.endInclusive &&
         appliedFields.isNotEmpty() && appliedFields.size == appliedFields.distinct().size &&
         appliedFields.all { it.isBoundedText(1, 160) } && validSetupIdentifier(approvalId)
 }
@@ -836,7 +910,9 @@ private fun String.isSafeReferenceUri(): Boolean = try {
 
 private fun CanonicalCityCandidate.isValid(): Boolean =
     id.isBoundedText(1, 160) && canonicalName.isBoundedText(1, 240) &&
-        aliases.size == aliases.distinct().size && aliases.all { it.isBoundedText(1, 240) } &&
+        aliases.size == aliases.distinct().size && aliases.all {
+            it.length in 1..240 && '\u0000' !in it && normalizeLocalSetupQuery(it).isNotEmpty()
+        } &&
         federalSubjectCode.matches(Regex("^RU-[A-Z]{2,3}$")) &&
         federalSubjectName.isBoundedText(1, 240) && settlementType.isBoundedText(1, 32) &&
         isNamedSetupZone(timezone) && latitude in -90.0..90.0 && longitude in -180.0..180.0 &&
@@ -912,6 +988,7 @@ private val deviceSetupJson = Json {
 
 private const val DEVICE_CITY_SEARCH_SCHEMA = "device-city-search/v1"
 private const val DEVICE_CITY_SCHEDULE_CHOICES_SCHEMA = "device-city-schedule-choices/v1"
+private const val DEVICE_CITY_SCHEDULE_CHOICES_V2_SCHEMA = "device-city-schedule-choices/v2"
 private const val DEVICE_SCHEDULE_CHOICE_REQUEST_SCHEMA = "device-schedule-choice-request/v1"
 private const val REQUEST_SELECTION_ACTION = "request_selection"
 private const val MAX_DEVICE_SETUP_RESPONSE_BYTES = 512 * 1024

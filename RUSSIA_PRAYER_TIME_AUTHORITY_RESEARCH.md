@@ -7,7 +7,10 @@ Structured draft: `research/russia-prayer-source-registry-draft.json`
 Historical T034 report, superseded for current onboarding by T049 and ADR 0019.
 Do not treat its conclusions, transport failures or approval/partnership gates
 as current evidence. [The T049 baseline audit](research/t049/BASELINE_AUDIT.md)
-records the re-audit and identified gaps; nationwide follow-up is in progress.
+records the re-audit and identified gaps. The [superseding nationwide report](research/t049/README.md)
+and [machine-readable registry](research/t049/nationwide-registry.json) preserve
+all current catalog subjects and distinguish research from admitted coverage;
+T049 materialization/runtime work remains in progress.
 
 ## Executive result
 

@@ -1,8 +1,10 @@
 package ru.namaztime.tv.presentation
 
+import android.content.Intent
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -20,15 +22,20 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
@@ -45,6 +52,8 @@ import androidx.compose.ui.input.key.onPreviewKeyEvent
 import androidx.compose.ui.input.key.type
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextStyle
@@ -57,6 +66,7 @@ import androidx.compose.ui.unit.sp
 import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
+import kotlinx.coroutines.launch
 import ru.namaztime.tv.R
 import ru.namaztime.tv.sync.CanonicalCityCandidate
 import ru.namaztime.tv.sync.DeviceScheduleChoice
@@ -76,6 +86,9 @@ const val DEVICE_SETUP_PENDING_TAG = "device-setup-pending"
 const val DEVICE_SETUP_PREVIEW_TAG = "device-setup-preview"
 const val DEVICE_SETUP_PREVIEW_ROW_TAG_PREFIX = "device-setup-preview-row-"
 const val DEVICE_SETUP_ACTIVATE_PREVIEW_TAG = "device-setup-activate-preview"
+const val DEVICE_SETUP_SOURCE_LINK_TAG = "device-setup-source-link"
+const val DEVICE_SETUP_PROVENANCE_TAG = "device-setup-provenance"
+const val DEVICE_SETUP_PROVENANCE_CONTENT_TAG = "device-setup-provenance-content"
 
 data class ActiveScheduleSummaryUi(
     val cityName: String,
@@ -98,9 +111,16 @@ fun DeviceScheduleSetupScreen(
     onScheduleChoiceSelected: (DeviceScheduleChoice) -> Unit = {},
     onRetryScheduleChoiceRequest: () -> Unit = {},
     onActivatePreview: () -> Unit = {},
+    onOpenSource: ((String) -> Boolean)? = null,
     modifier: Modifier = Modifier,
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
+    val sourceLink = onOpenSource ?: remember(context) {
+        { url: String -> launchSourceLink(url) { intent ->
+            context.startActivity(intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+        } }
+    }
     val imeVisible = WindowInsets.isImeVisible
     BackHandler {
         if (imeVisible) {
@@ -166,7 +186,8 @@ fun DeviceScheduleSetupScreen(
                         DeviceSetupStep.PREVIEW -> SchedulePreviewPanel(
                             state = state,
                             onActivatePreview = onActivatePreview,
-                            compact = compact,
+                            onOpenSource = sourceLink,
+                            compact = compact || (state.submission as? ScheduleChoiceSubmissionUiState.Preview)?.schedule?.dataClassification == "production",
                             modifier = Modifier
                                 .weight(0.66f)
                                 .fillMaxHeight(),
@@ -215,8 +236,10 @@ private fun SetupContextPanel(
         )
         Text(
             text = appString(R.string.device_setup_current_schedule),
+            modifier = Modifier.fillMaxWidth(),
             color = NamazTvTheme.colors.accent,
             fontSize = if (compact) 16.sp else 20.sp,
+            lineHeight = if (compact) 20.sp else 25.sp,
             fontWeight = FontWeight.SemiBold,
         )
         if (activeSchedule == null) {
@@ -361,7 +384,7 @@ private fun CitySearchPanel(
             )
             is CitySearchUiState.Error -> {
                 SetupMessage(
-                    appString(R.string.device_setup_search_error),
+                    appString(if (search.code == "setup_local_not_configured") R.string.device_setup_local_not_configured else R.string.device_setup_search_error),
                     compact,
                     warning = true,
                 )
@@ -736,17 +759,23 @@ private fun ScheduleChoiceButton(
                 overflow = TextOverflow.Ellipsis,
             )
             Text(
-                text = choice.source.freshThrough?.let { freshThrough ->
+                text = choice.qualification?.let { qualification ->
+                    appString(
+                        R.string.device_setup_choice_qualification,
+                        qualification.qualificationId,
+                        qualification.freshThrough,
+                    )
+                } ?: choice.source.freshThrough?.let { freshThrough ->
                     appString(
                         R.string.device_setup_choice_provenance_fresh,
                         evidenceLabels,
-                        choice.approvalId,
+                        choice.approvalId.orEmpty(),
                         freshThrough.toString(),
                     )
                 } ?: appString(
                     R.string.device_setup_choice_provenance_undated,
                     evidenceLabels,
-                    choice.approvalId,
+                    choice.approvalId.orEmpty(),
                 ),
                 fontSize = if (compact) 10.sp else 12.sp,
                 maxLines = 1,
@@ -775,7 +804,7 @@ private fun ScheduleChoiceButton(
             )
             if (choice.executable) {
                 Text(
-                    text = appString(R.string.device_setup_choice_active),
+                    text = appString(if (choice.qualification != null) R.string.device_setup_choice_qualified_available else R.string.device_setup_choice_available),
                     color = NamazTvTheme.colors.backgroundBottom,
                     fontSize = if (compact) 11.sp else 14.sp,
                     fontWeight = FontWeight.Bold,
@@ -789,39 +818,69 @@ private fun ScheduleChoiceButton(
 private fun SchedulePreviewPanel(
     state: DeviceSetupUiState,
     onActivatePreview: () -> Unit,
+    onOpenSource: (String) -> Boolean,
     compact: Boolean,
     modifier: Modifier = Modifier,
 ) {
     val preview = state.submission as? ScheduleChoiceSubmissionUiState.Preview
     val city = state.selectedCity
     val activateRequester = remember { FocusRequester() }
+    val detailsRequester = remember { FocusRequester() }
     val activating = state.activation is ScheduleActivationUiState.Activating
-    LaunchedEffect(preview?.choice?.id, preview?.choice?.activationAllowed, activateRequester) {
-        if (preview?.choice?.activationAllowed == true) {
+    val productionPreview = preview?.schedule?.dataClassification == "production"
+    var sourceLinkUnavailable by remember(preview?.choice?.id) { mutableStateOf(false) }
+    var showDetails by rememberSaveable(preview?.choice?.id) { mutableStateOf(false) }
+    var restoreDetailsFocus by rememberSaveable(preview?.choice?.id) { mutableStateOf(false) }
+    val closeDetails = {
+        showDetails = false
+        restoreDetailsFocus = true
+    }
+    BackHandler(enabled = showDetails, onBack = closeDetails)
+    LaunchedEffect(preview?.choice?.id, preview?.choice?.activationAllowed, showDetails) {
+        if (!showDetails && (restoreDetailsFocus || preview?.choice?.activationAllowed == true)) {
             withFrameNanos { }
-            runCatching { activateRequester.requestFocus() }
+            runCatching {
+                if (restoreDetailsFocus) detailsRequester.requestFocus() else activateRequester.requestFocus()
+            }
         }
+    }
+    if (showDetails && preview != null) {
+        ScheduleProvenancePanel(
+            preview = preview,
+            onBack = closeDetails,
+            onOpenSource = onOpenSource,
+            modifier = modifier,
+        )
+        return
     }
     Column(
         modifier = modifier.testTag(DEVICE_SETUP_PREVIEW_TAG),
-        verticalArrangement = Arrangement.spacedBy(if (compact) 7.dp else 12.dp),
+        verticalArrangement = Arrangement.spacedBy(if (productionPreview) 4.dp else if (compact) 7.dp else 12.dp),
     ) {
         Text(
             text = city?.canonicalName.orEmpty(),
             modifier = Modifier.semantics { heading() },
             color = NamazTvTheme.colors.textPrimary,
             fontSize = if (compact) 27.sp else 36.sp,
+            lineHeight = if (compact) 32.sp else 43.sp,
             fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
         )
         if (preview == null) {
             SetupMessage(appString(R.string.device_setup_choice_request_error), compact, warning = true)
             return@Column
         }
+        val production = preview.schedule.dataClassification == "production"
+        val canonicalUrl = preview.choice.source.canonicalUrl?.takeIf { production && sourceLinkIntent(it) != null }
         Text(
             text = preview.choice.authorityLabel,
             color = NamazTvTheme.colors.textPrimary,
             fontSize = if (compact) 17.sp else 22.sp,
+            lineHeight = if (compact) 21.sp else 27.sp,
             fontWeight = FontWeight.SemiBold,
+            maxLines = if (production) 1 else Int.MAX_VALUE,
+            overflow = TextOverflow.Ellipsis,
         )
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -829,24 +888,33 @@ private fun SchedulePreviewPanel(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = appString(R.string.device_setup_demo_result),
+                text = appString(if (production) R.string.device_setup_signed_preview else R.string.device_setup_demo_result),
+                modifier = Modifier.weight(0.46f),
                 color = NamazTvTheme.colors.accent,
                 fontSize = if (compact) 17.sp else 22.sp,
+                lineHeight = if (compact) 21.sp else 27.sp,
                 fontWeight = FontWeight.Bold,
             )
             Text(
-                text = appString(
+                text = if (production) "${preview.schedule.date} · ${preview.schedule.timezone}" else appString(
                     R.string.device_setup_preview_context,
                     preview.schedule.date.toString(),
                     preview.schedule.timezone,
                     preview.schedule.evidenceLabel,
                 ),
+                modifier = Modifier.weight(0.54f),
                 color = NamazTvTheme.colors.textSecondary,
                 fontSize = if (compact) 12.sp else 15.sp,
+                lineHeight = if (compact) 15.sp else 19.sp,
+                textAlign = TextAlign.End,
             )
         }
         TvGlassPanel(
-            modifier = Modifier.fillMaxWidth().weight(1f),
+            // Header plus six 26dp rows and 8dp vertical insets. Long provenance must
+            // never take height away from the prayer values; full text has its own view.
+            modifier = Modifier.fillMaxWidth().then(
+                if (production) Modifier.height(198.dp) else Modifier.weight(1f),
+            ),
             radius = 18.dp,
         ) {
             Column(
@@ -861,6 +929,7 @@ private fun SchedulePreviewPanel(
                     iqamah = appString(R.string.iqamah_column),
                     compact = compact,
                     header = true,
+                    dense = production,
                 )
                 preview.schedule.rows.forEach { row ->
                     PreviewScheduleRow(
@@ -868,6 +937,7 @@ private fun SchedulePreviewPanel(
                         adhan = previewTimeFormatter.format(row.adhan),
                         iqamah = row.iqamah?.let(previewTimeFormatter::format) ?: "—",
                         compact = compact,
+                        dense = production,
                         modifier = Modifier.testTag(
                             "$DEVICE_SETUP_PREVIEW_ROW_TAG_PREFIX${row.prayer.name.lowercase()}",
                         ),
@@ -875,7 +945,37 @@ private fun SchedulePreviewPanel(
                 }
             }
         }
-        if (preview.choice.activationAllowed) {
+        if (production) {
+            Text(
+                text = "${preview.choice.effectiveFrom} — ${preview.choice.effectiveTo}",
+                color = NamazTvTheme.colors.textSecondary,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+            )
+            if (state.activation !is ScheduleActivationUiState.Error && !sourceLinkUnavailable) {
+                Text(
+                    text = preview.choice.scopeDescription,
+                    color = NamazTvTheme.colors.textSecondary,
+                    fontSize = 12.sp,
+                    lineHeight = 16.sp,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                preview.schedule.provenance?.attribution?.let { attribution ->
+                    Text(
+                        text = attribution,
+                        color = NamazTvTheme.colors.textSecondary,
+                        fontSize = 12.sp,
+                        lineHeight = 16.sp,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Spacer(Modifier.weight(1f))
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+          if (preview.choice.activationAllowed) {
             Button(
                 onClick = onActivatePreview,
                 enabled = !activating,
@@ -892,23 +992,210 @@ private fun SchedulePreviewPanel(
                             R.string.device_setup_activate_preview
                         },
                     ),
+                    fontSize = if (production) 14.sp else 20.sp,
+                    lineHeight = if (production) 18.sp else 24.sp,
                 )
             }
+          }
+          if (canonicalUrl != null) {
+            Button(
+                onClick = { sourceLinkUnavailable = !onOpenSource(canonicalUrl) },
+                colors = setupButtonColors(),
+                modifier = Modifier.testTag(DEVICE_SETUP_SOURCE_LINK_TAG),
+            ) { Text(appString(R.string.device_setup_source_link), fontSize = 14.sp, lineHeight = 18.sp) }
+          }
+          if (production) {
+            Button(
+                onClick = { showDetails = true },
+                colors = setupButtonColors(),
+                modifier = Modifier.focusRequester(detailsRequester),
+            ) { Text(appString(R.string.device_setup_provenance_action), fontSize = 14.sp, lineHeight = 18.sp) }
+          }
         }
         val activationError = state.activation as? ScheduleActivationUiState.Error
         if (activationError != null) {
-            SetupMessage(
-                message = appString(R.string.device_setup_activation_error),
-                compact = compact,
-                warning = true,
+            Text(
+                text = appString(R.string.device_setup_activation_error),
+                color = NamazTvTheme.colors.warning,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
             )
         }
+        if (sourceLinkUnavailable) {
+            Text(
+                appString(R.string.device_setup_source_browser_unavailable),
+                color = NamazTvTheme.colors.warning,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+            )
+        }
+        if (!production) {
+            Text(
+                text = appString(R.string.device_setup_demo_explanation),
+                color = NamazTvTheme.colors.textSecondary,
+                fontSize = if (compact) 12.sp else 15.sp,
+                lineHeight = if (compact) 15.sp else 19.sp,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ScheduleProvenancePanel(
+    preview: ScheduleChoiceSubmissionUiState.Preview,
+    onBack: () -> Unit,
+    onOpenSource: (String) -> Boolean,
+    modifier: Modifier = Modifier,
+) {
+    val firstParagraphRequester = remember { FocusRequester() }
+    val scrollState = rememberScrollState()
+    val scrollScope = rememberCoroutineScope()
+    val scrollStep = with(LocalDensity.current) { 96.dp.roundToPx() }
+    var textFocused by remember { mutableStateOf(false) }
+    var sourceLinkUnavailable by remember(preview.choice.id) { mutableStateOf(false) }
+    val choice = preview.choice
+    val schedule = preview.schedule
+    val canonicalUrl = choice.source.canonicalUrl?.takeIf { sourceLinkIntent(it) != null }
+    val paragraphs = buildList {
+        add(appString(R.string.field_authority) to choice.authorityLabel)
+        add(appString(R.string.device_setup_scope) to choice.scopeDescription)
+        add(appString(R.string.field_coverage) to "${choice.effectiveFrom} — ${choice.effectiveTo}")
+        add(appString(R.string.device_setup_provenance_choice) to choice.displayLabel)
+        add(appString(R.string.field_source_type) to "${choice.source.kind} · ${choice.source.id}")
+        add(appString(R.string.field_timezone) to "${schedule.date} · ${schedule.timezone}")
+        add(appString(R.string.device_setup_provenance_basis) to (
+            choice.qualification?.let {
+                appString(R.string.device_setup_choice_qualification, it.qualificationId, it.freshThrough)
+            } ?: choice.source.freshThrough?.let { freshThrough -> appString(
+                R.string.device_setup_choice_provenance_fresh,
+                schedule.evidenceLabel,
+                choice.approvalId.orEmpty(),
+                freshThrough.toString(),
+            ) } ?: appString(
+                R.string.device_setup_choice_provenance_undated,
+                schedule.evidenceLabel,
+                choice.approvalId.orEmpty(),
+            )
+        ))
+        choice.qualification?.let {
+            add(appString(R.string.field_qualification_id) to "${it.qualificationId}\n${it.sha256}\n${schedule.evidenceLabel}")
+        }
+        add(appString(R.string.field_source_id) to "${choice.policyId} · ${choice.source.id} · ${choice.scopeId}")
+        schedule.provenance?.let { provenance ->
+            add(appString(R.string.field_snapshot_id) to provenance.snapshotId)
+            add(appString(R.string.field_raw_hash) to provenance.rawSha256)
+            add(appString(R.string.device_setup_snapshot_hash) to provenance.canonicalSha256)
+            add(appString(R.string.field_parser) to "${provenance.parserVersion} · ${provenance.retrievedAt}")
+            provenance.attribution?.let { add(appString(R.string.device_setup_attribution) to it) }
+        }
+        canonicalUrl?.let { add(appString(R.string.device_setup_source_link) to it) }
+        add(appString(R.string.device_setup_provenance_note) to appString(
+            if (choice.qualification != null) R.string.device_setup_public_preview_explanation
+            else R.string.device_setup_legacy_preview_explanation,
+        ))
+    }
+    LaunchedEffect(preview.choice.id) {
+        withFrameNanos { }
+        firstParagraphRequester.requestFocus()
+    }
+    Column(
+        modifier = modifier
+            .testTag(DEVICE_SETUP_PROVENANCE_TAG)
+            .onPreviewKeyEvent { event ->
+                if (event.key == Key.Back && event.type == KeyEventType.KeyUp) {
+                    onBack()
+                    true
+                } else {
+                    false
+                }
+            },
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
         Text(
-            text = appString(R.string.device_setup_demo_explanation),
-            color = NamazTvTheme.colors.textSecondary,
-            fontSize = if (compact) 12.sp else 15.sp,
-            lineHeight = if (compact) 15.sp else 19.sp,
+            appString(R.string.device_setup_provenance_title),
+            modifier = Modifier.semantics { heading() },
+            color = NamazTvTheme.colors.textPrimary,
+            fontSize = 24.sp,
+            lineHeight = 30.sp,
+            fontWeight = FontWeight.Bold,
         )
+        Text(
+            appString(R.string.device_setup_provenance_scroll),
+            color = NamazTvTheme.colors.textSecondary,
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+        )
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .weight(1f)
+                .testTag(DEVICE_SETUP_PROVENANCE_CONTENT_TAG)
+                .border(
+                    if (textFocused) 2.dp else 1.dp,
+                    if (textFocused) NamazTvTheme.colors.focus else NamazTvTheme.colors.surfaceOutline,
+                    RoundedCornerShape(10.dp),
+                )
+                .focusRequester(firstParagraphRequester)
+                .onFocusChanged { textFocused = it.isFocused }
+                .onPreviewKeyEvent { event ->
+                    if (event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+                    val delta = when (event.key) {
+                        Key.DirectionDown -> scrollStep
+                        Key.DirectionUp -> -scrollStep
+                        else -> return@onPreviewKeyEvent false
+                    }
+                    val target = (scrollState.value + delta).coerceIn(0, scrollState.maxValue)
+                    if (target == scrollState.value) return@onPreviewKeyEvent false
+                    scrollScope.launch { scrollState.scrollTo(target) }
+                    true
+                }
+                .focusable()
+                .verticalScroll(scrollState)
+                .padding(4.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            paragraphs.forEach { (label, value) ->
+                key(label) { ProvenanceParagraph(label, value) }
+            }
+        }
+        Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Button(onClick = onBack, colors = setupButtonColors()) {
+                Text(appString(R.string.device_setup_back), fontSize = 14.sp)
+            }
+            if (canonicalUrl != null) {
+                Button(
+                    onClick = { sourceLinkUnavailable = !onOpenSource(canonicalUrl) },
+                    modifier = Modifier.testTag(DEVICE_SETUP_SOURCE_LINK_TAG),
+                    colors = setupButtonColors(),
+                ) { Text(appString(R.string.device_setup_source_link), fontSize = 14.sp) }
+            }
+        }
+        if (sourceLinkUnavailable) {
+            Text(
+                appString(R.string.device_setup_source_browser_unavailable),
+                color = NamazTvTheme.colors.warning,
+                fontSize = 12.sp,
+                lineHeight = 16.sp,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProvenanceParagraph(label: String, value: String, modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .border(
+                1.dp,
+                NamazTvTheme.colors.surfaceOutline,
+                RoundedCornerShape(10.dp),
+            )
+            .padding(10.dp),
+        verticalArrangement = Arrangement.spacedBy(3.dp),
+    ) {
+        Text(label, color = NamazTvTheme.colors.accent, fontSize = 12.sp, lineHeight = 16.sp)
+        Text(value, color = NamazTvTheme.colors.textPrimary, fontSize = 14.sp, lineHeight = 20.sp)
     }
 }
 
@@ -920,9 +1207,10 @@ private fun PreviewScheduleRow(
     compact: Boolean,
     modifier: Modifier = Modifier,
     header: Boolean = false,
+    dense: Boolean = false,
 ) {
     Row(
-        modifier = modifier.fillMaxWidth().height(if (compact) 32.dp else 42.dp),
+        modifier = modifier.fillMaxWidth().height(if (dense) 26.dp else if (compact) 32.dp else 42.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
@@ -930,6 +1218,7 @@ private fun PreviewScheduleRow(
             modifier = Modifier.weight(1.4f),
             color = if (header) NamazTvTheme.colors.textSecondary else NamazTvTheme.colors.textPrimary,
             fontSize = if (compact) 14.sp else 18.sp,
+            lineHeight = if (compact) 20.sp else 26.sp,
             fontWeight = if (header) FontWeight.Medium else FontWeight.SemiBold,
         )
         Text(
@@ -937,6 +1226,7 @@ private fun PreviewScheduleRow(
             modifier = Modifier.weight(1f),
             color = if (header) NamazTvTheme.colors.textSecondary else NamazTvTheme.colors.textPrimary,
             fontSize = if (compact) 14.sp else 18.sp,
+            lineHeight = if (compact) 20.sp else 26.sp,
             fontWeight = if (header) FontWeight.Medium else FontWeight.Bold,
             textAlign = TextAlign.Center,
         )
@@ -945,6 +1235,7 @@ private fun PreviewScheduleRow(
             modifier = Modifier.weight(1f),
             color = if (header) NamazTvTheme.colors.textSecondary else NamazTvTheme.colors.accent,
             fontSize = if (compact) 14.sp else 18.sp,
+            lineHeight = if (compact) 20.sp else 26.sp,
             fontWeight = if (header) FontWeight.Medium else FontWeight.Bold,
             textAlign = TextAlign.Center,
         )

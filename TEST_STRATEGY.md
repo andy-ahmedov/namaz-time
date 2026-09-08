@@ -628,7 +628,10 @@ retains the full applicable option set. Equal authority labels retain distinct
 choice/policy IDs; canonical authority names are used without generated
 abbreviations. Same-name/alias geography remains separate. HTTP tests cover
 the full eight-choice response, unknown-limit rejection, empty unavailable
-state and the sole active executable choice. PostgreSQL and pilot regressions
+state and the active executable choice. T049 extends this to mixed retained
+legacy/public active choices: adding another eligible source must not suppress
+the original mosque-approved choice or imply automatic selection. Staged
+choices stay non-executable; unknown/invalid proofs stay rejected. PostgreSQL and pilot regressions
 pin active/staged/stale projections plus the unchanged Ulyanovsk snapshot raw
 SHA-256.
 
