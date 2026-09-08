@@ -4,6 +4,7 @@ SHELL := /bin/bash
 
 GO_FILES := $(shell find cmd internal -type f -name '*.go' 2>/dev/null)
 GRADLE_FLAGS ?= --no-daemon --no-build-cache
+CONTRACT_PYTHON ?= python3
 GITLEAKS_VERSION ?= v8.29.1
 PILOT_APK_CERT_SHA256 := da463b2e623024c49c833a1f23c289fd64753e83d3d1e5eea46e973838472be9
 ANDROID_VERSION_PROPERTIES := apps/tv-android/version.properties
@@ -41,7 +42,7 @@ secret-scan:
 lint-android:
 	./gradlew $(GRADLE_FLAGS) :apps:tv-android:lintDebug
 
-test: docs-check test-skills test-go test-research test-android-unit test-android-build-identity
+test: docs-check test-skills test-go test-contracts test-research test-android-unit test-android-build-identity
 
 test-skills:
 	python3 -B scripts/test_skill_package.py
@@ -61,6 +62,7 @@ test-postgres-restore:
 	bash ./scripts/test-postgres-restore.sh
 
 test-contracts:
+	$(CONTRACT_PYTHON) -B scripts/test_public_setup_contract.py
 	go test ./internal/domain -run 'Test(SyntheticSnapshotMatchesJSONSchemaAndDomain|InvalidSnapshotFixturesFailDeterministically|ProviderKindsMatchJSONSchemas|DomainAcceptsJSONSchemaDateTimeVariants|DomainRejectsJSONSchemaInvalidLeapSecond|ConditionalProvenanceRejectedBySchemaAndDomain)'
 
 test-research:

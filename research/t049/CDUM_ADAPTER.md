@@ -93,6 +93,33 @@ Volgograd contains thirteen unexplained Fajr asterisks, first on June15;
 stripping those markers or silently selecting convenient months is forbidden.
 Ufa's image transport is outside this HTML adapter.
 
+## Raw-attribute ambiguity boundary
+
+The installed HTML tokenizer discards duplicate attributes before building the
+DOM. A quote-aware [raw-tag check](../../internal/stricthtml/attributes.go)
+therefore runs first. It distinguishes actual attribute names from strings
+inside quoted values, including embedded `>` characters and mixed-case names.
+
+`PROPOSAL` implemented: attribute errors are marked only in an internal copy
+used to build the DOM. The existing calendar/evidence traversal rejects any
+marked timetable node, its ancestors, or the explicit city/year link and its
+ancestors. Unrelated navigation and ignored templates are not calendar evidence;
+their duplicate attributes do not disqualify the timetable. This distinction is
+structural, not a contacts-URL or fixture-text exception. No source value is
+repaired or altered.
+
+The reserved `data-namaztime-raw-attribute-error` attribute is rejected if the
+original source actually supplies it, including mixed-case, boolean and
+self-closing forms. The same text inside an ordinary quoted value is not an
+attribute and does not cause a collision. The source byte slice and raw hash
+remain untouched; the annotated parse copy must never be retained as the raw
+artifact or used as its provenance hash.
+
+The original 4-MiB / 2-Mi-codepoint input limits and 100,000-node / 64-depth
+DOM limits remain unchanged. A separate 8-MiB cap bounds internal marker growth.
+Clock normalization, explicit city bindings, effective ranges and unsupported
+source outcomes are unchanged.
+
 ## Verification
 
 Normal CI uses generated synthetic constant-time fixtures, not real calendars.
@@ -104,6 +131,15 @@ check was added. Split-paragraph clocks and previously unhandled hiding styles
 also had failing regressions before their fail-closed fixes. Additional exact
 city-binding tests failed with unsupported-locality errors before the
 independently researched bindings were added.
+
+The raw-attribute follow-up was reverified against baseline `5a9eb73`, not an
+earlier passing state. New adversarial tests first reproduced accepted duplicate
+attributes in actual calendar cells, the calendar container and city/year links
+when their text matched former exemptions. Boolean/self-closing marker
+collisions also reproduced before the fix. The general annotation-copy approach
+then passed those cases, arbitrary unrelated-navigation/template cases,
+quote-aware checks and input-byte immutability checks. No production exception
+depends on fixture contents or navigation URLs.
 
 Executed locally:
 

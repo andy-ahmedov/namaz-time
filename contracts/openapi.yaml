@@ -1139,7 +1139,9 @@ components:
           const: true
         executable:
           type: boolean
-          description: True only for the sole resolved choice from the active revision.
+          description: >-
+            True for each admitted public choice in the active revision; multiple choices
+            require explicit selection. Legacy choices require a sole resolved active choice.
         blocked_reason:
           const: eligible
         policy_id:
@@ -1185,7 +1187,7 @@ components:
           type: string
         schema_version:
           type: integer
-          minimum: 1
+          enum: [1, 2]
         parent_revision_id:
           type: string
         catalog_revision_id:
@@ -1201,27 +1203,7 @@ components:
         reason:
           type: string
     SourceQualification:
-      type: object
-      additionalProperties: false
-      required: [qualification_id, sha256, decision_system, source_id, catalog_revision, scope, timezone, coverage]
-      properties:
-        qualification_id:
-          type: string
-        sha256:
-          type: string
-          pattern: '^[0-9a-f]{64}$'
-        decision_system:
-          const: namaztime:source-qualification/v1
-        source_id:
-          type: string
-        catalog_revision:
-          type: string
-        scope:
-          $ref: '#/components/schemas/GeographicScope'
-        timezone:
-          type: string
-        coverage:
-          $ref: '#/components/schemas/DateRange'
+      $ref: './prayer-snapshot.schema.json#/$defs/sourceQualification'
     RegistryPolicyOption:
       type: object
       additionalProperties: false
@@ -1258,6 +1240,8 @@ components:
           $ref: '#/components/schemas/RegistryPrayerSource'
         policy:
           $ref: '#/components/schemas/RegistryPrayerPolicy'
+        qualification:
+          $ref: '#/components/schemas/SourceQualification'
         timetable:
           $ref: '#/components/schemas/RegistryTimeTable'
         calculation_profile:
@@ -1479,6 +1463,20 @@ components:
       type: object
       additionalProperties: false
       required: [id, kind, authority_ids, geographic_scope_id, status]
+      allOf:
+        - if:
+            required: [qualification_id]
+          then:
+            properties:
+              status:
+                enum: [qualified, stale, unavailable]
+        - if:
+            properties:
+              status:
+                const: qualified
+            required: [status]
+          then:
+            required: [qualification_id]
       properties:
         id:
           type: string
@@ -1498,14 +1496,36 @@ components:
           format: uri
         status:
           type: string
-          enum: [research_only, approved, stale, unavailable]
+          enum: [research_only, approved, qualified, stale, unavailable]
+        qualification_id:
+          type: string
+          pattern: '^qualification-[0-9a-f]{32}$'
         fresh_through:
           type: string
           format: date
     RegistryPrayerPolicy:
       type: object
       additionalProperties: false
-      required: [id, kind, geographic_scope_id, authority_ids, source_id, mosque_ids, effective, approval_id]
+      required: [id, kind, geographic_scope_id, authority_ids, source_id, mosque_ids, effective]
+      oneOf:
+        - required: [approval_id]
+          not:
+            required: [qualification_id]
+          properties:
+            mosque_ids:
+              type: array
+              minItems: 1
+              maxItems: 1
+        - required: [qualification_id, timetable_id]
+          not:
+            anyOf:
+              - required: [approval_id]
+              - required: [calculation_profile_id]
+          properties:
+            kind:
+              const: timetable
+            mosque_ids:
+              maxItems: 0
       properties:
         id:
           type: string
@@ -1527,8 +1547,8 @@ components:
         calculation_profile_id:
           type: string
         mosque_ids:
-          type: array
-          minItems: 1
+          type: [array, 'null']
+          description: Public geographic policies have no mosque binding; the immutable registry may encode an empty slice as null or an empty array. Legacy policies require exactly one mosque.
           maxItems: 1
           items:
             type: string
@@ -1536,6 +1556,10 @@ components:
           $ref: '#/components/schemas/DateRange'
         approval_id:
           type: string
+          minLength: 1
+        qualification_id:
+          type: string
+          pattern: '^qualification-[0-9a-f]{32}$'
     RegistryTimeTable:
       type: object
       additionalProperties: false

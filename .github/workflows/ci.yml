@@ -18,8 +18,10 @@ jobs:
         uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
         with:
           go-version-file: go.mod
+      - name: Install local contract validators
+        run: sudo apt-get update && sudo apt-get install -y python3-yaml python3-jsonschema
       - name: Check documentation and Go
-        run: make docs-check format-check lint-go test-contracts test-go test-go-race security-go
+        run: make CONTRACT_PYTHON=/usr/bin/python3 docs-check format-check lint-go test-contracts test-go test-go-race security-go
       - name: Scan complete Git history for secrets
         run: make secret-scan
 

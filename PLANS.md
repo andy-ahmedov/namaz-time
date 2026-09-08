@@ -19,8 +19,8 @@ boundary, not a broken repository link. Remote CI is not rerun or claimed green.
 | 0: persistent policy reconciliation | DONE | ADR 0019, AGENTS, streamlined provider skill, source checklist and governing docs separate qualification from optional endorsement. `make docs-check test-skills` PASS: 2 package checks, 130 runtime/data cases, 2 explicit non-bundled upstream module skips. Provider frontmatter validation and `git diff --check` PASS. No application/schema/signing changes in this checkpoint. |
 | 1: previous research/demo audit | DONE | `research/t049/BASELINE_AUDIT.md`: 83 mapped subjects versus old 31 (52 gaps), current debug factory/constant-row projection, persisted legacy admission and pilot inspected; narrow pilot/artifact tests and 4 research tests PASS. No live NamazTime PostgreSQL instance found; fresh isolated DB gate remains required. |
 | 2–3: nationwide research and scope resolution | IN_PROGRESS | All four ledgers delivered: western 29, eastern 21, southern 13 and Volga/Ural 20 subjects. Cross-ledger synthesis, currentness reconciliation and qualification remain in progress. Current hash-pinned GeoNames import contains 166,559 localities and 83 mapped subjects; old pilot catalog bindings remain unchanged. DUM RT Kazan CSV and XLSX agree for all 365 dates, including unrepresentable May 5 Fajr 23:54: explicit September coverage passes, full-year coverage fails closed. No inferred day offset or regional expansion. |
-| 4/6: qualified providers and verified activation | IN_PROGRESS | DUM RT CSV, Omsk JSON, KBR extracted-PDF text, CDUM HTML and Sochi XLSX parsers have synthetic and retained-artifact checks. Qualification/snapshot/signing/audit v2 and Go registry v2 admission pass narrow tests without human approval; every activated qualified snapshot must carry the exact proof hash, and canonical scope/catalog bindings are checked. PostgreSQL v9 migration, rollback refusal, reapply and backup/restore integration pass. Android v2/Room v4 passes 135 focused tests reported by the Android lane, including cross-language signed fixture and legacy LKG. KBR now has a real hash-bound qualification inspection outside Git; signed materialization and normal setup still remain to be completed. |
-| 5: normal setup/runtime | TODO | Canonical search, all independent real choices/previews, signed local activation, explicit synthetic test-only path, no generic fallback |
+| 4/6: qualified providers and verified activation | IN_PROGRESS | DUM RT CSV, Omsk JSON, KBR extracted-PDF text, CDUM HTML and Sochi XLSX parsers have synthetic and retained-artifact checks. Qualification/snapshot/signing/audit v2 and Go registry v2 admission pass narrow tests without human approval; every activated qualified snapshot must carry the exact proof hash, and canonical scope/catalog bindings are checked. PostgreSQL v9 migration, rollback refusal, reapply and backup/restore integration pass. Android v2/Room v4 passes 135 focused tests reported by the Android lane, including cross-language signed fixture and legacy LKG. Real qualification, signed materialization and normal setup remain incomplete; the first KBR inspection was quarantined for invalid retrieval metadata. |
+| 5: normal setup/runtime | IN_PROGRESS | Local bundle exporter and Android normal-route integration are under narrow verification; no real bundle/device activation yet. Full canonical SQLite roundtrip and synthetic cross-language bundle checks are separate from representative real E2E. |
 | Evidence and repository gates | TODO | Representative real patterns, pilot byte regression, parser drift/stale tests, PostgreSQL up/down/reapply/restore if changed, Android emulator + full requested gates |
 
 Scope includes coherent local checkpoint commits, not push/PR/deployment,
@@ -28,8 +28,55 @@ signing-key changes, organization contact or production-data deletion. Unknown
 source evidence makes that source/city unavailable, not the whole task blocked.
 T038 is DONE under the explicit T049 closure rule: the second non-Ulyanovsk
 regional adapter (DUM KBR annual PDF, explicit republic-wide scope) is implemented
-and verified against all 365 retained first-party rows. No new source has yet
-been qualified, materialized or activated by T049.
+and verified against all 365 retained first-party rows. Two sources now have
+evidence-reviewed qualifications (KBR and Saratov, below); no new source has
+yet been signed, materialized or activated by T049.
+
+Correction after checkpoint `da4c906`: the first operational KBR inspection
+passed structural validation but used an unobserved PDF capture timestamp and
+the PDF hash for homepage evidence. Its qualification ID
+`qualification-7b5c03f34a47252c282249a9a777c508` is invalid; the manifest,
+inspection and unsigned publication/signing requests are quarantined outside
+Git and must not enter signing or admission. No snapshot was signed or activated.
+Actual re-capture/review is recorded below. Checkpoint `5a9eb73` also
+introduced fixture-specific CDUM HTML exceptions; these are replaced in the
+working tree by general raw-tag provenance checks, with adversarial fixtures
+and retained-page checks. A passing test suite alone did not
+prove either research correctness or absence of parser bypasses.
+
+KBR re-capture: public PDF retrieved at the observed `2026-09-08T01:52:19Z`,
+HTTP 200 / `application/octet-stream`; homepage/share retain their own distinct
+hashes and timestamps. Lead visually compared six values on four dates, one
+per calendar quarter, against rendered PDF pages; September 8 also matches the
+current homepage. `inspect-public` with the complete pinned canonical catalog,
+retained PDF/text and normal 15-minute delta threshold PASS: 365 days, no
+errors/warnings, qualification `qualification-809bf016513c15764254adbb68991b76`
+at `2026-09-08T02:03:25Z`. Inputs/output remain outside Git in
+`namaztime-artifacts/t049-kbr-recapture.NhKQww`; this is qualification, not
+signature/admission or device-runtime evidence.
+
+Setup wire contract correction: OpenAPI reuses the complete snapshot
+qualification schema; public source/policy branches reject fake approvals and
+preserve empty `mosque_ids` as either `null` or `[]`, while legacy requires one
+mosque. Three Python schema regression tests (including the observed null
+serialization failure) and `make test-contracts` PASS. These checks are now
+part of `make test` and CI; Python PyYAML/jsonschema dependencies are documented.
+The root README's residual universal approval/generic fallback wording is
+reconciled with ADR 0019. `go test ./internal/providers/cdum ./internal/devices
+-count=1` PASS after parser and device-v2 response regression changes.
+
+Saratov dispatcher: exact city/subject/timezone/canonical URL guards, a positive
+synthetic case and 16 negative cases pass, including a catalog alias that must
+not extend publisher scope to another city. The opt-in fresh retained check
+matches all 180 fields against the separately extracted print table. Lead
+reviewed the captured main/print/page-2348 composite currentness proof and
+three dated value comparisons; full-catalog `inspect-public` PASS at
+`2026-09-08T02:11:49Z`, 30 days, qualification
+`qualification-d9c025f49669fb9f5b2a0a9c9cea88aa`. Raw evidence remains in
+`namaztime-artifacts/t049-saratov.ihEI1m` outside Git. Its explicit hyperlink
+attribution requirement must be supported before selectable runtime admission;
+no signature or activation is claimed. Source iqamah/performance notices remain
+separate from the exact onset table.
 
 Current narrow evidence: `go test ./internal/registry ./internal/devices -count=1`
 PASS, retained Kazan September hash-bound provider test PASS, and Android

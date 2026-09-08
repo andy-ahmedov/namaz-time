@@ -1107,6 +1107,15 @@ func TestDeviceSetupEndpointsDeriveMosqueScopeAndNeverUseAdminCredential(t *test
 		registryBackend.request.MosqueID != mosqueID || registryBackend.assessmentID != revisionID {
 		t.Fatalf("device schedule choices = %d %s; scope=%#v revision=%q", choices.StatusCode, choices.Body, registryBackend.request, registryBackend.assessmentID)
 	}
+	// The envelope follows the immutable registry revision even for a city
+	// whose particular choices all remain legacy approval-bound.
+	registryBackend.assessment.Revision.SchemaVersion = registrydomain.QualifiedRegistrySchemaVersion
+	qualifiedEnvelope := request(t, http.MethodGet, choicesURL, nil, testToken, "")
+	if qualifiedEnvelope.StatusCode != http.StatusOK ||
+		!strings.Contains(qualifiedEnvelope.Body, `"schema_version":"device-city-schedule-choices/v2"`) {
+		t.Fatalf("qualified registry envelope = %d %s", qualifiedEnvelope.StatusCode, qualifiedEnvelope.Body)
+	}
+	registryBackend.assessment.Revision.SchemaVersion = registrydomain.RegistrySchemaVersion
 
 	projected, err := setupManager.ScheduleChoices(t.Context(), DevicePrincipal{
 		DeviceID: testDeviceID,

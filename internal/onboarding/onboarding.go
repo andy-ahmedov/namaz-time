@@ -18,6 +18,7 @@ import (
 	"github.com/andy-ahmedov/namaz-time/internal/providers/dumrt"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/kbr"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/omsk"
+	"github.com/andy-ahmedov/namaz-time/internal/providers/saratov"
 	"github.com/andy-ahmedov/namaz-time/internal/providers/sochi"
 	"github.com/andy-ahmedov/namaz-time/internal/publication"
 	"github.com/andy-ahmedov/namaz-time/internal/qualification"
@@ -142,14 +143,20 @@ func parse(m Manifest, binding qualification.CatalogBinding, raw, extracted []by
 		days, err = cdum.ParseHTML(raw, m.Locality, m.Coverage)
 	case omsk.ParserVersion:
 		if binding.Region.FederalSubjectCode != "RU-OMS" || m.Locality != omsk.SourceCity || m.Review.Timezone != omsk.SourceTimezone || m.SourceKind != domain.ProviderKindOfficialFile {
-			return nil, "", errors.New("Omsk JSON requires exact Omsk official_file and timezone binding")
+			return nil, "", errors.New("parser: Omsk JSON requires exact Omsk official_file and timezone binding")
 		}
 		days, err = omsk.ParseJSON(raw, m.Coverage)
 	case sochi.ParserVersion:
 		if binding.Region.FederalSubjectCode != "RU-KDA" || m.Locality != sochi.SourceCity || m.Review.Timezone != sochi.SourceTimezone || m.SourceKind != domain.ProviderKindOfficialFile {
-			return nil, "", errors.New("Sochi workbook requires exact Sochi official_file and timezone binding")
+			return nil, "", errors.New("parser: Sochi workbook requires exact Sochi official_file and timezone binding")
 		}
 		days, err = sochi.ParseXLSX(raw, m.Coverage)
+	case saratov.ParserVersion:
+		if binding.Region.FederalSubjectCode != "RU-SAR" || m.Locality != "Саратов" || binding.Cities[0].Name != "Саратов" || m.Review.Timezone != "Europe/Saratov" ||
+			m.SourceKind != domain.ProviderKindOfficialHTML || m.CanonicalURL != "https://dumso.ru/raspisanie" {
+			return nil, "", errors.New("parser: Saratov monthly HTML requires its exact Saratov city, official_html, canonical URL and timezone binding")
+		}
+		days, err = saratov.ParseHTML(raw, m.Coverage)
 	case kbr.ParserVersion:
 		if m.Review.Scope.Kind != domain.GeographicScopeRegion || binding.Region.FederalSubjectCode != "RU-KB" || m.Locality != "" || m.Review.Timezone != "Europe/Moscow" || m.SourceKind != domain.ProviderKindOfficialFile {
 			return nil, "", errors.New("KBR annual PDF requires its explicit republic-wide official_file scope")

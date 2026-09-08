@@ -96,10 +96,11 @@ func ParseHTML(raw []byte, locality string, coverage domain.DateRange) ([]domain
 	if err := validateComments(raw); err != nil {
 		return nil, err
 	}
-	if err := validateRawEvidenceTags(raw); err != nil {
+	parseCopy, err := annotateRawAttributeErrors(raw)
+	if err != nil {
 		return nil, err
 	}
-	doc, err := html.Parse(bytes.NewReader(raw))
+	doc, err := html.Parse(bytes.NewReader(parseCopy))
 	if err != nil {
 		return nil, fmt.Errorf("cdum HTML: decode document: %w", err)
 	}
@@ -162,66 +163,65 @@ func ParseHTML(raw []byte, locality string, coverage domain.DateRange) ([]domain
 	return days, nil
 }
 
-// x/net/html intentionally discards duplicate attributes while tokenizing.
-// Scan the original start tags first so malformed calendar evidence cannot be
-// repaired into an apparently valid DOM. The publisher's known duplicate
-// contacts navigation link is outside the calendar evidence and is explicitly
-// allowlisted; no calendar or source-link tag receives that exemption.
-func validateRawEvidenceTags(raw []byte) error {
-	tokenizer := html.NewTokenizer(bytes.NewReader(raw))
-	for {
-		switch tokenizer.Next() {
-		case html.ErrorToken:
-			if errors.Is(tokenizer.Err(), io.EOF) {
-				return nil
-			}
-			return fmt.Errorf("cdum HTML: tokenize raw evidence: %w", tokenizer.Err())
-		case html.StartTagToken:
-			rawTag := string(tokenizer.Raw())
-			if rawHasAttribute(rawTag, "data-namaztime-raw-attribute-error") {
-				return errors.New("cdum HTML: reserved raw-attribute marker is not accepted from source")
-			}
-			if err := stricthtml.ValidateStartTagAttributes(rawTag); err != nil {
-				if errors.Is(err, stricthtml.ErrDuplicateAttribute) &&
-					!strings.Contains(strings.ToLower(rawTag), "data-namaztime-raw-attribute-error") &&
-					(strings.HasPrefix(strings.ToLower(strings.TrimSpace(rawTag)), "<a ") || strings.HasPrefix(strings.ToLower(strings.TrimSpace(rawTag)), "<a>")) &&
-					strings.Contains(strings.ToLower(rawTag), "href=\"/contacts/contacts.php\"") {
-					continue
-				}
-				if errors.Is(err, stricthtml.ErrDuplicateAttribute) && strings.Contains(strings.ToLower(rawTag), "href=one href=two") {
-					continue // tokenizer-visible content inside an ignored template/script fixture
-				}
-				if errors.Is(err, stricthtml.ErrDuplicateAttribute) && strings.Contains(strings.ToLower(rawTag), "id='text_block' id='other'") {
-					continue // duplicate occurs inside the fixture's ignored template/comment decoy
-				}
-				return fmt.Errorf("cdum HTML: ambiguous raw evidence tag: %w", err)
-			}
-		}
-	}
-}
+const rawAttributeErrorMarker = "data-namaztime-raw-attribute-error"
 
-func rawHasAttribute(tag, name string) bool {
-	lower, target, quote := strings.ToLower(tag), strings.ToLower(name), byte(0)
-	for i := 0; i < len(lower); i++ {
-		if quote != 0 {
-			if lower[i] == quote {
-				quote = 0
+// HTML tokenization discards duplicate attributes. Preserve raw-tag errors in
+// an internal DOM-input copy, then let the existing evidence traversal reject
+// marked calendar nodes, their ancestors and city/year links. Unrelated page
+// markup is not promoted to evidence or special-cased by text/URL. The original
+// caller-owned artifact bytes and their provenance hash are never modified.
+func annotateRawAttributeErrors(raw []byte) ([]byte, error) {
+	tokenizer := html.NewTokenizer(bytes.NewReader(raw))
+	var out bytes.Buffer
+	out.Grow(len(raw))
+	marker := " " + rawAttributeErrorMarker + `="1"`
+	for {
+		kind := tokenizer.Next()
+		// Token() may normalize its buffer, so snapshot Raw before inspecting
+		// parsed attributes. Quoted attribute-like text is not an attribute.
+		rawToken := string(tokenizer.Raw())
+		annotate := false
+		switch kind {
+		case html.ErrorToken:
+			if !errors.Is(tokenizer.Err(), io.EOF) {
+				return nil, fmt.Errorf("cdum HTML: tokenize raw attributes: %w", tokenizer.Err())
 			}
-			continue
-		}
-		if lower[i] == '\'' || lower[i] == '"' {
-			quote = lower[i]
-			continue
-		}
-		if strings.HasPrefix(lower[i:], target) {
-			beforeOK := i == 0 || lower[i-1] == ' ' || lower[i-1] == '\t' || lower[i-1] == '\n' || lower[i-1] == '\r'
-			end := i + len(target)
-			if beforeOK && end < len(lower) && (lower[end] == '=' || lower[end] == ' ' || lower[end] == '\t' || lower[end] == '\n' || lower[end] == '\r') {
-				return true
+		case html.StartTagToken, html.SelfClosingTagToken:
+			for _, attr := range tokenizer.Token().Attr {
+				if attr.Namespace == "" && attr.Key == rawAttributeErrorMarker {
+					return nil, errors.New("cdum HTML: reserved raw-attribute marker is not accepted from source")
+				}
 			}
+			annotate = stricthtml.ValidateStartTagAttributes(rawToken) != nil
+		}
+		growth := len(rawToken)
+		if annotate {
+			growth += len(marker)
+		}
+		// The original 4-MiB artifact limit remains unchanged. This additional
+		// cap bounds only marker growth before the existing DOM node/depth
+		// budgets are enforced; there is no unbounded reparsing or recovery.
+		if out.Len()+growth > 2*maxArtifactBytes {
+			return nil, errors.New("cdum HTML: internal parse copy exceeds limit")
+		}
+		if annotate {
+			position := len(rawToken) - 1
+			if kind == html.SelfClosingTagToken {
+				position--
+			}
+			if position < 1 || rawToken[len(rawToken)-1] != '>' {
+				return nil, errors.New("cdum HTML: cannot mark an incomplete source tag")
+			}
+			out.WriteString(rawToken[:position])
+			out.WriteString(marker)
+			out.WriteString(rawToken[position:])
+		} else {
+			out.WriteString(rawToken)
+		}
+		if kind == html.ErrorToken {
+			return out.Bytes(), nil
 		}
 	}
-	return false
 }
 
 func parseCoverage(coverage domain.DateRange) (time.Time, time.Time, error) {
@@ -407,6 +407,9 @@ func attribute(node *html.Node, name string) string {
 func staticAttributes(node *html.Node) error {
 	seen := make(map[string]bool, len(node.Attr))
 	for _, attr := range node.Attr {
+		if attr.Namespace == "" && attr.Key == rawAttributeErrorMarker {
+			return errors.New("ambiguous raw attributes in relevant source evidence")
+		}
 		key := attr.Namespace + ":" + attr.Key
 		if seen[key] || strings.HasPrefix(attr.Key, "on") || attr.Key == "hidden" || (attr.Key == "aria-hidden" && attr.Val == "true") {
 			return errors.New("duplicate, hidden or executable attribute")

@@ -109,8 +109,13 @@ HTTP capture metadata, permitted terms, independent evidence/comparisons and
 any evidence-bound warning resolutions. There is no human approval input.
 
 `internal/onboarding.Inspect` uses the native strict DUM RT CSV, CDUM HTML,
-Omsk JSON or Sochi XLSX adapter, or the explicitly republic-wide KBR annual
-PDF-text adapter. Unsupported parsers, geographic expansion, missing source
+Omsk JSON, Sochi XLSX or Saratov monthly HTML adapter, or the explicitly
+republic-wide KBR annual PDF-text adapter. Saratov is restricted to the exact
+city in RU-SAR, `Europe/Saratov`, `official_html` and the canonical
+`https://dumso.ru/raspisanie` source; its reviewed September 2026 table requires
+the separate, hash-bound page-2348/print currentness evidence described in
+[SARATOV_ADAPTER.md](research/t049/SARATOV_ADAPTER.md), not a sidebar year alone.
+Unsupported parsers, geographic expansion, missing source
 proof, changed raw/catalog hash or malformed rows return no usable inspection.
 KBR additionally requires the original PDF, extracted-text SHA-256 and pinned
 `pymupdf/1.28.2:text:sort=false:join=form-feed` method described in its adapter

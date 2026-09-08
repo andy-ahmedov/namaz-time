@@ -159,6 +159,13 @@ func TestParseHTMLRejectsRawDuplicateEvidenceAttributes(t *testing.T) {
 		{"reserved marker collision", `id="text_block"`, `id="text_block" data-namaztime-raw-attribute-error="0"`},
 		{"case-folded reserved marker collision", `id="text_block"`, `id="text_block" DATA-NAMAZTIME-RAW-ATTRIBUTE-ERROR="0"`},
 		{"unrelated reserved marker collision", "<nav>", `<nav><a href="/contacts" data-namaztime-raw-attribute-error="0">Contact</a>`},
+		{"boolean reserved marker collision", `id="text_block"`, `id="text_block" data-namaztime-raw-attribute-error`},
+		{"self-closing reserved marker collision", "<nav>", `<br data-namaztime-raw-attribute-error/><nav>`},
+		{"fixture ID substring on real calendar", `id="text_block"`, `id='text_block' id='other'`},
+		{"fixture href substring on real cell", "<td><p>5:01", `<td href=one href=two><p>5:01`},
+		{"fixture substring inside quoted value", "<td><p>5:01", `<td title="href=one href=two" style="margin:0cm" style="display:none"><p>5:01`},
+		{"contacts URL on actual city-year link", `href="/time-namaz/Moskva/index.php"`, `href="/time-namaz/Moskva/index.php" href="/contacts/contacts.php"`},
+		{"contacts substring inside quoted value", `href="/time-namaz/Moskva/index.php"`, `href="/time-namaz/Moskva/index.php" title='href="/contacts/contacts.php"' style="margin:0cm" style="display:none"`},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if !strings.Contains(valid, tc.old) {
@@ -177,9 +184,12 @@ func TestParseHTMLRawAttributeChecksKeepNonEvidenceSeparate(t *testing.T) {
 	coverage := domain.DateRange{From: "2026-09-01", To: "2026-09-30"}
 	for name, raw := range map[string]string{
 		// This unrelated duplicate is present on the retained publisher pages.
-		"unrelated contacts link":     strings.Replace(valid, "<nav>", `<nav><a class="nav_a" href="/contacts/contacts.php" class="root-item">Контакты</a>`, 1),
-		"quoted attribute-like text":  strings.Replace(valid, "<td><p>5:01", `<td title='x > y; id="first" id="second" data-namaztime-raw-attribute-error="0"'><p>5:01`, 1),
-		"nonvisible duplicate decoys": "<!--<div id='text_block' id='other'>decoy</div>--><script>var x='<a href=one href=two>';</script><template><div id='text_block' id='other'>decoy</div></template>" + valid,
+		"unrelated contacts link":       strings.Replace(valid, "<nav>", `<nav><a class="nav_a" href="/contacts/contacts.php" class="root-item">Контакты</a>`, 1),
+		"arbitrary unrelated duplicate": strings.Replace(valid, "<nav>", `<nav><a href="/different-navigation" title="one" title="two">Other page</a>`, 1),
+		"arbitrary template duplicate":  `<template><div class="one" class="two">Not evidence</div></template>` + valid,
+		"arbitrary noscript duplicate":  `<noscript><div class="one" class="two">Not evidence</div></noscript>` + valid,
+		"quoted attribute-like text":    strings.Replace(valid, "<td><p>5:01", `<td title='x > y; id="first" id="second" data-namaztime-raw-attribute-error="0"'><p>5:01`, 1),
+		"nonvisible duplicate decoys":   "<!--<div id='text_block' id='other'>decoy</div>--><script>var x='<a href=one href=two>';</script><template><div id='text_block' id='other'>decoy</div></template>" + valid,
 	} {
 		t.Run(name, func(t *testing.T) {
 			before := []byte(raw)

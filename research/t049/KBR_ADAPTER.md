@@ -1,7 +1,8 @@
 # DUM KBR annual PDF parser
 
 Checked 2026-09-08. This is source research and deterministic normalization,
-not an external endorsement or a completed source-qualification decision.
+not an external endorsement or completed runtime activation. The parser result
+is separate from the coordinator qualification recorded below.
 The implementation is [text.go](../../internal/providers/kbr/text.go);
 the evidence inventory is [regions-south.json](regions-south.json).
 
@@ -21,6 +22,33 @@ controls. Keep the stable share URL and the linking authority page as the
 provenance chain. A publicly accessible source does not require a separate
 permission letter under ADR 0019. No redistribution licence for the complete
 PDF was verified; raw PDF, extracted text and full reference remain outside Git.
+
+## Coordinator qualification re-capture
+
+`CONFIRMED_PUBLIC`: re-capture on 2026-09-08 retained the homepage at
+`01:49:41Z` (SHA-256 `027b9e8c21b8792802125147560ca3927bdba6c41556a24957d06d45dba697f1`),
+public share at `01:49:41Z`
+(`05e4b4eb00e3a96a3b35a76e0436dbeb101bcde37ec54972cfca8038bc447041`),
+and actual PDF completion at `01:52:19Z`. The PDF's hash below is unchanged;
+its observed HTTP content type is `application/octet-stream`, not an invented
+PDF MIME value. ETag: `F33DAEC2436950E73D626D624C97E78B729FDFC3`.
+Temporary download URLs remain outside Git.
+
+Lead visually read all six cells on January 1, April 11, September 8 and
+December 31 from the rendered retained PDF, covering four calendar quarters.
+The source-bound manifest and full catalog passed `inspect-public` at
+`2026-09-08T02:03:25Z`: 365 days, no validation errors or warnings with a
+15-minute daily-delta threshold. Qualification ID:
+`qualification-809bf016513c15764254adbb68991b76`; full qualification SHA-256:
+`809bf016513c15764254adbb68991b76447313fa78d356cb4f8748a6373e4867`.
+The full canonical RU-KB projection validates `Europe/Moscow` for the scope.
+
+Operational inputs/inspection are retained in
+`namaztime-artifacts/t049-kbr-recapture.NhKQww` outside Git. This replaces an
+invalid earlier inspection whose capture timestamp was unobserved and whose
+homepage evidence incorrectly carried the PDF hash; that earlier manifest and
+derived unsigned requests are quarantined and must not be signed or admitted.
+No new signature, registry activation or device runtime is claimed here.
 
 `UNKNOWN`: published calculation method, Asr convention, Fajr/Isha parameters,
 rounding and future refresh cadence. None is invented when importing exact
