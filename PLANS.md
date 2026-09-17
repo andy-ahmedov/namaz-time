@@ -18,10 +18,107 @@ Android debug assemble, unit tests and lint PASS; ADB install and app launch on
 the API 36/1920×1080 TV emulator PASS. `make docs-check` PASS in a source copy
 excluding only untracked owner photos. Root `make test`/`make lint` stop at the
 existing 5 MiB gate on the untracked 7.6 MiB source `wal_3.png`; no gate was
-weakened and the owner original was not moved. Runtime selection of the new
-choice remains `UNKNOWN` pending a pre-existing gallery FocusRequester crash
-when navigating across the lazy filmstrip. That navigation defect is tracked
-with the other unfinished TV changes below. Physical-TV appearance is UNKNOWN.
+weakened and the owner original was not moved. Initial runtime selection hit a
+gallery FocusRequester crash when crossing the lazy filmstrip. Follow-up
+`CONFIRMED_RUNTIME` on the
+same emulator: after fixing detached horizontal focus targets, D-pad selected
+Winter Twilight and displayed the converted image in Settings and on the main
+schedule. Screenshots remain outside Git at `/tmp/namaztime-wal3-selected.png`
+and `/tmp/namaztime-wal3-main.png`; physical-TV appearance remains `UNKNOWN`.
+
+## Shared QR rounded paper and tighter margins — 2026-09-09
+
+Status: DONE (local implementation and emulator acceptance).
+
+PROPOSAL: reclaim raster-size remainders previously added as extra white padding,
+using sharp pixel boundaries with module widths differing by at most one pixel.
+Retain four-module side clearances and unchanged encoded payload/error correction.
+Round the outer paper corners with a 20%-of-side target capped to the four-module
+margin, so rounding never touches encoded modules or the four side strips aligned
+with the symbol. Shared Standard/Compact/Donation/preview component, no overlays.
+No persistence, snapshot, URL or signing changes; rollback is renderer-only.
+Acceptance: native whole-view decode and module preservation on every surface
+at 720p/1080p/4K profiles, visible emulator result and independent screenshot decode.
+Focused QR and whole-view native tests PASS for Standard, Compact, Donation and
+preview at three resolution/density profiles. Dense 720p fractional-pitch failure
+was reproduced and fixed with uniform integer pitch below 4 pixels/module;
+those cases retain the necessary remainder padding. Debug assemble PASS.
+CONFIRMED_RUNTIME: API 36 / 1920x1080 emulator screenshot before/after independently
+decoded by zxing-cpp, both directly and after 0.55px Gaussian blur, same payload.
+Current symbol grows 165→181px per side. After screenshot SHA-256:
+667de03ce6fc04cf70b3901f00779a33772fc41d52f7ebf1d0b70996c2a009cc.
+Evidence stays outside Git at /tmp/namaztime-qr-before.png and
+/tmp/namaztime-qr-after.png. Physical-TV camera acceptance remains UNKNOWN.
+Root make test/lint was blocked by the owner-supplied 7.6 MiB wal_3.png size gate.
+Exact source changes were copied to /tmp/namaztime-qr-verification, excluding only
+the three untracked owner photos; make test/lint PASS there: 631 Android cases,
+627 pass, 4 optional external source/interop skips, plus 2 existing skill skips.
+No gate weakened and no owner image moved/deleted. Debug APK is installed on
+the emulator; no pilot publication or signing changes. git diff --check PASS.
+
+## Schedule block transparency — 2026-09-09
+
+Status: DONE (local implementation and emulator acceptance).
+
+PROPOSAL: add an Appearance slider for schedule block background transparency
+(0–100%, 5% D-pad steps, default 20%). It applies to Standard and Compact card
+fills and the preview, while text, QR, outlines and the photograph retain their
+own rendering. Persist a validated device-local integer in DataStore; missing
+or invalid values use 20%. No snapshot/domain/permission change. Older versions
+ignore the key; no database migration or destructive rollback is needed.
+Acceptance: arrow adjustments including rapid repeats, bounds, up/down exit,
+persistence/reopen, both display layouts, 720p/1080p/4K layout and full checks.
+Focused tests and debug assemble PASS. Final make test/lint PASS: 630 Android
+cases, 626 passed and 4 pre-existing optional external-source/interop cases
+skipped. Skills retain 2 absent upstream-module skips.
+CONFIRMED_RUNTIME: emulator API 36, rapid six-key input 30→60%, 0%/100% Compact,
+50% Standard, and complete Appearance layout at 1280x720 and 1920x1080.
+Cold restart retains the setting; emulator is left in Appearance with 20% and
+Compact selected, using the previously imported owner photograph.
+The attempted 4K override remained 1920x1080 (only density changed), so it is
+not 4K evidence; normal size/density were restored. Physical TV/true 4K remain
+UNKNOWN. Screenshots/logs are outside Git at /tmp/namaztime-opacity-*.
+No pilot artifact, push or deployment; updated debug APK installed on emulator.
+
+
+## TV storage image selection — 2026-09-09
+
+Status: DONE (local implementation and emulator acceptance).
+
+CONFIRMED_PUBLIC: supplied physical-TV screenshot shows a system no-handler
+notification after custom donation image selection. INFERENCE: firmware picker
+capabilities do not guarantee a usable picker; installed APK version is unknown.
+PROPOSAL: leanback devices open the existing D-pad MediaStore browser directly,
+with the existing explicit read-permission request and bounded private-copy import.
+Non-TV cascade stays available. No permissions, schema, keys or schedule changes;
+rollback needs no migration. Both background and donation use this route.
+Regression test first failed as expected (1 of 9), then focused tests passed.
+Initial make test/lint and debug build passed. Runtime with owner wal_1.jpg
+exposed focus escaping the gallery into underlying settings after pagination.
+The gallery now owns a modal window. A separate reproduced navigation crash
+(FocusRequester not initialized) is fixed by attaching the appearance entry to
+the persistent focus group instead of a disposable lazy thumbnail.
+On 2026-09-18, a rapid reverse pass across the ten built-in backgrounds
+reproduced another detached requester crash on emulator and in a Compose test.
+Long horizontal and vertical MediaStore lists reproduced the same exception.
+Directional focus now uses Compose lazy-list search for offscreen items; explicit
+header/footer targets remain only for controls that are mounted. Focus tests
+cover bursts, long rows, bucket transitions and Cancel/Load more return.
+Focused Settings/app/gallery tests and debug build PASS.
+CONFIRMED_RUNTIME: API 36 / 1920x1080 emulator, owner wal_1.jpg copied to Pictures
+and indexed; D-pad opens local gallery, loads page 2, selects Pictures/wal_1.jpg,
+imports and renders it as background. Full process stop/cold restart retains it.
+Photo SHA-256: 5e793e286ac8e9e14824b96cfcb886ce6edfa07eb391ef52bcfcae240421723c.
+Post-restart screenshot SHA-256:
+23a6eab2e1e063ac188220528d15dc352b35a5b0e1cad01d049949f3c3595be2.
+Screenshots and logs stay outside Git in /tmp/namaztime-wal-after-restart.png
+and /tmp/namaztime-photo-final-checks.log; owner originals remain untracked.
+Final make test/lint PASS; Android: 618 passed, 4 optional externally configured
+source-bundle/Go-interop cases skipped (fixtures not supplied). Skill suite has
+2 explicitly absent upstream-module skips. Debug assemble PASS; git diff --check
+PASS. Physical-TV, 720p and 4K runtime acceptance were not performed this turn.
+Emulator is left on the imported background; no pilot APK update or publication.
+UNKNOWN: physical-TV import and unindexed USB availability.
 
 ## T049 — nationwide verified first-party prayer-source onboarding
 
@@ -670,3 +767,80 @@ deployment mode, not blockers for the D-015 offline USB pilot.
   current heartbeat contract requires a boolean and has no production state
   assembler. Contract evolution/wiring must not collapse `unknown` into a false
   healthy claim.
+
+## Default local QR destination — 2026-09-10
+
+Status: DONE (local implementation and emulator launch).
+
+PROPOSAL — Apply the owner-supplied NSPK URL when the local schedule/donation
+QR URL is blank; an explicit custom URL retains priority and validation.
+Both settings editors show the default as a placeholder. Existing activation
+requirements remain: schedule purpose / donation transfer details; fully empty
+configuration remains disabled. Signed campaigns and stored preferences are
+unchanged; no migration is needed, rollback restores blank-URL validation.
+
+Changed OperatorPreferencesRepository.kt, SettingsEditors.kt,
+OperatorPreferencesRepositoryTest.kt and UI_UX_SPEC.md. Regression coverage
+checks the exact query string, whitespace fallback and custom URL priority
+for both local QR paths.
+
+Verification: focused repository tests PASS; full Android unit suite PASS
+(633 cases, 4 skipped, zero failures/errors); Android lint, Go tests/vet/staticcheck,
+contracts, research, skill and build-identity checks PASS. `make -k test lint`
+remains nonzero solely because docs-check rejects the pre-existing untracked
+`wal_3.png` (>5 MiB). Initial sandbox runs also failed on local sockets/cache;
+rerun outside the sandbox cleared those failures. `git diff --check` PASS.
+No device installation or physical QR scan was performed (UNKNOWN).
+Full check log: `/tmp/namaztime-default-qr-checks.log`.
+
+Follow-up requested emulator launch/APK — 2026-09-10:
+`assembleDebug` and build-identity check PASS (`0.6.3-dev`, code 10,
+`ru.namaztime.tv.debug`, dirty workspace). CONFIRMED_RUNTIME — `adb install -r`
+succeeded on emulator-5554 and MainActivity cold launch returned Status: ok;
+1920×1080 screenshot shows the schedule and QR panel. Existing app data retained.
+Screenshot: `/tmp/namaztime-default-qr-running.png`. APK:
+`apps/tv-android/build/outputs/apk/debug/tv-android-debug.apk`, SHA-256
+`937243673b81f6eeb542ae51e321e7c258efb1119a7f827e241700cdb1cdf73d`.
+This confirms installation/launch; the displayed QR destination was not decoded.
+
+## Default background set extension — 2026-09-10
+
+Status: DONE (corrected source, local checks and emulator preview).
+
+PROPOSAL — Add `wal_5.png` from repository root as an additional bundled
+default background, alongside existing packaged schedule backgrounds.
+The initial untracked resource was accidentally copied from `wal_8.png`; on
+2026-09-18 it was replaced with the actual owner `wal_5.png` (SHA-256
+`fe2decef380fce96972393bcde161af87d1dfecb96b9cc5f959c3375bedddfd5`).
+The two UI labels are `Wal 5`. The root source remains untracked.
+
+Changed files:
+- `apps/tv-android/src/main/res/drawable-nodpi/tv_background_wal_5.png`
+- `apps/tv-android/src/main/kotlin/ru/namaztime/tv/repository/OperatorPreferencesRepository.kt`
+- `apps/tv-android/src/main/kotlin/ru/namaztime/tv/presentation/TvDesignSystem.kt`
+- `apps/tv-android/src/main/res/values/strings.xml`
+- `apps/tv-android/src/main/res/values-en/strings.xml`
+- `apps/tv-android/src/test/kotlin/ru/namaztime/tv/repository/OperatorPreferencesRepositoryTest.kt`
+- `apps/tv-android/src/test/kotlin/ru/namaztime/tv/presentation/NamazTvAppUiTest.kt`
+- `PLANS.md`
+
+Acceptance check:
+1. Built-in background allowlist contains ten IDs and includes the new `wal_5`
+   identifier.
+2. Settings filmstrip test uses `TvBackgroundStyle.entries`, so the new background
+   appears in the same persisted UI order for local selection.
+3. New resource is present in release assets at `drawable-nodpi`.
+
+No migration is required; rollback for background defaults is automatic via existing
+`backgroundStyleId` persistence fallback.
+Final 2026-09-18 source-copy `make test lint` PASS after excluding only
+untracked root owner photographs: 635 Android tests, 631 passed and four
+optional cases skipped; skill suite retained two existing skips. `git diff
+--check` PASS. Debug APK build and `adb install -r` PASS; packaged `wal_5`
+matches the source hash above, and the previously replaced `winter_twilight`
+WebP is also present. `CONFIRMED_RUNTIME`: API 36 / 1920×1080 emulator shows
+the corrected Wal 5 preview and returns to the wal_3 background afterwards.
+Screenshots remain outside Git at `/tmp/namaztime-wal5-selected.png` and
+`/tmp/namaztime-final-restored-wal3.png`. Physical-TV appearance is `UNKNOWN`.
+The root `make test`/`make lint` still stop on the untracked 7.6 MiB wal_3.png
+size gate; that gate and the owner originals were left unchanged.

@@ -1,5 +1,6 @@
 package ru.namaztime.tv.presentation
 
+import androidx.compose.foundation.focusGroup
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.Image
@@ -101,6 +102,7 @@ fun SettingsShell(
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)? = null,
     onShowIqamahOnScheduleChanged: ((Boolean) -> Unit)? = null,
     onScheduleLayoutModeChanged: ((ScheduleLayoutMode) -> Unit)? = null,
+    onScheduleBlockTransparencyChanged: ((Int) -> Unit)? = null,
     onMosquePresentationIdentityChanged: ((OperatorMosquePresentationIdentity) -> Unit)? = null,
     onOpenDeviceSetup: (() -> Unit)? = null,
     onBackgroundStyleChanged: ((String) -> Unit)? = null,
@@ -241,6 +243,7 @@ fun SettingsShell(
                     onScreenRetentionShiftChanged = onScreenRetentionShiftChanged,
                     onShowIqamahOnScheduleChanged = onShowIqamahOnScheduleChanged,
                     onScheduleLayoutModeChanged = onScheduleLayoutModeChanged,
+                    onScheduleBlockTransparencyChanged = onScheduleBlockTransparencyChanged,
                     onMosquePresentationIdentityChanged = onMosquePresentationIdentityChanged,
                     onOpenDeviceSetup = onOpenDeviceSetup,
                     onBackgroundStyleChanged = onBackgroundStyleChanged,
@@ -284,6 +287,7 @@ private fun SettingsPage(
     onScreenRetentionShiftChanged: ((Boolean) -> Unit)?,
     onShowIqamahOnScheduleChanged: ((Boolean) -> Unit)?,
     onScheduleLayoutModeChanged: ((ScheduleLayoutMode) -> Unit)?,
+    onScheduleBlockTransparencyChanged: ((Int) -> Unit)?,
     onMosquePresentationIdentityChanged: ((OperatorMosquePresentationIdentity) -> Unit)?,
     onOpenDeviceSetup: (() -> Unit)?,
     onBackgroundStyleChanged: ((String) -> Unit)?,
@@ -622,6 +626,7 @@ private fun SettingsPage(
                 onBackgroundStyleChanged = onBackgroundStyleChanged,
                 onShowIqamahOnScheduleChanged = onShowIqamahOnScheduleChanged,
                 onScheduleLayoutModeChanged = onScheduleLayoutModeChanged,
+                    onScheduleBlockTransparencyChanged = onScheduleBlockTransparencyChanged,
                 customAssetVersion = customAssetVersion,
                 donationAssetVersion = donationAssetVersion,
                 compact = compactPreview,
@@ -754,6 +759,7 @@ private fun SettingsContent(
     onBackgroundStyleChanged: ((String) -> Unit)?,
     onShowIqamahOnScheduleChanged: ((Boolean) -> Unit)?,
     onScheduleLayoutModeChanged: ((ScheduleLayoutMode) -> Unit)?,
+    onScheduleBlockTransparencyChanged: ((Int) -> Unit)?,
     customAssetVersion: Long,
     donationAssetVersion: Long,
     compact: Boolean,
@@ -830,7 +836,15 @@ private fun SettingsContent(
                     }
                 }
             }
+            onScheduleBlockTransparencyChanged?.let { onChange ->
+                ScheduleBlockTransparencySlider(
+                    percent = preferences.scheduleBlockTransparency,
+                    onChange = onChange,
+                    modifier = Modifier.focusProperties { down = entryRequester },
+                )
+            }
             AppearanceBackgroundGallery(
+                transparency = preferences.scheduleBlockTransparency,
                 selectedStyleId = preferences.backgroundStyleId,
                 onStyleSelected = onBackgroundStyleChanged,
                 entryRequester = entryRequester,
@@ -986,6 +1000,7 @@ private fun SettingsDetail(label: String, value: String, compact: Boolean) {
 
 @Composable
 private fun AppearanceBackgroundGallery(
+    transparency: Int,
     selectedStyleId: String,
     onStyleSelected: ((String) -> Unit)?,
     entryRequester: FocusRequester,
@@ -995,11 +1010,6 @@ private fun AppearanceBackgroundGallery(
     modifier: Modifier = Modifier,
 ) {
     val choices = remember { TvBackgroundStyle.entries.map { it.id } }
-    val requesters = remember(entryRequester) {
-        choices.associateWith { FocusRequester() }.toMutableMap().apply {
-            this[choices.first()] = entryRequester
-        }
-    }
     val listState = rememberLazyListState()
     var focusedIndex by rememberSaveable {
         mutableStateOf(choices.indexOf(selectedStyleId).coerceAtLeast(0))
@@ -1014,13 +1024,13 @@ private fun AppearanceBackgroundGallery(
     }
 
     Column(
-        modifier = modifier.fillMaxWidth(),
+        modifier = modifier.fillMaxWidth().focusRequester(entryRequester).focusGroup(),
         verticalArrangement = Arrangement.spacedBy(if (compact) 8.dp else 12.dp),
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(if (compact) 114.dp else 204.dp)
+                .height(if (compact) 76.dp else 160.dp)
                 .testTag(SETTINGS_BACKGROUND_SELECTED_PREVIEW_TAG),
             contentAlignment = Alignment.Center,
         ) {
@@ -1059,7 +1069,11 @@ private fun AppearanceBackgroundGallery(
                         .fillMaxSize()
                         .background(NamazTvTheme.colors.backgroundTop.copy(alpha = 0.2f)),
                 )
-                AppearancePreviewChrome(compact = compact)
+                androidx.compose.runtime.CompositionLocalProvider(
+                    LocalScheduleBlockTransparency provides transparency,
+                ) {
+                    AppearancePreviewChrome(compact = compact)
+                }
             }
         }
 
@@ -1100,10 +1114,7 @@ private fun AppearanceBackgroundGallery(
                         .height(if (compact) 50.dp else 68.dp)
                         .testTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX$styleId")
                         .semantics { this.selected = selected }
-                        .focusRequester(requesters.getValue(styleId))
                         .focusProperties {
-                            choices.getOrNull(it - 1)?.let { left = requesters.getValue(it) }
-                            choices.getOrNull(it + 1)?.let { right = requesters.getValue(it) }
                             down = nextRequester
                         }
                         .onFocusChanged { state ->
@@ -1142,7 +1153,7 @@ private fun AppearancePreviewChrome(compact: Boolean) {
             modifier = Modifier
                 .width(if (compact) 86.dp else 118.dp)
                 .height(if (compact) 18.dp else 25.dp)
-                .background(NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.76f), RoundedCornerShape(50)),
+                .background(NamazTvTheme.colors.surfaceStrong.copy(alpha = 0.76f).scheduleBlockColor(), RoundedCornerShape(50)),
         )
         Row(
             modifier = Modifier.fillMaxSize(),
@@ -1157,7 +1168,7 @@ private fun AppearancePreviewChrome(compact: Boolean) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .weight(1f)
-                            .background(NamazTvTheme.colors.surfaceTop.copy(alpha = 0.78f), RoundedCornerShape(radius))
+                            .background(NamazTvTheme.colors.surfaceTop.copy(alpha = 0.78f).scheduleBlockColor(), RoundedCornerShape(radius))
                             .border(0.5.dp, NamazTvTheme.colors.surfaceOutline, RoundedCornerShape(radius)),
                     )
                 }
@@ -1166,7 +1177,7 @@ private fun AppearancePreviewChrome(compact: Boolean) {
                 modifier = Modifier
                     .weight(0.64f)
                     .fillMaxHeight()
-                    .background(NamazTvTheme.colors.surfaceTop.copy(alpha = 0.78f), RoundedCornerShape(radius))
+                    .background(NamazTvTheme.colors.surfaceTop.copy(alpha = 0.78f).scheduleBlockColor(), RoundedCornerShape(radius))
                     .border(0.5.dp, NamazTvTheme.colors.surfaceOutline, RoundedCornerShape(radius)),
             )
         }

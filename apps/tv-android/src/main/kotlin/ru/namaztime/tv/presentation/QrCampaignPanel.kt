@@ -4,6 +4,7 @@ import android.graphics.Bitmap
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -23,6 +24,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -228,8 +230,7 @@ internal fun ReferenceQrCode(
         }
         BoxWithConstraints(
             modifier = Modifier
-                .size(qrSize)
-                .background(QR_LIGHT),
+                .size(qrSize),
             contentAlignment = Alignment.Center,
         ) {
             val outputSize = with(LocalDensity.current) { minOf(maxWidth, maxHeight).roundToPx() }
@@ -251,6 +252,9 @@ internal fun ReferenceQrCode(
                 modifier = Modifier
                     .fillMaxSize()
                     .testTag(QR_CODE_IMAGE_TAG)
+                    .clip(RoundedCornerShape(with(LocalDensity.current) {
+                        qrCornerRadiusPixels(state.qrCode, outputSize).toDp()
+                    }))
                     .background(QR_LIGHT),
                 filterQuality = FilterQuality.None,
                 contentScale = ContentScale.None,
@@ -354,20 +358,33 @@ internal fun rememberQrBitmap(matrix: QrCodeMatrix, outputSize: Int) =
 
 internal fun qrArgbPixels(matrix: QrCodeMatrix, outputSize: Int): IntArray {
     require(outputSize > 0) { "QR raster size must be positive" }
+    require(outputSize >= matrix.moduleCount) { "QR raster cannot fit its modules" }
     val pitch = outputSize / matrix.moduleCount
-    require(pitch >= 1) { "QR raster cannot fit its modules" }
-    val inset = (outputSize - matrix.moduleCount * pitch) / 2
+    // Dense codes at low resolution need equal-width modules for stable decoding.
+    if (pitch < 4) {
+        val inset = (outputSize - matrix.moduleCount * pitch) / 2
+        return IntArray(outputSize * outputSize) { index ->
+            val x = index % outputSize - inset
+            val y = index / outputSize - inset
+            if (x >= 0 && y >= 0 && x < matrix.moduleCount * pitch &&
+                y < matrix.moduleCount * pitch &&
+                matrix.darkModules[(y / pitch) * matrix.moduleCount + x / pitch]
+            ) QR_DARK else QR_LIGHT_ARGB
+        }
+    }
     return IntArray(outputSize * outputSize) { index ->
-        val x = index % outputSize - inset
-        val y = index / outputSize - inset
-        val moduleX = x / pitch
-        val moduleY = y / pitch
-        if (x >= 0 && y >= 0 && moduleX < matrix.moduleCount &&
-            moduleY < matrix.moduleCount &&
-            matrix.darkModules[moduleY * matrix.moduleCount + moduleX]
-        ) QR_DARK else QR_LIGHT_ARGB
+        // Spread fractional pitch across the symbol instead of turning the remainder
+        // into extra white padding. Modules stay sharp, with widths differing by at most 1 px.
+        val moduleX = (index % outputSize).toLong() * matrix.moduleCount / outputSize
+        val moduleY = (index / outputSize).toLong() * matrix.moduleCount / outputSize
+        if (matrix.darkModules[(moduleY * matrix.moduleCount + moduleX).toInt()])
+            QR_DARK else QR_LIGHT_ARGB
     }
 }
+
+/** Round only the outer white corners; never enter the symbol or its side clearances. */
+internal fun qrCornerRadiusPixels(matrix: QrCodeMatrix, outputSize: Int): Float =
+    minOf(outputSize * 0.20f, (outputSize * 4f / matrix.moduleCount).toInt().toFloat())
 
 internal fun ResolvedCampaign.toQrCampaignUiState(
     qrCode: QrCodeMatrix,

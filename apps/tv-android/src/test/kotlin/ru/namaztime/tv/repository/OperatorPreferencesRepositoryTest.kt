@@ -43,10 +43,13 @@ class OperatorPreferencesRepositoryTest {
             assertTrue(repository.preferences.first().showIqamahOnSchedule)
             assertEquals(ScheduleLayoutMode.STANDARD, repository.preferences.first().scheduleLayoutMode)
             repository.setIqamahConfiguration(configuration)
+            assertEquals(20, repository.preferences.first().scheduleBlockTransparency)
+            repository.setScheduleBlockTransparency(65)
             repository.setShowIqamahOnSchedule(false)
             repository.setScheduleLayoutMode(ScheduleLayoutMode.RIGHT_SIDE_COMPACT)
         }
         openAndUse { repository ->
+            assertEquals(65, repository.preferences.first().scheduleBlockTransparency)
             assertFalse(repository.preferences.first().showIqamahOnSchedule)
             assertEquals(ScheduleLayoutMode.RIGHT_SIDE_COMPACT, repository.preferences.first().scheduleLayoutMode)
             assertEquals(configuration, repository.preferences.first().iqamahConfiguration)
@@ -150,15 +153,32 @@ class OperatorPreferencesRepositoryTest {
     }
 
     @Test
-    fun appearanceAllowlistContainsNineBuiltInsAndOneCustomSlot() = runTest {
-        assertEquals(9, BUILT_IN_BACKGROUND_STYLE_IDS.size)
+    fun appearanceAllowlistContainsTenBuiltInsAndOneCustomSlot() = runTest {
+        assertEquals(10, BUILT_IN_BACKGROUND_STYLE_IDS.size)
         assertTrue(LUMINOUS_DUSK_BACKGROUND_STYLE_ID in BUILT_IN_BACKGROUND_STYLE_IDS)
+        assertTrue(WAL_5_BACKGROUND_STYLE_ID in BUILT_IN_BACKGROUND_STYLE_IDS)
         assertTrue(CUSTOM_BACKGROUND_STYLE_ID in SELECTABLE_BACKGROUND_STYLE_IDS)
 
         val repository = repositoryFor(this)
         repository.setBackgroundStyleId(CUSTOM_BACKGROUND_STYLE_ID)
 
         assertEquals(CUSTOM_BACKGROUND_STYLE_ID, repository.preferences.first().backgroundStyleId)
+    }
+
+    @Test
+    fun blankQrLinksUseDefaultAndCustomLinksTakePriority() {
+        val expected = "https://qr.nspk.ru/BS1A005J2EMTHO629O5R87V15MNNJLGR?type=01&bank=100000000006&crc=D505"
+        for (url in listOf("", "   ", "https://example.org/custom?x=1&y=2")) {
+            val qr = OperatorQrConfiguration(httpsUrl = url, title = "Садака")
+            val donation = OperatorDonationConfiguration(httpsUrl = url, recipient = "Мечеть")
+            val target = url.trim().ifEmpty { expected }
+            assertTrue(isValidQrConfiguration(qr))
+            assertTrue(isValidDonationConfiguration(donation))
+            assertEquals(target, qr.toCampaignInput().httpsUrl)
+            assertEquals(target, donation.toDonationCampaignInput().httpsUrl)
+        }
+        assertTrue(OperatorQrConfiguration().isEmpty)
+        assertTrue(OperatorDonationConfiguration().isEmpty)
     }
 
     @Test
@@ -551,6 +571,26 @@ class OperatorPreferencesRepositoryTest {
     @Test(expected = IllegalArgumentException::class)
     fun unsupportedImageBackgroundCannotBeStored() = runTest {
         repositoryFor(this).setBackgroundStyleId("unexpected")
+    }
+
+    @Test
+    fun invalidTransparencyCannotReplaceAValidPreference() = runTest {
+        val repository = repositoryFor(this)
+        repository.setScheduleBlockTransparency(40)
+        listOf(-1, 101).forEach {
+            assertTrue(runCatching { repository.setScheduleBlockTransparency(it) }.exceptionOrNull() is IllegalArgumentException)
+        }
+        assertEquals(40, repository.preferences.first().scheduleBlockTransparency)
+    }
+
+    @Test
+    fun corruptTransparencyFallsBackToDefault() = runTest {
+        val store = PreferenceDataStoreFactory.create(
+            scope = TestScope(UnconfinedTestDispatcher(testScheduler)),
+            produceFile = { File(temporaryFolder.root, "invalid-transparency.preferences_pb") },
+        )
+        store.edit { it[intPreferencesKey("schedule_block_transparency")] = 150 }
+        assertEquals(20, DataStoreOperatorPreferencesRepository(store).preferences.first().scheduleBlockTransparency)
     }
 
     private fun repositoryFor(scope: TestScope): OperatorPreferencesRepository {

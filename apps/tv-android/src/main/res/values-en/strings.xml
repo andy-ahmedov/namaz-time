@@ -112,6 +112,7 @@
     <string name="value_background_winter_twilight">Winter twilight</string>
     <string name="value_background_autumn_courtyard">Autumn courtyard</string>
     <string name="value_background_celestial_navy">Celestial navy</string>
+    <string name="value_background_wal_5">Wal 5</string>
     <string name="value_background_custom">Custom image</string>
     <string name="action_choose_custom_background">Choose image from TV</string>
     <string name="field_screen_shift">Screen protection</string>
@@ -275,4 +276,5 @@
     <string name="schedule_layout_compact">Compact right side</string>
     <string name="qr_insufficient_space">Link is too long for this QR size</string>
     <string name="compact_prayer_schedule">Prayer schedule</string>
+    <string name="schedule_block_transparency">Block transparency: %1$d%%</string>
 </resources>

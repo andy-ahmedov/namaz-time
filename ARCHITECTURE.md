@@ -229,8 +229,8 @@ behavior. Semantic dark-surface, text, amber state, warning, separator and
 focus tokens are shared by the main display, settings, QR and safe unavailable
 screen. T028 expands the packaged offline background set to eight images and
 adds a separate device-local custom slot. T043/ADR 0018 makes selection
-capability-gated: a resolvable document picker, then the system Photo Picker,
-then an explicit on-demand image-permission MediaStore fallback. The app
+capability-gated: Android TV opens the on-demand image-permission MediaStore
+browser directly; other environments try document and Photo Picker first. The app
 validates type, byte size, decoded dimensions and pixel count, normalizes to
 JPEG, and atomically replaces an app-private copy. Composables decode only that
 local copy and fall back to the packaged Golden dusk asset when it is missing
@@ -695,3 +695,10 @@ See:
 
 - [ADR 0001 — source authority and signed snapshots](docs/adr/0001-source-authority-and-signed-snapshots.md)
 - [ADR 0002 — TV offline-first](docs/adr/0002-tv-offline-first.md)
+
+
+The schedule block transparency integer is a device-local DataStore preference
+(0–100, default 20). A display-scoped composition value changes only surface
+fills in Standard/Compact and the Appearance preview. It never modifies signed
+schedule content, the image file or text/QR opacity. The preference is validated
+on write and defaults safely on invalid persisted values; no Room migration.

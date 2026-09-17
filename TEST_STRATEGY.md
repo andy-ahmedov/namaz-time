@@ -717,10 +717,11 @@ Each release records:
 ## T045 presentation verification
 
 T045 supersedes the historical badge-obstruction QR tests above: the shared
-primitive must have no overlay or clipping in the matrix/quiet zone. Native
+primitive must have no overlay or clipping of encoded modules or symbol-aligned
+side clearances; the 2026-09-09 paper refinement rounds only the outer corners. Native
 Robolectric whole-view drawing samples the final QR pixels, decodes three
 HTTPS payload lengths across public surfaces and compares the pixels against
-integer-module rasterization, including a parent-constrained size. Real
+sharp module rasterization, including a parent-constrained size. Real
 emulator screenshots are decoded separately. Too little space must not crash
 the prayer screen. Physical scan acceptance remains a separate retest.
 
@@ -793,7 +794,7 @@ status chip for approved state, a bounded header chip for attention state and
 complete six-line campaign copy at >=12 normalized sp. Token tests require a
 warm saturated accent, softer perimeter than upper reflection, lighter hero
 surface, deeper campaign surface and a left-to-clear active gradient. The
-background allowlist/resource test contains nine built-ins and keeps Golden
+background allowlist/resource test contains ten built-ins and keeps Golden
 dusk as the default.
 
 `make test-android-t048-emulator` reuses the controlled fixed-clock runner with
@@ -813,3 +814,38 @@ must report zero changed pixels. Release isolation must still prove that the
 debug evidence activity is absent. Physical-TV readability, panel overscan and
 phone-camera QR remain `UNKNOWN`; PostgreSQL is not required because T048 does
 not change backend, schema, restore or publication behavior.
+
+
+The 2026-09-09 TV image-selection regression advertises both system pickers
+while declaring a television: API 28/32/33/36 must still open the built-in browser
+or request the matching read permission. Existing app-level import/failure/focus
+tests use this capability combination for both image slots. Non-TV cascade tests
+remain. Physical-TV acceptance is separate from JVM/Compose evidence.
+
+Runtime acceptance on 2026-09-09 also reproduced a detached appearance entry
+FocusRequester; the entry now targets a persistent focus group. API 36 at
+1920x1080 confirms owner wal_1.jpg selection via D-pad after Load more, import,
+display and retention across force-stop/cold restart. The gallery is a modal
+window, asserted in Compose tests, isolating focus from underlying settings.
+Rapid D-pad bursts across the full built-in background filmstrip, long MediaStore
+rows and offscreen bucket rows must not target a detached `FocusRequester`.
+Cancel and Load more must return focus to a visible image after a long gallery
+scroll. Compose tests use synthetic images for these cases.
+
+
+Schedule transparency tests cover validated writes, invalid-value fallback,
+DataStore close/reopen without iqamah changes, 5% arrow steps and bounds,
+rapid key input, leaving the slider with Down, and Appearance persistence.
+Rendering tests pin alpha endpoints and unchanged colors outside the schedule
+scope. Runtime acceptance checks both layouts and 720p/1080p/4K settings.
+
+
+The 2026-09-09 QR tests prove reclaimed remainder padding, preserved four-module
+side clearances and sharp per-module widths differing by at most one pixel.
+Whole-view native captures decode all four surfaces and compare every non-corner
+pixel to the expected matrix. Rounded outer corners are checked separately.
+
+At fewer than four pixels per module, the renderer retains uniform integer
+pitch and centered remainder padding: a native 720p dense-code regression
+reproduced a decode failure with fractional pitch. Sparse/larger symbols use
+the tighter full-square mapping. Error correction and payload never change.

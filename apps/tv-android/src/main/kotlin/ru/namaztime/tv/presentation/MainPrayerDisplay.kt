@@ -268,7 +268,7 @@ private fun DisplayHeader(
             modifier = Modifier
                 .offset(y = (-8).dp)
                 .testTag(BRAND_PILL_TEST_TAG)
-                .background(colors.surfaceStrong.copy(alpha = 0.76f), RoundedCornerShape(50))
+                .background(colors.surfaceStrong.copy(alpha = 0.76f).scheduleBlockColor(), RoundedCornerShape(50))
                 .border(0.5.dp, colors.surfaceOutline, RoundedCornerShape(50))
                 .padding(horizontal = metrics.inlineGap * 1.65f, vertical = 4.dp),
             verticalAlignment = Alignment.CenterVertically,

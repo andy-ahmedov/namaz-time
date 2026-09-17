@@ -415,6 +415,15 @@ fun NamazTvApp(
                                     }
                                 }
                             },
+                            onScheduleBlockTransparencyChanged = { percent ->
+                                coroutineScope.launch {
+                                    try {
+                                        operatorPreferencesRepository.setScheduleBlockTransparency(percent)
+                                    } catch (_: IOException) {
+                                        // Keep the last persisted value when storage is unavailable.
+                                    }
+                                }
+                            },
                             onScheduleLayoutModeChanged = { mode ->
                                 coroutineScope.launch {
                                     try {
@@ -800,18 +809,24 @@ internal fun ConnectedDisplayContent(
             retentionOffset = retentionOffset,
             onOpenSettings = onOpenSettings,
         )
-    } else if (operatorPreferences.scheduleLayoutMode == ScheduleLayoutMode.RIGHT_SIDE_COMPACT) {
-        CompactPrayerDisplay(
-            state = displayState,
-            retentionOffset = retentionOffset,
-            onOpenSettings = onOpenSettings,
-        )
     } else {
-        MainPrayerDisplay(
-            state = displayState,
-            retentionOffset = retentionOffset,
-            onOpenSettings = onOpenSettings,
-        )
+        androidx.compose.runtime.CompositionLocalProvider(
+            LocalScheduleBlockTransparency provides operatorPreferences.scheduleBlockTransparency,
+        ) {
+            if (operatorPreferences.scheduleLayoutMode == ScheduleLayoutMode.RIGHT_SIDE_COMPACT) {
+                CompactPrayerDisplay(
+                    state = displayState,
+                    retentionOffset = retentionOffset,
+                    onOpenSettings = onOpenSettings,
+                )
+            } else {
+                MainPrayerDisplay(
+                    state = displayState,
+                    retentionOffset = retentionOffset,
+                    onOpenSettings = onOpenSettings,
+                )
+            }
+        }
     }
 }
 

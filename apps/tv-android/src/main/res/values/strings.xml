@@ -112,6 +112,7 @@
     <string name="value_background_winter_twilight">Зимние сумерки</string>
     <string name="value_background_autumn_courtyard">Осенний двор</string>
     <string name="value_background_celestial_navy">Небесный индиго</string>
+    <string name="value_background_wal_5">Wal 5</string>
     <string name="value_background_custom">Своё изображение</string>
     <string name="action_choose_custom_background">Выбрать изображение с телевизора</string>
     <string name="field_screen_shift">Защита экрана</string>
@@ -275,4 +276,5 @@
     <string name="schedule_layout_compact">Компактный справа</string>
     <string name="qr_insufficient_space">Ссылка слишком длинная для QR этого размера</string>
     <string name="compact_prayer_schedule">Расписание намазов</string>
+    <string name="schedule_block_transparency">Прозрачность блоков: %1$d%%</string>
 </resources>

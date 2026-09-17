@@ -95,8 +95,18 @@ class RenderedQrTest {
                 throw AssertionError("$surface width=$width payloadLength=${target.length}", error)
             }
             assertEquals("$surface $width", target, decoded.text)
-            assertArrayEquals("unaltered modules and quiet zone: $surface $width",
-                qrArgbPixels(QrCodeGenerator().generate(target), width), pixels)
+            val matrix = QrCodeGenerator().generate(target)
+            val expected = qrArgbPixels(matrix, width)
+            val corner = kotlin.math.ceil(qrCornerRadiusPixels(matrix, width)).toInt() + 1
+            for (y in 0 until width) for (x in 0 until width) {
+                // Rounded corners lie strictly outside the symbol and its side clearances.
+                val outerCorner = (x < corner || x >= width - corner) &&
+                    (y < corner || y >= width - corner)
+                if (!outerCorner) assertEquals("unchanged modules/side margin: $surface $width $x,$y",
+                    expected[y * width + x], pixels[y * width + x])
+            }
+            org.junit.Assert.assertNotEquals("outer paper corner is rounded: $surface",
+                expected[0], pixels[0])
         }
     }
 

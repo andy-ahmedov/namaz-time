@@ -61,6 +61,7 @@ import ru.namaztime.tv.repository.LUMINOUS_DUSK_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.NIGHT_MINARET_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.OperatorImageAssetStore
 import ru.namaztime.tv.repository.OperatorImageSlot
+import ru.namaztime.tv.repository.WAL_5_BACKGROUND_STYLE_ID
 import ru.namaztime.tv.repository.WINTER_TWILIGHT_BACKGROUND_STYLE_ID
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -127,6 +128,12 @@ internal enum class TvBackgroundStyle(
         R.drawable.tv_background_luminous_dusk,
         R.string.value_background_luminous_dusk,
         0.36f,
+    ),
+    WAL_5(
+        WAL_5_BACKGROUND_STYLE_ID,
+        R.drawable.tv_background_wal_5,
+        R.string.value_background_wal_5,
+        0.40f,
     ),
     ;
 
@@ -386,7 +393,7 @@ internal fun TvGlassPanel(
         modifier = modifier
             .clip(shape)
             .background(
-                color = if (accented) colors.surfaceBottom else colors.surfaceTop,
+                color = (if (accented) colors.surfaceBottom else colors.surfaceTop).scheduleBlockColor(),
                 shape = shape,
             )
             .border(

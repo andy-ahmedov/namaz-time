@@ -163,6 +163,8 @@ class NamazTvAppUiTest {
         compose.onNodeWithTag(SettingsDestination.APPEARANCE.navigationTestTag)
             .performSemanticsAction(SemanticsActions.RequestFocus)
             .performKeyInput { pressKey(Key.DirectionRight); pressKey(Key.DirectionUp) }
+        compose.onNodeWithTag(SCHEDULE_BLOCK_TRANSPARENCY_TAG).assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionUp) }
         compose.onNodeWithTag("settings-layout-standard").assertIsFocused()
             .performKeyInput { pressKey(Key.DirectionRight) }
         compose.onNodeWithTag("settings-layout-right_side_compact").assertIsFocused()
@@ -1118,7 +1120,7 @@ class NamazTvAppUiTest {
     @Test
     @OptIn(ExperimentalTestApi::class)
     @Config(qualifiers = "w960dp-h540dp-land-xhdpi")
-    fun appearanceShowsNineBuiltInPreviewsAndCustomPicker() {
+    fun appearanceShowsBuiltInPreviewsAndCustomPicker() {
         compose.setContent { NamazTvApp(FakeOperatorPreferencesRepository()) }
 
         openSettingsDestination(SettingsDestination.APPEARANCE)
@@ -1136,10 +1138,21 @@ class NamazTvAppUiTest {
                     .performKeyInput { pressKey(Key.DirectionRight) }
             }
         }
+        compose.onNodeWithTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX${builtInStyles.last()}")
+            .performKeyInput { repeat(4) { pressKey(Key.DirectionLeft) } }
+        builtInStyles.take(builtInStyles.size - 4).asReversed().forEachIndexed { index, styleId ->
+            compose.onNodeWithTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX$styleId")
+                .assertIsDisplayed()
+                .assertIsFocused()
+            if (index < builtInStyles.size - 5) {
+                compose.onNodeWithTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX$styleId")
+                    .performKeyInput { pressKey(Key.DirectionLeft) }
+            }
+        }
         compose.onNodeWithTag(
             "$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX${ru.namaztime.tv.repository.CUSTOM_BACKGROUND_STYLE_ID}",
         ).assertDoesNotExist()
-        compose.onNodeWithTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX${builtInStyles.last()}")
+        compose.onNodeWithTag("$SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX${builtInStyles.first()}")
             .performKeyInput { pressKey(Key.DirectionDown) }
         compose.onNodeWithTag(SETTINGS_CUSTOM_BACKGROUND_PICKER_TAG).assertIsFocused()
     }
@@ -1669,6 +1682,33 @@ class NamazTvAppUiTest {
             .performKeyInput { pressKey(Key.Enter) }
             .assertIsSelected()
         compose.onNodeWithTag("$prefix-value").assertTextEquals("—")
+    }
+
+    @Test
+    @OptIn(ExperimentalTestApi::class)
+    @Config(sdk = [35], qualifiers = "w960dp-h540dp-land-xhdpi")
+    fun appearanceTransparencyIsReachableByDpadAndPersisted() {
+        val preferences = FakeOperatorPreferencesRepository(
+            initialPreferences = OperatorPreferences(lastSettingsDestination = "appearance"),
+        )
+        setImageSelectionContent(
+            preferences, FakeOperatorImageAssetImporter(OperatorImageImportResult.Imported),
+        )
+        openPersistedSettingsDestination(SettingsDestination.APPEARANCE)
+        compose.onNodeWithTag(SettingsDestination.APPEARANCE.navigationTestTag)
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.onNodeWithTag("${SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX}golden_dusk")
+            .performKeyInput { pressKey(Key.DirectionUp) }
+        compose.onNodeWithTag(SCHEDULE_BLOCK_TRANSPARENCY_TAG)
+            .assertIsFocused()
+            .performKeyInput { pressKey(Key.DirectionRight) }
+        compose.waitForIdle()
+        assertEquals(25, preferences.currentPreferences.scheduleBlockTransparency)
+        compose.onNodeWithText("Прозрачность блоков: 25%").assertIsDisplayed()
+        compose.onNodeWithTag(SCHEDULE_BLOCK_TRANSPARENCY_TAG)
+            .performKeyInput { pressKey(Key.DirectionDown) }
+        compose.onNodeWithTag("${SETTINGS_BACKGROUND_PREVIEW_TAG_PREFIX}golden_dusk")
+            .assertIsFocused()
     }
 
     @Test
@@ -2425,6 +2465,10 @@ private class FakeOperatorPreferencesRepository(
         state.value = state.value.copy(showIqamahOnSchedule = enabled)
     }
 
+    override suspend fun setScheduleBlockTransparency(percent: Int) {
+        state.value = state.value.copy(scheduleBlockTransparency = percent)
+    }
+
     override suspend fun setScheduleLayoutMode(mode: ru.namaztime.tv.repository.ScheduleLayoutMode) {
         if (failWrites) throw IOException("synthetic preference storage failure")
         state.value = state.value.copy(scheduleLayoutMode = mode)
@@ -2583,8 +2627,9 @@ private fun setupOmskChoice(): DeviceScheduleChoice {
 private object FakeOperatorImageSelectionEnvironment : OperatorImageSelectionEnvironment {
     override fun capabilities() = OperatorImageSelectionCapabilities(
         sdkInt = 35,
-        openDocumentResolvable = false,
-        photoPickerAvailable = false,
+        television = true,
+        openDocumentResolvable = true,
+        photoPickerAvailable = true,
         mediaReadPermissionGranted = true,
     )
 

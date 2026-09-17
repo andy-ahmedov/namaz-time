@@ -71,6 +71,14 @@ Fields:
 - optional campaign type label;
 - no raw long URL on public display unless operator chooses it.
 
+The device-local QR editors use the product-owner-supplied default destination
+`https://qr.nspk.ru/BS1A005J2EMTHO629O5R87V15MNNJLGR?type=01&bank=100000000006&crc=D505`
+when the URL field is blank (including whitespace). A nonblank operator URL
+always takes priority and must pass existing validation. The default appears
+as the URL field placeholder in both editors. A purpose is still required for
+the schedule QR, and transfer details for donation mode; completely empty
+configuration remains disabled. This local default does not alter signed campaigns.
+
 Requirements:
 
 - preview at target TV resolution;
@@ -164,8 +172,9 @@ outside Git.
 - avoid detailed imagery behind small text;
 - no video background in MVP.
 
-The built-in backgrounds are nine original/project-derived static
-landscape WebP images. T033 replaces the old three-column gallery with the
+The built-in backgrounds are ten static landscape images, including the
+owner-supplied `wal_5.png` and the existing WebP assets. T033 replaces the old
+three-column gallery with the
 owner-authorized `design_item_in_the_menu.png` hierarchy: one large 16:9 preview
 of the selected background followed by one horizontally scrolling filmstrip of
 the built-in choices. Left/right moves thumbnail focus, the selected or
@@ -174,9 +183,9 @@ scrolling keeps every entry reachable. The custom image is not a built-in
 thumbnail. `Choose image from TV` is an explicit action below the filmstrip and
 uses the shared T043 capability-gated picker flow. Only allowlisted IDs are
 persisted. The picker imports bounded JPEG/PNG/WebP into a validated app-local
-copy without broad storage permissions. It prefers a resolvable OpenDocument
-surface, then the system Photo Picker, and uses a D-pad MediaStore image browser
-only when both are unavailable. That fallback asks for the platform image-read
+copy without broad storage permissions. On Android TV it opens the built-in D-pad MediaStore image browser directly.
+Other environments prefer OpenDocument, then Photo Picker, then MediaStore.
+The built-in browser asks for the platform image-read
 permission only after the explicit action; it never requests write or all-files
 access. Missing/corrupt custom media and unknown persisted IDs fall back to
 Golden dusk; all backgrounds use the same bounded dark scrim.
@@ -640,3 +649,31 @@ Version 0.6.3/code 10; no Room, snapshot, source, permission or preference
 migration is required.
 STANDARD is checked using identical fixed-clock data. Physical TV distance,
 phone-camera QR and OEM acceptance remain `UNKNOWN`.
+
+
+### Schedule block transparency
+
+Appearance includes a focusable slider labelled with the current percentage.
+Left/right changes it by 5%; up/down leaves the slider. 0% is opaque and 100%
+removes the card fill; the default is 20%. The local preference applies to both
+schedule layouts and updates the preview. Text, QR pixels, outlines, photograph
+and Settings/Donation surfaces are unaffected. At high transparency, readability
+depends on the selected photograph; the operator can decrease the percentage.
+The local slider accumulates repeated key events before asynchronous persistence
+finishes, and reconciles with the persisted value when focus leaves it.
+
+
+### Shared QR paper refinement (2026-09-09)
+
+All QR surfaces use the available raster square without adding leftover integer
+scale pixels to the white border. Module edges remain sharp; adjacent module
+widths may differ by one pixel. The four-module side clearances stay encoded.
+Outer paper corners target a radius of 20% of the side, capped to the margin
+width so no encoded module or symbol-aligned side clearance is clipped. This
+amends the historical fully square paper rule; no logo or overlay is introduced.
+The visual radius is intentionally smaller on denser symbols.
+
+At fewer than four pixels per module, the renderer retains uniform integer
+pitch and centered remainder padding: a native 720p dense-code regression
+reproduced a decode failure with fractional pitch. Sparse/larger symbols use
+the tighter full-square mapping. Error correction and payload never change.

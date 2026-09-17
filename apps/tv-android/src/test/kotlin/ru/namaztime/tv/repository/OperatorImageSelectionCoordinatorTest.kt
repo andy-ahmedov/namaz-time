@@ -8,6 +8,27 @@ class OperatorImageSelectionCoordinatorTest {
     private val coordinator = OperatorImageSelectionCoordinator()
 
     @Test
+    fun televisionUsesLocalBrowserEvenWhenFirmwareAdvertisesSystemPickers() {
+        listOf(28, 32, 33, 36).forEach { sdk ->
+            val available = OperatorImageSelectionCapabilities(
+                sdkInt = sdk,
+                television = true,
+                openDocumentResolvable = true,
+                photoPickerAvailable = true,
+                mediaReadPermissionGranted = true,
+            )
+            assertEquals(OperatorImageSelectionDecision.MediaStore, coordinator.decide(available))
+            assertEquals(
+                OperatorImageSelectionDecision.RequestPermission(
+                    if (sdk >= 33) OperatorImageReadPermission.MEDIA_IMAGES
+                    else OperatorImageReadPermission.LEGACY_MEDIA_IMAGES,
+                ),
+                coordinator.decide(available.copy(mediaReadPermissionGranted = false)),
+            )
+        }
+    }
+
+    @Test
     fun openDocumentWinsWhenItsIntentIsActuallyResolvable() {
         val decision = coordinator.decide(
             capabilities(openDocument = true, photoPicker = true, permissionGranted = true),

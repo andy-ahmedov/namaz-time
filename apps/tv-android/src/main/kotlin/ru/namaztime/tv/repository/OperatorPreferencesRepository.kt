@@ -22,6 +22,7 @@ data class OperatorPreferences(
     val languageTag: String = DEFAULT_LANGUAGE_TAG,
     val screenRetentionShiftEnabled: Boolean = true,
     val showIqamahOnSchedule: Boolean = true,
+    val scheduleBlockTransparency: Int = 20,
     val scheduleLayoutMode: ScheduleLayoutMode = ScheduleLayoutMode.STANDARD,
     val mosquePresentationIdentity: OperatorMosquePresentationIdentity =
         OperatorMosquePresentationIdentity(),
@@ -55,6 +56,9 @@ enum class OperatorDisplayMode(val id: String) {
         fun fromId(id: String?): OperatorDisplayMode = entries.firstOrNull { it.id == id } ?: SCHEDULE
     }
 }
+
+internal const val DEFAULT_QR_HTTPS_URL =
+    "https://qr.nspk.ru/BS1A005J2EMTHO629O5R87V15MNNJLGR?type=01&bank=100000000006&crc=D505"
 
 data class OperatorDonationConfiguration(
     val httpsUrl: String = "",
@@ -123,6 +127,8 @@ interface OperatorPreferencesRepository {
 
     suspend fun setShowIqamahOnSchedule(enabled: Boolean)
 
+    suspend fun setScheduleBlockTransparency(percent: Int)
+
     suspend fun setScheduleLayoutMode(mode: ScheduleLayoutMode)
 
     suspend fun setReducedMotion(enabled: Boolean)
@@ -170,6 +176,7 @@ class DataStoreOperatorPreferencesRepository(
                 lastSettingsDestination = values[LAST_SETTINGS_DESTINATION],
                 reducedMotion = values[REDUCED_MOTION] ?: true,
                 showIqamahOnSchedule = values[SHOW_IQAMAH_ON_SCHEDULE] ?: true,
+                scheduleBlockTransparency = values[SCHEDULE_BLOCK_TRANSPARENCY]?.takeIf { it in 0..100 } ?: 20,
                 scheduleLayoutMode = ScheduleLayoutMode.fromId(values[SCHEDULE_LAYOUT_MODE]),
                 languageTag = values[LANGUAGE_TAG]
                     ?.takeIf(SUPPORTED_LANGUAGE_TAGS::contains)
@@ -210,6 +217,11 @@ class DataStoreOperatorPreferencesRepository(
 
     override suspend fun setShowIqamahOnSchedule(enabled: Boolean) {
         dataStore.edit { it[SHOW_IQAMAH_ON_SCHEDULE] = enabled }
+    }
+
+    override suspend fun setScheduleBlockTransparency(percent: Int) {
+        require(percent in 0..100)
+        dataStore.edit { it[SCHEDULE_BLOCK_TRANSPARENCY] = percent }
     }
 
     override suspend fun setScheduleLayoutMode(mode: ScheduleLayoutMode) {
@@ -325,6 +337,7 @@ class DataStoreOperatorPreferencesRepository(
     private companion object {
         val LAST_SETTINGS_DESTINATION = stringPreferencesKey("last_settings_destination")
         val SHOW_IQAMAH_ON_SCHEDULE = booleanPreferencesKey("show_iqamah_on_schedule")
+        val SCHEDULE_BLOCK_TRANSPARENCY = intPreferencesKey("schedule_block_transparency")
         val SCHEDULE_LAYOUT_MODE = stringPreferencesKey("schedule_layout_mode")
         val REDUCED_MOTION = booleanPreferencesKey("reduced_motion")
         val LANGUAGE_TAG = stringPreferencesKey("language_tag")
@@ -447,7 +460,7 @@ private val LEGACY_IGNORED_DONATION_LABELS =
 internal fun OperatorQrConfiguration.toCampaignInput() = CampaignInput(
     id = "operator-local-qr",
     kind = "donation",
-    httpsUrl = httpsUrl.trim(),
+    httpsUrl = httpsUrl.trim().ifEmpty { DEFAULT_QR_HTTPS_URL },
     title = title.trim(),
     subtitle = message.trim().takeIf(String::isNotEmpty),
     startsAt = "2000-01-01T00:00:00Z",
@@ -482,7 +495,7 @@ private fun safePersistedQrConfiguration(
 internal fun OperatorDonationConfiguration.toDonationCampaignInput() = CampaignInput(
     id = "operator-local-donation-screen",
     kind = "donation",
-    httpsUrl = httpsUrl.trim(),
+    httpsUrl = httpsUrl.trim().ifEmpty { DEFAULT_QR_HTTPS_URL },
     title = recipient.trim().ifEmpty { "donation" },
     subtitle = null,
     startsAt = "2000-01-01T00:00:00Z",
@@ -494,8 +507,7 @@ internal fun isValidDonationConfiguration(configuration: OperatorDonationConfigu
     if (configuration.imageStyleId !in SELECTABLE_DONATION_IMAGE_STYLE_IDS) return false
     if (!isValidDonationGratitude(configuration.gratitudeMessage)) return false
     if (configuration.isEmpty) return true
-    if (configuration.httpsUrl.isBlank() ||
-        !configuration.hasAnyTransferDetail ||
+    if (!configuration.hasAnyTransferDetail ||
         configuration.recipient.length > MAX_DONATION_DETAIL_LENGTH ||
         configuration.bank.length > MAX_DONATION_DETAIL_LENGTH ||
         configuration.cardNumber.length > MAX_DONATION_DETAIL_LENGTH ||
@@ -550,6 +562,7 @@ const val EMERALD_MOSQUE_BACKGROUND_STYLE_ID = "emerald_mosque"
 const val WINTER_TWILIGHT_BACKGROUND_STYLE_ID = "winter_twilight"
 const val AUTUMN_COURTYARD_BACKGROUND_STYLE_ID = "autumn_courtyard"
 const val CELESTIAL_NAVY_BACKGROUND_STYLE_ID = "celestial_navy"
+const val WAL_5_BACKGROUND_STYLE_ID = "wal_5"
 val BUILT_IN_BACKGROUND_STYLE_IDS = setOf(
     DEFAULT_BACKGROUND_STYLE_ID,
     BLUE_HOUR_BACKGROUND_STYLE_ID,
@@ -560,6 +573,7 @@ val BUILT_IN_BACKGROUND_STYLE_IDS = setOf(
     AUTUMN_COURTYARD_BACKGROUND_STYLE_ID,
     CELESTIAL_NAVY_BACKGROUND_STYLE_ID,
     LUMINOUS_DUSK_BACKGROUND_STYLE_ID,
+    WAL_5_BACKGROUND_STYLE_ID,
 )
 val SELECTABLE_BACKGROUND_STYLE_IDS = BUILT_IN_BACKGROUND_STYLE_IDS + CUSTOM_BACKGROUND_STYLE_ID
 

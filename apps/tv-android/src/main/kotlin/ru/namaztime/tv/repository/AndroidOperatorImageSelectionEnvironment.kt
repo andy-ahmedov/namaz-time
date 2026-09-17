@@ -23,12 +23,16 @@ class AndroidOperatorImageSelectionEnvironment(context: Context) :
         } else {
             OperatorImageReadPermission.LEGACY_MEDIA_IMAGES
         }
+        val television = applicationContext.packageManager.hasSystemFeature(
+            PackageManager.FEATURE_LEANBACK,
+        )
         return OperatorImageSelectionCapabilities(
             sdkInt = Build.VERSION.SDK_INT,
-            openDocumentResolvable = openDocumentIntent().resolveActivity(
+            television = television,
+            openDocumentResolvable = !television && openDocumentIntent().resolveActivity(
                 applicationContext.packageManager,
             ) != null,
-            photoPickerAvailable = ActivityResultContracts.PickVisualMedia
+            photoPickerAvailable = !television && ActivityResultContracts.PickVisualMedia
                 .isPhotoPickerAvailable(applicationContext),
             mediaReadPermissionGranted = applicationContext.checkSelfPermission(
                 permissionName(permission),

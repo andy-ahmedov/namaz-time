@@ -19,8 +19,11 @@ app-private directory. The display never depends on the external content URI.
 
 ## Decision
 
-Every explicit image-selection request re-evaluates platform capabilities and
-uses this order:
+Amendment 2026-09-09: on devices declaring Android TV's leanback feature,
+explicit selection opens the built-in D-pad MediaStore browser directly, requesting
+the existing read permission when needed. A resolvable firmware picker does not
+prove that it can actually select a file. This avoids delegating TV selection to
+such handlers. Non-TV environments retain the following capability order:
 
 1. launch `ACTION_OPEN_DOCUMENT` only when its exact openable image intent is
    currently resolvable; allow only JPEG, PNG and WebP;
@@ -51,8 +54,7 @@ intent forwarding, startup media query or background filesystem scan.
 Positive:
 
 - a TV without a document provider still has a usable image-only path;
-- the privacy-preserving system pickers remain preferred and require no broad
-  media grant;
+- non-TV system pickers remain preferred and require no media grant;
 - fallback permission scope and timing are explicit and regression-tested;
 - imported assets retain the existing bounded, atomic, offline semantics.
 
@@ -71,3 +73,25 @@ Costs and limits:
 - add write or all-files access;
 - retain external URIs as display dependencies;
 - crawl arbitrary storage paths or display non-image files.
+
+
+## Physical-TV report and bounded access review (2026-09-09)
+
+- CONFIRMED_PUBLIC — supplied TV photo shows the system no-handler notification
+  after selecting a custom donation image.
+- INFERENCE — the advertised firmware picker is unusable, or the installed APK
+  predates the capability cascade; installed version and TV logs are unavailable.
+- PROPOSAL — use the existing in-app browser directly on leanback devices for both
+  image slots. No manifest permissions, exported components or filesystem scans
+  are added. Access is user-triggered, images are untrusted, and the validated
+  atomic private-copy importer remains mandatory.
+- UNKNOWN — import on the reported physical TV. MediaStore includes only indexed,
+  readable images; unindexed USB files are not promised. Copying photos to the
+  TV's Pictures/DCIM folder and allowing system indexing is the supported path.
+
+Android's [shared media documentation](https://developer.android.com/training/data-storage/shared/media)
+describes the collection and permission boundary. Rollback restores picker routing;
+there is no database or preference migration.
+
+The built-in browser owns a full-width modal window so D-pad events cannot
+reach underlying settings while images or subsequent pages are loading.

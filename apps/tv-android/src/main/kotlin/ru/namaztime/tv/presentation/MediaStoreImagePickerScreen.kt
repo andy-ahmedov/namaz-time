@@ -43,6 +43,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import androidx.tv.material3.Button
 import androidx.tv.material3.ButtonDefaults
 import androidx.tv.material3.Text
@@ -75,7 +77,6 @@ internal fun MediaStoreImagePickerScreen(
     val cancelRequester = remember { FocusRequester() }
     val loadMoreRequester = remember { FocusRequester() }
     val firstItemRequester = buckets.firstOrNull()?.images?.firstOrNull()?.let { itemRequesters[it.id] }
-    val lastItemRequester = buckets.lastOrNull()?.images?.firstOrNull()?.let { itemRequesters[it.id] }
 
     LaunchedEffect(firstItemRequester, loading) {
         withFrameNanos { }
@@ -83,133 +84,123 @@ internal fun MediaStoreImagePickerScreen(
         runCatching { (firstItemRequester ?: cancelRequester).requestFocus() }
     }
 
-    TvSafeFrame(testTag = MEDIA_IMAGE_PICKER_TAG) {
-        TvGlassPanel(modifier = Modifier.fillMaxSize(), radius = 24.dp) {
-            Column(
-                modifier = Modifier.fillMaxSize().padding(24.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
-            ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
+    Dialog(
+        onDismissRequest = onCancel,
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        TvSafeFrame(testTag = MEDIA_IMAGE_PICKER_TAG) {
+            TvGlassPanel(modifier = Modifier.fillMaxSize(), radius = 24.dp) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(24.dp),
+                    verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    Text(
-                        text = appString(R.string.media_image_picker_title),
-                        color = NamazTvTheme.colors.textPrimary,
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    Button(
-                        onClick = onCancel,
-                        colors = pickerButtonColors(),
-                        modifier = Modifier
-                            .testTag(MEDIA_IMAGE_PICKER_CANCEL_TAG)
-                            .focusRequester(cancelRequester)
-                            .focusProperties {
-                                firstItemRequester?.let { down = it }
-                                if (content.nextOffset != null) left = loadMoreRequester
-                            },
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
                     ) {
-                        Text(appString(R.string.action_cancel))
-                    }
-                }
-                if (content.items.isEmpty()) {
-                    Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                         Text(
-                            text = appString(
-                                if (loading) {
-                                    R.string.media_image_picker_loading
-                                } else {
-                                    R.string.media_image_picker_empty
-                                },
-                            ),
-                            color = NamazTvTheme.colors.textSecondary,
-                            fontSize = 20.sp,
+                            text = appString(R.string.media_image_picker_title),
+                            color = NamazTvTheme.colors.textPrimary,
+                            fontSize = 28.sp,
+                            fontWeight = FontWeight.SemiBold,
                         )
+                        Button(
+                            onClick = onCancel,
+                            colors = pickerButtonColors(),
+                            modifier = Modifier
+                                .testTag(MEDIA_IMAGE_PICKER_CANCEL_TAG)
+                                .focusRequester(cancelRequester)
+                                .focusProperties {
+                                    if (content.nextOffset != null) left = loadMoreRequester
+                                },
+                        ) {
+                            Text(appString(R.string.action_cancel))
+                        }
                     }
-                } else {
-                    LazyColumn(
-                        modifier = Modifier.weight(1f).fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        items(buckets, key = { it.bucketId }) { bucket ->
-                            val bucketIndex = buckets.indexOfFirst { it.bucketId == bucket.bucketId }
+                    if (content.items.isEmpty()) {
+                        Box(Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                             Text(
-                                text = bucket.bucketName,
+                                text = appString(
+                                    if (loading) {
+                                        R.string.media_image_picker_loading
+                                    } else {
+                                        R.string.media_image_picker_empty
+                                    },
+                                ),
                                 color = NamazTvTheme.colors.textSecondary,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp,
                             )
-                            LazyRow(
-                                modifier = Modifier.fillMaxWidth().height(104.dp),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                contentPadding = PaddingValues(vertical = 3.dp),
-                            ) {
-                                items(bucket.images, key = OperatorMediaImage::id) { image ->
-                                    val itemIndex = bucket.images.indexOfFirst { it.id == image.id }
-                                    val previousBucket = buckets.getOrNull(bucketIndex - 1)
-                                    val nextBucket = buckets.getOrNull(bucketIndex + 1)
-                                    Button(
-                                        onClick = { onSelect(image) },
-                                        contentPadding = PaddingValues(0.dp),
-                                        colors = pickerButtonColors(),
-                                        modifier = Modifier
-                                            .width(152.dp)
-                                            .height(98.dp)
-                                            .testTag("$MEDIA_IMAGE_PICKER_ITEM_TAG_PREFIX${image.id}")
-                                            .focusRequester(itemRequesters.getValue(image.id))
-                                            .focusProperties {
-                                                bucket.images.getOrNull(itemIndex - 1)?.let {
-                                                    left = itemRequesters.getValue(it.id)
-                                                }
-                                                bucket.images.getOrNull(itemIndex + 1)?.let {
-                                                    right = itemRequesters.getValue(it.id)
-                                                }
-                                                previousBucket?.images?.getOrNull(
-                                                    itemIndex.coerceAtMost(previousBucket.images.lastIndex),
-                                                )?.let { up = itemRequesters.getValue(it.id) }
-                                                    ?: run { up = cancelRequester }
-                                                nextBucket?.images?.getOrNull(
-                                                    itemIndex.coerceAtMost(nextBucket.images.lastIndex),
-                                                )?.let { down = itemRequesters.getValue(it.id) }
-                                                    ?: if (content.nextOffset != null) {
-                                                        run { down = loadMoreRequester }
-                                                    } else {
-                                                        run { down = cancelRequester }
+                        }
+                    } else {
+                        LazyColumn(
+                            modifier = Modifier.weight(1f).fillMaxWidth(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                        ) {
+                            items(buckets, key = { it.bucketId }) { bucket ->
+                                val bucketIndex = buckets.indexOfFirst { it.bucketId == bucket.bucketId }
+                                Text(
+                                    text = bucket.bucketName,
+                                    color = NamazTvTheme.colors.textSecondary,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                )
+                                LazyRow(
+                                    modifier = Modifier.fillMaxWidth().height(104.dp),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    contentPadding = PaddingValues(vertical = 3.dp),
+                                ) {
+                                    items(bucket.images, key = OperatorMediaImage::id) { image ->
+                                        Button(
+                                            onClick = { onSelect(image) },
+                                            contentPadding = PaddingValues(0.dp),
+                                            colors = pickerButtonColors(),
+                                            modifier = Modifier
+                                                .width(152.dp)
+                                                .height(98.dp)
+                                                .testTag("$MEDIA_IMAGE_PICKER_ITEM_TAG_PREFIX${image.id}")
+                                                .focusRequester(itemRequesters.getValue(image.id))
+                                                .focusProperties {
+                                                    if (bucketIndex == 0) up = cancelRequester
+                                                    if (bucketIndex == buckets.lastIndex) {
+                                                        down = if (content.nextOffset != null) {
+                                                            loadMoreRequester
+                                                        } else {
+                                                            cancelRequester
+                                                        }
                                                     }
-                                            },
-                                    ) {
-                                        MediaImageTile(image)
+                                                },
+                                        ) {
+                                            MediaImageTile(image)
+                                        }
                                     }
                                 }
                             }
                         }
                     }
-                }
-                if (content.nextOffset != null && content.items.isNotEmpty()) {
-                    Button(
-                        onClick = onLoadMore,
-                        enabled = !loading,
-                        colors = pickerButtonColors(),
-                        modifier = Modifier
-                            .align(Alignment.End)
-                            .testTag(MEDIA_IMAGE_PICKER_LOAD_MORE_TAG)
-                            .focusRequester(loadMoreRequester)
-                            .focusProperties {
-                                lastItemRequester?.let { up = it }
-                                right = cancelRequester
-                            },
-                    ) {
-                        Text(
-                            appString(
-                                if (loading) {
-                                    R.string.media_image_picker_loading
-                                } else {
-                                    R.string.action_load_more
+                    if (content.nextOffset != null && content.items.isNotEmpty()) {
+                        Button(
+                            onClick = onLoadMore,
+                            enabled = !loading,
+                            colors = pickerButtonColors(),
+                            modifier = Modifier
+                                .align(Alignment.End)
+                                .testTag(MEDIA_IMAGE_PICKER_LOAD_MORE_TAG)
+                                .focusRequester(loadMoreRequester)
+                                .focusProperties {
+                                    right = cancelRequester
                                 },
-                            ),
-                        )
+                        ) {
+                            Text(
+                                appString(
+                                    if (loading) {
+                                        R.string.media_image_picker_loading
+                                    } else {
+                                        R.string.action_load_more
+                                    },
+                                ),
+                            )
+                        }
                     }
                 }
             }

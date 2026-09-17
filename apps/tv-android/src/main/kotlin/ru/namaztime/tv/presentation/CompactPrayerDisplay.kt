@@ -107,7 +107,7 @@ internal fun CompactPrayerDisplay(
                 Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally) {
                     Row(
                         Modifier.testTag(BRAND_PILL_TEST_TAG)
-                            .background(CompactVisualStyle.surfaceStrong.copy(alpha = .76f), RoundedCornerShape(50))
+                            .background(CompactVisualStyle.surfaceStrong.copy(alpha = .76f).scheduleBlockColor(), RoundedCornerShape(50))
                             .border(.5.dp, CompactVisualStyle.surfaceOutline, RoundedCornerShape(50))
                             .padding(horizontal = (12 * scale).dp, vertical = (3 * scale).dp),
                         verticalAlignment = Alignment.CenterVertically,

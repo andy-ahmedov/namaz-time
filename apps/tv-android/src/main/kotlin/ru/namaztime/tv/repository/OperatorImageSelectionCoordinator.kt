@@ -2,6 +2,7 @@ package ru.namaztime.tv.repository
 
 data class OperatorImageSelectionCapabilities(
     val sdkInt: Int,
+    val television: Boolean = false,
     val openDocumentResolvable: Boolean,
     val photoPickerAvailable: Boolean,
     val mediaReadPermissionGranted: Boolean,
@@ -35,6 +36,11 @@ enum class OperatorImageSelectionFeedback {
 class OperatorImageSelectionCoordinator {
     fun decide(capabilities: OperatorImageSelectionCapabilities): OperatorImageSelectionDecision =
         when {
+            capabilities.television -> if (capabilities.mediaReadPermissionGranted) {
+                OperatorImageSelectionDecision.MediaStore
+            } else {
+                OperatorImageSelectionDecision.RequestPermission(permissionForSdk(capabilities.sdkInt))
+            }
             capabilities.openDocumentResolvable -> OperatorImageSelectionDecision.OpenDocument
             capabilities.photoPickerAvailable -> OperatorImageSelectionDecision.PhotoPicker
             capabilities.mediaReadPermissionGranted -> OperatorImageSelectionDecision.MediaStore

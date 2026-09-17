@@ -41,7 +41,7 @@ class QrCampaignRasterTest {
     }
 
     @Test
-    fun `final raster has uniform integer module geometry and intact quiet zone`() {
+    fun `final raster uses all available space with intact four module side margins`() {
         val target = "https://example.org/sadaqah"
         val native = com.google.zxing.qrcode.QRCodeWriter().encode(
             target, com.google.zxing.BarcodeFormat.QR_CODE, 0, 0,
@@ -51,17 +51,36 @@ class QrCampaignRasterTest {
                 com.google.zxing.EncodeHintType.MARGIN to 4),
         )
         for (size in listOf(132, 176, 198, 264, 396, 528)) {
-            val pitch = size / native.width
-            val inset = (size - native.width * pitch) / 2
+            val widths = (0 until native.width).map { module ->
+                (0 until size).count { it * native.width / size == module }
+            }
+            assertTrue(widths.max() - widths.min() <= 1)
             val pixels = qrArgbPixels(QrCodeGenerator().generate(target), size)
             for (y in 0 until size) for (x in 0 until size) {
-                val mx = (x - inset) / pitch
-                val my = (y - inset) / pitch
-                val dark = x >= inset && y >= inset && mx < native.width &&
-                    my < native.height && native[mx, my]
+                val pitch = size / native.width
+                val inset = (size - native.width * pitch) / 2
+                val mx = if (pitch < 4) (x - inset) / pitch else x * native.width / size
+                val my = if (pitch < 4) (y - inset) / pitch else y * native.width / size
+                val inside = pitch >= 4 || (x >= inset && y >= inset &&
+                    x < inset + native.width * pitch && y < inset + native.width * pitch)
+                val dark = inside && native[mx, my]
                 assertEquals("size=$size x=$x y=$y", dark, pixels[y * size + x] == 0xFF172331.toInt())
             }
         }
+    }
+
+    @Test
+    fun `scaling reclaims leftover padding and rounding stays outside data`() {
+        val matrix = QrCodeGenerator().generate("https://example.org/sadaqah")
+        val size = matrix.moduleCount * 5 - 1
+        val pixels = qrArgbPixels(matrix, size)
+        val firstDark = pixels.indices.filter { pixels[it] == 0xFF172331.toInt() }
+            .minOf { it % size }
+        val oldPitch = size / matrix.moduleCount
+        val oldMargin = (size - matrix.moduleCount * oldPitch) / 2 + 4 * oldPitch
+        assertTrue(firstDark < oldMargin)
+        assertTrue(qrCornerRadiusPixels(matrix, size) <= firstDark)
+        assertTrue(qrCornerRadiusPixels(matrix, size) <= size * 0.20f)
     }
 
     @Test

@@ -213,7 +213,7 @@ internal fun DonationSettingsEditor(
                     onConfigurationChange(configuration.copy(httpsUrl = it.take(2_048)))
                 },
                 label = appString(R.string.donation_qr_link_label),
-                placeholder = "https://",
+                placeholder = ru.namaztime.tv.repository.DEFAULT_QR_HTTPS_URL,
                 requester = entryRequester,
                 previousRequester = null,
                 nextRequester = recipientRequester,
@@ -450,7 +450,7 @@ internal fun QrSettingsEditor(
                 value = configuration.httpsUrl,
                 onValueChange = { onConfigurationChange(configuration.copy(httpsUrl = it.take(2_048))) },
                 label = appString(R.string.qr_link_label),
-                placeholder = "https://",
+                placeholder = ru.namaztime.tv.repository.DEFAULT_QR_HTTPS_URL,
                 requester = entryRequester,
                 previousRequester = null,
                 nextRequester = titleRequester,

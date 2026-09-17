@@ -67,7 +67,7 @@ internal fun CompactGlassPanel(
         CompactGlassRole.DEEP -> style.campaignSurfaceTop to style.campaignSurfaceBottom
     }
     Box(modifier.clip(shape)
-        .background(Brush.verticalGradient(listOf(surfaceTop, surfaceBottom)))
+        .background(Brush.verticalGradient(listOf(surfaceTop.scheduleBlockColor(), surfaceBottom.scheduleBlockColor())))
         .border(.45.dp, if (accented) style.accentOutline else style.surfaceOutline, shape)
         .drawWithContent {
             drawRect(Brush.verticalGradient(listOf(style.glow, Color.Transparent), endY = size.height * .4f))
