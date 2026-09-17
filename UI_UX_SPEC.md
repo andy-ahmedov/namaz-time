@@ -143,6 +143,12 @@ action to return to the prayer schedule. No payment flow is present.
 
 ## Theme/background
 
+At the product owner's explicit request on 2026-09-18, the packaged image for
+the existing `winter_twilight` choice is a WebP conversion of their supplied
+`wal_3.png` (SHA-256 `594768e4f41a7ff1d40e0f8914d77e021d197faef48f1a3644d932e0ce80d3f4`).
+The persisted choice ID and display label are unchanged; the raw image stays
+outside Git.
+
 - all screens use the T017 semantic dark/amber Compose tokens and shared
   translucent card/focus language; screen-local palettes are not allowed;
 - background media is full bleed, while text and controls remain inside the

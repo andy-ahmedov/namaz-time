@@ -4,6 +4,25 @@ This is the living execution plan. Update statuses, evidence and decisions after
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
+## Owner background replacement — 2026-09-18
+
+Status: DONE (local asset, APK build and emulator installation).
+
+PROPOSAL: replace the packaged image behind the existing `winter_twilight`
+selection with a 1672×940 WebP conversion of the owner-supplied `wal_3.png`.
+Keep the stable persisted ID and label, so saved selections continue to work.
+The raw PNG remains untracked; no migration or schedule behavior changes.
+The debug APK contains the converted resource with SHA-256
+`d8131737750bca21357f2a260cc8a618cfb8a4175c92039850d35773f7f06c95`.
+Android debug assemble, unit tests and lint PASS; ADB install and app launch on
+the API 36/1920×1080 TV emulator PASS. `make docs-check` PASS in a source copy
+excluding only untracked owner photos. Root `make test`/`make lint` stop at the
+existing 5 MiB gate on the untracked 7.6 MiB source `wal_3.png`; no gate was
+weakened and the owner original was not moved. Runtime selection of the new
+choice remains `UNKNOWN` pending a pre-existing gallery FocusRequester crash
+when navigating across the lazy filmstrip. That navigation defect is tracked
+with the other unfinished TV changes below. Physical-TV appearance is UNKNOWN.
+
 ## T049 — nationwide verified first-party prayer-source onboarding
 
 Status: DONE (2026-09-08), within the authorized local acceptance scope.
