@@ -122,6 +122,7 @@ class RenderedQrTest {
 
     private companion object {
         val PAYLOADS = listOf(
+            ru.namaztime.tv.repository.DEFAULT_QR_HTTPS_URL,
             "https://example.org/sadaqah",
             "https://example.org/mosques/community/donate?campaign=renovation-2026&lang=ru",
             "https://example.org/donate?campaign=mosque-renovation-2026&purpose=community-hall&reference=tv-display&return=https%3A%2F%2Fexample.org%2Fthank-you&language=ru",

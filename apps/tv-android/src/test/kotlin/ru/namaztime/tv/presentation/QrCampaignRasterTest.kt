@@ -59,14 +59,36 @@ class QrCampaignRasterTest {
             for (y in 0 until size) for (x in 0 until size) {
                 val pitch = size / native.width
                 val inset = (size - native.width * pitch) / 2
-                val mx = if (pitch < 4) (x - inset) / pitch else x * native.width / size
-                val my = if (pitch < 4) (y - inset) / pitch else y * native.width / size
-                val inside = pitch >= 4 || (x >= inset && y >= inset &&
+                val mx = if (pitch < 3) (x - inset) / pitch else x * native.width / size
+                val my = if (pitch < 3) (y - inset) / pitch else y * native.width / size
+                val inside = pitch >= 3 || (x >= inset && y >= inset &&
                     x < inset + native.width * pitch && y < inset + native.width * pitch)
                 val dark = inside && native[mx, my]
                 assertEquals("size=$size x=$x y=$y", dark, pixels[y * size + x] == 0xFF172331.toInt())
             }
         }
+    }
+
+    @Test
+    fun `default donation QR reclaims padding without shrinking its quiet zone`() {
+        val target = ru.namaztime.tv.repository.DEFAULT_QR_HTTPS_URL
+        val matrix = QrCodeGenerator().generate(target)
+        val size = 224 // Physical QR square in the supplied 1920x1080 screenshot.
+        val pixels = qrArgbPixels(matrix, size)
+        val firstDark = pixels.indices.filter { pixels[it] == 0xFF172331.toInt() }
+            .minOf { it % size }
+        val oldPitch = size / matrix.moduleCount
+        val oldMargin = (size - matrix.moduleCount * oldPitch) / 2 + 4 * oldPitch
+
+        assertTrue("unused white border remains", firstDark < oldMargin)
+        assertEquals("rendered four-module margin", (4 * size + matrix.moduleCount - 1) /
+            matrix.moduleCount, firstDark)
+        assertEquals("quiet zone is still four modules", 4, matrix.darkModules
+            .indices.filter { matrix.darkModules[it] }.minOf { it % matrix.moduleCount })
+        val decoded = QRCodeReader().decode(BinaryBitmap(HybridBinarizer(
+            RGBLuminanceSource(size, size, pixels),
+        )))
+        assertEquals(target, decoded.text)
     }
 
     @Test

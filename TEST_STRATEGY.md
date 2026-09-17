@@ -845,7 +845,10 @@ side clearances and sharp per-module widths differing by at most one pixel.
 Whole-view native captures decode all four surfaces and compare every non-corner
 pixel to the expected matrix. Rounded outer corners are checked separately.
 
-At fewer than four pixels per module, the renderer retains uniform integer
-pitch and centered remainder padding: a native 720p dense-code regression
-reproduced a decode failure with fractional pitch. Sparse/larger symbols use
-the tighter full-square mapping. Error correction and payload never change.
+At fewer than three pixels per module, the renderer retains uniform integer
+pitch and centered remainder padding for the native 720p dense-code regression.
+At three or more pixels per module, the raster fills the square while keeping
+the encoded four-module quiet zone. The owner default donation URL is included
+in whole-view decode tests on Standard, Compact, Donation and preview at all
+three density profiles, plus a 224-pixel raster/margin test. Error correction
+and payload never change.

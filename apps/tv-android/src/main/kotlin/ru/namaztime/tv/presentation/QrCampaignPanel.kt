@@ -360,8 +360,10 @@ internal fun qrArgbPixels(matrix: QrCodeMatrix, outputSize: Int): IntArray {
     require(outputSize > 0) { "QR raster size must be positive" }
     require(outputSize >= matrix.moduleCount) { "QR raster cannot fit its modules" }
     val pitch = outputSize / matrix.moduleCount
-    // Dense codes at low resolution need equal-width modules for stable decoding.
-    if (pitch < 4) {
+    // Below three pixels per module, fractional widths can break dense-code
+    // decoding. At three pixels, use the whole square instead of adding a
+    // second white border around the four-module quiet zone.
+    if (pitch < 3) {
         val inset = (outputSize - matrix.moduleCount * pitch) / 2
         return IntArray(outputSize * outputSize) { index ->
             val x = index % outputSize - inset

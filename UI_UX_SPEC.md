@@ -673,7 +673,9 @@ width so no encoded module or symbol-aligned side clearance is clipped. This
 amends the historical fully square paper rule; no logo or overlay is introduced.
 The visual radius is intentionally smaller on denser symbols.
 
-At fewer than four pixels per module, the renderer retains uniform integer
+At fewer than three pixels per module, the renderer retains uniform integer
 pitch and centered remainder padding: a native 720p dense-code regression
-reproduced a decode failure with fractional pitch. Sparse/larger symbols use
-the tighter full-square mapping. Error correction and payload never change.
+reproduced a decode failure with fractional pitch. From three pixels per
+module, the renderer distributes the remainder across the symbol, preserving
+the four-module quiet zone without a second white border. The 1920×1080
+default donation QR uses this path. Error correction and payload never change.

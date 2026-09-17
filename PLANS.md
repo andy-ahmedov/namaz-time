@@ -4,6 +4,34 @@ This is the living execution plan. Update statuses, evidence and decisions after
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
+## QR white-border reduction — 2026-09-18
+
+Status: DONE (local implementation and emulator check).
+
+PROPOSAL: use fractional full-square module mapping once the displayed QR has
+at least three physical pixels per native module. The supplied 1920×1080 image
+shows the default donation QR at 224 pixels with 61 native modules: the old
+uniform three-pixel pitch left 20 extra blank pixels on each side, in addition
+to the mandatory four-module quiet zone. The new mapping keeps those four
+modules and reallocates the excess to the symbol; the encoded URL, correction
+level and all local preferences remain unchanged. Below three pixels per module,
+keep the old integer-pitch path for dense-code scan reliability. No migration is
+needed; renderer-only rollback. Focused raster and full-view decode tests PASS
+on 720p/1080p/4K profiles, including the default donation URL. Debug APK build,
+in-place installation and launch PASS on the API 36/1920×1080 TV emulator.
+`CONFIRMED_RUNTIME`: white paper stays 224 px square, while the dark QR region
+grows from 159 to 195 px per side; the left white margin contracts from 32 to
+15 px. The captured QR decodes to the same default URL, both directly and
+after 0.55 px Gaussian blur. Before/after screenshots stay outside Git at
+`/tmp/namaztime-qr-before.png` and `/tmp/namaztime-qr-after-reduction.png`.
+Full `make test lint` PASS on a source copy at
+`/tmp/namaztime-wip-verification.2IpvmZ`, excluding only untracked owner photos
+from the repository root: 636 Android cases, 632 passed and four optional skips;
+the skill suite retained two existing skips. `git diff --check` PASS. Root
+`make test`/`make lint` still stop at the existing 5 MiB gate for the untracked
+7.6 MiB `wal_3.png`; no photo was moved or committed and the gate was unchanged.
+Physical-TV phone scan remains `UNKNOWN`.
+
 ## Owner background replacement — 2026-09-18
 
 Status: DONE (local asset, APK build and emulator installation).
@@ -41,8 +69,9 @@ Acceptance: native whole-view decode and module preservation on every surface
 at 720p/1080p/4K profiles, visible emulator result and independent screenshot decode.
 Focused QR and whole-view native tests PASS for Standard, Compact, Donation and
 preview at three resolution/density profiles. Dense 720p fractional-pitch failure
-was reproduced and fixed with uniform integer pitch below 4 pixels/module;
-those cases retain the necessary remainder padding. Debug assemble PASS.
+was reproduced and fixed with uniform integer pitch below 4 pixels/module at
+this checkpoint; the 2026-09-18 refinement above narrows that fallback to below
+3 pixels/module. Debug assemble PASS.
 CONFIRMED_RUNTIME: API 36 / 1920x1080 emulator screenshot before/after independently
 decoded by zxing-cpp, both directly and after 0.55px Gaussian blur, same payload.
 Current symbol grows 165→181px per side. After screenshot SHA-256:
