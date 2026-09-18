@@ -127,6 +127,12 @@ verify-android-pilot:
 		bash ./scripts/android-pilot-artifact-check.sh "$(NAMAZTIME_PILOT_APK)"
 
 # Explicit, controlled-emulator evidence; never part of unattended repository tests.
+.PHONY: test-android-process-recovery
+test-android-process-recovery:
+	test -n "$(ANDROID_SERIAL)"
+	test -n "$(RECOVERY_EVIDENCE_OUTPUT)"
+	python3 -B scripts/android-process-recovery-evidence.py --serial "$(ANDROID_SERIAL)" --output "$(RECOVERY_EVIDENCE_OUTPUT)"
+
 T045_EVIDENCE_PYTHON ?= python3
 T045_EVIDENCE_ARGS ?= --output artifacts/t045-emulator --profiles 720p 1080p
 

@@ -139,6 +139,13 @@ No live external site is required for normal CI. A separate scheduled canary may
 - clock/timezone mismatch diagnostic;
 - saved focus/navigation state.
 
+The opt-in `make test-android-process-recovery` gate now exercises real
+`SIGKILL` at the Room pre-activation and post-commit/pre-checkpoint boundaries
+in an isolated debug process. It checks offline staged recovery and committed
+DataStore preferences using production repositories. See the bounded
+[API 36 evidence](docs/evidence/2026-09-19-process-recovery.md). This is not
+physical power-loss, ordinary-display process death or mid-download evidence.
+
 ## Compose/UI tests
 
 - main grid renders all fields and missing iqamah correctly;

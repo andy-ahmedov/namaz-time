@@ -3,6 +3,10 @@
 
     <application>
         <activity
+            android:name=".presentation.ProcessRecoveryEvidenceActivity"
+            android:exported="true"
+            android:process=":recoveryEvidence" />
+        <activity
             android:name=".presentation.SchedulePresentationEvidenceActivity"
             android:exported="true"
             android:screenOrientation="landscape" />

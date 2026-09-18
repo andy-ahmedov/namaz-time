@@ -4,6 +4,31 @@ This is the living execution plan. Update statuses, evidence and decisions after
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
+## Controlled emulator SIGKILL recovery — 2026-09-19
+
+Status: DONE (bounded debug-emulator acceptance).
+
+PROPOSAL: add an opt-in debug-only isolated process using production Room,
+DataStore and signed-snapshot recovery components with synthetic fixtures.
+The host runner checks an explicit emulator target, kills only the matched
+evidence PID at two transaction/checkpoint boundaries, and verifies offline
+recovery in a new PID plus unchanged ordinary debug database/preferences.
+No production code, schema, schedule, key or permissions changed. Rollback
+removes the debug harness/Make target; evidence directories are disposable
+test artifacts, kept for inspection without automatic deletion.
+
+CONFIRMED_RUNTIME: both SIGKILL boundaries and preference persistence pass on
+API 36; detailed scope and initial harness failures are recorded in
+[the evidence](docs/evidence/2026-09-19-process-recovery.md). Physical power loss,
+ordinary-display process death and in-flight preference writes remain UNKNOWN.
+Root `make test lint test-android-all` PASS, including strict dependency
+verification, debug/release assembly, lint and APK build identity. Android:
+636 cases, 632 passed, four optional external-fixture skips; skills retain two
+upstream-module skips. Manifest and DEX inspection confirms the activity is
+present in debug and absent from release. Final `make docs-check` and
+`git diff --check` PASS. Logs: `/tmp/namaztime-process-recovery-gates.log`.
+Ordinary debug MainActivity was restored with a successful cold launch.
+
 ## Unknown-clock heartbeat client guard — 2026-09-19
 
 Status: DONE (client guard only; server evolution and runtime wiring remain open).
@@ -866,9 +891,9 @@ physical-device acceptance. None is implied by T034.
   cannot prove OEM boot, overscan, storage-provider or long-soak behavior;
 - pilot source precedence, named mosque approver, exact signed approval and D-009 mosque policy are accepted; organizational role verification is based on the product-owner statement and public third-party verification is not claimed;
 - the official 2026 annual PDF now supplies full-year pilot coverage through T010; its daily Hijri values are absent and therefore remain unset rather than invented;
-- abrupt OS process-kill/journal-recovery remains a future instrumentation/ADB
-  acceptance case; T004 locally proves transactional rollback followed by a
-  file-backed database close/reopen, not a physical-device process death;
+- controlled API 36 SIGKILL/journal recovery now passes at two boundaries in
+  an isolated debug process; see the 2026-09-19 evidence. Physical power loss
+  and ordinary-display process death during real delivery remain separate;
 - D-010 still requires an approved pilot QR destination/domain for signed or
   remote campaigns. T025 adds a clearly device-local operator QR preference,
   and the 2026-09-10 change supplies an owner-provided default URL for local QR
