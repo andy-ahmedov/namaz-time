@@ -4,6 +4,26 @@ This is the living execution plan. Update statuses, evidence and decisions after
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
+## Current-status documentation reconciliation — 2026-09-18
+
+Status: DONE (documentation only).
+
+PROPOSAL: align the entry-point documentation and active plan summaries with
+the existing implementation and recorded acceptance. README now describes the
+implemented application and documents outside-repository owner-artifact storage.
+T001 records the successful remote CI run for exact commit `e275670`, verified
+with read-only `gh run list`; later local revisions are not claimed remote-green.
+The Phase 5 summary points to T049 instead of asserting Ulyanovsk-only setup.
+Pilot blockers distinguish historical signed builds from recent debug acceptance
+and local QR configuration from signed campaigns. TEST_STRATEGY replaces the
+superseded minute-only compact presentation requirement with exact seconds.
+Historical checkpoint evidence remains intact.
+
+Validation: `make docs-check` and `git diff --check` PASS. Application tests were
+not repeated for this documentation-only change; the root verification entry
+below records the preceding full test/lint run. No runtime, schedule, source,
+key, device, schema or deployment change; rollback is documentation-only.
+
 ## Restore root verification gates — 2026-09-18
 
 Status: DONE (root workspace verification).
@@ -637,7 +657,7 @@ Goal: one TV shows a synthetic, then approved, offline schedule for one mosque.
 
 | Task | Status | Acceptance |
 |---|---|---|
-| T001 repository and CI scaffold | IN_PROGRESS | local commit `cddc757`; Go/Android scaffold and CI workflow added; local gates pass, remote CI run remains `UNKNOWN` until the initial branch is pushed |
+| T001 repository and CI scaffold | DONE | Go/Android scaffold and CI workflow implemented. GitHub run [34225243492](https://github.com/andy-ahmedov/namaz-time/actions/runs/34225243492) completed successfully for `e275670895d8fc82a64b98f8adcf36670dca5c25`, checked read-only on 2026-09-18. This does not cover subsequent local commits. |
 | T002 Go domain types + JSON Schema validation | DONE | `feat(domain): validate prayer snapshots`; valid synthetic snapshot passes Schema + domain checks, five invalid fixtures fail deterministically; local contract/race/vet/docs gates pass |
 | T003 Android TV shell + Room | DONE | `feat(tv): add offline settings shell`; Compose for TV launches at API 28+, Robolectric D-pad test reaches all settings/actions, DataStore persists focus destination, Room schema v1 is exported and tested |
 | T004 import bundled synthetic snapshot | DONE | strict Android contract validation; offline asset bootstrap; full Room transaction and atomic active/previous pointer; corrupt input/local-state diagnostics and previous restore; file-backed failure/reopen preserves active data; explicit Room v1→v2→v3 migrations |
@@ -767,9 +787,12 @@ nationwide TV rollout.
 
 ## Phase 5 — regional scale
 
-The first pilot remains the only executable city/source entry. Research status
-is not production eligibility, and the physical pilot blockers below remain
-unchanged.
+T049 supersedes the initial Ulyanovsk-only implementation boundary: verified
+regional choices are available in the normal debug setup through a local bundle
+or provisioned HTTP path. Pilot/release factories remain separate. The dated
+[T049 acceptance](research/t049/ACCEPTANCE.md) records exact coverage and limits;
+research status alone is not production eligibility. Physical pilot blockers
+below remain unchanged.
 
 | Task | Status | Acceptance / evidence |
 |---|---|---|
@@ -816,8 +839,9 @@ physical-device acceptance. None is implied by T034.
 
 - copy the generated offline APK-signing keystore/properties to two
   operator-chosen offline backup locations before the first mosque install;
-- the signed current build is installed and reinstalled in place on the API 36
-  emulator; record physical TV/box acceptance at the mosque. Emulator evidence
+- signed pilot upgrades have historical API 36 emulator evidence; the latest
+  2026-09-18 UI changes were checked in a debug APK, not a newly signed pilot.
+  Record physical TV/box acceptance at the mosque. Emulator evidence
   cannot prove OEM boot, overscan, storage-provider or long-soak behavior;
 - pilot source precedence, named mosque approver, exact signed approval and D-009 mosque policy are accepted; organizational role verification is based on the product-owner statement and public third-party verification is not claimed;
 - the official 2026 annual PDF now supplies full-year pilot coverage through T010; its daily Hijri values are absent and therefore remain unset rather than invented;
@@ -826,12 +850,14 @@ physical-device acceptance. None is implied by T034.
   file-backed database close/reopen, not a physical-device process death;
 - D-010 still requires an approved pilot QR destination/domain for signed or
   remote campaigns. T025 adds a clearly device-local operator QR preference,
-  while tests/runtime evidence continue to use synthetic `example.org` and do
-  not invent a live destination or official claim.
+  and the 2026-09-10 change supplies an owner-provided default URL for local QR
+  configuration. This does not approve a signed/remote campaign; physical scan
+  acceptance remains UNKNOWN.
 
 Remote API/domain, pairing composition, KMS custody, remote trust deployment,
-Google Play and remote CI evidence are deferred requirements for a different
-deployment mode, not blockers for the D-015 offline USB pilot.
+Google Play are deferred requirements for a different deployment mode, not
+blockers for the D-015 offline USB pilot. Remote CI is verified for `e275670`
+(T001 above); subsequent local commits have local gate evidence only.
 - T009 intentionally rejects non-empty remote asset manifests; custom asset
   staging/type/dimension activation requires a separately bounded task.
 - T020 preserves clock health as `unknown`/healthy/mismatch locally, while the

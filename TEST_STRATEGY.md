@@ -782,10 +782,11 @@ Physical-TV and camera-distance acceptance remain `UNKNOWN`.
 
 ## T048 final compact polish verification
 
-T048 retains every T045–T047 functional, adaptive and QR regression. Pure
-tests additionally pin minute-only clock formatting and ceiling-rounded
-countdown formatting, including the final positive second and values longer
-than 24 hours. Compose semantics must preserve the exact second-bearing values.
+T048 retains every T045–T047 functional, adaptive and QR regression. The
+2026-09-18 compact-seconds change supersedes its minute-only clock and
+ceiling-rounded countdown presentation. Tests now require exact second-bearing
+clock/countdown strings, minute-boundary updates, unavailable placeholders and
+values longer than 24 hours. Compose semantics preserve those exact values.
 No engine, event-selection or timezone test expectation changes.
 
 Native Compose tests require the regular/medium/hero weight hierarchy, a
