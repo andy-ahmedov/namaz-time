@@ -4,6 +4,28 @@ This is the living execution plan. Update statuses, evidence and decisions after
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
+## Restore root verification gates — 2026-09-18
+
+Status: DONE (root workspace verification).
+
+PROPOSAL: preserve owner inputs outside the repository and run the existing
+root gates without weakening artifact checks. Nine untracked/ignored root files
+(debug APK, its Zone.Identifier and seven wal images) were copied to
+`../namaztime-artifacts/workspace-cleanup-20260918T205358Z/`, SHA-256 verified,
+then removed from their original locations. The external `manifest.json`
+records original/saved paths, sizes and hashes for reversible restoration.
+No tracked application, signing, schema or schedule file changed.
+
+Root `make test` PASS at implementation commit `3a59351`: 634 Android cases,
+630 passed and four optional external-bundle/Go-exporter cases skipped; skill
+suite has two existing upstream-module skips. Root `make lint` PASS, including
+Go vet/staticcheck and Android debug lint. Final documentation-only update
+passes `make docs-check` and `git diff --check`.
+Full output: `/tmp/namaztime-priority-checks-20260918.log`.
+ADB lists only `emulator-5554`; physical-TV acceptance remains UNKNOWN.
+Signing-key backups, signed release packaging and source renewal are outside
+this workspace verification step. No key, device data or remote state changed.
+
 ## Compact clock and countdown seconds — 2026-09-18
 
 Status: DONE (local implementation and emulator acceptance).
