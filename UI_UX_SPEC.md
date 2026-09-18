@@ -601,11 +601,10 @@ evidence. It may inform hierarchy, luminosity and visual rhythm under the
 recorded owner permission; no reference pixel, logo, QR badge, wording or
 extracted asset is packaged.
 
-The visible clock is `HH:mm`. The visible countdown is also `HH:mm` and rounds
-positive remaining seconds upward to the next whole minute, so it cannot show
-`00:00` before the actual event. The immutable UI state and accessibility
-description retain the exact second-bearing values, and `PrayerTimeEngine`,
-timezone projection and event selection are unchanged.
+As amended on 2026-09-18 at the owner's request, the visible clock and countdown
+both show exact `HH:mm:ss` values from immutable UI state, including seconds.
+The countdown no longer rounds up to whole minutes. Accessibility descriptions,
+`PrayerTimeEngine`, timezone projection and event selection remain unchanged.
 
 Mosque name, countdown and clock are hero values. Prayer times and the next
 prayer name remain strong; prayer names, campaign purpose, date, weekday,

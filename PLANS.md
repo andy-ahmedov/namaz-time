@@ -4,6 +4,26 @@ This is the living execution plan. Update statuses, evidence and decisions after
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
+## Compact clock and countdown seconds — 2026-09-18
+
+Status: DONE (local implementation and emulator acceptance).
+
+PROPOSAL: display exact HH:mm:ss in both compact cards, removing minute-only
+formatting and countdown rounding. Use the existing second-ticking local state
+and fitted typography. No persistence migration; rollback is presentation-only.
+Acceptance: exact values and minute-boundary updates, responsive layout checks,
+full test/lint gates, APK assembly and emulator installation/visual check.
+Focused CompactPolish/CompactReference tests PASS (11 tests), including minute
+rollover, unavailable countdown and 720p/1080p/4K layout profiles. Full make test
+and make lint PASS on /tmp/namaz-seconds-verification, a copy of tracked sources
+with this change: 634 Android cases, 630 passed and four optional skips; skill
+suite retains two skips. Root gates stop on the owner-supplied root APK; no
+owner artifact was removed and no gate weakened. CONFIRMED_RUNTIME: updated
+APK installs in place on emulator-5554, seconds advance in both cards at
+1920x1080, and D-pad Settings/Back returns to the display. Screenshots remain
+outside Git at /tmp/namaz-seconds-emulator.png and
+/tmp/namaz-seconds-emulator-after.png. Physical-TV acceptance remains UNKNOWN.
+
 ## QR white-border reduction — 2026-09-18
 
 Status: DONE (local implementation and emulator check).

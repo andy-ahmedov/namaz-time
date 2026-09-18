@@ -305,7 +305,7 @@ private fun CompactNextCard(state: PrayerDisplayUiState, scale: Float, modifier:
                     Modifier.fillMaxWidth().weight(.31f), weight = FontWeight.Medium, minSize = 17 * scale)
                 CompactDivider(Modifier.fillMaxWidth(.78f).height((9 * scale).dp).testTag(NEXT_EVENT_DIVIDER_TAG))
                 val description = appString(R.string.countdown_accessibility, state.countdown)
-                CompactFitText(compactCountdownPresentation(state.countdown), COUNTDOWN_TEST_TAG, 50 * scale,
+                CompactFitText(state.countdown, COUNTDOWN_TEST_TAG, 50 * scale,
                     Modifier.fillMaxWidth().weight(.49f),
                     color = CompactVisualStyle.accent, weight = FontWeight.SemiBold, minSize = 24 * scale,
                     displayNumeral = true, accessibilityDescription = description)
@@ -326,7 +326,7 @@ private fun CompactClockCard(state: PrayerDisplayUiState, scale: Float, modifier
                         color = CompactVisualStyle.textSecondary)
                 }
             }
-            CompactFitText(compactClockPresentation(state.mosqueLocalTime), LOCAL_CLOCK_VALUE_TAG, 48 * scale,
+            CompactFitText(state.mosqueLocalTime, LOCAL_CLOCK_VALUE_TAG, 48 * scale,
                 Modifier.fillMaxWidth().weight(1.3f), weight = FontWeight.SemiBold, minSize = 26 * scale,
                 displayNumeral = true, accessibilityDescription = state.mosqueLocalTime)
         }
@@ -456,9 +456,6 @@ private fun CompactVerticalDivider(modifier: Modifier) {
     }
 }
 
-internal fun compactClockPresentation(exactClock: String): String =
-    if (exactClock.count { it == ':' } == 2) exactClock.substringBeforeLast(':') else exactClock
-
 internal fun compactMosqueIdentityPresentation(name: String): String {
     if (name.length <= 32 || '\n' in name) return name
     val breakIndex = name.indices
@@ -466,19 +463,6 @@ internal fun compactMosqueIdentityPresentation(name: String): String {
         .minByOrNull { index -> kotlin.math.abs(index - (name.length - index - 1)) }
         ?: return name
     return name.substring(0, breakIndex).trimEnd() + "\n" + name.substring(breakIndex + 1).trimStart()
-}
-
-internal fun compactCountdownPresentation(exactCountdown: String): String {
-    val parts = exactCountdown.split(':')
-    if (parts.size != 3) return exactCountdown
-    val hours = parts[0].toLongOrNull() ?: return compactClockPresentation(exactCountdown)
-    val minutes = parts[1].toLongOrNull() ?: return compactClockPresentation(exactCountdown)
-    val seconds = parts[2].toLongOrNull() ?: return compactClockPresentation(exactCountdown)
-    if (minutes !in 0..59 || seconds !in 0..59 || hours < 0) return compactClockPresentation(exactCountdown)
-    val totalSeconds = hours * 3_600L + minutes * 60L + seconds
-    val roundedMinutes = if (totalSeconds == 0L) 0L else (totalSeconds + 59L) / 60L
-    return roundedMinutes.div(60L).toString().padStart(2, '0') + ":" +
-        roundedMinutes.rem(60L).toString().padStart(2, '0')
 }
 
 @Composable

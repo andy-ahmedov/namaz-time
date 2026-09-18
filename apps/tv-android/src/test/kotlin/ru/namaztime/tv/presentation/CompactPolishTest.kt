@@ -24,39 +24,29 @@ class CompactPolishTest {
     @get:Rule val compose = createComposeRule()
 
     @Test
-    fun clockPresentationDropsSecondsWithoutChangingExactState() {
-        assertEquals("16:58", compactClockPresentation("16:58:10"))
-        assertEquals("—:——", compactClockPresentation("—:——:——"))
-        assertEquals("invalid", compactClockPresentation("invalid"))
-    }
-
-    @Test
-    fun countdownPresentationRoundsUpUntilTheRealEvent() {
-        assertEquals("00:00", compactCountdownPresentation("00:00:00"))
-        assertEquals("00:01", compactCountdownPresentation("00:00:01"))
-        assertEquals("00:01", compactCountdownPresentation("00:00:59"))
-        assertEquals("00:01", compactCountdownPresentation("00:01:00"))
-        assertEquals("00:02", compactCountdownPresentation("00:01:01"))
-        assertEquals("02:50", compactCountdownPresentation("02:49:57"))
-        assertEquals("25:01", compactCountdownPresentation("25:00:01"))
-        assertEquals("—:——", compactCountdownPresentation("—:——:——"))
-    }
-
-    @Test
-    fun compactDisplayShowsMinutesAndKeepsExactAccessibilityValues() {
-        val state = fixture().copy(mosqueLocalTime = "16:58:10", countdown = "00:00:01")
+    fun compactDisplayShowsExactSecondsAndUpdatesAcrossMinuteBoundary() {
+        val state = mutableStateOf(fixture().copy(mosqueLocalTime = "16:58:59", countdown = "00:01:00"))
         compose.setContent {
             AppLanguageProvider("ru") {
-                NamazTvTheme { CompactPrayerDisplay(state, {}, requestInitialFocus = false) }
+                NamazTvTheme { CompactPrayerDisplay(state.value, {}, requestInitialFocus = false) }
             }
         }
-
         compose.onNodeWithTag(LOCAL_CLOCK_VALUE_TAG, useUnmergedTree = true)
-            .assertTextEquals("16:58")
-            .assertContentDescriptionEquals("16:58:10")
+            .assertTextEquals("16:58:59")
+            .assertContentDescriptionEquals("16:58:59")
         compose.onNodeWithTag(COUNTDOWN_TEST_TAG, useUnmergedTree = true)
-            .assertTextEquals("00:01")
-            .assertContentDescriptionEquals("До следующего события 00:00:01")
+            .assertTextEquals("00:01:00")
+        compose.runOnIdle {
+            state.value = state.value.copy(mosqueLocalTime = "16:59:00", countdown = "00:00:59")
+        }
+        compose.onNodeWithTag(LOCAL_CLOCK_VALUE_TAG, useUnmergedTree = true)
+            .assertTextEquals("16:59:00")
+        compose.onNodeWithTag(COUNTDOWN_TEST_TAG, useUnmergedTree = true)
+            .assertTextEquals("00:00:59")
+            .assertContentDescriptionEquals("До следующего события 00:00:59")
+        compose.runOnIdle { state.value = state.value.copy(countdown = "—:——:——") }
+        compose.onNodeWithTag(COUNTDOWN_TEST_TAG, useUnmergedTree = true)
+            .assertTextEquals("—:——:——")
     }
 
     @Test
