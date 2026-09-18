@@ -40,6 +40,12 @@ and exact device path. Reporting may be attached after a completed sync, but
 all non-cancellation reporting failures are ignored by the wrapper; the original
 sync result and local display remain authoritative.
 
+2026-09-19 client boundary: local clock mismatch may be unknown (`null`). Since
+the v1 request requires a boolean, the client skips that report explicitly as
+`SkippedUnknownClock`, without transport or a server last-seen refresh. Known
+observations remain unchanged. This guard does not add runtime wiring or
+tri-state server storage; neither is implied by the client tests.
+
 ## Consequences
 
 Positive:

@@ -129,6 +129,14 @@ per device. `active_snapshot_id` is diagnostic and never changes assignment or
 activation. Success is `204`; malformed input is `400`, invalid/revoked scope is
 `401`, and backend failure is retryable `500`.
 
+The v1 `clock_mismatch` field remains a required boolean. Android accepts a
+nullable local clock observation and returns `SkippedUnknownClock` without a
+network request when that observation is unknown. It must not substitute
+`false`. Known mismatch/healthy observations retain their exact boolean value.
+Skipping does not update server last-seen and does not change the completed
+snapshot-sync result. Transmitting unknown health requires future wire/storage
+evolution; the production state assembler remains unconnected.
+
 ## Error format
 
 ```json

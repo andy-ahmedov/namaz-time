@@ -50,6 +50,38 @@ class DeviceHeartbeatClientTest {
     }
 
     @Test
+    fun unknownClockSkipsNetworkWithoutChangingCompletedSync() = runTest {
+        val transport = HeartbeatRecordingTransport(SyncHttpResponse(204, emptyMap(), byteArrayOf()))
+        val expected = SnapshotSyncResult.Updated("snapshot-fixture-0001", null)
+        var reportResult: DeviceHeartbeatResult? = null
+        val runner = HeartbeatReportingSyncRunner(
+            delegate = SnapshotSyncRunner { expected },
+            report = {
+                reportResult = DeviceHeartbeatClient(transport, clock)
+                    .report(credentials, validState().copy(clockMismatch = null))
+            },
+        )
+
+        assertEquals(expected, runner.run())
+        assertEquals(DeviceHeartbeatResult.SkippedUnknownClock, reportResult)
+        assertEquals(null, transport.request)
+    }
+
+    @Test
+    fun knownClockStatesArePreservedOnWire() = runTest {
+        for (mismatch in listOf(false, true)) {
+            val transport = HeartbeatRecordingTransport(SyncHttpResponse(204, emptyMap(), byteArrayOf()))
+            assertEquals(
+                DeviceHeartbeatResult.Accepted,
+                DeviceHeartbeatClient(transport, clock)
+                    .report(credentials, validState().copy(clockMismatch = mismatch)),
+            )
+            val body = Json.parseToJsonElement(transport.request!!.body!!.decodeToString()).jsonObject
+            assertEquals(mismatch.toString(), body.getValue("clock_mismatch").jsonPrimitive.content)
+        }
+    }
+
+    @Test
     fun rejectsInvalidLocalStateWithoutNetworkAndMapsFailures() = runTest {
         val invalidTransport = HeartbeatRecordingTransport(SyncHttpResponse(204, emptyMap(), byteArrayOf()))
         val invalid = validState().copy(coverageDaysRemaining = 733)

@@ -4,6 +4,27 @@ This is the living execution plan. Update statuses, evidence and decisions after
 
 Status values: `TODO`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `DEFERRED`.
 
+## Unknown-clock heartbeat client guard — 2026-09-19
+
+Status: DONE (client guard only; server evolution and runtime wiring remain open).
+
+PROPOSAL: accept nullable local clock observations at the heartbeat boundary,
+matching sync checkpoint semantics. Skip an unknown-clock report explicitly
+without networking instead of forcing callers to invent a boolean. Preserve
+both known boolean states and the completed sync result. The v1 HTTP payload,
+server storage, signing, schedules and device data remain unchanged.
+API_CONTRACT and ADR 0006 describe the last-seen tradeoff: a skipped heartbeat
+cannot refresh fleet freshness. Full tri-state server evolution and production
+state assembly remain future remote-mode work, not closed by this guard.
+Rollback is client-only and requires no migration.
+
+Validation: focused DeviceHeartbeatClient tests PASS; root `make test` and
+`make lint` PASS. Android: 636 cases, 632 passed, four optional external-bundle
+cases skipped; skills retain two upstream-module skips. `make docs-check` and
+`git diff --check` PASS after the final documentation update. Logs remain at
+`/tmp/namaztime-heartbeat-focused.log` and `/tmp/namaztime-heartbeat-full.log`.
+No device installation or runtime telemetry acceptance is claimed.
+
 ## Current-status documentation reconciliation — 2026-09-18
 
 Status: DONE (documentation only).
@@ -862,8 +883,9 @@ blockers for the D-015 offline USB pilot. Remote CI is verified for `e275670`
   staging/type/dimension activation requires a separately bounded task.
 - T020 preserves clock health as `unknown`/healthy/mismatch locally, while the
   current heartbeat contract requires a boolean and has no production state
-  assembler. Contract evolution/wiring must not collapse `unknown` into a false
-  healthy claim.
+  assembler. The 2026-09-19 client guard skips unknown-clock reports without
+  network access; contract evolution/wiring must retain this distinction rather
+  than collapse `unknown` into a false healthy claim.
 
 ## Default local QR destination — 2026-09-10
 

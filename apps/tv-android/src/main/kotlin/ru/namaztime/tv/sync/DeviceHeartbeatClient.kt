@@ -52,7 +52,7 @@ data class DeviceHeartbeatState(
     val activeSnapshotId: String,
     val syncStatus: HeartbeatSyncStatus,
     val coverageDaysRemaining: Int,
-    val clockMismatch: Boolean,
+    val clockMismatch: Boolean?,
     val timezoneMismatch: Boolean,
     val storageHealth: HeartbeatHealth,
     val memoryHealth: HeartbeatHealth,
@@ -62,6 +62,7 @@ data class DeviceHeartbeatState(
 
 sealed interface DeviceHeartbeatResult {
     data object Accepted : DeviceHeartbeatResult
+    data object SkippedUnknownClock : DeviceHeartbeatResult
     data class Rejected(val code: String) : DeviceHeartbeatResult
     data class Retry(val code: String) : DeviceHeartbeatResult
     data object AuthFailure : DeviceHeartbeatResult
@@ -78,6 +79,8 @@ class DeviceHeartbeatClient(
         val endpoint = heartbeatEndpoint(credentials)
             ?: return DeviceHeartbeatResult.Rejected("heartbeat_request_invalid")
         if (!state.isValid()) return DeviceHeartbeatResult.Rejected("heartbeat_request_invalid")
+        // The v1 wire contract cannot represent unknown; never report it as healthy.
+        val clockMismatch = state.clockMismatch ?: return DeviceHeartbeatResult.SkippedUnknownClock
         val body = heartbeatJson.encodeToString(
             HeartbeatPayload(
                 sentAt = clock.instant().toString(),
@@ -87,7 +90,7 @@ class DeviceHeartbeatClient(
                 activeSnapshotId = state.activeSnapshotId,
                 syncStatus = state.syncStatus,
                 coverageDaysRemaining = state.coverageDaysRemaining,
-                clockMismatch = state.clockMismatch,
+                clockMismatch = clockMismatch,
                 timezoneMismatch = state.timezoneMismatch,
                 storageHealth = state.storageHealth,
                 memoryHealth = state.memoryHealth,
